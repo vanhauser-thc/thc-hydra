@@ -1,0 +1,11 @@
+type "./configure", then "make" and finally "sudo make install"
+
+For special modules you need to install software packages before
+you run "./configure":
+  Ubuntu/Debian:  apt-get install libssl-dev libssh-dev libidn11-dev libpcre3-dev libgtk2.0-dev libmysqlclient-dev libpq-dev libsvn-dev firebird2.1-dev libncp-dev libncurses5-dev
+  Redhat/Fedora:  yum install openssl-devel pcre-devel ncpfs-devel postgresql-devel libssh-devel subversion-devel libncurses-devel
+  OpenSuSE:       zypper install libopenssl-devel pcre-devel libidn-devel ncpfs-devel libssh-devel postgresql-devel subversion-devel libncurses-devel
+
+For the Oracle login module, install the basic and SDK packages:
+ http://www.oracle.com/technetwork/database/features/instant-client/index.html
+

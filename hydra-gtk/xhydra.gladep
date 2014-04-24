@@ -1,0 +1,10 @@
+<?xml version="1.0" standalone="no"?> <!--*- mode: xml -*-->
+<!DOCTYPE glade-project SYSTEM "http://glade.gnome.org/glade-project-2.0.dtd">
+
+<glade-project>
+  <name>Hydra_gtk</name>
+  <program_name>xhydra</program_name>
+  <gnome_support>FALSE</gnome_support>
+  <gettext_support>FALSE</gettext_support>
+  <use_widget_names>TRUE</use_widget_names>
+</glade-project>

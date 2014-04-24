@@ -1,0 +1,120 @@
+.TH "HYDRA" "1" "24/05/2012"
+.SH NAME
+hydra \- a very fast network logon cracker which support many different services
+.SH SYNOPSIS
+.B hydra
+ [[[\-l LOGIN|\-L FILE] [\-p PASS|\-P FILE|\-x OPT]] | [\-C FILE]] [\-e nsr]
+ [\-u] [\-f] [\-F] [\-M FILE] [\-o FILE] [\-t TASKS] [\-w TIME] [\-W TIME]
+ [\-s PORT] [\-S] [\-4/6] [\-vV] [\-d]
+ server service [OPTIONAL_SERVICE_PARAMETER]
+.br
+.SH DESCRIPTION
+Hydra is a parallized login cracker which supports numerous protocols
+to attack. New modules are easy to add, beside that, it is flexible and
+very fast.
+
+This tool gives researchers and security consultants the possiblity to
+show how easy it would be to gain unauthorized access from remote to a
+system.
+
+Currently this tool supports:
+ AFP, Cisco AAA, Cisco auth, Cisco enable, CVS, Firebird, FTP, FTPS, 
+ HTTP-FORM-GET, HTTP-FORM-POST, HTTP-GET, HTTP-HEAD, HTTP-PROXY,
+ HTTP-PROXY-URLENUM, ICQ, IMAP, IRC, LDAP2, LDAP3, MS-SQL, MYSQL, NCP, NNTP,
+ Oracle, Oracle-Listener, Oracle-SID, PC-Anywhere, PCNFS, POP3, POSTGRES,
+ RDP, REXEC, RLOGIN, RSH, SAP/R3, SIP, SMB, SMTP, SMTP-Enum, SNMP,
+ SOCKS5, SSH(v1 and v2), SSHKEY, Subversion, Teamspeak (TS2), Telnet,
+ VMware-Auth, VNC and XMPP.
+ For most protocols, SSL mode is available (e.g. https-get, ftp-ssl, etc.)
+ If not all necessary libraries are found during compile time, your
+ available services will be less. Type "hydra" to see what is available.
+.SH Options
+.TP
+.B target
+a target to attack, can be an IPv4 address, IPv6 address or DNS name.
+.TP
+.B service
+a service to attack, see the list of protocols available
+.TP
+.B OPTIONAL SERVICE PARAMETER
+Some modules have optional or mandatory options. type "hydra \-U <servicename>"
+ to get help on on the options of a service.
+.TP
+.B \-R 
+restore a previously aborted session. Requires a hydra.restore file was
+written. No other options are allowed when using \-R
+.TP
+.B \-S
+connect via SSL
+.TP
+.B \-s PORT
+if the service is on a different default port, define it here
+.TP
+.B \-l LOGIN
+or \-L FILE login with LOGIN name, or load several logins from FILE
+.TP
+.B \-p PASS
+or \-P FILE try password PASS, or load several passwords from FILE
+.TP
+.B \-x min:max:charset
+generate passwords from min to max length. charset can contain 1
+ for numbers, a for lowcase and A for upcase characters.
+ Any other character is added is put to the list. 
+   Example: 1:2:a1%.
+   The generated passwords will be of length 1 to 2 and contain
+   lowcase letters, numbers and/or percent signs and dots.
+.TP
+.B \-e nsr
+additional checks, "n" for null password, "s" try login as pass, "r" try the reverse login as pass
+.TP
+.B \-C FILE
+colon separated "login:pass" format, instead of \-L/\-P options
+.TP
+.B \-u
+by default Hydra checks all passwords for one login and then tries the next
+login. This option loops around the passwords, so the first password is
+tried on all logins, then the next password.
+.TP
+.B \-f
+exit after the first found login/password pair (per host if \-M)
+.TP
+.B \-F
+exit after the first found login/password pair for any host (for usage with -M)
+.TP
+.B \-M FILE
+server list for parallel attacks, one entry per line
+.TP
+.B \-o FILE
+write found login/password pairs to FILE instead of stdout
+.TP
+.B \-t TASKS
+run TASKS number of connects in parallel (default: 16)
+.TP
+.B \-w TIME
+defines the max wait time in seconds for responses (default: 32)
+.TP
+.B \-W TIME
+defines a wait time between each connection a task performs. This usually
+only makes sense if a low task number is used, .e.g \-t 1
+.TP
+.B \-4 / \-6 
+prefer IPv4 (default) or IPv6 addresses
+.TP
+.B \-v / \-V 
+verbose mode / show login+pass combination for each attempt
+.B \-d
+debug mode
+.TP
+.B \-h, \-\-help
+Show summary of options.
+.SH SEE ALSO
+.BR xhydra (1),
+.BR pw-inspector (1).
+.br
+The programs are documented fully by van Hauser <vh@thc.org>
+.SH AUTHOR
+hydra was written by van Hauser / THC <vh@thc.org> and is co-maintained by David Maciejak <david.maciejak@gmail.com>.
+
+.PP
+This manual page was written by Daniel Echeverry <epsilon77@gmail.com>,
+for the Debian project (and may be used by others).

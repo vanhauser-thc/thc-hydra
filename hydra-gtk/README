@@ -1,0 +1,19 @@
+
+Hydra-GTK
+
+Gtk+2 frontend for thc-hydra
+
+
+
+To install just do a:
+
+./configure
+ make
+ su root
+ make install
+
+Easy at it can be... You need thc-hydra installed to make this work.
+This is my second gtk+2 program, so I am waiting for a lot of patches :)
+Mail them to snakebyte@gmx.de
+
+

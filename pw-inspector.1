@@ -1,0 +1,57 @@
+.TH "PW-INSPECTOR" "1" "24/05/2012"
+.SH NAME
+pw-inspector \- A tool to reduce the password list
+.SH SYNOPSIS
+.B pw-inspector
+[\-i FILE] [\-o FILE] [\-m MINLEN] [\-M MAXLEN] [\-c MINSETS] \-l \-u \-n \-p \-s
+.br
+.SH DESCRIPTION
+PW-Inspector reads passwords in and prints those which meet the requirements.
+The return code is the number of valid passwords found, 0 if none was found.
+Use for security: check passwords, if 0 is returned, reject password choice.
+Use for hacking: trim your dictionary file to the pw requirements of the target.
+Usage only allowed for legal purposes.
+.SH OPTIONS
+.TP
+.B \-i FILE
+file to read passwords from (default: stdin)
+.TP
+.B \-o FILE
+file to write valid passwords to (default: stdout)
+.TP
+.B \-m MINLEN
+minimum length of a valid password
+.TP
+.B \-M MAXLEN
+maximum length of a valid password
+.TP
+.B \-c MINSETS 
+the minimum number of sets required (default: all given)
+.TP
+.B \-h, \-\-help
+Show summary of options.
+.SH SETS
+.TP
+.B \-l
+lowcase characters (a,b,c,d, etc.)
+.TP
+.B \-u 
+upcase characters (A,B,C,D, etc.)
+.TP
+.B \-n
+numbers (1,2,3,4, etc.)
+.TP
+.B \-p 
+printable characters (which are not \-l/\-n/\-p, e.g. $,!,/,(,*, etc.)
+.TP
+.B \ -s
+special characters \- all others not withint the sets above
+.SH SEE ALSO
+.BR hydra (1),
+.BR xhydra (1).
+.br
+.SH AUTHOR
+hydra was written by van Hauser / THC <vh@thc.org> and co-maintained by David Maciejak <david.maciejak@gmail.com>.
+.PP
+This manual page was written by Daniel Echeverry <epsilon77@gmail.com>,
+for the Debian project (and may be used by others).
