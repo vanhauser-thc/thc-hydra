@@ -62,7 +62,8 @@ void pca_encrypt(char *cleartxt) {
   char passwd[128];
   int i;
 
-  strcpy(passwd, cleartxt);
+  strncpy(passwd, cleartxt, sizeof(passwd));
+  passwd[sizeof(passwd)] = 0;
   if (strlen(cleartxt) > 0) {
     passwd[0] = (passwd[0] ^ 0xab);
     for (i = 1; i < strlen(passwd); i++)

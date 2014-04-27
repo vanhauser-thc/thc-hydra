@@ -74,11 +74,13 @@ int start_cisco(int s, char *ip, int port, unsigned char options, char *miscptr,
       }
       do {
         buf = hydra_receive_line(s);
-        if (buf[strlen(buf) - 1] == '\n')
-          buf[strlen(buf) - 1] = 0;
-        if (buf[strlen(buf) - 1] == '\r')
-          buf[strlen(buf) - 1] = 0;
-      } while (strlen(buf) <= 1);
+        if (buf != NULL) {
+          if (buf[strlen(buf) - 1] == '\n')
+            buf[strlen(buf) - 1] = 0;
+          if (buf[strlen(buf) - 1] == '\r')
+            buf[strlen(buf) - 1] = 0;
+        }
+      } while (buf != NULL && strlen(buf) <= 1);
     }
 
   }

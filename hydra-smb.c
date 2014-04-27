@@ -9,6 +9,9 @@ void dummy_smb() {
 #include "hmacmd5.h"
 #include "sasl.h"
 
+// FIXME XXX BUG: several malloc()s without return code checking
+
+
 /*
 
 http://technet.microsoft.com/en-us/library/cc960646.aspx
@@ -453,7 +456,8 @@ int HashLMv2(unsigned char **LMv2hash, unsigned char *szLogin, unsigned char *sz
   hmac_md5_final(lmv2_response, &ctx);
 
   /* --- 24-byte LMv2 Response Complete --- */
-  *LMv2hash = malloc(24);
+  if ((*LMv2hash = malloc(24)) == NULL)
+    return -1;
   memset(*LMv2hash, 0, 24);
   memcpy(*LMv2hash, lmv2_response, 16);
   memcpy(*LMv2hash + 16, client_challenge, 8);
@@ -630,7 +634,8 @@ int HashNTLMv2(unsigned char **NTLMv2hash, int *iByteCount, unsigned char *szLog
   hmac_md5_final(ntlmv2_response, &ctx);
 
   *iByteCount = 48 + iTargetLen + 4;
-  *NTLMv2hash = malloc(*iByteCount);
+  if ((*NTLMv2hash = malloc(*iByteCount)) == NULL)
+    return -1;
   memset(*NTLMv2hash, 0, *iByteCount);
   memcpy(*NTLMv2hash, ntlmv2_response, *iByteCount);
 
@@ -678,6 +683,7 @@ int NBSSessionRequest(int s) {
   unsigned char rqbuf[7] = { 0x81, 0x00, 0x00, 0x44, 0x20, 0x00, 0x20 };
   char *buf;
   unsigned char rbuf[400];
+  int k;
 
   /* if we are running in native mode (aka port 445) don't do netbios */
   if (protoFlag == WIN2000_NATIVEMODE)
@@ -689,7 +695,8 @@ int NBSSessionRequest(int s) {
   memcpy(nb_name, "CKFDENECFDEFFCFGEFFCCACACACACACA", 32);      /* *SMBSERVER */
   memcpy(nb_local, "EIFJEEFCEBCACACACACACACACACACACA", 32);     /* HYDRA */
 
-  buf = (char *) malloc(100);
+  if ((buf = (char *) malloc(100)) == NULL)
+    return -1;
   memset(buf, 0, 100);
   memcpy(buf, (char *) rqbuf, 5);
   memcpy(buf + 5, nb_name, 32);
@@ -701,10 +708,9 @@ int NBSSessionRequest(int s) {
   free(buf);
 
   memset(rbuf, 0, 400);
-  hydra_recv(s, (char *) rbuf, sizeof(rbuf));
+  k = hydra_recv(s, (char *) rbuf, sizeof(rbuf));
 
-
-  if ((rbuf != NULL) && (rbuf[0] == 0x82))
+  if (k > 0 && (rbuf[0] == 0x82))
     return 0;                   /* success */
   else
     return -1;                  /* failed */
@@ -772,7 +778,7 @@ int SMBNegProt(int s) {
   unsigned char rbuf[400];
   unsigned char sess_key[2];
   unsigned char userid[2] = { 0xCD, 0xEF };
-  int i = 0, j = 0;
+  int i = 0, j = 0, k;
   int iLength = 194;
   int iResponseOffset = 73;
 
@@ -783,8 +789,6 @@ int SMBNegProt(int s) {
   sess_key[0] = getpid() - (100 * sess_key[1]);
   memcpy(buf + 30, sess_key, 2);
   memcpy(buf + 32, userid, 2);
-
-
 
   if (smb_auth_mechanism == AUTH_LM) {
     if (verbose)
@@ -797,8 +801,8 @@ int SMBNegProt(int s) {
 
 
   hydra_send(s, (char *) buf, iLength, 0);
-  hydra_recv(s, (char *) rbuf, sizeof(rbuf));
-  if (rbuf == NULL)
+  k = hydra_recv(s, (char *) rbuf, sizeof(rbuf));
+  if (k == 0)
     return 3;
 
   /* retrieve the security mode */
@@ -968,7 +972,8 @@ unsigned long SMBSessionSetup(int s, char *szLogin, char *szPassword, char *misc
       memcpy(buf + 36, szSessionRequest, 23);
 
       /* Calculate and set LAN Manager password hash */
-      LMhash = (unsigned char *) malloc(24);
+      if ((LMhash = (unsigned char *) malloc(24)) == NULL)
+        return -1;
       memset(LMhash, 0, 24);
 
       ret = HashLM(&LMhash, (unsigned char *) szPassword, (unsigned char *) challenge);
@@ -1005,7 +1010,8 @@ unsigned long SMBSessionSetup(int s, char *szLogin, char *szPassword, char *misc
       memcpy(buf + 36, szSessionRequest, 29);
 
       /* Calculate and set NTLM password hash */
-      NTLMhash = (unsigned char *) malloc(24);
+      if ((NTLMhash = (unsigned char *) malloc(24)) == NULL)
+        return -1;
       memset(NTLMhash, 0, 24);
 
       /* We don't need to actually calculated a LM hash for this mode, only NTLM */
@@ -1042,7 +1048,8 @@ unsigned long SMBSessionSetup(int s, char *szLogin, char *szPassword, char *misc
       memcpy(buf + 36, szSessionRequest, 29);
 
       /* Calculate and set LMv2 response hash */
-      LMv2hash = (unsigned char *) malloc(24);
+      if ((LMv2hash = (unsigned char *) malloc(24)) == NULL)
+        return -1;
       memset(LMv2hash, 0, 24);
 
       ret = HashLMv2(&LMv2hash, (unsigned char *) szLogin, (unsigned char *) szPassword);
@@ -1177,9 +1184,8 @@ unsigned long SMBSessionSetup(int s, char *szLogin, char *szPassword, char *misc
 
   hydra_send(s, (char *) buf, iOffset + iByteCount, 0);
 
-  nReceiveBufferSize = 0;
   nReceiveBufferSize = hydra_recv(s, bufReceive, sizeof(bufReceive));
-  if ((bufReceive == NULL) || (nReceiveBufferSize == 0))
+  if (/*(bufReceive == NULL) ||*/ (nReceiveBufferSize == 0))
     return -1;
 
   /* 41 - Action (Guest/Non-Guest Account) */
@@ -1316,7 +1322,8 @@ void service_smb(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
         //split the string after the domain if there are other values
         strtok(tmpdom, " ");
         if (tmpdom) {
-          strncpy((char *) domain, (char *) tmpdom, 16);
+          strncpy((char *) domain, (char *) tmpdom, sizeof(domain) - 1);
+          domain[sizeof(domain) - 1] = 0;
         } else {
           err = 1;
         }

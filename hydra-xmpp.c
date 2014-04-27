@@ -22,6 +22,7 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
   char *CHALLENGE_END_STR = "</challenge>";
   char *RESPONSE_STR = "<response xmlns='urn:ietf:params:xml:ns:xmpp-sasl'>";
   char *RESPONSE_END_STR = "</response>";
+  char *fooptr;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -95,7 +96,6 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
           /* server now would ask for the password */
           if ((strstr(buf, CHALLENGE_STR) != NULL) || (strstr(buf, CHALLENGE_STR2) != NULL)) {
             char *ptr = strstr(buf, CHALLENGE_STR);
-
             if (!ptr)
               ptr = strstr(buf, CHALLENGE_STR2);
             char *ptr_end = strstr(ptr, CHALLENGE_END_STR);
@@ -117,7 +117,6 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
               free(buf);
               return 1;
             }
-            free(buf);
           }
         }
       }
@@ -156,8 +155,9 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
       break;
     case AUTH_DIGESTMD5:{
         memset(buffer2, 0, sizeof(buffer2));
-        sasl_digest_md5(buffer2, login, pass, buffer, domain, "xmpp", NULL, 0, NULL);
-        if (buffer2 == NULL)
+        fooptr = buffer2;
+        sasl_digest_md5(fooptr, login, pass, buffer, domain, "xmpp", NULL, 0, NULL);
+        if (fooptr == NULL)
           return 3;
         if (verbose)
           hydra_report(stderr, "DEBUG C: %s\n", buffer2);
@@ -213,8 +213,9 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
           serverfirstmessage[sizeof(serverfirstmessage) - 1] = '\0';
 
           memset(buffer2, 0, sizeof(buffer2));
-          sasl_scram_sha1(buffer2, pass, clientfirstmessagebare, serverfirstmessage);
-          if (buffer2 == NULL) {
+          fooptr = buffer2;
+          sasl_scram_sha1(fooptr, pass, clientfirstmessagebare, serverfirstmessage);
+          if (fooptr == NULL) {
             hydra_report(stderr, "[ERROR] Can't compute client response\n");
             free(buf);
             return 1;
@@ -227,12 +228,13 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
           free(buf);
           return 1;
         }
-        free(buf);
       }
       break;
 #endif
+      ptr = 0;
     }
 
+    free(buf);
     if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
       return 1;
     }
@@ -266,6 +268,7 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
   if (strstr(buf, "<failure")) {
     hydra_report(stderr, "[ERROR] Protocol failure, try using another auth method. %s\n", strstr(buf, "<failure"));
   }
+  free(buf);
   return 3;
 }
 

@@ -2,8 +2,6 @@
 #include "sasl.h"
 
 extern char *HYDRA_EXIT;
-char *buf;
-
 int smtp_auth_mechanism = AUTH_LOGIN;
 
 char *smtp_read_server_capacity(int sock) {
@@ -40,7 +38,7 @@ char *smtp_read_server_capacity(int sock) {
 
 int start_smtp(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
-  char *login, *pass, buffer[500], buffer2[500];
+  char *login, *pass, buffer[500], buffer2[500], *fooptr, *buf;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -91,7 +89,7 @@ int start_smtp(int s, char *ip, int port, unsigned char options, char *miscptr, 
       //get the one-time BASE64 encoded challenge
       if ((buf = hydra_receive_line(s)) == NULL)
         return 1;
-      if (strstr(buf, "334") == NULL) {
+      if (strstr(buf, "334") == NULL || strlen(buf) < 8) {
         hydra_report(stderr, "[ERROR] SMTP CRAM-MD5 AUTH : %s\n", buf);
         free(buf);
         return 3;
@@ -130,8 +128,9 @@ int start_smtp(int s, char *ip, int port, unsigned char options, char *miscptr, 
       if (verbose)
         hydra_report(stderr, "DEBUG S: %s\n", buffer);
 
-      sasl_digest_md5(buffer2, login, pass, buffer, miscptr, "smtp", NULL, 0, NULL);
-      if (buffer2 == NULL)
+      fooptr = buffer2;
+      sasl_digest_md5(fooptr, login, pass, buffer, miscptr, "smtp", NULL, 0, NULL);
+      if (fooptr == NULL)
         return 3;
 
       if (verbose)
@@ -155,7 +154,7 @@ int start_smtp(int s, char *ip, int port, unsigned char options, char *miscptr, 
       }
       if ((buf = hydra_receive_line(s)) == NULL)
         return 1;
-      if (strstr(buf, "334") == NULL) {
+      if (strstr(buf, "334") == NULL || strlen(buf) < 8) {
         hydra_report(stderr, "[ERROR] SMTP NTLM AUTH : %s\n", buf);
         free(buf);
         return 3;
@@ -215,7 +214,7 @@ int start_smtp(int s, char *ip, int port, unsigned char options, char *miscptr, 
 
 #ifdef LIBOPENSSL
   if (smtp_auth_mechanism == AUTH_DIGESTMD5) {
-    if (strstr(buf, "334") != NULL) {
+    if (strstr(buf, "334") != NULL && strlen(buf) >= 8) {
       memset(buffer2, 0, sizeof(buffer2));
       from64tobits((char *) buffer2, buf + 4);
       if (strstr(buffer2, "rspauth=") != NULL) {
@@ -250,7 +249,7 @@ int start_smtp(int s, char *ip, int port, unsigned char options, char *miscptr, 
 void service_smtp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
   int run = 1, next_run = 1, sock = -1, i = 0;
   int myport = PORT_SMTP, mysslport = PORT_SMTP_SSL, disable_tls = 1;
-
+  char *buf;
   char *buffer1 = "EHLO hydra\r\n";
   char *buffer2 = "HELO hydra\r\n";
 
@@ -271,7 +270,7 @@ void service_smtp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
         if (port != 0)
           mysslport = port;
         sock = hydra_connect_ssl(ip, mysslport);
-        port = myport;
+        port = mysslport;
       }
       if (sock < 0) {
         if (verbose || debug)

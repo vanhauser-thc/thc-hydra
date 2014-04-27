@@ -144,6 +144,7 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
           } else {
             if (errno == EACCES && (getuid() > 0)) {
               fprintf(stderr, "[ERROR] You need to be root to test this service\n");
+              close(s);
               return -1;
             }
           }
@@ -218,6 +219,7 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
  *              hydra_child_exit(1);
  */
       extern_socket = -1;
+      close(s);
       ret = -1;
       return ret;
     }
@@ -230,6 +232,7 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
     if (use_proxy == 2) {
       if ((buf = malloc(4096)) == NULL) {
         fprintf(stderr, "[ERROR] could not malloc()\n");
+        close(s);
         return -1;
       }
       memset(&target, 0, sizeof(target));
@@ -270,10 +273,10 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
             fprintf(stderr, "[ERROR] CONNECT call to proxy failed with code %c%c%c\n", *tmpptr, *(tmpptr + 1), *(tmpptr + 2));
           err = 1;
         }
-        free(buf);
+//        free(buf);
       } else {
         if (hydra_strcasestr(proxy_string_type, "socks5")) {
-          char buf[1024];
+//          char buf[1024];
           size_t cnt, wlen;
 
           /* socks v5 support */
@@ -376,7 +379,7 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
               hydra_report(stderr, "[ERROR] SOCKS4 proxy does not support IPv6\n");
               err = 1;
             } else {
-              char buf[1024];
+//              char buf[1024];
               size_t cnt, wlen;
 
               /* socks v4 support */
@@ -412,12 +415,13 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
           }
         }
       }
+      free(buf);
     }
     if (err) {
       close(s);
       extern_socket = -1;
       ret = -1;
-      free(buf);
+      close(s);
       return ret;
     }
     fail = 0;

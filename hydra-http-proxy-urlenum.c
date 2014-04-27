@@ -134,7 +134,8 @@ int start_http_proxy_urlenum(int s, char *ip, int port, unsigned char options, c
         }
         //recover challenge
         if (buf != NULL) {
-          from64tobits((char *) buf1, pos);
+          if (strlen(buf) >= 4)
+            from64tobits((char *) buf1, pos);
           free(buf);
         }
         //Send response
@@ -165,8 +166,9 @@ int start_http_proxy_urlenum(int s, char *ip, int port, unsigned char options, c
           strncpy(buffer, pbuffer + strlen("Proxy-Authenticate: Digest "), sizeof(buffer));
           buffer[sizeof(buffer) - 1] = '\0';
 
-          sasl_digest_md5(buffer2, login, pass, buffer, miscptr, "proxy", host, 0, header);
-          if (buffer2 == NULL)
+          pbuffer = buffer2;
+          sasl_digest_md5(pbuffer, login, pass, buffer, miscptr, "proxy", host, 0, header);
+          if (pbuffer == NULL)
             return 3;
 
           if (debug)

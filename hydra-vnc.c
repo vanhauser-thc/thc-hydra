@@ -58,7 +58,7 @@ int start_vnc(int s, char *ip, int port, unsigned char options, char *miscptr, F
     int i;
 
     //fprintf(stderr,"number of security types supported: %d\n", buf2[0]);
-    if (buf2[0] == 0) {
+    if (buf2[0] == 0 || buf2[0] > CHALLENGESIZE + 4) {
       hydra_report(stderr, "[ERROR] VNC server connection failed\n");
       hydra_child_exit(0);
     }

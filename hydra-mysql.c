@@ -63,7 +63,7 @@ char *hydra_mysql_receive_line(int socket) {
   j = 1;
   while (hydra_data_ready(socket) > 0 && j > 0) {
     j = internal__hydra_recv(socket, buf, sizeof(buf));
-    if ((buff2 = realloc(buff, i + j)) == NULL) {
+    if (j > 65535 || i + j > 65535 || (buff2 = realloc(buff, i + j)) == NULL) {
       free(buff);
       return NULL;
     } else
@@ -183,6 +183,7 @@ int start_mysql(int sock, char *ip, int port, unsigned char options, char *miscp
     if (verbose)
       hydra_report(stderr, "[VERBOSE] using default db 'mysql'\n");
   }
+  database[sizeof(database)] = 0;
 
   /* read server greeting */
   res = hydra_mysql_init(sock);

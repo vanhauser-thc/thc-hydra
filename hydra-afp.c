@@ -67,7 +67,7 @@ static int server_subconnect(struct afp_url url) {
   //fprintf(stderr,  "Initiating connection attempt.\n");
   if ((server = afp_server_full_connect(NULL, conn_req)) == NULL) {
     FREE(conn_req);
-    FREE(server);
+//    FREE(server);
     return -1;
   }
   //fprintf(stderr,  "Connected to server: %s via UAM: %s\n", server->server_name_printable, uam_bitmap_to_string(server->using_uam));
@@ -80,7 +80,7 @@ static int server_subconnect(struct afp_url url) {
 
 int start_afp(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
-  char *login, *pass;
+  char *login, *pass, mlogin[AFP_MAX_USERNAME_LEN], mpass[AFP_MAX_PASSWORD_LEN];
   struct afp_url tmpurl;
 
   /* Build AFP authentication request */
@@ -97,8 +97,12 @@ int start_afp(int s, char *ip, int port, unsigned char options, char *miscptr, F
 
   strncpy(tmpurl.servername, hydra_address2string(ip), AFP_SERVER_NAME_LEN - 1);
   tmpurl.servername[AFP_SERVER_NAME_LEN] = 0;
-  memcpy(&tmpurl.username, login, AFP_MAX_USERNAME_LEN);
-  memcpy(&tmpurl.password, pass, AFP_MAX_PASSWORD_LEN);
+  strncpy(mlogin, login, AFP_MAX_USERNAME_LEN);
+  mlogin[AFP_MAX_USERNAME_LEN] = 0;
+  strncpy(mpass, pass, AFP_MAX_PASSWORD_LEN);
+  mpass[AFP_MAX_PASSWORD_LEN] = 0;
+  memcpy(&tmpurl.username, mlogin, AFP_MAX_USERNAME_LEN);
+  memcpy(&tmpurl.password, mpass, AFP_MAX_PASSWORD_LEN);
 
   if (server_subconnect(tmpurl) == 0) {
     hydra_report_found_host(port, ip, "afp", fp);

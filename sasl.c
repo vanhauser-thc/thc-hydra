@@ -363,10 +363,12 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
   } while ((pbuffer[0] != '\0') && (pbuffer[0] > 31) && (ind < array_size));
 
   //save the latest one 
-  array[ind] = malloc(currentpos + 1);
-  strncpy(array[ind], buffer + lastpos, currentpos);
-  array[ind][currentpos] = '\0';
-  ind++;
+  if (ind < array_size) {
+    array[ind] = malloc(currentpos + 1);
+    strncpy(array[ind], buffer + lastpos, currentpos);
+    array[ind][currentpos] = '\0';
+    ind++;
+  }
 
   for (i = 0; i < ind; i++) {
     //removing space chars between comma separated value if any
@@ -498,7 +500,7 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
 
   //for MD5-sess
   if (strstr(algo, "5-sess") != NULL) {
-    memset(buffer, 0, sizeof(buffer));
+    buffer[0] = 0;  //memset(buffer, 0, sizeof(buffer)); => buffer is char*!
 
     /* per RFC 2617 Errata ID 1649 */
     if ((strstr(type, "proxy") != NULL) || (strstr(type, "GET") != NULL) || (strstr(type, "HEAD") != NULL)) {
@@ -673,7 +675,7 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
     return;
   }
 
-  if ((salt != NULL) && (strlen(salt) > 2))
+  if ((salt != NULL) && (strlen(salt) > 2) && (strlen(salt) <= sizeof(buffer)))
     //s=ghgIAfLl1+yUy/Xl1WD5Tw== remove the header s=
     strcpy(buffer, salt + 2);
   else {

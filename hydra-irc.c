@@ -25,7 +25,9 @@ int start_oper_irc(int s, char *ip, int port, unsigned char options, char *miscp
   if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
     return 3;
   }
-  ret = hydra_recv(s, buffer, sizeof(buffer));
+  ret = hydra_recv(s, buffer, sizeof(buffer) - 1);
+  if (ret >= 0)
+    buffer[ret] = 0;
   /* :irc.debian.org 381 koma :You are now an IRC Operator */
   /* :irc.debian.org 464 koma :Invalid password */
   if ((ret > 0) && (strstr(buffer, " 381 ") != NULL)) {
@@ -94,7 +96,9 @@ int start_pass_irc(int s, char *ip, int port, unsigned char options, char *miscp
     return 3;
   }
 
-  ret = hydra_recv(s, buffer, sizeof(buffer));
+  ret = hydra_recv(s, buffer, sizeof(buffer) - 1);
+  if (ret >= 0)
+    buffer[ret] = 0;
 #ifdef HAVE_PCRE
   if ((ret > 0) && (!hydra_string_match(buffer, "ERROR\\s.*password"))) {
 #else

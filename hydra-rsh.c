@@ -39,7 +39,9 @@ int start_rsh(int s, char *ip, int port, unsigned char options, char *miscptr, F
   ret = hydra_recv(s, buffer, sizeof(buffer));
   /* 0x00 is sent but hydra_recv transformed it */
   if (strlen(buffer) == 0)
-    ret = hydra_recv(s, buffer, sizeof(buffer));
+    ret = hydra_recv(s, buffer, sizeof(buffer) - 1);
+    if (ret >= 0)
+      buffer[ret] = 0;
 #ifdef HAVE_PCRE
   if (ret > 0 && (!hydra_string_match(buffer, "\\s(failure|incorrect|denied)"))) {
 #else

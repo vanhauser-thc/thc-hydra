@@ -172,7 +172,7 @@ void service_smtp_enum(char *ip, int sp, unsigned char options, char *miscptr, F
         if (port != 0)
           mysslport = port;
         sock = hydra_connect_ssl(ip, mysslport);
-        port = myport;
+        port = mysslport;
       }
       if (sock < 0) {
         hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());

@@ -43,6 +43,7 @@ int start_firebird(int s, char *ip, int port, unsigned char options, char *miscp
     strncpy(database, miscptr, sizeof(database));
   else
     strncpy(database, DEFAULT_DB, sizeof(database));
+  database[sizeof(database) - 1] = 0;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;

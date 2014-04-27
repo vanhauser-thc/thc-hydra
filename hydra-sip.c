@@ -245,7 +245,6 @@ void service_sip(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
 }
 
 char *get_iface_ip(unsigned long int ip) {
-
   int sfd;
 
   sfd = socket(AF_INET, SOCK_DGRAM, 0);

@@ -119,7 +119,7 @@ STLS
 
 int start_pop3(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "\"\"";
-  char *login, *pass, buffer[500], buffer2[500];
+  char *login, *pass, buffer[500], buffer2[500], *fooptr;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -304,8 +304,9 @@ int start_pop3(int s, char *ip, int port, unsigned char options, char *miscptr, 
       if (verbose)
         hydra_report(stderr, "[VERBOSE] S: %s\n", buffer);
 
-      sasl_digest_md5(buffer2, login, pass, buffer, miscptr, "pop", NULL, 0, NULL);
-      if (buffer2 == NULL)
+      fooptr = buffer2;
+      sasl_digest_md5(fooptr, login, pass, buffer, miscptr, "pop", NULL, 0, NULL);
+      if (fooptr == NULL)
         return 3;
 
       if (verbose)
@@ -342,7 +343,7 @@ int start_pop3(int s, char *ip, int port, unsigned char options, char *miscptr, 
       sprintf(buffer, "%s\r\n", buf1);
       if (hydra_send(s, buffer, strlen(buffer), 0) < 0)
         return 1;
-      if ((buf = hydra_receive_line(s)) == NULL)
+      if ((buf = hydra_receive_line(s)) == NULL || strlen(buf) < 6)
         return 4;
 
       //recover challenge

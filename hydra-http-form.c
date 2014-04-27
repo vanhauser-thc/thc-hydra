@@ -382,7 +382,8 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         if ((endloc = strchr(startloc, '\n')) != NULL) {
           startloc[endloc - startloc] = 0;
         }
-        strcpy(str, startloc);
+        strncpy(str, startloc, sizeof(str));
+        str[sizeof(str) - 1] = 0;
 
         endloc = strchr(str, '/');
         if (endloc != NULL) {
@@ -399,6 +400,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         }
       } else {
         strncpy(str2, webtarget, sizeof(str2));
+        str2[sizeof(str2)] = 0;
         if (redirected_url_buff[0] != '/') {
           //it's a relative path, so we have to concatenate it
           //with the path from the first url given

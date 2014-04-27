@@ -10,7 +10,7 @@ int start_http_proxy(int s, char *ip, int port, unsigned char options, char *mis
   char *login, *pass, buffer[500], buffer2[500];
   char url[210], host[30];
   char *header = "";            /* XXX TODO */
-  char *ptr;
+  char *ptr, *fooptr;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -118,7 +118,7 @@ int start_http_proxy(int s, char *ip, int port, unsigned char options, char *mis
         }
       }
       //recover challenge
-      if (buf != NULL) {
+      if (buf != NULL && strlen(buf) >= 4) {
         from64tobits((char *) buf1, pos);
         free(buf);
       }
@@ -149,9 +149,11 @@ int start_http_proxy(int s, char *ip, int port, unsigned char options, char *mis
         pbuffer = hydra_strcasestr(buf, "Proxy-Authenticate: Digest ");
         strncpy(buffer, pbuffer + strlen("Proxy-Authenticate: Digest "), sizeof(buffer));
         buffer[sizeof(buffer) - 1] = '\0';
+        pbuffer = NULL;
 
-        sasl_digest_md5(buffer2, login, pass, buffer, miscptr, "proxy", host, 0, header);
-        if (buffer2 == NULL)
+        fooptr = buffer2;
+        sasl_digest_md5(fooptr, login, pass, buffer, miscptr, "proxy", host, 0, header);
+        if (fooptr == NULL)
           return 3;
 
         if (debug)

@@ -1,4 +1,3 @@
-
 /* $Id$
    Single file NTLM system to create and parse authentication messages.
 
@@ -1244,7 +1243,7 @@ void buildAuthRequest(tSmbNtlmAuthRequest * request, long flags, char *host, cha
   free(h);
 }
 
-void buildAuthResponse(tSmbNtlmAuthChallenge * challenge, tSmbNtlmAuthResponse * response, long flags, char *user, char *password, char *domainname, char *host) {
+void buildAuthResponse(tSmbNtlmAuthChallenge *challenge, tSmbNtlmAuthResponse * response, long flags, char *user, char *password, char *domainname, char *host) {
   uint8 lmRespData[24];
   uint8 ntRespData[24];
   char *u = strdup(user);
@@ -1288,6 +1287,8 @@ void buildAuthResponse(tSmbNtlmAuthChallenge * challenge, tSmbNtlmAuthResponse *
     challenge->flags = flags;   /* Overide flags! */
   response->flags = challenge->flags;
 
+  if (w)
+    free(w);
   if (d)
     free(d);
   if (u)

@@ -101,7 +101,13 @@ void password_to_key_md5(u_char * password,     /* IN */
                          u_char * key) {        /* OUT - pointer to caller 16-octet buffer */
   MD5_CTX MD;
   u_char *cp, password_buf[80], *mypass = password, bpass[17];
-  u_long password_index = 0, count = 0, i, mylen = passwordlen, myelen = engineLength;
+  u_long password_index = 0, count = 0, i, mylen, myelen = engineLength;
+
+  if (strlen(password) > passwordlen)
+    passwordlen = strlen(password);
+  if (passwordlen > sizeof(bpass) - 1)
+    passwordlen = sizeof(bpass) - 1;
+  mylen = passwordlen;
 
   if (mylen < 8) {
     memset(bpass, 0, sizeof(bpass));
@@ -191,7 +197,7 @@ void password_to_key_sha(u_char * password,     /* IN */
 #endif
 
 int start_snmp(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
-  char *empty = "\"\"", *ptr, *login, *pass, buffer[1024], buf[1024], hash[64], key[256], salt[8];
+  char *empty = "\"\"", *ptr, *login, *pass, buffer[1024], buf[1024], hash[64], key[256] = "", salt[8] = "";
   int i, j, k, size, off = 0, off2 = 0, done = 0;
   unsigned char initVect[8], privacy_params[8];
   int engine_boots = 0;
@@ -523,16 +529,18 @@ void service_snmp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
       hydra_send(sock, snmpv3_init, sizeof(snmpv3_init), 0);
       if (hydra_data_ready_timed(sock, 5, 0) > 0) {
         if ((i = hydra_recv(sock, (char *) snmpv3buf, sizeof(snmpv3buf))) > 30) {
-          if (snmpv3buf[4] == 3 && snmpv3buf[5] == 0x30); {
+          if (snmpv3buf[4] == 3 && snmpv3buf[5] == 0x30) {
             snmpv3info = snmpv3buf + 7 + snmpv3buf[6];
             snmpv3infolen = snmpv3info[3] + 4;
-            while (snmpv3info[snmpv3infolen - 2] == 4 && snmpv3info[snmpv3infolen - 1] == 0)
-              snmpv3infolen -= 2;
-            if (debug)
-              hydra_dump_asciihex(snmpv3info, snmpv3infolen);
-            if (snmpv3info[10] == 3 && child_head_no == 0)
-              printf("[INFO] Remote device MAC address is %02x:%02x:%02x:%02x:%02x:%02x\n", (unsigned char) snmpv3info[12], (unsigned char) snmpv3info[13],
-                     (unsigned char) snmpv3info[14], (unsigned char) snmpv3info[15], (unsigned char) snmpv3info[16], (unsigned char) snmpv3info[12]);
+            if (snmpv3info + snmpv3infolen <= snmpv3buf + sizeof(snmpv3buf)) {
+              while (snmpv3info[snmpv3infolen - 2] == 4 && snmpv3info[snmpv3infolen - 1] == 0 && snmpv3infolen > 1)
+                snmpv3infolen -= 2;
+              if (debug)
+                hydra_dump_asciihex(snmpv3info, snmpv3infolen);
+              if (snmpv3info[10] == 3 && child_head_no == 0)
+                printf("[INFO] Remote device MAC address is %02x:%02x:%02x:%02x:%02x:%02x\n", (unsigned char) snmpv3info[12], (unsigned char) snmpv3info[13],
+                       (unsigned char) snmpv3info[14], (unsigned char) snmpv3info[15], (unsigned char) snmpv3info[16], (unsigned char) snmpv3info[12]);
+            }
           }
         }
       }

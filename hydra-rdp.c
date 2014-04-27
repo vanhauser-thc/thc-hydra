@@ -2424,7 +2424,8 @@ int start_rdp(int s, char *ip, int port, unsigned char options, char *miscptr, F
   strcpy(server, hydra_address2string(ip));
 
   if ((miscptr != NULL) && (strlen(miscptr) > 0)) {
-    strncpy(domain, miscptr, sizeof(domain));
+    strncpy(domain, miscptr, sizeof(domain) - 1);
+    domain[sizeof(domain) - 1] = 0;
   }
 
   if (!rdp_connect(server, flags, domain, login, pass, shell, directory, g_redirect))

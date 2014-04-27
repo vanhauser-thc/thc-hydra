@@ -2,7 +2,6 @@
 #include "sasl.h"
 
 extern char *HYDRA_EXIT;
-char *buf = NULL;
 char *webtarget = NULL;
 char *slash = "/";
 int webport, freemischttp = 0;
@@ -13,7 +12,7 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
   char *empty = "";
   char *login, *pass, buffer[500], buffer2[500];
   char *header = "";            /* XXX TODO */
-  char *ptr;
+  char *ptr, *fooptr, *buf;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -52,8 +51,9 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
       strncpy(buffer, pbuffer + strlen("WWW-Authenticate: Digest "), sizeof(buffer));
       buffer[sizeof(buffer) - 1] = '\0';
 
-      sasl_digest_md5(buffer2, login, pass, buffer, miscptr, type, webtarget, webport, header);
-      if (buffer2 == NULL) {
+      fooptr = buffer2;
+      sasl_digest_md5(fooptr, login, pass, buffer, miscptr, type, webtarget, webport, header);
+      if (fooptr == NULL) {
         return 3;
       }
 

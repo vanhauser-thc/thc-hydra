@@ -87,7 +87,7 @@ void service_vmauthd(char *ip, int sp, unsigned char options, char *miscptr, FIL
         if (port != 0)
           mysslport = port;
         sock = hydra_connect_ssl(ip, mysslport);
-        port = myport;
+        port = mysslport;
       }
 
       if (sock < 0) {

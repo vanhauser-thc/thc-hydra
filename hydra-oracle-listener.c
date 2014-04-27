@@ -38,12 +38,12 @@ int initial_permutation(unsigned char **result, char *p_str, int *sz) {
   }
   *sz = 2 * i;
 
-  if ((buff = malloc(i)) == NULL) {
+  if ((buff = malloc(i + 4)) == NULL) {
     hydra_report(stderr, "[ERROR] Can't allocate memory\n");
     return 1;
   }
-  memset(buff, 0, i);
-  strncpy(buff, p_str, strlen(p_str));
+  memset(buff, 0, i + 4);
+  strcpy(buff, p_str);
 
   //swap the order of every byte pair
   for (k = 0; k < i; k += 2) {
@@ -158,15 +158,18 @@ int ora_hash_password(char *pass) {
 
   if (convert_byteorder(&result, siz)) {
     hydra_report(stderr, "[ERROR] ora_hash_password: in convert_byteorder\n");
+    free(result);
     return 1;
   }
   if (ora_descrypt(&desresult, result, siz)) {
     hydra_report(stderr, "[ERROR] ora_hash_password: in DES crypt\n");
+    free(result);
     return 1;
   }
   free(result);
   if (ora_hash(&result, desresult, siz)) {
     hydra_report(stderr, "[ERROR] ora_hash_password: in extracting Oracle hash\n");
+    free(desresult);
     return 1;
   }
 

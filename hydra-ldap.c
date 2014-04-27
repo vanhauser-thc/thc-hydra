@@ -9,7 +9,7 @@ int tls_required = 0;
 
 int start_ldap(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char version, int auth_method) {
   char *empty = "";
-  char *login = "", *pass;
+  char *login = "", *pass, *fooptr = "";
   unsigned char buffer[512];
   int length = 0;
   int ldap_auth_mechanism = auth_method;
@@ -27,6 +27,8 @@ int start_ldap(int s, char *ip, int port, unsigned char options, char *miscptr, 
     if (strlen(login = hydra_get_next_login()) == 0)
       login = empty;
   }
+  if (miscptr == NULL)
+    miscptr = fooptr;
 
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
@@ -120,8 +122,9 @@ int start_ldap(int s, char *ip, int port, unsigned char options, char *miscptr, 
     char buf2[32];
 
     ptr = strstr((char *) buf, "<");
-    sasl_cram_md5(buf2, pass, ptr);
-    if (buf2 == NULL)
+    fooptr = buf2;
+    sasl_cram_md5(fooptr, pass, ptr);
+    if (fooptr == NULL)
       return 1;
     counter++;
     if (strstr(miscptr, "^USER^") != NULL) {
@@ -176,8 +179,9 @@ int start_ldap(int s, char *ip, int port, unsigned char options, char *miscptr, 
         miscptr = hydra_strrep(miscptr, "^USER^", login);
       }
 
-      sasl_digest_md5(buffer2, login, pass, ptr, miscptr, "ldap", NULL, 0, NULL);
-      if (buffer2 == NULL) {
+      fooptr = buffer2;
+      sasl_digest_md5(fooptr, login, pass, ptr, miscptr, "ldap", NULL, 0, NULL);
+      if (fooptr == NULL) {
         free(buf);
         return 3;
       }

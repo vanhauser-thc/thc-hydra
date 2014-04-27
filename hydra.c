@@ -155,7 +155,7 @@ char *SERVICES = "asterisk afp cisco cisco-enable cvs firebird ftp ftps http[s]-
 #define RESTOREFILE "./hydra.restore"
 
 #define PROGRAM   "Hydra"
-#define VERSION   "v7.7"
+#define VERSION   "v8.0"
 #define AUTHOR    "van Hauser/THC"
 #define EMAIL     "<vh@thc.org>"
 #define AUTHOR2   "David Maciejak"
@@ -867,6 +867,8 @@ void hydra_restore_read() {
         hydra_targets[j]->redo_pass[i] = malloc(strlen(out) + 1);
         strcpy(hydra_targets[j]->redo_pass[i], out);
       }
+    if (hydra_targets[j]->skipcnt >= hydra_brains.countlogin)
+      hydra_targets[j]->skipcnt = 0;
     if (hydra_targets[j]->skipcnt > 0)
       for (i = 0; i < hydra_targets[j]->skipcnt; i++) {
         sck = fgets(out, sizeof(out), f);
@@ -879,7 +881,7 @@ void hydra_restore_read() {
     hydra_targets[j]->use_count = 0;
     hydra_targets[j]->failed = 0;
   }
-  hydra_heads = malloc(hydra_options.max_use * sizeof(hydra_heads));
+  hydra_heads = malloc((hydra_options.max_use + 2 ) * sizeof(int) + 8);
   for (j = 0; j < hydra_options.max_use; j++) {
     hydra_heads[j] = malloc(sizeof(hydra_head));
     fck = (int) fread(hydra_heads[j], sizeof(hydra_head), 1, f);
@@ -982,7 +984,7 @@ unsigned long int countlines(FILE * fp, int colonmode) {
   }
   rewind(fp);
   free(buf);
-  fstat(fileno(fp), &st);
+  (void)fstat(fileno(fp), &st);
   size_of_data = st.st_size + 1;
   return lines;
 }
@@ -1356,7 +1358,7 @@ int hydra_spawn_head(int head_no, int target_no) {
       child_head_no = -1;
       if (hydra_heads[head_no]->pid > 0) {
         fck = write(hydra_heads[head_no]->sp[1], "n", 1);       // yes, a small "n" - this way we can distinguish later if the client successfully tested a pair and is requesting a new one or the mother did that 
-        fcntl(hydra_heads[head_no]->sp[0], F_SETFL, O_NONBLOCK);
+        (void)fcntl(hydra_heads[head_no]->sp[0], F_SETFL, O_NONBLOCK);
         if (hydra_heads[head_no]->redo != 1)
           hydra_heads[head_no]->target_no = target_no;
         hydra_heads[head_no]->active = 1;
@@ -1597,14 +1599,20 @@ int hydra_send_next_pair(int target_no, int head_no) {
   snp_is_redo = 0;
   snpdont = 0;
   loop_cnt++;
-  if (hydra_targets[target_no]->sent >= hydra_brains.todo + hydra_targets[target_no]->redo) {
-    if (hydra_targets[target_no]->done == 0) {
-      hydra_targets[target_no]->done = 1;
-      hydra_brains.finished++;
-      if (verbose)
-        printf("[STATUS] attack finished for %s (waiting for children to complete tests)\n", hydra_targets[target_no]->target);
+  if (hydra_heads[head_no]->redo && hydra_heads[head_no]->current_login_ptr != NULL && hydra_heads[head_no]->current_pass_ptr != NULL) {
+    hydra_heads[head_no]->redo = 0;
+    snp_is_redo = 1;
+    snpdone = 1;
+  } else {
+    if (hydra_targets[target_no]->sent >= hydra_brains.todo + hydra_targets[target_no]->redo) {
+      if (hydra_targets[target_no]->done == 0) {
+        hydra_targets[target_no]->done = 1;
+        hydra_brains.finished++;
+        if (verbose)
+          printf("[STATUS] attack finished for %s (waiting for children to complete tests)\n", hydra_targets[target_no]->target);
+      }
+      return -1;
     }
-    return -1;
   }
   if (loop_cnt > (hydra_brains.countlogin * 2) + 1 && loop_cnt > (hydra_brains.countpass * 2) + 1) {
     if (debug)
@@ -2605,7 +2613,7 @@ int main(int argc, char *argv[]) {
     }
     if (strcmp(hydra_options.service, "ssh") == 0 || strcmp(hydra_options.service, "sshkey") == 0) {
       if (hydra_options.tasks > 8)
-        fprintf(stderr, "[WARNING] Many SSH configurations limit the number of parallel tasks, it is recommended to reduce the tasks: use -t 4 or -t 8\n");
+        fprintf(stderr, "[WARNING] Many SSH configurations limit the number of parallel tasks, it is recommended to reduce the tasks: use -t 4\n");
 #ifdef LIBSSH
       i = 1;
 #else
@@ -2945,6 +2953,9 @@ int main(int argc, char *argv[]) {
       exit(-1);
     }
 
+    if (hydra_options.ssl == 1 && strncmp(hydra_options.service, "http-", 5 == 0) && hydra_options.port == 443)
+       fprintf(stderr, "[WARNING] you specified port 443 for attacking a http service, however did not specify the -S ssl switch nor used https-..., therefore using plain HTTP\n");
+
     if (hydra_options.loop_mode && hydra_options.colonfile != NULL)
       bail("The  loop mode option (-u) works with all modes - except colon files (-C)\n");
     if (strncmp(hydra_options.service, "http-", strlen("http-")) != 0 && strcmp(hydra_options.service, "http-head") != 0 && getenv("HYDRA_PROXY_HTTP") != NULL)
@@ -3118,7 +3129,7 @@ int main(int argc, char *argv[]) {
       hydra_brains.targets = countservers = countinfile = countlines(ifp, 0);
       if (countinfile == 0)
         bail("File for IP addresses is empty!");
-      hydra_targets = malloc(sizeof(hydra_targets) * (countservers + 1) + 8);
+      hydra_targets = malloc(sizeof(hydra_targets) * (countservers + 2) + 8);
       if (hydra_targets == NULL)
         bail("Could not allocate enough memory for target data");
       sizeinfile = size_of_data;
@@ -3146,7 +3157,7 @@ int main(int argc, char *argv[]) {
       }
     } else {
       countservers = hydra_brains.targets = 1;
-      hydra_targets = malloc(sizeof(hydra_targets));
+      hydra_targets = malloc(sizeof(int) * 4);
       hydra_targets[0] = malloc(sizeof(hydra_target));
       memset(hydra_targets[0], 0, sizeof(hydra_target));
       hydra_targets[0]->target = servers_ptr = hydra_options.server;
@@ -3183,7 +3194,8 @@ int main(int argc, char *argv[]) {
 
       if (dslash) {
         proxy_string[dslash - proxy_string] = 0;
-        strncpy(proxy_string_type, proxy_string, sizeof(proxy_string_type));
+        strncpy(proxy_string_type, proxy_string, sizeof(proxy_string_type) - 1);
+        proxy_string_type[sizeof(proxy_string_type) - 1] = 0;
       }
 
       proxy_string = dslash;
@@ -3622,7 +3634,7 @@ int main(int argc, char *argv[]) {
              hydra_brains.sent, // tries 
              (long unsigned int) ((elapsed_status - starttime) / 3600), // hours 
              (long unsigned int) (((elapsed_status - starttime) % 3600) / 60),  // minutes 
-             hydra_brains.todo_all - hydra_brains.sent < 0 ? 1 : hydra_brains.todo_all - hydra_brains.sent,     // left todo 
+             hydra_brains.todo_all - hydra_brains.sent <= 0 ? 1 : hydra_brains.todo_all - hydra_brains.sent,     // left todo 
              (long unsigned int) (((double) hydra_brains.todo_all - hydra_brains.sent) / ((double) hydra_brains.sent / (elapsed_status - starttime))
              ) / 3600,          // hours 
              (((long unsigned int) (((double) hydra_brains.todo_all - hydra_brains.sent) / ((double) hydra_brains.sent / (elapsed_status - starttime))
