@@ -5,7 +5,7 @@
 #endif
 
 extern char *HYDRA_EXIT;
-char *buf;
+char *buf = NULL;
 
 int start_cisco(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
@@ -25,6 +25,8 @@ int start_cisco(int s, char *ip, int port, unsigned char options, char *miscptr,
   }
   sleep(1);
   do {
+    if (buf != NULL)
+      free(buf);
     if ((buf = hydra_receive_line(s)) == NULL)
       return 3;
     if (buf[strlen(buf) - 1] == '\n')

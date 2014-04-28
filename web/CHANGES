@@ -1,21 +1,6 @@
 Changelog for hydra
 -------------------
 
-Release 8.0
-* Added module for redis (submitted by Alejandro Ramos, thanks!)
-* Added patch which adds Unicode support for the SMB module (thanks to Max Kosmach)
-* Added initial interactive password authentication test for ssh (thanks to Joshua Houghton for submitting)
-* Bugfixes for -x option:
-  - password tries were lost when connection errors happened (thanks to Vineet Kumar for reporting)
-  - fixed crash when used together with -e option 
-* Fixed a bug that hydra would not compile without libssh (introduced in v7.6)
-* Cygwin's Postgresql is working again, hence configure detection re-enabled
-* Added gcc compilation security options (if detected to be supported by configure script)
-* Enhancements to the secure compilation options
-* Checked code with cppcheck and fixed some minor issues. surprised it were so few and unlikely stuff :-)
-* Checked code with Coverity. Fixed a lot of small and medium issues.
-
-
 Release 7.6
 * Added a wizard script for hydra based on a script by Shivang Desai <shivang.ice.2010@gmail.com>
 * Added module for Siemens S7-300 (submitted by Alexander Timorin and Sergey Gordeychik, thanks!)

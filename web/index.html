@@ -1,0 +1,195 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+<meta name="keywords" content="Network Login Authentication Password Cracker Bruteforce THC Hydra">
+<title>THC-HYDRA - fast and flexible network login hacker</title></head>
+<body bgcolor="#ffffff">
+<pre>
+<table border="0">
+<tbody>
+<tr>
+<td>
+<img src="xhydra.png" width=300 height=300>
+</td>
+<td>
+<pre>
+<h2> THC-Hydra</h2>
+<h4>
+ A very fast network logon cracker which support many different services.
+ See feature sets and services coverage <a href="network_password_cracker_comparison.html">page</a> - incl. a speed comparison against ncrack and medusa<br>
+</h4><h3>
+ Current Version: 7.6
+ Last update 2014-02-xx
+</h3>
+</pre>
+</td>
+</tr>
+</table>
+</pre><pre>
+
+ [0x00] News and Changelog
+
+<b>        Check out the feature sets and services coverage <a href="network_password_cracker_comparison.html">page</a> - including a speed comparison against ncrack and medusa (yes, we win :-) )
+
+        Read below for Linux compilation notes.
+        And there is a new section below for online tutorials.
+</b>        
+
+        CHANGELOG for 7.6
+        ===================
+        * Added a wizard script for hydra based on a script by Shivang Desai <shivang.ice.2010@gmail.com>
+        * Added module for Siemens S7-300 (submitted by Alexander Timorin and Sergey Gordeychik, thanks!)
+        * HTTP HEAD/GET: MD5 digest auth was not working, fixed (thanks to Paul Kenyon)
+        * SMTP Enum: HELO is now always sent, better 500 error detection
+        * hydra main:
+           - fixed a bug in the IPv6 address parsing when a port was supplied
+           - added info message for pop3, imap and smtp protocol usage
+        * hydra GTK: missed some services, added
+        * dpl4hydra.sh:
+           - added Siemens S7-300 common passwords to default password list
+           - more broad searching in the list
+        * Performed code indention on all C files :-)
+        * Makefile patch to ensure .../etc directory is there (thanks to vonnyfly)
+
+	You can also take a look at the full <a href="CHANGES">CHANGES</a> file
+
+
+ [0x01] Introduction
+
+	Welcome to the mini website of the THC Hydra project.
+
+	Number one of the biggest security holes are passwords, as every password security study shows.
+	Hydra is a parallized login cracker which supports numerous protocols to attack. New modules
+	are easy to add, beside that, it is flexible and very fast.
+
+        Hydra was tested to compile on Linux, Windows/Cygwin, Solaris 11, FreeBSD 8.1 and OSX, and
+        is made available under GPLv3 with a special OpenSSL license expansion.
+
+	Currently this tool supports:
+	  Asterisk, AFP, Cisco AAA, Cisco auth, Cisco enable, CVS, Firebird, FTP, HTTP-FORM-GET, HTTP-FORM-POST,
+	  HTTP-GET, HTTP-HEAD, HTTP-PROXY, HTTPS-FORM-GET, HTTPS-FORM-POST, HTTPS-GET, HTTPS-HEAD,
+	  HTTP-Proxy, ICQ, IMAP, IRC, LDAP, MS-SQL, MYSQL, NCP, NNTP, Oracle Listener, Oracle SID, Oracle,
+	  PC-Anywhere, PCNFS, POP3, POSTGRES, RDP, Rexec, Rlogin, Rsh, S7-300, SAP/R3, SIP, SMB, SMTP, SMTP Enum,
+	  SNMP, SOCKS5, SSH (v1 and v2), Subversion, Teamspeak (TS2), Telnet, VMware-Auth, VNC and XMPP.
+
+        For HTTP, POP3, IMAP and SMTP, several login mechanisms like plain and MD5 digest etc. are supported.
+
+	This tool is a proof of concept code, to give researchers and security consultants the 
+	possiblity to show how easy it would be to gain unauthorized access from remote to a system.
+
+        The program is maintained by van Hauser and David Maciejak.
+
+
+ [0x02] Documentation 
+ 
+	Hydra comes with a rather long <a href="README">README file</a> that describes the
+	details about the usage and special options.
+	
+	But sometimes detailed online help can vastly improve your efficency.
+	The following links on the global internet are a recommended read.
+	
+          General usage and options: <a target="_blank" href="http://www.aldeid.com/wiki/Thc-hydra">http://www.aldeid.com/wiki/Thc-hydra</a>
+                                     <a target="_blank" href="http://resources.infosecinstitute.com/online-dictionary-attack-with-hydra/">http://resources.infosecinstitute.com/online-dictionary-attack-with-hydra/</a>
+
+          HTTP basic auth: <a target="_blank" href="https://www.owasp.org/index.php/Testing_for_Brute_Force_%28OWASP-AT-004%29">https://www.owasp.org/index.php/Testing_for_Brute_Force_%28OWASP-AT-004%29</a>
+                           <a target="_blank" href="http://www.sillychicken.co.nz/Security/how-to-brute-force-your-router-in-windows.html">http://www.sillychicken.co.nz/Security/how-to-brute-force-your-router-in-windows.html</a>
+
+          HTTP form based auth: <a target="_blank" href="http://www.art0.org/security/performing-a-dictionary-attack-on-an-http-login-form-using-hydra">http://www.art0.org/security/performing-a-dictionary-attack-on-an-http-login-form-using-hydra</a>
+                                <a target="_blank" href="http://insidetrust.blogspot.com/2011/08/using-hydra-to-dictionary-attack-web.html">http://insidetrust.blogspot.com/2011/08/using-hydra-to-dictionary-attack-web.html</a>
+                                <a target="_blank" href="http://www.sillychicken.co.nz/Security/how-to-brute-force-http-forms-in-windows.html">http://www.sillychicken.co.nz/Security/how-to-brute-force-http-forms-in-windows.html</a>
+                                <a target="_blank" href="https://www.owasp.org/index.php/Testing_for_Brute_Force_%28OWASP-AT-004%29">https://www.owasp.org/index.php/Testing_for_Brute_Force_%28OWASP-AT-004%29</a>
+
+          Multiple protocols: <a target="_blank" href="http://wiki.bywire.org/Hydra">http://wiki.bywire.org/Hydra</a>
+                              <a target="_blank" href="http://www.attackvector.org/brute-force-with-thc-hydra/">http://www.attackvector.org/brute-force-with-thc-hydra/</a>
+                              <a target="_blank" href="http://www.madirish.net/content/hydra-brute-force-utility">http://www.madirish.net/content/hydra-brute-force-utility</a>
+          
+          Telnet: <a target="_blank" href="http://www.theprohack.com/2009/04/basics-of-cracking-ftp-and-telnet.html">http://www.theprohack.com/2009/04/basics-of-cracking-ftp-and-telnet.html</a>
+                  <a target="_blank" href="http://www.adeptus-mechanicus.com/codex/bflog/bflog.html">http://www.adeptus-mechanicus.com/codex/bflog/bflog.html</a>
+	
+        For those people testing with <a href="http://www.dvwa.co.uk/">DVWA</a>, this is what you want:
+          hydra -l admin -p password  <TARGET> http-get-form "/dvwa/login.php:username=^USER^&password=^PASS^&submit=Login:Login failed"
+
+	If you find other good ones, just email them in ( vh(at)thc(dot)org ).
+
+
+ [0x03] Compilation Help
+
+        Hydry compiles fine on all platforms that have gcc - Linux, all BSD, Mac OS/X, Cygwin on Windows, Solaris, etc.
+        It should even compile on historical SunOS, Ultrix etc. platforms :-)
+        
+        There are many optional modules for network protocols like SSH, SVN etc. that require libraries.
+        If they are not found, these optional libraries will not be supported in your binary.
+        
+        If you are on Linux, the following commands install all necessary libraries:
+ 
+        Ubuntu/Debian:  apt-get install libssl-dev libssh-dev libidn11-dev libpcre3-dev libgtk2.0-dev libmysqlclient-dev libpq-dev libsvn-dev firebird2.1-dev libncp-dev libncurses5-dev
+        Redhat/Fedora:  yum install openssl-devel pcre-devel ncpfs-devel postgresql-devel libssh-devel subversion-devel libncurses-devel
+        OpenSuSE:       zypper install libopenssl-devel pcre-devel libidn-devel ncpfs-devel libssh-devel postgresql-devel subversion-devel libncurses-devel
+        
+        This enables all optional modules and features with the exception of Oracle, SAP R/3 and the
+        Apple filing protocol - which you will need to download and install from the vendor's web sites.
+        For Oracle this is (install the basic and SDK packages): <a href="http://www.oracle.com/technetwork/database/features/instant-client/index.html">http://www.oracle.com/technetwork/database/features/instant-client/index.html</a>
+
+        For all other Linux derivates and BSD based systems, use the system software installer and look for
+        similar named libraries like in the command above.
+        In all other cases you have to download all source libraries and compile them manually; 
+        the configure script output tells you what is missing and where to get it from.
+        
+
+ [0x04] Disclaimer
+
+	1. This tool is for legal purposes only!
+	2. The Affero General Public License Version 3 (AGPLv3) applies to this code.
+	3. A special license expansion for OpenSSL is included which is required for the Debian people
+
+
+ [0x05] Development &amp; Contributions
+
+	Your contributions are more than welcomed!
+	
+	If you find bugs, coded enhancements or wrote a new attack module for a service,
+	please send them to vh (at) thc (dot) org
+
+	Interesting attack modules would be:
+	OSPF, BGP, PIM, PPTP, ...
+	(or anything else you might be able to do (and is not there yet))
+
+ 
+ [0x06] Screenshots
+
+	<a href="hydra_target.jpg"><img src="hydra_target.jpg"></a>
+	(1) Target selection
+
+	<a href="hydra_pass.jpg"><img src="hydra_pass.jpg"></a>
+	(2) Login/Password setup
+
+	<a href="hydra_start.jpg"><img src="hydra_start.jpg"></a>
+	(3) Hydra start and output
+
+
+ [0x07] The Art of Downloading: Source and Binaries
+ 
+	1. The source code of state-of-the-art Hydra: <a href="http://www.thc.org/releases/hydra-7.6.tar.gz">hydra-7.6.tar.gz</a>
+	   (compiles on all UNIX based platforms - even MacOS X, Cygwin on Windows, ARM-Linux, Android, etc.)
+
+	2. The source code of an old, deprecated version of Hydra <b>ONLY in case v7.x gives you problems</b> on unusual and old platforms:
+	   <a href="http://www.thc.org/releases/hydra-5.9.1-src.tar.gz">hydra-5.9.1-src.tar.gz</a>
+
+	3. The Win32/Cywin binary release: --- not anymore ---
+	   Install cygwin from <a href="http://www.cygwin.com/">http://www.cygwin.com</a>
+	   and compile it yourself. If you do not have cygwin installed - how
+	   do you think you will do proper securiy testing? duh ...
+
+        4. ARM and Palm binaries here are old and not longer maintained:
+	     ARM:  <a href="http://www.thc.org/thc-hydra/hydra-5.0-arm.tar.gz">hydra-5.0-arm.tar.gz</a>
+             Palm: <a href="http://www.thc.org/thc-hydra/hydra-4.6-palm.zip">hydra-4.6-palm.zip</a>
+
+
+ Comments and suggestions are welcome.
+
+ Yours sincerly,
+
+ van Hauser
+ The Hackers Choice
+ http://www.thc.org/thc-hydra
+
+</pre>
+</body></html>

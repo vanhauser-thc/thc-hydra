@@ -80,6 +80,7 @@ int start_http_proxy_urlenum(int s, char *ip, int port, unsigned char options, c
         hydra_report(stderr, "C:%s\n", buffer);
       if (hydra_send(s, buffer, strlen(buffer), 0) < 0)
         return 1;
+      free(buf);
       buf = hydra_receive_line(s);
       while (buf != NULL && strstr(buf, "HTTP/1.") == NULL) {
         free(buf);

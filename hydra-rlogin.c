@@ -39,7 +39,8 @@ int start_rlogin(int s, char *ip, int port, unsigned char options, char *miscptr
     return 4;
   }
   buffer[0] = 0;
-  ret = hydra_recv(s, buffer, sizeof(buffer) - 1);
+  if ((ret = hydra_recv(s, buffer, sizeof(buffer) - 1)) >= 0)
+    buffer[ret] = 0;
   /* 0x00 is sent but hydra_recv transformed it */
   if (strlen(buffer) == 0) {
     ret = hydra_recv(s, buffer, sizeof(buffer) - 1);

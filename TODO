@@ -1,0 +1,36 @@
+Restore Session/s with use This -M command
+
+Prio 1:
+* hydra-oracle support service names (often SIDs do not work anymore)
+* hydra-smb more than 1 connection?
+* add help hints?
+* test teamspeak, icq
+* check all modules to ensure no check is lost because of a timeout, buf == NULL etc.
+* optimize smtp module
+* optimize ssl performance
+* add snmpv3 privacy support
+* http: option to specify an url for testing if the login was right or wrong
+* add missing services to xhydra, e.g. sshkey and s7-300
+
+
+Prio 2:
+* support different ports in the -M input file for each target
+* add support for IPv6 Link Local Addresses like fe80::1%eth0 for Solaris and *BSD
+* add crack info when key is pressed
+* hydra-smb support NTLMv2 (when its fixed)
+* support for 802.1x EAP via libpcap
+* TN3270, and TN3270 user enumeration
+* CIDR support -> hydra -l admin -p test 192.168.0.0/24 smb
+
+
+Prio 3:
+* Specify user-agent for http-form module as extra optional option
+* ipv6 support for sip
+* add RIP, OSPF, BGP, PIM
+* add diameter support
+* round robin proxy support ?
+* clean main dir
+* add support for hybrid pass crack
+* add tn5250 support
+* Add Sybase support, using freetds lib (can be used for ms-sql)
+* Add Informix ?

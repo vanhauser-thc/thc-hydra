@@ -34,7 +34,7 @@ ssize_t read_safe(int fd, void *buffer, size_t len) {
   struct timeval tv;
   int ret = 0;
 
-  fcntl(fd, F_SETFL, O_NONBLOCK);
+  (void)fcntl(fd, F_SETFL, O_NONBLOCK);
   do {
     FD_ZERO(&fr);
     FD_SET(fd, &fr);
