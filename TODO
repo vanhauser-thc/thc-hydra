@@ -1,7 +1,6 @@
-Restore Session/s with use This -M command
 
 Prio 1:
-* hydra-oracle support service names (often SIDs do not work anymore)
+* support -R with -M option
 * hydra-smb more than 1 connection?
 * add help hints?
 * test teamspeak, icq
@@ -10,7 +9,7 @@ Prio 1:
 * optimize ssl performance
 * add snmpv3 privacy support
 * http: option to specify an url for testing if the login was right or wrong
-* add missing services to xhydra, e.g. sshkey and s7-300
+* does hydra-oracle work with service names? (often SIDs do not work anymore)
 
 
 Prio 2:
@@ -29,8 +28,6 @@ Prio 3:
 * add RIP, OSPF, BGP, PIM
 * add diameter support
 * round robin proxy support ?
-* clean main dir
-* add support for hybrid pass crack
 * add tn5250 support
 * Add Sybase support, using freetds lib (can be used for ms-sql)
 * Add Informix ?
