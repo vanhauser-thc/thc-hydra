@@ -977,8 +977,10 @@ unsigned long SMBSessionSetup(int s, char *szLogin, char *szPassword, char *misc
       memset(LMhash, 0, 24);
 
       ret = HashLM(&LMhash, (unsigned char *) szPassword, (unsigned char *) challenge);
-      if (ret == -1)
+      if (ret == -1) {
+        free(LMv2hash);
         return -1;
+      }
 
       memcpy(buf + iOffset, LMhash, 24);
       free(LMhash);
@@ -1053,8 +1055,10 @@ unsigned long SMBSessionSetup(int s, char *szLogin, char *szPassword, char *misc
       memset(LMv2hash, 0, 24);
 
       ret = HashLMv2(&LMv2hash, (unsigned char *) szLogin, (unsigned char *) szPassword);
-      if (ret == -1)
+      if (ret == -1) {
+        free(LMv2hash);
         return -1;
+      }
 
       memcpy(buf + iOffset, LMv2hash, 24);
       free(LMv2hash);

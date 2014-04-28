@@ -62,8 +62,8 @@ void pca_encrypt(char *cleartxt) {
   char passwd[128];
   int i;
 
-  strncpy(passwd, cleartxt, sizeof(passwd));
-  passwd[sizeof(passwd)] = 0;
+  strncpy(passwd, cleartxt, sizeof(passwd) - 1);
+  passwd[sizeof(passwd) - 1] = 0;
   if (strlen(cleartxt) > 0) {
     passwd[0] = (passwd[0] ^ 0xab);
     for (i = 1; i < strlen(passwd); i++)
@@ -192,9 +192,10 @@ int start_pcanywhere(int s, char *ip, int port, unsigned char options, char *mis
   }
 
   ret = hydra_recv(s, buffer, sizeof(buffer));
-  if (ret == -1) {
+  if (ret < 0)
     return 1;
-  }
+  else
+    buffer[ret] = 0;
 
   clean_buffer(buffer, ret);
   /*show_buffer(buffer,ret); */

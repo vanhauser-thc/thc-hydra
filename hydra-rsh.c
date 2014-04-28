@@ -36,7 +36,9 @@ int start_rsh(int s, char *ip, int port, unsigned char options, char *miscptr, F
     return 4;
   }
 
-  ret = hydra_recv(s, buffer, sizeof(buffer));
+  buffer[0] = 0;
+  if ((ret = hydra_recv(s, buffer, sizeof(buffer))) >= 0)
+    buffer[ret] = 0;
   /* 0x00 is sent but hydra_recv transformed it */
   if (strlen(buffer) == 0)
     ret = hydra_recv(s, buffer, sizeof(buffer) - 1);

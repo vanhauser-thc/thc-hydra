@@ -58,6 +58,7 @@ int start_cisco(int s, char *ip, int port, unsigned char options, char *miscptr,
     if (buf != NULL && strstr(buf, "assw") != NULL) {
       hydra_completed_pair();
       free(buf);
+      buf = NULL;
       if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
         return 3;
       if (strlen(pass = hydra_get_next_password()) == 0)
@@ -73,6 +74,8 @@ int start_cisco(int s, char *ip, int port, unsigned char options, char *miscptr,
         return 1;
       }
       do {
+        if (buf != NULL)
+          free(buf);
         buf = hydra_receive_line(s);
         if (buf != NULL) {
           if (buf[strlen(buf) - 1] == '\n')

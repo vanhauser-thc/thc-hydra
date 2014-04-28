@@ -44,7 +44,7 @@ static int server_subconnect(struct afp_url url) {
   struct afp_server *server = NULL;
 
   conn_req = malloc(sizeof(struct afp_connection_request));
-  server = malloc(sizeof(struct afp_server));
+//  server = malloc(sizeof(struct afp_server));
 
   memset(conn_req, 0, sizeof(struct afp_connection_request));
 
@@ -97,10 +97,10 @@ int start_afp(int s, char *ip, int port, unsigned char options, char *miscptr, F
 
   strncpy(tmpurl.servername, hydra_address2string(ip), AFP_SERVER_NAME_LEN - 1);
   tmpurl.servername[AFP_SERVER_NAME_LEN] = 0;
-  strncpy(mlogin, login, AFP_MAX_USERNAME_LEN);
-  mlogin[AFP_MAX_USERNAME_LEN] = 0;
-  strncpy(mpass, pass, AFP_MAX_PASSWORD_LEN);
-  mpass[AFP_MAX_PASSWORD_LEN] = 0;
+  strncpy(mlogin, login, AFP_MAX_USERNAME_LEN - 1);
+  mlogin[AFP_MAX_USERNAME_LEN - 1] = 0;
+  strncpy(mpass, pass, AFP_MAX_PASSWORD_LEN - 1);
+  mpass[AFP_MAX_PASSWORD_LEN - 1] = 0;
   memcpy(&tmpurl.username, mlogin, AFP_MAX_USERNAME_LEN);
   memcpy(&tmpurl.password, mpass, AFP_MAX_PASSWORD_LEN);
 

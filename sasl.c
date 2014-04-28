@@ -641,7 +641,7 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
   }
 
   /*client-final-message */
-  if (verbose)
+  if (debug)
     hydra_report(stderr, "DEBUG S: %s\n", serverfirstmessage);
 
   //r=hydra28Bo7kduPpAZLzhRQiLxc8Y9tiwgw+yP,s=ldDgevctH+Kg7b8RnnA3qA==,i=4096
@@ -711,7 +711,7 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
   to64frombits(clientproof_b64, (const unsigned char *) ClientProof, 20);
 
   snprintf(result, 500, "%s,p=%s", clientfinalmessagewithoutproof, clientproof_b64);
-  if (verbose)
+  if (debug)
     hydra_report(stderr, "DEBUG C: %s\n", result);
   free(preppasswd);
 }

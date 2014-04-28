@@ -120,6 +120,8 @@ void service_cisco_enable(char *ip, int sp, unsigned char options, char *miscptr
           }
         }
 
+        if (buf != NULL)
+          free(buf);
         buf = hydra_receive_line(sock);
         if (hydra_strcasestr(buf, "ress ENTER") != NULL) {
           hydra_send(sock, "\r\n", 2, 0);

@@ -152,7 +152,8 @@ int start_sip(int s, char *ip, char *lip, int port, int lport, unsigned char opt
     try++;
     if (hydra_data_ready_timed(s, 5, 0) > 0) {
       memset(buf, 0, sizeof(buf));
-      i = hydra_recv(s, (char *) buf, sizeof(buf));
+      if ((i = hydra_recv(s, (char *) buf, sizeof(buf))) >= 0)
+        buf[i] = 0;
       if (verbose)
         hydra_report(stderr, "[INFO] S: %s\n", buf);
       sip_code = get_sip_code(buf);

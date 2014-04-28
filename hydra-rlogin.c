@@ -40,8 +40,11 @@ int start_rlogin(int s, char *ip, int port, unsigned char options, char *miscptr
   }
   ret = hydra_recv(s, buffer, sizeof(buffer));
   /* 0x00 is sent but hydra_recv transformed it */
-  if (strlen(buffer) == 0)
-    ret = hydra_recv(s, buffer, sizeof(buffer));
+  if (strlen(buffer) == 0) {
+    ret = hydra_recv(s, buffer, sizeof(buffer) - 1);
+    if (ret >= 0)
+      buffer[ret] = 0;
+  }
 
   if (ret > 0 && (strstr(buffer, "rlogind:") != NULL))
     return 1;

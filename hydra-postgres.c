@@ -29,10 +29,10 @@ int start_postgres(int s, char *ip, int port, unsigned char options, char *miscp
   PGconn *pgconn;
 
   if (miscptr)
-    strncpy(database, miscptr, sizeof(database));
+    strncpy(database, miscptr, sizeof(database) - 1);
   else
-    strncpy(database, DEFAULT_DB, sizeof(database));
-  database[sizeof(database)] = 0;
+    strncpy(database, DEFAULT_DB, sizeof(database) - 1);
+  database[sizeof(database) - 1] = 0;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;

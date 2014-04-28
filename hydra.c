@@ -302,7 +302,7 @@ void help(int ext) {
 #ifdef HAVE_MATH_H
          " [-x MIN:MAX:CHARSET]"
 #endif
-         " [-SuvV46] "
+         " [-SuvVd46] "
          //"[server service [OPT]]|"
          "[service://server[:PORT][/OPT]]\n");
   printf("\nOptions:\n");

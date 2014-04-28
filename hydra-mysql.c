@@ -39,9 +39,9 @@ char mysqlsalt[9];
 /* modified hydra_receive_line, I've striped code which changed every 0x00 to 0x20 */
 char *hydra_mysql_receive_line(int socket) {
   char buf[300], *buff, *buff2;
-  int i = 0, j = 0;
+  int i = 0, j = 0, buff_size = 300;
 
-  buff = malloc(sizeof(buf));
+  buff = malloc(buff_size);
   if (buff == NULL)
     return NULL;
   memset(buff, 0, sizeof(buf));
@@ -63,13 +63,17 @@ char *hydra_mysql_receive_line(int socket) {
   j = 1;
   while (hydra_data_ready(socket) > 0 && j > 0) {
     j = internal__hydra_recv(socket, buf, sizeof(buf));
-    if (j > 65535 || i + j > 65535 || (buff2 = realloc(buff, i + j)) == NULL) {
-      free(buff);
-      return NULL;
-    } else
-      buff = buff2;
-    memcpy(buff + i, &buf, j);
-    i = i + j;
+    if (j > 0) {
+      if (i + j > buff_size || (buff2 = realloc(buff, i + j)) == NULL) {
+        free(buff);
+        return NULL;
+      } else {
+        buff = buff2;
+        buff_size = i + j;
+      }
+      memcpy(buff + i, &buf, j);
+      i += j;
+    }
   }
 
   if (debug)
@@ -177,13 +181,13 @@ int start_mysql(int sock, char *ip, int port, unsigned char options, char *miscp
   pass = hydra_get_next_password();
 
   if (miscptr)
-    strncpy(database, miscptr, sizeof(database));
+    strncpy(database, miscptr, sizeof(database) - 1);
   else {
-    strncpy(database, DEFAULT_DB, sizeof(database));
+    strncpy(database, DEFAULT_DB, sizeof(database) - 1);
     if (verbose)
       hydra_report(stderr, "[VERBOSE] using default db 'mysql'\n");
   }
-  database[sizeof(database)] = 0;
+  database[sizeof(database) - 1] = 0;
 
   /* read server greeting */
   res = hydra_mysql_init(sock);

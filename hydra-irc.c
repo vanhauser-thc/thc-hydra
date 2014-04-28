@@ -144,7 +144,9 @@ void service_irc(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
         hydra_child_exit(1);
       }
 
-      ret = hydra_recv(sock, buffer, sizeof(buffer));
+      buffer[0] = 0;
+      if ((ret = hydra_recv(sock, buffer, sizeof(buffer))) >= 0)
+        buffer[ret] = 0;
 
       /* ERROR :Bad password */
 #ifdef HAVE_PCRE
