@@ -421,7 +421,6 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
       close(s);
       extern_socket = -1;
       ret = -1;
-      close(s);
       return ret;
     }
     fail = 0;
