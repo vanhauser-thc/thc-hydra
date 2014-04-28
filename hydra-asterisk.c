@@ -28,8 +28,8 @@ int start_asterisk(int s, char *ip, int port, unsigned char options, char *miscp
   memset(buffer, 0, sizeof(buffer));
   sprintf(buffer, "Action: Login\r\nUsername: %.250s\r\nSecret: %.250s\r\n\r\n", login, pass);
 
-  if (verbose || debug)
-    hydra_report(stderr, "[VERBOSE] C: %s\n", buffer);
+  if (debug)
+    hydra_report(stderr, "[DEBUG] C: %s\n", buffer);
 
   if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
     return 1;
@@ -37,8 +37,8 @@ int start_asterisk(int s, char *ip, int port, unsigned char options, char *miscp
   if ((buf = hydra_receive_line(s)) == NULL)
     return 1;
 
-  if (verbose || debug)
-    hydra_report(stderr, "[VERBOSE] S: %s\n", buf);
+  if (debug)
+    hydra_report(stderr, "[DEBUG] S: %s\n", buf);
 
   if (buf == NULL || (strstr(buf, "Response: ") == NULL)) {
     hydra_report(stderr, "[ERROR] Asterisk Call Manager protocol error or service shutdown: %s\n", buf);

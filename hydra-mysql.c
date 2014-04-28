@@ -55,7 +55,7 @@ char *hydra_mysql_receive_line(int socket) {
   }
   if (i <= 0) {
     if (debug)
-      hydra_report_debug(stderr, "DEBUG_RECV_BEGIN|%s|END\n", buff);
+      hydra_report_debug(stderr, "DEBUG_RECV_BEGIN||END\n");
     free(buff);
     return NULL;
   }

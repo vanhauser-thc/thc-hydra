@@ -32,7 +32,7 @@ int start_rexec(int s, char *ip, int port, unsigned char options, char *miscptr,
     return 1;
   }
 
-  ret = hydra_recv(s, buffer, sizeof(buffer));
+  ret = hydra_recv(s, buffer, sizeof(buffer) - 1);
 
   if (ret > 0 && buffer[0] == 0) {
     hydra_report_found_host(port, ip, "rexec", fp);

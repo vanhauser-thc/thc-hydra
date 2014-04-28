@@ -145,7 +145,7 @@ void service_irc(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
       }
 
       buffer[0] = 0;
-      if ((ret = hydra_recv(sock, buffer, sizeof(buffer))) >= 0)
+      if ((ret = hydra_recv(sock, buffer, sizeof(buffer) - 1)) >= 0)
         buffer[ret] = 0;
 
       /* ERROR :Bad password */

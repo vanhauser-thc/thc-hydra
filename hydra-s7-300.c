@@ -6,26 +6,13 @@
 
 extern char *HYDRA_EXIT;
 
-unsigned char p_cotp[] =
-  "\x03\x00\x00\x16\x11\xe0\x00\x00\x00\x17"
-  "\x00\xc1\x02\x01\x00\xc2\x02\x01\x02\xc0"
-  "\x01\x0a";
+unsigned char p_cotp[] = "\x03\x00\x00\x16\x11\xe0\x00\x00\x00\x17" "\x00\xc1\x02\x01\x00\xc2\x02\x01\x02\xc0" "\x01\x0a";
 
-unsigned char p_s7_negotiate_pdu[] =
-  "\x03\x00\x00\x19\x02\xf0\x80\x32\x01\x00"
-  "\x00\x02\x00\x00\x08\x00\x00\xf0\x00\x00"
-  "\x01\x00\x01\x01\xe0";
+unsigned char p_s7_negotiate_pdu[] = "\x03\x00\x00\x19\x02\xf0\x80\x32\x01\x00" "\x00\x02\x00\x00\x08\x00\x00\xf0\x00\x00" "\x01\x00\x01\x01\xe0";
 
-unsigned char p_s7_read_szl[] =
-  "\x03\x00\x00\x21\x02\xf0\x80\x32\x07\x00"
-  "\x00\x03\x00\x00\x08\x00\x08\x00\x01\x12"
-  "\x04\x11\x44\x01\x00\xff\x09\x00\x04\x01"
-  "\x32\x00\x04";
+unsigned char p_s7_read_szl[] = "\x03\x00\x00\x21\x02\xf0\x80\x32\x07\x00" "\x00\x03\x00\x00\x08\x00\x08\x00\x01\x12" "\x04\x11\x44\x01\x00\xff\x09\x00\x04\x01" "\x32\x00\x04";
 
-unsigned char p_s7_password_request[] =
-  "\x03\x00\x00\x25\x02\xf0\x80\x32\x07\x00"
-  "\x00\x00\x00\x00\x08\x00\x0c\x00\x01\x12"
-  "\x04\x11\x45\x01\x00\xff\x09\x00\x08";
+unsigned char p_s7_password_request[] = "\x03\x00\x00\x25\x02\xf0\x80\x32\x07\x00" "\x00\x00\x00\x00\x08\x00\x0c\x00\x01\x12" "\x04\x11\x45\x01\x00\xff\x09\x00\x08";
 
 
 int start_s7_300(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
@@ -43,7 +30,7 @@ int start_s7_300(int s, char *ip, int port, unsigned char options, char *miscptr
   memset(context, 0, sizeof(context));
   if (strlen(pass) < S7PASSLEN) {
     strncpy(context, pass, strlen(pass));
-    strncat(context, spaces, S7PASSLEN - strlen(pass) );
+    strncat(context, spaces, S7PASSLEN - strlen(pass));
   } else {
     strncpy(context, pass, S7PASSLEN);
   }
@@ -52,65 +39,66 @@ int start_s7_300(int s, char *ip, int port, unsigned char options, char *miscptr
   encoded_password[0] = context[0] ^ 0x55;
   encoded_password[1] = context[1] ^ 0x55;
   int i;
+
   for (i = 2; i < S7PASSLEN; i++) {
-    encoded_password[i] = context[i] ^ encoded_password[i-2] ^ 0x55 ;
+    encoded_password[i] = context[i] ^ encoded_password[i - 2] ^ 0x55;
   }
 
   // send p_cotp and check first 2 bytes of answer
   if (hydra_send(s, (char *) p_cotp, 22, 0) < 0)
     return 1;
   memset(buffer, 0, sizeof(buffer));
-  ret=hydra_recv_nb(s, buffer, sizeof(buffer));
+  ret = hydra_recv_nb(s, buffer, sizeof(buffer));
 
   if (ret <= 0)
     return 3;
 
-  if (ret > 2 && (buffer[0] != 0x03 && buffer[1] != 0x00) )
+  if (ret > 2 && (buffer[0] != 0x03 && buffer[1] != 0x00))
     return 3;
 
   // send p_s7_negotiate_pdu and check first 2 bytes of answer
   if (hydra_send(s, (char *) p_s7_negotiate_pdu, 25, 0) < 0)
     return 1;
   memset(buffer, 0, sizeof(buffer));
-  ret=hydra_recv_nb(s, buffer, sizeof(buffer));
+  ret = hydra_recv_nb(s, buffer, sizeof(buffer));
 
   if (ret <= 0)
     return 3;
 
-  if (ret > 2 && (buffer[0] != 0x03 && buffer[1] != 0x00) )
+  if (ret > 2 && (buffer[0] != 0x03 && buffer[1] != 0x00))
     return 3;
-  
+
   // send p_s7_read_szl and check first 2 bytes of answer
   if (hydra_send(s, (char *) p_s7_read_szl, 33, 0) < 0)
     return 1;
   memset(buffer, 0, sizeof(buffer));
-  ret=hydra_recv_nb(s, buffer, sizeof(buffer));
+  ret = hydra_recv_nb(s, buffer, sizeof(buffer));
 
   if (ret <= 0)
     return 3;
 
-  if (ret > 2 && (buffer[0] != 0x03 && buffer[1] != 0x00) )
+  if (ret > 2 && (buffer[0] != 0x03 && buffer[1] != 0x00))
     return 3;
-  
+
   // so now add encoded_password to p_s7_password_request and send
   memset(buffer, 0, sizeof(buffer));
   memcpy(buffer, p_s7_password_request, 29);
   memcpy(buffer + 29, encoded_password, S7PASSLEN);
 
-  if (hydra_send(s, buffer, 29 + S7PASSLEN , 0) < 0)
+  if (hydra_send(s, buffer, 29 + S7PASSLEN, 0) < 0)
     return 1;
- 
+
   memset(buffer, 0, sizeof(buffer));
-  ret=hydra_recv_nb(s, buffer, sizeof(buffer));
+  ret = hydra_recv_nb(s, buffer, sizeof(buffer));
 
   if (ret <= 0)
     return 3;
-  
+
   // now check answer
   // 0x0000 - valid password
   // 0xd605 - no password
   // 0xd602 - wrong password
-  if (ret > 30 ) {
+  if (ret > 30) {
     if (buffer[27] == '\x00' && buffer[28] == '\x00') {
       hydra_report_found_host(port, ip, "s7-300", fp);
       hydra_completed_pair_found();
@@ -175,7 +163,7 @@ void service_s7_300(char *ip, int sp, unsigned char options, char *miscptr, FILE
   }
 }
 
-int service_s7_300_init(char *ip, int sp, unsigned char options, char *miscptr, FILE *fp, int port) {
+int service_s7_300_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
@@ -219,7 +207,7 @@ int service_s7_300_init(char *ip, int sp, unsigned char options, char *miscptr, 
   encoded_password[0] = context[0] ^ 0x55;
   encoded_password[1] = context[1] ^ 0x55;
   for (i = 2; i < S7PASSLEN; i++) {
-    encoded_password[i] = context[i] ^ encoded_password[i-2] ^ 0x55 ;
+    encoded_password[i] = context[i] ^ encoded_password[i - 2] ^ 0x55;
   }
 
   // send p_cotp and check first 2 bytes of answer
@@ -237,7 +225,6 @@ int service_s7_300_init(char *ip, int sp, unsigned char options, char *miscptr, 
     fprintf(stderr, "[ERROR] invalid reply to init packet\n");
     return 3;
   }
-
   // send p_s7_negotiate_pdu and check first 2 bytes of answer
   if (hydra_send(sock, (char *) p_s7_negotiate_pdu, 25, 0) < 0) {
     fprintf(stderr, "[ERROR] can not send data to service (2)\n");
@@ -253,7 +240,6 @@ int service_s7_300_init(char *ip, int sp, unsigned char options, char *miscptr, 
     fprintf(stderr, "[ERROR] invalid reply to init packet (2)\n");
     return 3;
   }
-  
   // send p_s7_read_szl and check first 2 bytes of answer
   if (hydra_send(sock, (char *) p_s7_read_szl, 33, 0) < 0) {
     fprintf(stderr, "[ERROR] can not send data to service (3)\n");
@@ -265,27 +251,25 @@ int service_s7_300_init(char *ip, int sp, unsigned char options, char *miscptr, 
     return 3;
   }
 
-  if (ret > 2 && (buffer[0] != 0x03 && buffer[1] != 0x00) ) {
+  if (ret > 2 && (buffer[0] != 0x03 && buffer[1] != 0x00)) {
     fprintf(stderr, "[ERROR] invalid reply to init packet (3)\n");
     return 3;
   }
-  
   // so now add encoded_password to p_s7_password_request and send
   memset(buffer, 0, sizeof(buffer));
   memcpy(buffer, p_s7_password_request, 29);
   memcpy(buffer + 29, encoded_password, S7PASSLEN);
 
-  if (hydra_send(sock, buffer, 29 + S7PASSLEN , 0) < 0) {
+  if (hydra_send(sock, buffer, 29 + S7PASSLEN, 0) < 0) {
     fprintf(stderr, "[ERROR] can not send data to service (4)\n");
     return 3;
   }
- 
+
   memset(buffer, 0, sizeof(buffer));
   if ((ret = hydra_recv_nb(sock, buffer, sizeof(buffer))) <= 0) {
     fprintf(stderr, "[ERROR] did not received data from the service (4)\n");
     return 3;
   }
-
   // now check answer
   // 0x0000 - valid password
   // 0xd605 - no password

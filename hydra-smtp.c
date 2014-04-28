@@ -125,7 +125,7 @@ int start_smtp(int s, char *ip, int port, unsigned char options, char *miscptr, 
       from64tobits((char *) buffer, buf + 4);
       free(buf);
 
-      if (verbose)
+      if (debug)
         hydra_report(stderr, "DEBUG S: %s\n", buffer);
 
       fooptr = buffer2;
@@ -133,7 +133,7 @@ int start_smtp(int s, char *ip, int port, unsigned char options, char *miscptr, 
       if (fooptr == NULL)
         return 3;
 
-      if (verbose)
+      if (debug)
         hydra_report(stderr, "DEBUG C: %s\n", buffer2);
       hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
       sprintf(buffer, "%s\r\n", buffer2);

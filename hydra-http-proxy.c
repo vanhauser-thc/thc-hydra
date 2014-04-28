@@ -53,6 +53,7 @@ int start_http_proxy(int s, char *ip, int port, unsigned char options, char *mis
     if (debug)
       hydra_report(stderr, "S:%s\n", http_proxy_buf);
 
+    free(http_proxy_buf);
     http_proxy_buf = hydra_receive_line(s);
     while (http_proxy_buf != NULL && hydra_strcasestr(http_proxy_buf, "Proxy-Authenticate:") == NULL) {
       free(http_proxy_buf);

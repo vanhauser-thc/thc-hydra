@@ -116,6 +116,7 @@ int start_http_proxy_urlenum(int s, char *ip, int port, unsigned char options, c
           return 1;
 
         //receive challenge
+        free(buf);
         buf = hydra_receive_line(s);
         while (buf != NULL && (pos = hydra_strcasestr(buf, "Proxy-Authenticate: NTLM ")) == NULL) {
           free(buf);

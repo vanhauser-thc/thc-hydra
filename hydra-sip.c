@@ -75,8 +75,9 @@ int start_sip(int s, char *ip, char *lip, int port, int lport, unsigned char opt
   while (try < 2 && !has_sip_cred) {
     try++;
     if (hydra_data_ready_timed(s, 3, 0) > 0) {
-      i = hydra_recv(s, (char *) buf, sizeof(buf));
-      buf[sizeof(buf) - 1] = '\0';
+      i = hydra_recv(s, (char *) buf, sizeof(buf) - 1);
+      if (i > 0)
+        buf[i] = '\0';
       if (strncmp(buf, "SIP/2.0 404", 11) == 0) {
         hydra_report(stdout, "[ERROR] Get error code 404 : user '%s' not found\n", login);
         return 2;
@@ -124,7 +125,7 @@ int start_sip(int s, char *ip, char *lip, int port, int lport, unsigned char opt
     hydra_report(stderr, "[ERROR] no www-authenticate header found!\n");
     return -1;
   }
-  if (verbose)
+  if (debug)
     hydra_report(stderr, "[INFO] S: %s\n", buf);
   char buffer2[512];
 
@@ -139,7 +140,7 @@ int start_sip(int s, char *ip, char *lip, int port, int lport, unsigned char opt
            "Call-ID: 1337@%s\n" "CSeq: %i REGISTER\n" "Authorization: Digest %s\n" "Content-Length: 0\n\n", host, lip, lport, login, host, login, host, host, cseq, buffer2);
 
   cseq++;
-  if (verbose)
+  if (debug)
     hydra_report(stderr, "[INFO] C: %s\n", buffer);
   if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
     return 3;
@@ -152,9 +153,9 @@ int start_sip(int s, char *ip, char *lip, int port, int lport, unsigned char opt
     try++;
     if (hydra_data_ready_timed(s, 5, 0) > 0) {
       memset(buf, 0, sizeof(buf));
-      if ((i = hydra_recv(s, (char *) buf, sizeof(buf))) >= 0)
+      if ((i = hydra_recv(s, (char *) buf, sizeof(buf) - 1)) >= 0)
         buf[i] = 0;
-      if (verbose)
+      if (debug)
         hydra_report(stderr, "[INFO] S: %s\n", buf);
       sip_code = get_sip_code(buf);
       if (sip_code >= 200 && sip_code < 300) {

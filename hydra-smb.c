@@ -978,7 +978,7 @@ unsigned long SMBSessionSetup(int s, char *szLogin, char *szPassword, char *misc
 
       ret = HashLM(&LMhash, (unsigned char *) szPassword, (unsigned char *) challenge);
       if (ret == -1) {
-        free(LMv2hash);
+        free(LMhash);
         return -1;
       }
 

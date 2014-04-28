@@ -38,13 +38,14 @@ int start_rlogin(int s, char *ip, int port, unsigned char options, char *miscptr
   if (hydra_send(s, buffer2, 4 + strlen(login) + strlen(login) + strlen(TERM), 0) < 0) {
     return 4;
   }
-  ret = hydra_recv(s, buffer, sizeof(buffer));
+  buffer[0] = 0;
+  ret = hydra_recv(s, buffer, sizeof(buffer) - 1);
   /* 0x00 is sent but hydra_recv transformed it */
   if (strlen(buffer) == 0) {
     ret = hydra_recv(s, buffer, sizeof(buffer) - 1);
-    if (ret >= 0)
-      buffer[ret] = 0;
   }
+  if (ret >= 0)
+    buffer[ret] = 0;
 
   if (ret > 0 && (strstr(buffer, "rlogind:") != NULL))
     return 1;
