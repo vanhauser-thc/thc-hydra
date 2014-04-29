@@ -27,11 +27,10 @@ There are already several login hacker tools available, however none does
 either support more than one protocol to attack or support parallized
 connects.
 
-It was tested to compile cleanly on Linux, Windows/Cygwin, Solaris, FreeBSD
-and OSX.
+It was tested to compile cleanly on Linux, Windows/Cygwin, Solaris,
+FreeBSD/OpenBSD, QNX (Blackberry 10) and OSX.
 
-Currently this tool supports:
-
+Currently this tool supports the following protocols:
  Asterisk, AFP, Cisco AAA, Cisco auth, Cisco enable, CVS, Firebird, FTP,
  HTTP-FORM-GET, HTTP-FORM-POST, HTTP-GET, HTTP-HEAD, HTTP-PROXY, HTTPS-FORM-GET,
  HTTPS-FORM-POST, HTTPS-GET, HTTPS-HEAD, HTTP-Proxy, ICQ, IMAP, IRC, LDAP,
@@ -46,6 +45,20 @@ Your help in writing, enhancing or fixing modules is highly appreciated!! :-)
 
 
 
+WHERE TO GET
+------------
+You can always find the newest release/production version of hydra at its
+project page at https://www.thc.org/thc-hydra 
+If you are interested in the current development state, the public development
+repository is at Github:
+  svn co https://github.com/vanhauser-thc/thc-hydra
+ or
+  git clone https://github.com/vanhauser-thc/thc-hydra.git
+Use the development version at your own risk. It contains new features and
+new bugs. Things might not work!
+
+
+
 HOW TO COMPILE
 --------------
 For hydra, just type:
@@ -54,12 +67,12 @@ For hydra, just type:
 make
 make install
 
-If you need ssh module support, you have to setup libssh on your system, 
+If you need the ssh module support, you have to setup libssh on your system, 
 get it from http://www.libssh.org, for ssh v1 support you also need to add
 "-DWITH_SSH1=On" option in the cmake command line.
 
-If you use Ubuntu, this will install supplementary libraries needed for a
-few optional modules:
+If you use Ubuntu/Debian, this will install supplementary libraries needed
+for a few optional modules:
  apt-get install libssl-dev libssh-dev libidn11-dev libpcre3-dev \
                  libgtk2.0-dev libmysqlclient-dev libpq-dev libsvn-dev \
                  firebird2.1-dev libncp-dev
@@ -78,8 +91,8 @@ SUPPORTED PLATFORMS
 -------------------
 All UNIX platforms (linux, *bsd, solaris, etc.)
 Mac OS/X
-Windows with Cygwin (both ipv4 and ipv6)
-Mobile systems based on Linux or Mac OS/X (e.g. Android, iPhone, Zaurus, iPaq)
+Windows with Cygwin (both IPv4 and IPv6)
+Mobile systems based on Linux, Mac OS/X or QNX (e.g. Android, iPhone, Blackberry 10, Zaurus, iPaq)
 
 
 
@@ -89,6 +102,8 @@ Type "./configure", followed by "make" to compile hydra and then
 "./hydra -h" to see the command line options.
 You make also type "make install" to install hydra to /usr/local/bin.
 Note that NO login/password file is included. Generate them yourself.
+A default password list is hoever present, use "dpl4hydra.sh" to generate
+a list.
 For Linux users, a GTK gui is available, try "./xhydra"
 
 

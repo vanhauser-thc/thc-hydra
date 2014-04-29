@@ -833,7 +833,7 @@ void hydra_restore_read() {
     pass_ptr = csv_ptr = login_ptr;
   }
 
-  hydra_targets = malloc(hydra_brains.targets * sizeof(hydra_targets));
+  hydra_targets = malloc((hydra_brains.targets + 3 )* sizeof(hydra_targets));
   for (j = 0; j < hydra_brains.targets; j++) {
     hydra_targets[j] = malloc(sizeof(hydra_target));
     fck = (int) fread(hydra_targets[j], sizeof(hydra_target), 1, f);
