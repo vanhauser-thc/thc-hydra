@@ -12,7 +12,6 @@ Prio 1:
 
 
 Prio 2:
-* support different ports in the -M input file for each target
 * add support for IPv6 Link Local Addresses like fe80::1%eth0 for Solaris and *BSD
 * add crack info when key is pressed
 * hydra-smb support NTLMv2 (when its fixed)

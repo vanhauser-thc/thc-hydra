@@ -6,6 +6,7 @@ Release 8.0
 * Added module for redis (submitted by Alejandro Ramos, thanks!)
 * Added patch which adds Unicode support for the SMB module (thanks to Max Kosmach)
 * Added initial interactive password authentication test for ssh (thanks to Joshua Houghton for submitting)
+* -M <targetfile>, you can now specify a port for each entry (use "target:port" per line)
 * Verified that hydra compiles cleanly on QNX / Blackberry 10 :-)
 * Bugfixes for -x option:
   - password tries were lost when connection errors happened (thanks to Vineet Kumar for reporting)

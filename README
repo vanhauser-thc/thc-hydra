@@ -134,8 +134,6 @@ RESTORING AN ABORTED/CRASHED SESSION
 When hydra is aborted with Control-C, killed or crashs, it leavs a
 "hydra.restore" file behind which contains all necessary information to
 restore the session. This session file is written every 5 minutes.
-NOTE: if you are cracking parallel hosts (-M option), this feature doesnt
-work, and is therefore disabled!
 NOTE: the hydra.restore file can NOT be copied to a different platform (e.g.
 from little indian to big indian, or from solaris to aix)
 
@@ -221,7 +219,7 @@ vh@thc.org (and put "antispam" in the subject line)
 David (dot) Maciejak @ gmail (dot) com
 
 
-
+You should use PGP to encrypt emails to vh@thc.org :
 
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: GnuPG v3.3.3 (vh@thc.org)
