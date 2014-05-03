@@ -3,6 +3,8 @@
 
 #include "hydra.h"
 
+extern char quiet;
+
 extern void hydra_child_exit(int code);
 extern void hydra_register_socket(int s);
 extern char *hydra_get_next_pair();

@@ -167,6 +167,7 @@ extern void hydra_tobase64(unsigned char *buf, int buflen, int bufsize);
 extern char *hydra_string_replace(const char *string, const char *substr, const char *replacement);
 extern char *hydra_address2string(char *address);
 extern int colored_output;
+extern char quiet;
 
 void hydra_kill_head(int head_no, int killit, int fail);
 
@@ -237,6 +238,7 @@ typedef struct {
   int try_password_reverse_login;
   int exit_found;
   int max_use;
+  int cidr;
   char *login;
   char *loginfile;
   char *pass;
@@ -338,10 +340,12 @@ void help(int ext) {
     printf("  -4 / -6   prefer IPv4 (default) or IPv6 addresses\n");
   if (ext)
     printf("  -v / -V / -d  verbose mode / show login+pass for each attempt / debug mode \n");
+  if (ext)
+    printf("  -q        do not print messages about connection erros\n");
   printf("  -U        service module usage details\n");
   if (ext == 0)
     printf("  -h        more command line options (COMPLETE HELP)\n");
-  printf("  server    the target server (use either this OR the -M option)\n");
+  printf("  server    the target: DNS, IP or 192.168.0.0/24 (this OR the -M option)\n");
   printf("  service   the service to crack (see below for supported protocols)\n");
   printf("  OPT       some service modules support additional input (-U for module help)\n");
 
@@ -365,7 +369,8 @@ void help(int ext) {
   printf("\nExample%s:%s  hydra -l user -P passlist.txt ftp://192.168.0.1\n", ext == 0 ? "" : "s", ext == 0 ? "" : "\n");
   if (ext) {
     printf("  hydra -L userlist.txt -p defaultpw imap://192.168.0.1/PLAIN\n");
-    printf("  hydra -C defaults.txt -6 pop3s://[fe80::2c:31ff:fe12:ac11]:143/TLS:DIGEST-MD5\n");
+    printf("  hydra -C defaults.txt -6 pop3s://[2001:db8::1]:143/TLS:DIGEST-MD5\n");
+    printf("  hydra -l admin -p password ftp://[192.168.0.0/24]\n");
   }
   exit(-1);
 }
@@ -2142,10 +2147,14 @@ int main(int argc, char *argv[]) {
     help(1);
   if (argc < 3 && (argc < 2 || strcmp(argv[1], "-R") != 0))
     help(0);
-  while ((i = getopt(argc, argv, "h64Rde:vVl:fFg:L:p:P:o:M:C:t:T:m:w:W:s:SUux:")) >= 0) {
+  while ((i = getopt(argc, argv, "hq64Rde:vVl:fFg:L:p:P:o:M:C:t:T:m:w:W:s:SUux:")) >= 0) {
     switch (i) {
     case 'h':
       help(1);
+      break;
+    case 'q':
+      quiet = 1;
+      break;
     case 'u':
       hydra_options.loop_mode = 1;
       break;
@@ -2335,106 +2344,53 @@ int main(int argc, char *argv[]) {
         hydra_options.miscptr = argv[optind + 1];
     } else if (optind + 2 != argc && optind + 3 != argc) {
       // check if targetdef follow syntax <service-name>://<target>[:<port-number>][/<parameters>] or it's a syntax error 
-      char *targetdef = argv[optind];
-      char *service_pos;
+      char *targetdef = strdup(argv[optind]);
+      char *service_pos, *target_pos, *port_pos = NULL, *param_pos = NULL;
 
       if ((targetdef != NULL) && (strstr(targetdef, "://") != NULL)) {
-        char *targetport_sep;
-        char *port_pos = NULL, *param_pos = NULL;
-
         service_pos = strstr(targetdef, "://");
         if ((service_pos - targetdef) == 0)
           bail("could not identify service");
         if ((hydra_options.service = malloc(1 + service_pos - targetdef)) == NULL)
           bail("could not alloc memory");
         strncpy(hydra_options.service, targetdef, service_pos - targetdef);
-        hydra_options.service[service_pos - targetdef] = '\0';
+        hydra_options.service[service_pos - targetdef] = 0;
+        target_pos = targetdef + (service_pos - targetdef + 3);
 
-        // check if we specify a port 
-        if (prefer_ipv6)
-          targetport_sep = "]:";
-        else
-          targetport_sep = ":";
-        port_pos = strstr(service_pos + strlen("://"), targetport_sep);
-        param_pos = strstr(service_pos + strlen("://"), "/");
-        if (param_pos != NULL && param_pos < port_pos)
-          port_pos = NULL;
-
-        if (port_pos != NULL) {
-          *port_pos = 0;
-          // removing ://[ 
-          if (port_pos - service_pos - 2 - strlen(targetport_sep) == 0)
-            bail("identifying server address");
-          if (prefer_ipv6 && ((service_pos + 3)[0] != '['))
-            bail("identifying ipv6 server address");
-          if ((hydra_options.server = malloc(1 + port_pos - service_pos - 2 - strlen(targetport_sep))) == NULL)
-            bail("could not allocate memory");
-          if (service_pos[3] == '[')
-            strncpy(hydra_options.server, service_pos + 4, port_pos - service_pos - 3);
-          else
-            strncpy(hydra_options.server, service_pos + 3, port_pos - service_pos - 3);
-          hydra_options.server[port_pos - service_pos - 3] = '\0';
-        }
-        // check if we specify a parameter 
-        if ((param_pos != NULL) && (port_pos == NULL)) {
-          if (param_pos - service_pos - 3 == 0)
-            bail("could not identify server address");
-          if ((hydra_options.server = malloc(1 + param_pos - service_pos - 3)) == NULL)
-            bail("could not allocate memory");
-          if (service_pos[3] == '[') {
-            strncpy(hydra_options.server, service_pos + 4, param_pos - service_pos - 3);
-            hydra_options.server[param_pos - 4 - service_pos] = '\0';
-          } else {
-            strncpy(hydra_options.server, service_pos + 3, param_pos - service_pos - 3);
-            hydra_options.server[param_pos - 3 - service_pos] = '\0';
-          }
-          if (hydra_options.server[strlen(hydra_options.server) - 1] == ']')
-            hydra_options.server[strlen(hydra_options.server) - 1] = 0;
-        }
-        if ((port_pos == NULL) && (param_pos == NULL)) {
-          if (strlen(targetdef) - strlen(hydra_options.service) - 3 == 0)
-            bail("could not identify server address");
-          if ((hydra_options.server = malloc(1 + strlen(targetdef) - strlen(hydra_options.service) - 3)) == NULL)
-            bail("could not allocate memory");
-          if (service_pos[3] == '[')
-            strcpy(hydra_options.server, service_pos + 4);
-          else
-            strcpy(hydra_options.server, service_pos + 3);
-          if (hydra_options.server[strlen(hydra_options.server) - 1] == ']')
-            hydra_options.server[strlen(hydra_options.server) - 1] = 0;
+        if (*target_pos == '[') {
+          target_pos++;
+          if ((param_pos = index(target_pos, ']')) == NULL)
+            bail("no closing ']' found in target definition");
+          *param_pos++ = 0;
+          if (*param_pos == ':')
+            port_pos = ++param_pos;
+          if ((param_pos = index(param_pos, '/')) != NULL)
+            *param_pos++ = 0;
         } else {
-          char port_temp[6] = "";
-
-          if (port_pos) {
-            // set the port 
-            if (param_pos == NULL) {
-              hydra_options.port = port = atoi(port_pos + strlen(targetport_sep));
-            } else {
-              if (param_pos - port_pos - strlen(targetport_sep) > 0) {
-                if (param_pos - port_pos - strlen(targetport_sep) > sizeof(port_temp) - 1)
-                  bail("invalid port number");
-                strncpy(port_temp, port_pos + strlen(targetport_sep), param_pos - port_pos - strlen(targetport_sep));
-                port_temp[strlen(port_temp)] = '\0';
-                hydra_options.port = port = atoi(port_temp);
-              }
-            }
-          }
-          if (param_pos) {
-            int size_of_miscptr = 0;
-
-            if (strstr(hydra_options.service, "http") != NULL && strstr(hydra_options.service, "http-proxy") == NULL && param_pos[1] != '/') {
-              param_pos--;
-            }
-
-            size_of_miscptr = strlen(param_pos);
-
-            if (size_of_miscptr > 0) {
-              if ((hydra_options.miscptr = malloc(1 + size_of_miscptr)) == NULL)
-                bail("could not allocate memory");
-              strcpy(hydra_options.miscptr, param_pos + 1);
-            }
+          port_pos = index(target_pos, ':');
+          param_pos = index(target_pos, '/');
+          if (port_pos != NULL && param_pos != NULL && port_pos > param_pos)
+            port_pos = NULL;
+          if (port_pos != NULL)
+            *port_pos++ = 0;
+          if (param_pos != NULL)
+            *param_pos++ = 0;
+          if (port_pos != NULL && index(port_pos, ':') != NULL) {
+            if (prefer_ipv6)
+              bail("Illegal IPv6 target definition must be written within '[' ']'");
+            else
+              bail("Illegal port definition");
           }
         }
+        hydra_options.server = target_pos;
+        if (port_pos != NULL)
+          hydra_options.port = port = atoi(port_pos);
+        if (param_pos != NULL) {
+          if (strstr(hydra_options.service, "http") != NULL && strstr(hydra_options.service, "http-proxy") == NULL && param_pos[1] != '/')
+              *--param_pos = '/';
+          hydra_options.miscptr = param_pos;
+        }
+//printf("target: %s  service: %s  port: %s  opt: %s\n", target_pos, hydra_options.service, port_pos, param_pos);
         if (debug)
           printf("[DEBUG] opt:%d argc:%d mod:%s tgt:%s port:%d misc:%s\n", optind, argc, hydra_options.service, hydra_options.server, hydra_options.port, hydra_options.miscptr);
       } else {
@@ -3171,6 +3127,60 @@ int main(int argc, char *argv[]) {
           tmpptr++;
         tmpptr++;
       }
+    } else if (index(hydra_options.server, '/') != NULL) {
+      /* CIDR notation on command line, e.g. 192.168.0.0/24 */
+      unsigned int four_from, four_to, addr_cur, addr_cur2, k, l;
+      in_addr_t addr4;
+      struct sockaddr_in target;
+/**/
+//printf("CIDR: %s\n", hydra_options.server);
+      hydra_options.cidr = 1;
+      if ((tmpptr = malloc(strlen(hydra_options.server) + 1)) == NULL) {
+        fprintf(stderr, "Error: can not allocate memory\n");
+        exit(-1);
+      }
+      strcpy(tmpptr, hydra_options.server);
+      k = 32;
+      if ((tmpptr2 = index(tmpptr, '/')) != NULL)
+        *tmpptr2++ = 0;
+      if ((k = atoi(tmpptr2)) < 16 || k > 31) {
+        fprintf(stderr, "Error: network size may only be between /16 and /31: %s\n", hydra_options.server);
+        exit(-1);
+      }
+      if ((addr4 = htonl(inet_addr(tmpptr))) == 0xffffffff) {
+        fprintf(stderr, "Error: option is not a valid IPv4 address: %s\n", tmpptr);
+        exit(-1);
+      }
+      free(tmpptr);
+      l = 1 << (32 - k);
+      l--;
+      four_to = (addr4 | l);
+      l = 0xffffffff - l;
+      four_from = (addr4 & l);
+/**/
+      l = 1 << (32 - k);
+      hydra_brains.targets = countservers = l;
+      hydra_targets = malloc(sizeof(hydra_targets) * (l + 2) + 8);
+      if (hydra_targets == NULL)
+        bail("Could not allocate enough memory for target data");
+/**/
+      i = 0;
+      addr_cur = four_from;
+      while (addr_cur <= four_to) {
+//printf("x: %d of %d\n", i, l);
+        hydra_targets[i] = malloc(sizeof(hydra_target));
+        memset(hydra_targets[i], 0, sizeof(hydra_target));
+        addr_cur2 = htonl(addr_cur);
+        memcpy(&target.sin_addr.s_addr, (char*) &addr_cur2, 4);
+        hydra_targets[i]->target = strdup(inet_ntoa((struct in_addr) target.sin_addr));
+        hydra_targets[i]->port = hydra_options.port;
+//printf("y: %s:%d\n", hydra_targets[i]->target, hydra_targets[i]->port);
+        addr_cur++;
+        i++;
+      }
+      if (verbose)
+        printf("[VERBOSE] CIDR attack from %s to %s\n", hydra_targets[0]->target, hydra_targets[l - 1]->target);
+/**/
     } else {
       countservers = hydra_brains.targets = 1;
       hydra_targets = malloc(sizeof(int) * 4);
@@ -3696,8 +3706,10 @@ int main(int argc, char *argv[]) {
     process_restore = 0;
     unlink(RESTOREFILE);
   } else {
-    printf("[INFO] Writing restore file because %d server scan%s could not be completed\n", j + error, j + error == 1 ? "" : "s");
-    hydra_restore_write(1);
+    if (hydra_options.cidr == 0) {
+      printf("[INFO] Writing restore file because %d server scan%s could not be completed\n", j + error, j + error == 1 ? "" : "s");
+      hydra_restore_write(1);
+    }
   }
   if (error) {
     fprintf(stderr, "[ERROR] %d target%s disabled because of too many errors\n", error, error == 1 ? " was" : "s were");

@@ -26,6 +26,7 @@
 #define SOCKS_IPV6	4
 
 extern int conwait;
+char quiet;
 
 int module_auth_type = -1;
 int intern_socket, extern_socket;
@@ -43,6 +44,7 @@ int ssl_first = 1;
 int __first_connect = 1;
 char ipstring[64];
 unsigned int colored_output = 1;
+char quiet = 0;
 
 #ifdef LIBOPENSSL
 SSL *ssl = NULL;

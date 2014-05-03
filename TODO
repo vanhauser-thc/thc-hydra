@@ -1,4 +1,6 @@
 
+bug in hydra.c with cidr/24 ?
+
 Prio 1:
 * hydra-smb more than 1 connection?
 * add help hints?
@@ -17,7 +19,7 @@ Prio 2:
 * hydra-smb support NTLMv2 (when its fixed)
 * support for 802.1x EAP via libpcap
 * TN3270, and TN3270 user enumeration
-* CIDR support -> hydra -l admin -p test 192.168.0.0/24 smb
+* Support nmap -o and -oM output files
 
 
 Prio 3:

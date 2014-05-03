@@ -93,7 +93,7 @@ void service_postgres(char *ip, int sp, unsigned char options, char *miscptr, FI
         port = mysslport;
       }
       if (sock < 0) {
-        fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+        if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
         hydra_child_exit(1);
       }
       next_run = 2;

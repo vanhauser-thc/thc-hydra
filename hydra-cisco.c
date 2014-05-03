@@ -154,11 +154,11 @@ void service_cisco(char *ip, int sp, unsigned char options, char *miscptr, FILE 
             if (failc < retry) {
               next_run = 1;
               failc++;
-              hydra_report(stderr, "[ERROR] Child with pid %d was disconnected - retrying (%d of %d retries)\n", (int) getpid(), failc, retry);
+              if (quiet != 1) hydra_report(stderr, "[ERROR] Child with pid %d was disconnected - retrying (%d of %d retries)\n", (int) getpid(), failc, retry);
               sleep(3);
               break;
             } else {
-              hydra_report(stderr, "[ERROR] Child with pid %d was disconnected - exiting\n", (int) getpid());
+              if (quiet != 1) hydra_report(stderr, "[ERROR] Child with pid %d was disconnected - exiting\n", (int) getpid());
               hydra_child_exit(0);
             }
           }
