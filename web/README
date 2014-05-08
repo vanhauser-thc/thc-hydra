@@ -61,15 +61,15 @@ new bugs. Things might not work!
 
 HOW TO COMPILE
 --------------
-For hydra, just type:
+To configure, compile and install hydra, just type:
 
 ./configure
 make
 make install
 
-If you need the ssh module support, you have to setup libssh on your system, 
-get it from http://www.libssh.org, for ssh v1 support you also need to add
-"-DWITH_SSH1=On" option in the cmake command line.
+If you want the ssh module, you have to setup libssh (not libssh2!) on your
+system,  get it from http://www.libssh.org, for ssh v1 support you also need
+to add "-DWITH_SSH1=On" option in the cmake command line.
 
 If you use Ubuntu/Debian, this will install supplementary libraries needed
 for a few optional modules:
@@ -98,13 +98,118 @@ Mobile systems based on Linux, Mac OS/X or QNX (e.g. Android, iPhone, Blackberry
 
 HOW TO USE
 ----------
-Type "./configure", followed by "make" to compile hydra and then
-"./hydra -h" to see the command line options.
-You make also type "make install" to install hydra to /usr/local/bin.
+If you just enter "hydra", you will see a short summary of the important
+options available.
+Type "./hydra -h" to see all available command line options.
+
 Note that NO login/password file is included. Generate them yourself.
 A default password list is hoever present, use "dpl4hydra.sh" to generate
 a list.
+
 For Linux users, a GTK gui is available, try "./xhydra"
+
+For the command line usage, the syntax is as follows:
+ For attacking one target or a network, you can use the new "://" style:
+  hydra [some command line options] PROTOCOL://TARGET:PORT/OPTIONS
+ The old mode can be used for these too, and additionally if you want to
+ specify your targets from a text file, you *must* use this one:
+  hydra [some command line options] [-s port] TARGET PROTOCOL OPTIONS
+
+Via the command line options you specify which logins to try, which passwords,
+if SSL should be used, how many parallel tasks to use for attacking, etc.
+
+PROTOCOL is the protocol you want to use for attacking, e.g. ftp, smtp,
+http-get or many others are vailable
+TARGET is the target you want to attack
+OPTIONS are optional values which are special per PROTOCOL module
+
+FIRST - select your target
+ you have three options on how to specify the target you want to attack:
+ 1. a single target on the command line: just put the IP or DNS address in
+ 2. a network range on the command line: CIDR specification like "192.168.0.0/24"
+ 3. a list of hosts in a text file: one line per entry (see below)
+
+SECOND - select your protocol
+ Try to avoid telnet, as it is unreliable to detect a correct or false login attempt.
+ Use a port scanner to see which protocols are enabled on the target.
+
+THIRD - check if the module has optional parameters
+ hydra -U PROTOCOL
+ e.g. hydra -U smtp
+
+FOURTH - the destination port
+ this is optional! if no port is supplied the default common port for the
+ PROTOCOL is used.
+ If you specify SSL to use ("-S" option), the SSL common port is used by default.
+
+
+If you use "://" notation, you must use "[" "]" brackets if you want to supply
+IPv6 addresses or CIDR ("192.168.0.0/24") notations to attack:
+  hydra [some command line options] ftp://[192.168.0.0/24]/
+  hydra [some command line options] -6 smtp://[2001:db8::1]/NTLM
+
+Note that everything hydra does is IPv4 only!
+If you want to attack IPv6 addresses, you must add the "-6" command line option.
+All attacks are then IPv6 only!
+
+If you want to supply your targets via a text file, you can not use the ://
+notation but use the old style and just supply the protocol (and module options):
+  hydra [some command line options] -M targets.txt ftp
+You can supply also port for each target entry by adding ":<port>" after a
+target entry in the file, e.g.:
+  foo.bar.com
+  target.com:21
+  unusual.port.com:2121
+  default.used.here.com
+  127.0.0.1
+  127.0.0.1:2121
+
+
+
+LOGINS AND PASSWORDS
+--------------------
+You have many options on how to attack with logins and passwords
+With -l for login and -p for password you tell hydra that this is the only
+login and/or password to try.
+With -L for logins and -P for passwords you supply text files with entries.
+e.g.:
+  hydra -l admin -p password ftp://localhost/
+  hydra -L default_logins.txt -p test ftp://localhost/
+  hydra -l admin -P common_passwords.txt ftp://localhost/
+  hydra -L logins.txt -P passwords.txt ftp://localhost/
+Additionally, you can try passwords based on the login via the "-e" option.
+The "-e" option has three parameters:
+  s - try the login as password
+  n - try an empty password
+  r - reverse the login and try it as password
+If you want to, e.g. try "try login as password and "empty password", you 
+specify "-e sn" on the command line.
+
+
+But there are two more modes for trying passwords than -p/-P:
+You can use text file which where a login and password pair is seperated by a colon,
+e.g.:
+  admin:password
+  test:test
+  foo:bar
+This is a common default account style listing, that is also generated by the
+dpl4hydra.sh default account file generator supplied with hydra.
+You use such a text file with the -C option - note that in this mode you
+can not use -l/-L/-p/-P options (-e nsr however you can).
+Example:
+  hydra -C default_accounts.txt ftp://localhost/
+
+And finally, there is a bruteforce mode with the -x option (which you can not
+use with -p/-P/-C):
+  -x minimum_length:maximum_length:charset
+the charset definition is 'a' for lowercase letters, 'A' for uppercase letters,
+'1' for numbers and for anything else you supply it is their real representation.
+Examples:
+  -x 1:3:a generate passwords from length 1 to 3 with all lowercase letters
+  -x 2:5:/ generate passwords from length 2 to 5 containing only slashes
+  -x 5:8:A1 generate passwords from length 5 to 8 with uppercase and numbers
+Example:
+  hydra -l ftp -x 3:3:a ftp://localhost/
 
 
 
@@ -134,8 +239,6 @@ RESTORING AN ABORTED/CRASHED SESSION
 When hydra is aborted with Control-C, killed or crashs, it leavs a
 "hydra.restore" file behind which contains all necessary information to
 restore the session. This session file is written every 5 minutes.
-NOTE: if you are cracking parallel hosts (-M option), this feature doesnt
-work, and is therefore disabled!
 NOTE: the hydra.restore file can NOT be copied to a different platform (e.g.
 from little indian to big indian, or from solaris to aix)
 
@@ -221,7 +324,7 @@ vh@thc.org (and put "antispam" in the subject line)
 David (dot) Maciejak @ gmail (dot) com
 
 
-
+You should use PGP to encrypt emails to vh@thc.org :
 
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 Version: GnuPG v3.3.3 (vh@thc.org)

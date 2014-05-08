@@ -2377,7 +2377,10 @@ int main(int argc, char *argv[]) {
               bail("Illegal port definition");
           }
         }
-        hydra_options.server = target_pos;
+        if (*target_pos == 0)
+          hydra_options.server = NULL;
+        else
+          hydra_options.server = target_pos;
         if (port_pos != NULL)
           hydra_options.port = port = atoi(port_pos);
         if (param_pos != NULL) {
