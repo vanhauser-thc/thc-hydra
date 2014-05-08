@@ -27,7 +27,7 @@
 
 extern int conwait;
 char quiet;
-
+int do_retry = 1;
 int module_auth_type = -1;
 int intern_socket, extern_socket;
 char pair[260];
@@ -208,10 +208,14 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
       alarm(0);
       if (ret < 0 && alarm_went_off == 0) {
         fail++;
-        if (verbose && fail <= MAX_CONNECT_RETRY)
-          fprintf(stderr, "Process %d: Can not connect [unreachable], retrying (%d of %d retries)\n", (int) getpid(), fail, MAX_CONNECT_RETRY);
+        if (verbose ) {
+          if (do_retry && fail <= MAX_CONNECT_RETRY)
+            fprintf(stderr, "Process %d: Can not connect [unreachable], retrying (%d of %d retries)\n", (int) getpid(), fail, MAX_CONNECT_RETRY);
+          else
+            fprintf(stderr, "Process %d: Can not connect [unreachable]\n", (int) getpid());
+        }
       }
-    } while (ret < 0 && fail <= MAX_CONNECT_RETRY);
+    } while (ret < 0 && fail <= MAX_CONNECT_RETRY && do_retry);
     if (ret < 0 && fail > MAX_CONNECT_RETRY) {
       if (debug)
         printf("DEBUG_CONNECT_UNREACHABLE\n");

@@ -1,6 +1,4 @@
 
-bug in hydra.c with cidr/24 ?
-
 Prio 1:
 * hydra-smb more than 1 connection?
 * add help hints?

@@ -13,10 +13,11 @@ Release 8.0
   - password tries were lost when connection errors happened (thanks to Vineet Kumar for reporting)
   - fixed crash when used together with -e option 
 * Fixed a bug that hydra would not compile without libssh (introduced in v7.6)
+* Various bugfixes if many targets where attacked in parallel
 * Cygwin's Postgresql is working again, hence configure detection re-enabled
 * Added gcc compilation security options (if detected to be supported by configure script)
 * Enhancements to the secure compilation options
-* Checked code with cppcheck and fixed some minor issues. surprised it were so few and unlikely stuff :-)
+* Checked code with cppcheck and fixed some minor issues.
 * Checked code with Coverity. Fixed a lot of small and medium issues.
 
 
