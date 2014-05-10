@@ -128,16 +128,25 @@ int hydra_get_options(char *options[]) {
       options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
     }
 
-    /* get the pass, or pass list */
+    /* get the pass, pass list, or generate */
+	/* The "generate" button was implemented by Petar Kaleychev <petar.kaleychev@gmail.com> */
     widget = lookup_widget(GTK_WIDGET(wndMain), "radioPass1");
     if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
       options[i++] = "-p";
       widget = lookup_widget(GTK_WIDGET(wndMain), "entPass");
       options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
-    } else {
+	}
+	widget = lookup_widget(GTK_WIDGET(wndMain), "radioPass2");
+	if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
       options[i++] = "-P";
       widget = lookup_widget(GTK_WIDGET(wndMain), "entPassFile");
       options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+    }
+	widget = lookup_widget(GTK_WIDGET(wndMain), "radioGenerate");
+	if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+		options[i++] = "-x";
+		widget = lookup_widget(GTK_WIDGET(wndMain), "entGeneration");
+		options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
     }
   }
 

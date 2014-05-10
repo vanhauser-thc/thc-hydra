@@ -9,7 +9,9 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <string.h>
 #include <stdio.h>
 
@@ -75,6 +77,8 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *radioPass1;
   GSList *radioPass1_group = NULL;
   GtkWidget *radioPass2;
+  GtkWidget *radioGenerate;
+  GtkWidget *entGeneration;
   GtkWidget *labelpass;
   GtkWidget *frame8;
   GtkWidget *table5;
@@ -442,7 +446,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(frmPass);
   gtk_box_pack_start(GTK_BOX(vbox2), frmPass, TRUE, TRUE, 0);
 
-  table3 = gtk_table_new(2, 2, FALSE);
+  table3 = gtk_table_new (3, 2, FALSE);
   gtk_widget_set_name(table3, "table3");
   gtk_widget_show(table3);
   gtk_container_add(GTK_CONTAINER(frmPass), table3);
@@ -474,6 +478,23 @@ GtkWidget *create_wndMain(void) {
   gtk_table_attach(GTK_TABLE(table3), radioPass2, 0, 1, 1, 2, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), 0, 0);
   gtk_radio_button_set_group(GTK_RADIO_BUTTON(radioPass2), radioPass1_group);
   radioPass1_group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(radioPass2));
+  radioGenerate = gtk_radio_button_new_with_mnemonic (NULL, "Generate");
+  gtk_widget_set_name (radioGenerate, "radioGenerate");
+  gtk_widget_show (radioGenerate);
+  gtk_table_attach (GTK_TABLE (table3), radioGenerate, 0, 1, 2, 3,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), 0, 0);
+  gtk_radio_button_set_group (GTK_RADIO_BUTTON (radioGenerate), radioPass1_group);
+  radioPass1_group = gtk_radio_button_get_group (GTK_RADIO_BUTTON (radioGenerate));
+
+  entGeneration = gtk_entry_new ();
+  gtk_widget_set_name (entGeneration, "entGeneration");
+  gtk_widget_show (entGeneration);
+  gtk_table_attach (GTK_TABLE (table3), entGeneration, 1, 2, 2, 3,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK),
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), 0, 0);
+  gtk_tooltips_set_tip (tooltips, entGeneration, "Generate passwords", NULL);
+  gtk_entry_set_text (GTK_ENTRY (entGeneration), "1:1:a");
 
   labelpass = gtk_label_new("Password");
   gtk_widget_set_name(labelpass, "labelpass");
@@ -1017,6 +1038,8 @@ GtkWidget *create_wndMain(void) {
   GLADE_HOOKUP_OBJECT(wndMain, entPass, "entPass");
   GLADE_HOOKUP_OBJECT(wndMain, radioPass1, "radioPass1");
   GLADE_HOOKUP_OBJECT(wndMain, radioPass2, "radioPass2");
+  GLADE_HOOKUP_OBJECT(wndMain, radioGenerate, "radioGenerate");
+  GLADE_HOOKUP_OBJECT(wndMain, entGeneration, "entGeneration");
   GLADE_HOOKUP_OBJECT(wndMain, labelpass, "labelpass");
   GLADE_HOOKUP_OBJECT(wndMain, frame8, "frame8");
   GLADE_HOOKUP_OBJECT(wndMain, table5, "table5");

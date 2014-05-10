@@ -5,7 +5,8 @@ Release 8.0
 ! Development moved to a public github repository: https://github.com/vanhauser-thc/thc-hydra
 * Added module for redis (submitted by Alejandro Ramos, thanks!)
 * Added patch which adds Unicode support for the SMB module (thanks to Max Kosmach)
-* Added initial interactive password authentication test for ssh (thanks to Joshua Houghton for submitting)
+* Added initial interactive password authentication test for ssh (thanks to Joshua Houghton)
+* Added patch for xhydra that adds bruteforce generator to the GUI (thanks to Petar Kaleychev)
 * Target on the command line can now be a CIDR definition, e.g. 192.168.0.0/24
 * with -M <targetfile>, you can now specify a port for each entry (use "target:port" per line)
 * Verified that hydra compiles cleanly on QNX / Blackberry 10 :-)

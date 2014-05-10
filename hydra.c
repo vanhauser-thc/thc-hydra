@@ -371,7 +371,8 @@ void help(int ext) {
   if (ext) {
     printf("  hydra -L userlist.txt -p defaultpw imap://192.168.0.1/PLAIN\n");
     printf("  hydra -C defaults.txt -6 pop3s://[2001:db8::1]:143/TLS:DIGEST-MD5\n");
-    printf("  hydra -l admin -p password ftp://[192.168.0.0/24]\n");
+    printf("  hydra -l admin -p password ftp://[192.168.0.0/24]/\n");
+    printf("  hydra -L logins.txt -P pws.txt -M targets.txt ssh\n");
   }
   exit(-1);
 }
