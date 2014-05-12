@@ -16,8 +16,8 @@
  A very fast network logon cracker which support many different services.
  See feature sets and services coverage <a href="network_password_cracker_comparison.html">page</a> - incl. a speed comparison against ncrack and medusa<br>
 </h4><h3>
- Current Version: 7.6
- Last update 2014-02-xx
+ Current Version: 8.0
+ Last update 2014-05-12
 </h3>
 </pre>
 </td>
@@ -28,26 +28,31 @@
  [0x00] News and Changelog
 
 <b>        Check out the feature sets and services coverage <a href="network_password_cracker_comparison.html">page</a> - including a speed comparison against ncrack and medusa (yes, we win :-) )
-
+        Development just moved to a public github repository: <a href="https://github.com/vanhauser-thc/thc-hydra">https://github.com/vanhauser-thc/thc-hydra</a>
+        There is a new section below for online tutorials.
         Read below for Linux compilation notes.
-        And there is a new section below for online tutorials.
 </b>        
 
-        CHANGELOG for 7.6
+        CHANGELOG for 8.0
         ===================
-        * Added a wizard script for hydra based on a script by Shivang Desai <shivang.ice.2010@gmail.com>
-        * Added module for Siemens S7-300 (submitted by Alexander Timorin and Sergey Gordeychik, thanks!)
-        * HTTP HEAD/GET: MD5 digest auth was not working, fixed (thanks to Paul Kenyon)
-        * SMTP Enum: HELO is now always sent, better 500 error detection
-        * hydra main:
-           - fixed a bug in the IPv6 address parsing when a port was supplied
-           - added info message for pop3, imap and smtp protocol usage
-        * hydra GTK: missed some services, added
-        * dpl4hydra.sh:
-           - added Siemens S7-300 common passwords to default password list
-           - more broad searching in the list
-        * Performed code indention on all C files :-)
-        * Makefile patch to ensure .../etc directory is there (thanks to vonnyfly)
+        ! Development moved to a public github repository: https://github.com/vanhauser-thc/thc-hydra
+        * Added module for redis (submitted by Alejandro Ramos, thanks!)
+        * Added patch which adds Unicode support for the SMB module (thanks to Max Kosmach)
+        * Added initial interactive password authentication test for ssh (thanks to Joshua Houghton)
+        * Added patch for xhydra that adds bruteforce generator to the GUI (thanks to Petar Kaleychev)
+        * Target on the command line can now be a CIDR definition, e.g. 192.168.0.0/24
+        * with "-M targetfile", you can now specify a port for each entry (use "target:port" per line)
+        * Verified that hydra compiles cleanly on QNX / Blackberry 10 :-)
+        * Bugfixes for -x option:
+          - password tries were lost when connection errors happened (thanks to Vineet Kumar for reporting)
+          - fixed crash when used together with -e option
+        * Fixed a bug that hydra would not compile without libssh (introduced in v7.6)
+        * Various bugfixes if many targets where attacked in parallel
+        * Cygwin's Postgresql is working again, hence configure detection re-enabled
+        * Added gcc compilation security options (if detected to be supported by configure script)
+        * Enhancements to the secure compilation options
+        * Checked code with cppcheck and fixed some minor issues.
+        * Checked code with Coverity. Fixed a lot of small and medium issues.
 
 	You can also take a look at the full <a href="CHANGES">CHANGES</a> file
 
@@ -60,8 +65,8 @@
 	Hydra is a parallized login cracker which supports numerous protocols to attack. New modules
 	are easy to add, beside that, it is flexible and very fast.
 
-        Hydra was tested to compile on Linux, Windows/Cygwin, Solaris 11, FreeBSD 8.1 and OSX, and
-        is made available under GPLv3 with a special OpenSSL license expansion.
+        Hydra was tested to compile on Linux, Windows/Cygwin, Solaris 11, FreeBSD 8.1, OpenBSD, OSX,
+        QNX/Blackberry, and is made available under GPLv3 with a special OpenSSL license expansion.
 
 	Currently this tool supports:
 	  Asterisk, AFP, Cisco AAA, Cisco auth, Cisco enable, CVS, Firebird, FTP, HTTP-FORM-GET, HTTP-FORM-POST,
@@ -75,10 +80,22 @@
 	This tool is a proof of concept code, to give researchers and security consultants the 
 	possiblity to show how easy it would be to gain unauthorized access from remote to a system.
 
-        The program is maintained by van Hauser and David Maciejak.
+        The program was written van Hauser and is additiionally supported by David Maciejak.
 
 
- [0x02] Documentation 
+ [0x02] Screenshots
+
+	<a href="hydra_target.jpg"><img src="hydra_target.jpg"></a>
+	(1) Target selection
+
+	<a href="hydra_pass.jpg"><img src="hydra_pass.jpg"></a>
+	(2) Login/Password setup
+
+	<a href="hydra_start.jpg"><img src="hydra_start.jpg"></a>
+	(3) Hydra start and output
+
+
+ [0x03] Documentation 
  
 	Hydra comes with a rather long <a href="README">README file</a> that describes the
 	details about the usage and special options.
@@ -110,7 +127,41 @@
 	If you find other good ones, just email them in ( vh(at)thc(dot)org ).
 
 
- [0x03] Compilation Help
+ [0x04] Disclaimer
+
+	1. Please do not use in military or secret service organizations or for illegal purposes.
+	2. The Affero General Public License Version 3 (AGPLv3) applies to this code.
+	3. A special license expansion for OpenSSL is included which is required for the Debian people
+
+
+ [0x05] The Art of Downloading: Source and Binaries
+ 
+	1. PRODUCTION/RELEASE VERSION:
+	   The source code of state-of-the-art Hydra: <a href="http://www.thc.org/releases/hydra-8.0.tar.gz">hydra-8.0.tar.gz</a>
+	   (compiles on all UNIX based platforms - even MacOS X, Cygwin on Windows, ARM-Linux, Android, iPhone, Blackberry 10, etc.)
+
+        2. DEVELOPMENT VERSION:
+           You can download and compile the current development version of hydra always in its public GITHUB repository:
+           <a href="https://github.com/vanhauser-thc/thc-hydra">https://github.com/vanhauser-thc/thc-hydra</a> by either
+             svn co https://github.com/vanhauser-thc/thc-hydra
+           or
+             git clone https://github.com/vanhauser-thc/thc-hydra.git
+           Note that this is the development state! New features - and new bugs. Things might not work!
+
+	3. The source code of an old, deprecated version of Hydra <b>ONLY in case v7.x gives you problems</b> on unusual and old platforms:
+	   <a href="http://www.thc.org/releases/hydra-5.9.1-src.tar.gz">hydra-5.9.1-src.tar.gz</a>
+
+	4. The Win32/Cywin binary release: --- not anymore ---
+	   Install cygwin from <a href="http://www.cygwin.com/">http://www.cygwin.com</a>
+	   and compile it yourself. If you do not have cygwin installed - how
+	   do you think you will do proper securiy testing? duh ...
+
+        5. ARM and Palm binaries here are old and not longer maintained:
+	     ARM:  <a href="http://www.thc.org/thc-hydra/hydra-5.0-arm.tar.gz">hydra-5.0-arm.tar.gz</a>
+             Palm: <a href="http://www.thc.org/thc-hydra/hydra-4.6-palm.zip">hydra-4.6-palm.zip</a>
+
+
+ [0x06] Compilation Help
 
         Hydry compiles fine on all platforms that have gcc - Linux, all BSD, Mac OS/X, Cygwin on Windows, Solaris, etc.
         It should even compile on historical SunOS, Ultrix etc. platforms :-)
@@ -134,14 +185,7 @@
         the configure script output tells you what is missing and where to get it from.
         
 
- [0x04] Disclaimer
-
-	1. This tool is for legal purposes only!
-	2. The Affero General Public License Version 3 (AGPLv3) applies to this code.
-	3. A special license expansion for OpenSSL is included which is required for the Debian people
-
-
- [0x05] Development &amp; Contributions
+ [0x07] Development &amp; Contributions
 
 	Your contributions are more than welcomed!
 	
@@ -151,38 +195,10 @@
 	Interesting attack modules would be:
 	OSPF, BGP, PIM, PPTP, ...
 	(or anything else you might be able to do (and is not there yet))
+	
+	Please note that you can also download and commit via github: <a href="https://github.com/vanhauser-thc/thc-hydra">https://github.com/vanhauser-thc/thc-hydra</a>
 
  
- [0x06] Screenshots
-
-	<a href="hydra_target.jpg"><img src="hydra_target.jpg"></a>
-	(1) Target selection
-
-	<a href="hydra_pass.jpg"><img src="hydra_pass.jpg"></a>
-	(2) Login/Password setup
-
-	<a href="hydra_start.jpg"><img src="hydra_start.jpg"></a>
-	(3) Hydra start and output
-
-
- [0x07] The Art of Downloading: Source and Binaries
- 
-	1. The source code of state-of-the-art Hydra: <a href="http://www.thc.org/releases/hydra-7.6.tar.gz">hydra-7.6.tar.gz</a>
-	   (compiles on all UNIX based platforms - even MacOS X, Cygwin on Windows, ARM-Linux, Android, etc.)
-
-	2. The source code of an old, deprecated version of Hydra <b>ONLY in case v7.x gives you problems</b> on unusual and old platforms:
-	   <a href="http://www.thc.org/releases/hydra-5.9.1-src.tar.gz">hydra-5.9.1-src.tar.gz</a>
-
-	3. The Win32/Cywin binary release: --- not anymore ---
-	   Install cygwin from <a href="http://www.cygwin.com/">http://www.cygwin.com</a>
-	   and compile it yourself. If you do not have cygwin installed - how
-	   do you think you will do proper securiy testing? duh ...
-
-        4. ARM and Palm binaries here are old and not longer maintained:
-	     ARM:  <a href="http://www.thc.org/thc-hydra/hydra-5.0-arm.tar.gz">hydra-5.0-arm.tar.gz</a>
-             Palm: <a href="http://www.thc.org/thc-hydra/hydra-4.6-palm.zip">hydra-4.6-palm.zip</a>
-
-
  Comments and suggestions are welcome.
 
  Yours sincerly,
