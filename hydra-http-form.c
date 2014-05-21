@@ -56,6 +56,12 @@ extern char *HYDRA_EXIT;
 char *buf;
 char *cond;
 
+typedef struct header_node {
+	char *header;
+	char *value;
+	struct header_node *next;
+}t_header_node, *ptr_header_node;
+
 int success_cond = 0;
 int getcookie = 1;
 int auth_flag = 0;
@@ -71,6 +77,68 @@ extern char *webtarget;
 extern char *slash;
 int webport, freemischttpform = 0;
 char bufferurl[1024], cookieurl[1024] = "", userheader[1024] = "", *url, *variables, *optional1;
+
+ptr_header_node ptr_head = NULL;
+
+/*
+ * Returns 1 if success, or 0 otherwise (out of memory).
+ */
+int add_header(char *header, char *value){
+	ptr_header_node cur_ptr = NULL;
+
+	// get to the last header
+	for(cur_ptr = ptr_head; cur_ptr && cur_ptr->next; cur_ptr = cur_ptr->next);
+
+	ptr_header_node new_ptr = (ptr_header_node) malloc(sizeof(t_header_node));
+	if(new_ptr){
+		// create a new item and append it to the list
+		new_ptr->header = header;
+		new_ptr->value = value;
+		new_ptr->next = NULL;
+	}else{
+		// we're out of memory, so forcefully end
+		return 0;
+	}
+
+	if(cur_ptr)
+		cur_ptr->next = new_ptr;
+	else
+		// head is NULL, so the list is empty
+		ptr_head = new_ptr;
+
+	hydra_report_debug(stdout, "[add_header] Added header %s: %s", header, value);
+	hydra_report_debug(stdout, "[add_header] len(header) = %d", strlen(header));
+	hydra_report_debug(stdout, "[add_header] len(value) = %d", strlen(value));
+	
+	return 1;
+}
+
+/*
+ * List layout:
+ * 	+----------+     +--------+     +--------+     +--------+
+ * 	| ptr_head | --> |  next  | --> |  next  | --> |  NULL  |
+ * 	|          |     | header |     | header |     |  NULL  |
+ * 	|          |     | value  |     |  value |     |  NULL  |
+ * 	+----------+     +--------+     +--------+     +--------+
+ *
+ * 	Returns 1 if success, or 0 otherwise (out of memory).
+ */
+int add_or_replace_header(char *header, char *value){
+	ptr_header_node cur_ptr = NULL;
+
+	for(cur_ptr = ptr_head; cur_ptr; cur_ptr = cur_ptr->next){
+		if(strcmp(cur_ptr->header, header) == 0){
+			free(cur_ptr->value);
+			cur_ptr->value = value;
+			break;
+		}
+	}
+
+	if(cur_ptr == NULL)
+		return add_header(header, value);
+
+	return 1;
+}
 
 int strpos(char *str, char *target) {
   char *res = strstr(str, target);
@@ -382,8 +450,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         if ((endloc = strchr(startloc, '\n')) != NULL) {
           startloc[endloc - startloc] = 0;
         }
-        strncpy(str, startloc, sizeof(str));
-        str[sizeof(str) - 1] = 0;
+        strcpy(str, startloc);
 
         endloc = strchr(str, '/');
         if (endloc != NULL) {
@@ -395,12 +462,11 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         if (strlen(str) - strlen(str2) == 0) {
           strcpy(str3, "/");
         } else {
-          strncpy(str3, str + strlen(str2), strlen(str) - strlen(str2));
-          str3[strlen(str) - strlen(str2)] = 0;
+          strncpy(str3, str + strlen(str2), strlen(str) - strlen(str2) - 1);
+          str3[strlen(str) - strlen(str2) - 1] = 0;
         }
       } else {
-        strncpy(str2, webtarget, sizeof(str2) - 1);
-        str2[sizeof(str2) - 1] = 0;
+        strncpy(str2, webtarget, sizeof(str2));
         if (redirected_url_buff[0] != '/') {
           //it's a relative path, so we have to concatenate it
           //with the path from the first url given
@@ -526,20 +592,20 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
     *ptr++ = 0;
   optional1 = ptr;
   if (strstr(url, "\\:") != NULL) {
-    if ((ptr = malloc(strlen(url))) != NULL) { // no need for +1
+    if ((ptr = malloc(strlen(url))) != NULL) {
       strcpy(ptr, hydra_strrep(url, "\\:", ":"));
       url = ptr;
     }
   }
   if (strstr(variables, "\\:") != NULL) {
-    if ((ptr = malloc(strlen(variables))) != NULL) { // no need for +1
+    if ((ptr = malloc(strlen(variables))) != NULL) {
       strcpy(ptr, hydra_strrep(variables, "\\:", ":"));
       variables = ptr;
     }
   }
   if (strstr(cond, "\\:") != NULL) {
-    if ((ptr = malloc(strlen(cond))) != NULL) { // no need for +1
-      strcpy(ptr, hydra_strrep(cond, "\\:", ":")); 
+    if ((ptr = malloc(strlen(cond))) != NULL) {
+      strcpy(ptr, hydra_strrep(cond, "\\:", ":"));
       cond = ptr;
     }
   }
@@ -567,6 +633,7 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
     success_cond = 0;
   }
 
+  char *header = NULL, *value = NULL;
   while ( /*(optional1 = strtok(NULL, ":")) != NULL */ *optional1 != 0) {
     switch (optional1[0]) {
     case 'c':                  // fall through
@@ -579,24 +646,49 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
       sprintf(cookieurl, "%.1000s", hydra_strrep(optional1 + 2, "\\:", ":"));
       optional1 = ptr;
       break;
-    case 'h':                  // fall through
+    case 'h':
+    	// add a new header at the end
+    	ptr = optional1 + 2;
+	while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
+		ptr++;
+	if (*ptr != 0)
+		*ptr++ = 0;
+	ptr2 = ptr;
+	while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
+		ptr2++;
+	if (*ptr2 != 0)
+		*ptr2++ = 0;
+	/*
+	  * At this point:
+	  * 	- optional1 contains the header's name
+	  * 	- ptr contains the header's value
+	  */
+	header = (char *) malloc(strlen(optional1 + 2));
+	value = (char *) malloc(strlen(ptr));
+	if(header && value){
+		strcpy(header, optional1 + 2);
+		strcpy(value, hydra_strrep(ptr, "\\:", ":"));
+		hydra_report_debug(stdout, "Adding header: %s: %s", header, value);
+		hydra_report_debug(stdout, "\tlen(header): %d", strlen(header));
+		hydra_report_debug(stdout, "\tlen(value): %d", strlen(value));
+		if(add_header(header, value)){
+			// Success: break the switch and go ahead
+			optional1 = ptr2;
+			break;
+		}
+	}
+	// Error: abort execution
+	hydra_report(stderr, "[ERROR] Out of memory for HTTP headers.");
+	hydra_child_exit(1);
+	break;
     case 'H':
-      ptr = optional1 + 2;
-      while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
-        ptr++;
-      if (*ptr != 0)
-        *ptr++ = 0;
-      ptr2 = ptr;
-      while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
-        ptr2++;
-      if (*ptr2 != 0)
-        *ptr2++ = 0;
-      if (sizeof(userheader) - strlen(userheader) > 4) {
-        strncat(userheader, optional1 + 2, sizeof(userheader) - strlen(userheader) - 4);
-        strcat(userheader, ":");
-        strncat(userheader, hydra_strrep(ptr, "\\:", ":"), sizeof(userheader) - strlen(userheader) - 3);
-        strcat(userheader, "\r\n");
-      }
+    	// add a new header, or replace an existing one's value
+//      if (sizeof(userheader) - strlen(userheader) > 4) {
+//        strncat(userheader, optional1 + 2, sizeof(userheader) - strlen(userheader) - 4);
+//        strcat(userheader, ":");
+//        strncat(userheader, hydra_strrep(ptr, "\\:", ":"), sizeof(userheader) - strlen(userheader) - 3);
+//        strcat(userheader, "\r\n");
+//      }
       optional1 = ptr2;
       break;
       // no default
@@ -671,11 +763,13 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
 }
 
 void service_http_get_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  service_http_form(ip, sp, options, miscptr, fp, port, "GET");
+  ////
+	service_http_form(ip, sp, options, miscptr, fp, port, "GET");
 }
 
 void service_http_post_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  service_http_form(ip, sp, options, miscptr, fp, port, "POST");
+	////
+	service_http_form(ip, sp, options, miscptr, fp, port, "POST");
 }
 
 int service_http_form_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
