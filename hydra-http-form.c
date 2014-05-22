@@ -84,33 +84,34 @@ ptr_header_node ptr_head = NULL;
  * Returns 1 if success, or 0 otherwise (out of memory).
  */
 int add_header(char *header, char *value){
-	ptr_header_node cur_ptr = NULL;
+  ptr_header_node cur_ptr = NULL;
 
-	// get to the last header
-	for(cur_ptr = ptr_head; cur_ptr && cur_ptr->next; cur_ptr = cur_ptr->next);
+  // get to the last header
+  for(cur_ptr = ptr_head; cur_ptr && cur_ptr->next; cur_ptr = cur_ptr->next);
 
-	ptr_header_node new_ptr = (ptr_header_node) malloc(sizeof(t_header_node));
-	if(new_ptr){
-		// create a new item and append it to the list
-		new_ptr->header = header;
-		new_ptr->value = value;
-		new_ptr->next = NULL;
-	}else{
-		// we're out of memory, so forcefully end
-		return 0;
-	}
+  ptr_header_node new_ptr = (ptr_header_node) malloc(sizeof(t_header_node));
+  if(new_ptr){
+    // create a new item and append it to the list
+    new_ptr->header = header;
+    new_ptr->value = value;
+    new_ptr->next = NULL;
+  }else{
+    // we're out of memory, so forcefully end
+    return 0;
+  }
 
-	if(cur_ptr)
-		cur_ptr->next = new_ptr;
-	else
-		// head is NULL, so the list is empty
-		ptr_head = new_ptr;
+  if(cur_ptr)
+    cur_ptr->next = new_ptr;
+  else
+    // head is NULL, so the list is empty
+    ptr_head = new_ptr;
 
-	hydra_report_debug(stdout, "[add_header] Added header %s: %s", header, value);
-	hydra_report_debug(stdout, "[add_header] len(header) = %d", strlen(header));
-	hydra_report_debug(stdout, "[add_header] len(value) = %d", strlen(value));
-	
-	return 1;
+  // TODO Remove the debug messages
+  hydra_report_debug(stdout, "[add_header] Added header %s: %s", header, value);
+  hydra_report_debug(stdout, "[add_header] len(header) = %d", strlen(header));
+  hydra_report_debug(stdout, "[add_header] len(value) = %d", strlen(value));
+
+  return 1;
 }
 
 /*
@@ -124,20 +125,59 @@ int add_header(char *header, char *value){
  * 	Returns 1 if success, or 0 otherwise (out of memory).
  */
 int add_or_replace_header(char *header, char *value){
-	ptr_header_node cur_ptr = NULL;
+  ptr_header_node cur_ptr = NULL;
 
-	for(cur_ptr = ptr_head; cur_ptr; cur_ptr = cur_ptr->next){
-		if(strcmp(cur_ptr->header, header) == 0){
-			free(cur_ptr->value);
-			cur_ptr->value = value;
-			break;
-		}
-	}
+  for(cur_ptr = ptr_head; cur_ptr; cur_ptr = cur_ptr->next){
+    if(strcmp(cur_ptr->header, header) == 0){
+      free(cur_ptr->value);
+      cur_ptr->value = value;
+      break;
+    }
+  }
 
-	if(cur_ptr == NULL)
-		return add_header(header, value);
+  if(cur_ptr == NULL)
+    return add_header(header, value);
 
-	return 1;
+  // TODO Remove the debug messages
+  hydra_report_debug(stdout, "[add_or_replace_header] Added header %s: %s", header, value);
+  hydra_report_debug(stdout, "[add_or_replace_header] len(header) = %d", strlen(header));
+  hydra_report_debug(stdout, "[add_or_replace_header] len(value) = %d", strlen(value));
+
+  return 1;
+}
+
+/*
+ * Concat all the headers in the list in a single string, and clean the whole list.
+ */
+char * stringify_headers_and_clean(){
+  char * headers_str = NULL;
+  ptr_header_node cur_ptr = ptr_head, tmp_ptr = NULL;
+  int ttl_size = 0;
+
+  while(cur_ptr){
+    if(cur_ptr->header && cur_ptr->value){	// Check for NULLs
+      ttl_size += strlen(cur_ptr->header) + strlen(cur_ptr->value) + 1;
+      headers_str = (char *) realloc(headers_str, sizeof(char) * ttl_size);
+      if(headers_str){	// Check for errors
+	strcat(headers_str, cur_ptr->header);
+	strcat(headers_str, ": ");
+	strcat(headers_str, cur_ptr->value);
+	strcat(headers_str, "\r\n");
+      }else{
+	// Error: out of memory
+	hydra_report(stderr, "Out of memory for HTTP headers");
+	hydra_child_exit(1);
+      }
+    }
+    // Clean it up and get to the next header
+    tmp_ptr = cur_ptr;
+    cur_ptr = cur_ptr->next;
+    free(tmp_ptr->header);
+    free(tmp_ptr->value);
+    free(tmp_ptr);
+  }
+
+  return headers_str;
 }
 
 int strpos(char *str, char *target) {
@@ -647,49 +687,53 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
       optional1 = ptr;
       break;
     case 'h':
-    	// add a new header at the end
-    	ptr = optional1 + 2;
-	while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
-		ptr++;
-	if (*ptr != 0)
-		*ptr++ = 0;
-	ptr2 = ptr;
-	while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
-		ptr2++;
-	if (*ptr2 != 0)
-		*ptr2++ = 0;
-	/*
-	  * At this point:
-	  * 	- optional1 contains the header's name
-	  * 	- ptr contains the header's value
-	  */
-	header = (char *) malloc(strlen(optional1 + 2));
-	value = (char *) malloc(strlen(ptr));
-	if(header && value){
-		strcpy(header, optional1 + 2);
-		strcpy(value, hydra_strrep(ptr, "\\:", ":"));
-		hydra_report_debug(stdout, "Adding header: %s: %s", header, value);
-		hydra_report_debug(stdout, "\tlen(header): %d", strlen(header));
-		hydra_report_debug(stdout, "\tlen(value): %d", strlen(value));
-		if(add_header(header, value)){
-			// Success: break the switch and go ahead
-			optional1 = ptr2;
-			break;
-		}
+      // add a new header at the end
+      ptr = optional1 + 2;
+      while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
+	ptr++;
+      if (*ptr != 0)
+	*ptr++ = 0;
+      ptr2 = ptr;
+      while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
+	ptr2++;
+      if (*ptr2 != 0)
+	*ptr2++ = 0;
+      /*
+       * At this point:
+       *  - (optional1 + 2) contains the header's name
+       *  - ptr contains the header's value
+       */
+      header = (char *) malloc(strlen(optional1 + 2));
+      value = (char *) malloc(strlen(ptr));
+      if(header && value){
+	strcpy(header, optional1 + 2);
+	strcpy(value, hydra_strrep(ptr, "\\:", ":"));
+	if(add_header(hydra_trim(header), hydra_trim(value))){
+	  // Success: break the switch and go ahead
+	  optional1 = ptr2;
+	  break;
 	}
-	// Error: abort execution
-	hydra_report(stderr, "[ERROR] Out of memory for HTTP headers.");
-	hydra_child_exit(1);
-	break;
+      }
+      // Error: abort execution
+      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers.");
+      hydra_child_exit(1);
+      break;
     case 'H':
-    	// add a new header, or replace an existing one's value
-//      if (sizeof(userheader) - strlen(userheader) > 4) {
-//        strncat(userheader, optional1 + 2, sizeof(userheader) - strlen(userheader) - 4);
-//        strcat(userheader, ":");
-//        strncat(userheader, hydra_strrep(ptr, "\\:", ":"), sizeof(userheader) - strlen(userheader) - 3);
-//        strcat(userheader, "\r\n");
-//      }
-      optional1 = ptr2;
+      // add a new header, or replace an existing one's value
+      header = (char *) malloc(strlen(optional1 + 2));
+      value = (char *) malloc(strlen(ptr));
+      if(header && value){
+	strcpy(header, optional1 + 2);
+	strcpy(value, hydra_strrep(ptr, "\\:", ":"));
+	if(add_or_replace_header(hydra_trim(header), hydra_trim(value))){
+	  // Success: break the switch and go ahead
+	  optional1 = ptr2;
+	  break;
+	}
+      }
+      // Error: abort execution
+      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers.");
+      hydra_child_exit(1);
       break;
       // no default
     }
