@@ -2,7 +2,7 @@ Changelog for hydra
 -------------------
 
 Release 8.1-pre
-* Added xhydra gtk patch by Peter Kaleychev to support -e r reverse login attempt, thanks!
+* Added xhydra gtk patch by Petar Kaleychev to support -e r reverse login attempt, thanks!
 * Fixed a crash in the cisco module (thanks to Anatoly Mamaev for reporting)
 * Small fix for HTTP form module for redirect pages where a S= string match would not work (thanks to mkosmach for reporting)
 
