@@ -24,6 +24,7 @@ int start_cisco(int s, char *ip, int port, unsigned char options, char *miscptr,
     return 1;
   }
   sleep(1);
+  buf = NULL;
   do {
     if (buf != NULL)
       free(buf);
@@ -51,8 +52,11 @@ int start_cisco(int s, char *ip, int port, unsigned char options, char *miscptr,
     if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
       return 1;
     }
+    
+    buf = NULL;
     do {
-      free(buf);
+      if (buf != NULL)
+        free(buf);
       if ((buf = hydra_receive_line(s)) == NULL)
         return 3;
       if (buf[strlen(buf) - 1] == '\n')
@@ -78,6 +82,7 @@ int start_cisco(int s, char *ip, int port, unsigned char options, char *miscptr,
       if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
         return 1;
       }
+      buf = NULL;
       do {
         if (buf != NULL)
           free(buf);

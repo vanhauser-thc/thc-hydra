@@ -460,7 +460,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
   }
 
   //if the last status is still 3xx, set it as a false
-  if (found != -1 && found == success_cond && redirected_flag == 0 && redirected_cpt >= 0) {
+  if (found != -1 && found == success_cond && (redirected_flag == 0 || success_cond == 1) && redirected_cpt >= 0) {
     hydra_report_found_host(port, ip, "www-form", fp);
     hydra_completed_pair_found();
   } else {

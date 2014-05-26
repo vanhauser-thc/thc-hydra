@@ -150,7 +150,7 @@ int hydra_get_options(char *options[]) {
     }
   }
 
-  /* empty passes / login as pass? */
+  /* empty passes / login as pass / reversed login? */
   memset(passLoginNull, 0, 4);
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkPassNull");
   if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
@@ -162,6 +162,17 @@ int hydra_get_options(char *options[]) {
       passLoginNull[0] = 's';
     } else {
       passLoginNull[1] = 's';
+    }
+  }
+  /* The "Try reversed login" button was implemented by Petar Kaleychev <petar.kaleychev@gmail.com> */
+  widget = lookup_widget(GTK_WIDGET(wndMain), "chkPassReverse");
+  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+    if (passLoginNull[0] == 0) {
+      passLoginNull[0] = 'r';
+    } else if (passLoginNull[1] == 0) {
+      passLoginNull[1] = 'r';
+    } else {
+      passLoginNull[2] = 'r';
     }
   }
   if (passLoginNull[0] != 0) {
