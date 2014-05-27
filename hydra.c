@@ -264,7 +264,9 @@ typedef struct {
 
 // external vars 
 extern char HYDRA_EXIT[5];
+#if !defined(ANDROID) && !defined(__BIONIC__)
 extern int errno;
+#endif
 extern int debug;
 extern int verbose;
 extern int waittime;
