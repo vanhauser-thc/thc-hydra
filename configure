@@ -451,10 +451,15 @@ for i in $LIBDIRS ; do
         fi
     fi
 done
+MYSQLINSUBDIR=""
 for i in $INCDIRS ; do
     if [ "X" != "X$MYSQL_PATH" ]; then
         if [ -f "$i/mysql/mysql.h" ]; then
             MYSQL_IPATH="$i/mysql"
+            MYSQLINSUBDIR="mysql/"
+        fi
+        if [ -f "$i/mysql.h" ]; then
+            MYSQL_IPATH="$i"
         fi
     fi
 done
@@ -931,6 +936,11 @@ if [ -n "$SVN_IPATH" ]; then
 fi
 if [ -n "$MYSQL_IPATH" ]; then
     XIPATHS="$XIPATHS -I$MYSQL_IPATH"
+    if [ -n "$MYSQLINSUBDIR" ]; then
+       XDEFINES="$XDEFINES -DHAVE_MYSQL_MYSQL_H"
+    else
+       XDEFINES="$XDEFINES -DHAVE_MYSQL_H"
+    fi
 fi
 if [ -n "$AFP_IPATH" ]; then
     XIPATHS="$XIPATHS -I$AFP_IPATH"
