@@ -551,6 +551,7 @@ enum RDP_UPDATE_PDU_TYPE
 #include <openssl/bn.h>
 #include <openssl/x509v3.h>
 #include <openssl/hmac.h>
+#include <openssl/rsa.h>
 
 #if defined(OPENSSL_VERSION_NUMBER) && (OPENSSL_VERSION_NUMBER >= 0x0090800f)
 #define D2I_X509_CONST const

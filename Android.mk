@@ -3,8 +3,8 @@ include $(CLEAR_VARS)
 
 LOCAL_CFLAGS:= -O3 -DLIBOPENSSL -DLIBFIREBIRD -DLIBIDN -DHAVE_PR29_H -DHAVE_PCRE \
                -DLIBMYSQLCLIENT -DLIBNCP -DLIBPOSTGRES -DLIBSVN -DLIBSSH -DNO_RINDEX \
-               -DHAVE_MATH_H -DHAVE_MYSQL_H -DOPENSSL_NO_DEPRECATED -fdata-sections \
-               -ffunction-sections
+               -DHAVE_MATH_H -DHAVE_MYSQL_H -DOPENSSL_NO_DEPRECATED -DNO_RSA_LEGACY \
+               -fdata-sections -ffunction-sections
 
 LOCAL_LDFLAGS:=-Wl,--gc-sections
 
