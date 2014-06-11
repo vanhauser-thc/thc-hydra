@@ -2758,8 +2758,10 @@ int main(int argc, char *argv[]) {
     }
     if (strcmp(hydra_options.service, "cisco-enable") == 0) {
       i = 2;
-      if (hydra_options.login == NULL)
-        hydra_options.login = empty_login;
+      if (hydra_options.login == NULL) {
+        //hydra_options.login = empty_login;
+        i = 1; // login will be the initial Username: login, or line Password:
+      }
       if (hydra_options.miscptr == NULL) {
         fprintf(stderr, "[WARNING] You did not supply the initial support to the Cisco via -l, assuming direct console access\n");
       }
