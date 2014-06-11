@@ -503,7 +503,7 @@ void module_usage() {
              "Examples:\n"
              "  hydra -P pass.txt target cisco-enable  (direct console access)\n"
              "  hydra -P pass.txt -m cisco target cisco-enable  (Logon password cisco)\n"
-             "  hydra -l foo -m bar -P pass.txt -m cisco target cisco-enable  (AAA Login foo, password bar)\n");
+             "  hydra -l foo -m bar -P pass.txt target cisco-enable  (AAA Login foo, password bar)\n");
       find = 1;
     }
     if (!find && (strcmp(hydra_options.service, "cisco") == 0)) {
