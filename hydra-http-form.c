@@ -134,10 +134,13 @@ int add_header(char *header, char *value){
   for(cur_ptr = ptr_head; cur_ptr && cur_ptr->next; cur_ptr = cur_ptr->next);
 
   ptr_header_node new_ptr = (ptr_header_node) malloc(sizeof(t_header_node));
-  if(new_ptr){
+  char * new_header = strdup(header);
+  char * new_value = strdup(value);
+
+  if(new_ptr && new_header && new_value){
     // create a new item and append it to the list
-    new_ptr->header = header;
-    new_ptr->value = value;
+    new_ptr->header = new_header;
+    new_ptr->value = new_value;
     new_ptr->next = NULL;
   }else{
     // we're out of memory, so forcefully end
@@ -149,11 +152,6 @@ int add_header(char *header, char *value){
   else
     // head is NULL, so the list is empty
     ptr_head = new_ptr;
-
-  // TODO Remove the debug messages
-//  hydra_report(stdout, "[add_header] Added header %s: %s\n", header, value);
-//  hydra_report(stdout, "[add_header] len(header) = %d", strlen(header));
-//  hydra_report(stdout, "[add_header] len(value) = %d", strlen(value));
 
   return 1;
 }
@@ -169,25 +167,30 @@ int add_header(char *header, char *value){
  * 	Returns 1 if success, or 0 otherwise (out of memory).
  */
 int add_or_replace_header(char *header, char *value){
-  ptr_header_node cur_ptr = NULL;
+	int ret = 1;
 
-  for(cur_ptr = ptr_head; cur_ptr; cur_ptr = cur_ptr->next){
-    if(strcmp(cur_ptr->header, header) == 0){
-      //free(cur_ptr->value);
-      cur_ptr->value = value;
-      break;
-    }
+  ptr_header_node cur_ptr = NULL;
+  char * new_header = strdup(header);
+  char * new_value = strdup(value);
+
+  if(new_header && new_value){
+		for(cur_ptr = ptr_head; cur_ptr; cur_ptr = cur_ptr->next){
+			if(strcmp(cur_ptr->header, new_header) == 0){
+				free(cur_ptr->value);
+				cur_ptr->value = new_value;
+				break;
+			}
+		}
   }
 
-  if(cur_ptr == NULL)
-    return add_header(header, value);
+  if(cur_ptr == NULL){
+    ret = add_header(header, value);
+    // add_header() will create a new copy so we can safely free them
+    free(new_header);
+    free(new_value);
+  }
 
-  // TODO Remove the debug messages
-//  hydra_report(stdout, "[add_or_replace_header] Added header %s: %s\n", header, value);
-//  hydra_report(stdout, "[add_or_replace_header] len(header) = %d", strlen(header));
-//  hydra_report(stdout, "[add_or_replace_header] len(value) = %d", strlen(value));
-
-  return 1;
+  return ret;
 }
 
 /*
@@ -207,39 +210,6 @@ void hdrrep(char * oldvalue, char * newvalue){
 			}
 		}
 	}
-}
-
-int add_default_headers(int default_header_opts){
-	int retval = 0;
-
-	char * header = (char *) malloc(sizeof(char) * 80);
-	char * value = (char *) malloc(sizeof(char) * 80);
-
-	if(header && value){
-		if((default_header_opts & OPT_PROXY_AUTH) == OPT_PROXY_AUTH){
-				memset(header, 0, 80);
-				memset(value, 0, 80);
-				strcpy(header, "Proxy-Authorization");
-				strcpy(value, "Basic ");
-				strncat(value, proxy_authentication, 73);
-				retval &= add_header(header, value);
-				retval &= add_header("User-Agent", "Mozilla/5.0 (Hydra Proxy Auth)");
-		}
-
-		if((default_header_opts & OPT_PROXY_NOAUTH) == OPT_PROXY_NOAUTH){
-				retval &= add_or_replace_header("User-Agent", "Mozilla/5.0 (Hydra Proxy)");
-		}
-
-		if((default_header_opts & OPT_NOPROXY) == OPT_NOPROXY){
-
-		}
-
-		if((default_header_opts & OPT_GETCOOKIES) == OPT_GETCOOKIES){
-
-		}
-	}
-
-	return retval;
 }
 
 /*
@@ -275,9 +245,9 @@ char * stringify_headers_and_clean(){
     // Clean it up and get to the next header
     tmp_ptr = cur_ptr;
     cur_ptr = cur_ptr->next;
-    //free(tmp_ptr->header);
-    //free(tmp_ptr->value);
-    //free(tmp_ptr);
+    free(tmp_ptr->header);
+    free(tmp_ptr->value);
+    free(tmp_ptr);
   }
 
   return headers_str;
@@ -565,29 +535,18 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
   }
 
   // Prepare the HTTP requests that will follow
+  // Add the default HTTP headers
   http_opts = 0;
   if(use_proxy == 1 && proxy_authentication != NULL){
 		// proxy with authentication
-		http_opts = OPT_PROXY_AUTH;
-		if(getcookie)
-			http_opts |= OPT_GETCOOKIES;
+		// TODO Add default headers here
   }else if(use_proxy == 1){
 		// proxy without authentication
-		http_opts = OPT_PROXY_NOAUTH;
-		if(getcookie)
-			http_opts |= OPT_GETCOOKIES;
+		// TODO Add default headers here
   }else{
 		// direct web server, no proxy
-//  	char * header = (char *) malloc(255);
-//  	char * value = (char *) malloc(255);
-//  	strcpy(header, "User-Agent");
-//  	strcpy(value, "Mozilla/5.0 (Hydra)");
-//  	add_header(header, value);
-  		add_header("Host", webtarget);
-  		add_header("User-Agent", "Mozilla/5.0 (Hydra)");
-		http_opts = OPT_NOPROXY;
-		if(getcookie)
-			http_opts |=OPT_GETCOOKIES;
+		add_header("Host", webtarget);
+		add_header("User-Agent", "Mozilla/5.0 (Hydra)");
   }
 
   prepare_httpreq(type, url);
@@ -622,18 +581,10 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
        *  - (optional1 + 2) contains the header's name
        *  - ptr contains the header's value
        */
-      header = (char *) malloc(strlen(optional1 + 2));
-      value = (char *) malloc(strlen(ptr));
-      if(header && value){
-				strcpy(header, optional1 + 2);
-				strcpy(value, hydra_strrep(ptr, "\\:", ":"));
-				hydra_report(stdout, "Header: %s\n", header);
-				hydra_report(stdout, "Value: %s\n", value);
-				if(add_header(header, value)){
-					// Success: break the switch and go ahead
-					optional1 = ptr2;
-					break;
-				}
+      if(add_header(optional1 + 2, hydra_strrep(ptr, "\\:", ":"))){
+      		// Success: break the switch and go ahead
+      		optional1 = ptr2;
+      		break;
       }
       // Error: abort execution
       hydra_report(stderr, "[ERROR] Out of memory for HTTP headers.");
@@ -656,19 +607,11 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
 			 *  - (optional1 + 2) contains the header's name
 			 *  - ptr contains the header's value
 			 */
-      header = (char *) malloc(strlen(optional1 + 2));
-      value = (char *) malloc(strlen(ptr));
-      if(header && value){
-				strcpy(header, optional1 + 2);
-				strcpy(value, hydra_strrep(ptr, "\\:", ":"));
-				hydra_report(stdout, "Header: %s\n", header);
-				hydra_report(stdout, "Value: %s\n", value);
-				if(add_or_replace_header(header, value)){
+			if(add_or_replace_header(optional1 + 2, hydra_strrep(ptr, "\\:", ":"))){
 					// Success: break the switch and go ahead
 					optional1 = ptr2;
 					break;
-				}
-      }
+			}
       // Error: abort execution
       hydra_report(stderr, "[ERROR] Out of memory for HTTP headers.");
       hydra_child_exit(1);
