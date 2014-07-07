@@ -63,16 +63,19 @@ Added fail or success condition, getting cookies, and allow 5 redirections by da
 #define DEFAULT_USER_AGENT		2
 #define DEFAULT_CONTENT_TYPE	4
 
-#define MAX_REQ_LEN						1030
+/*	HTTP Header Types	*/
+#define HEADER_TYPE_USERHEADER				'h'
+#define HEADER_TYPE_USERHEADER_REPL		'H'
+#define HEADER_TYPE_DEFAULT						'D'
 
 extern char *HYDRA_EXIT;
 char *buf;
 char *cond;
 
-char http_request[MAX_REQ_LEN];
 typedef struct header_node {
 	char *header;
 	char *value;
+	char type;
 	struct header_node *next;
 }t_header_node, *ptr_header_node;
 
@@ -90,25 +93,9 @@ char cookie[4096] = "", cmiscptr[1024];
 extern char *webtarget;
 extern char *slash;
 int webport, freemischttpform = 0;
-int http_opts;
 char bufferurl[1024], cookieurl[1024] = "", userheader[1024] = "", *url, *variables, *optional1;
 
 ptr_header_node ptr_head = NULL;
-
-void prepare_httpreq(char * method, char * path){
-	char tail[] = " HTTP/1.0";
-	int req_len = (strlen(method) + strlen(path) + 1) <= MAX_REQ_LEN ? (strlen(method) + strlen(path) + 1) : MAX_REQ_LEN;
-
-	memset(http_request, 0, MAX_REQ_LEN);
-
-	if(strcmp(method, "GET") == 0)
-		strcat(http_request, "GET ");
-	else if(strcmp(method, "POST") == 0)
-		strcat(http_request, "POST ");
-
-	strncat(http_request, path, MAX_REQ_LEN - sizeof(tail) - 5);
-	strcat(http_request, tail);
-}
 
 /*
  * Returns 1 if specified header exists, or 0 otherwise.
@@ -125,9 +112,16 @@ int header_exists(char * header){
 }
 
 /*
- * Returns 1 if success, or 0 otherwise (out of memory).
+ * List layout:
+ * 	+----------+     +--------+     +--------+     +--------+
+ * 	| ptr_head | --> |  next  | --> |  next  | --> |  NULL  |
+ * 	|          |     | header |     | header |     |  NULL  |
+ * 	|          |     | value  |     |  value |     |  NULL  |
+ * 	+----------+     +--------+     +--------+     +--------+
+ *
+ * 	Returns 1 if success, or 0 otherwise (out of memory).
  */
-int add_header(char *header, char *value){
+int add_header(char *header, char *value, char type){
   ptr_header_node cur_ptr = NULL;
 
   // get to the last header
@@ -141,6 +135,7 @@ int add_header(char *header, char *value){
     // create a new item and append it to the list
     new_ptr->header = new_header;
     new_ptr->value = new_value;
+    new_ptr->type = type;
     new_ptr->next = NULL;
   }else{
     // we're out of memory, so forcefully end
@@ -157,50 +152,14 @@ int add_header(char *header, char *value){
 }
 
 /*
- * List layout:
- * 	+----------+     +--------+     +--------+     +--------+
- * 	| ptr_head | --> |  next  | --> |  next  | --> |  NULL  |
- * 	|          |     | header |     | header |     |  NULL  |
- * 	|          |     | value  |     |  value |     |  NULL  |
- * 	+----------+     +--------+     +--------+     +--------+
- *
- * 	Returns 1 if success, or 0 otherwise (out of memory).
- */
-int add_or_replace_header(char *header, char *value){
-	int ret = 1;
-
-  ptr_header_node cur_ptr = NULL;
-  char * new_header = strdup(header);
-  char * new_value = strdup(value);
-
-  if(new_header && new_value){
-		for(cur_ptr = ptr_head; cur_ptr; cur_ptr = cur_ptr->next){
-			if(strcmp(cur_ptr->header, new_header) == 0){
-				free(cur_ptr->value);
-				cur_ptr->value = new_value;
-				break;
-			}
-		}
-  }
-
-  if(cur_ptr == NULL){
-    ret = add_header(header, value);
-    // add_header() will create a new copy so we can safely free them
-    free(new_header);
-    free(new_value);
-  }
-
-  return ret;
-}
-
-/*
  * Replace in all headers' values every occurrence of oldvalue by newvalue.
+ * Only user-defined headers are considered.
  */
 void hdrrep(char * oldvalue, char * newvalue){
 	ptr_header_node cur_ptr = NULL;
 
 	for(cur_ptr = ptr_head; cur_ptr; cur_ptr = cur_ptr->next){
-		if(strstr(cur_ptr->value, oldvalue)){
+		if((cur_ptr->type == HEADER_TYPE_USERHEADER || cur_ptr->type == HEADER_TYPE_USERHEADER_REPL) && strstr(cur_ptr->value, oldvalue)){
 			cur_ptr->value = (char *) realloc(cur_ptr->value, strlen(newvalue));
 			if(cur_ptr->value)
 				strcpy(cur_ptr->value, newvalue);
@@ -215,7 +174,7 @@ void hdrrep(char * oldvalue, char * newvalue){
 /*
  * Concat all the headers in the list in a single string, and clean the whole list.
  */
-char * stringify_headers_and_clean(){
+char * stringify_headers_and_clean(char * http_request){
   char * headers_str = NULL;
   ptr_header_node cur_ptr = ptr_head, tmp_ptr = NULL;
   int ttl_size = strlen(http_request);
@@ -245,12 +204,39 @@ char * stringify_headers_and_clean(){
     // Clean it up and get to the next header
     tmp_ptr = cur_ptr;
     cur_ptr = cur_ptr->next;
-    free(tmp_ptr->header);
+/*    free(tmp_ptr->header);
     free(tmp_ptr->value);
-    free(tmp_ptr);
+    free(tmp_ptr);*/
   }
 
   return headers_str;
+}
+
+char * prepare_http_request(char * method, char * path){
+	char * request = NULL, *headers = NULL;
+	char tail[] = " HTTP/1.0",
+			http_request[1030];
+	int req_len = (strlen(method) + strlen(path) + 1) <= 1030 ? (strlen(method) + strlen(path) + 1) : 1030;
+
+	memset(http_request, 0, 1030);
+
+	if(strcmp(method, "GET") == 0)
+		strcat(http_request, "GET ");
+	else if(strcmp(method, "POST") == 0)
+		strcat(http_request, "POST ");
+
+	strncat(http_request, path, 1030 - sizeof(tail) - 5);
+	strcat(http_request, tail);
+
+	headers = stringify_headers_and_clean(http_request);
+	request = (char *) malloc(strlen(http_request) + strlen(headers) + 3);
+	if(request && headers){
+			strcpy(request, http_request);
+			strcat(request, "\r\n");
+			strcat(request, headers);
+	}
+
+	return request;
 }
 
 int strpos(char *str, char *target) {
@@ -400,17 +386,18 @@ void hydra_reconnect(int s, char *ip, int port, unsigned char options) {
 }
 
 int start_http_form(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *type) {
-  char *empty = "";
+	char *empty = "";
+	char *buffer,	// Buffer for HTTP headers
+		*proxy_string;
   char *login, *pass, clogin[256], cpass[256];
-  char *buffer;	// Buffer for HTTP headers
   char header[8096], *upd3variables, cuserheader[1024];
   int found = !success_cond, i, j;
 
   memset(header, 0, sizeof(header));
   cookie[0] = 0;                // reset cookies from potential previous attempt
 
-  // Take the next login/pass pair
-  if (strlen(login = hydra_get_next_login()) == 0)
+	// Take the next login/pass pair
+	if (strlen(login = hydra_get_next_login()) == 0)
 		login = empty;
 	if (strlen(pass = hydra_get_next_password()) == 0)
 		pass = empty;
@@ -418,19 +405,264 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
 	clogin[sizeof(clogin) - 1] = 0;
 	strncpy(cpass, html_encode(pass), sizeof(cpass) - 1);
 	cpass[sizeof(cpass) - 1] = 0;
-
-	// Replace the user/pass placeholders in the command line options
-	upd3variables = hydra_strrep(variables, "^USER^", clogin);
-	upd3variables = hydra_strrep(upd3variables, "^PASS^", cpass);
+  upd3variables = hydra_strrep(variables, "^USER^", clogin);
+  upd3variables = hydra_strrep(upd3variables, "^PASS^", cpass);
 
 	// Replace the user/pass placeholders in the user-supplied headers
 	hdrrep("^USER^", clogin);
 	hdrrep("^PASS^", cpass);
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	/* again: no snprintf to be portable. dont worry, buffer cant overflow */
+	if (use_proxy == 1 && proxy_authentication != NULL) {
+		// proxy with authentication
+		add_header("Host", webtarget, HEADER_TYPE_DEFAULT);
+		add_header("User-Agent", "Mozilla 5.0 (Hydra Proxy Auth)", HEADER_TYPE_DEFAULT);
+		proxy_string = (char *) malloc(strlen(proxy_authentication) + 6);
+		if(proxy_string) {
+				strcpy(proxy_string, "Basic ");
+				strncat(proxy_string, proxy_authentication, strlen(proxy_authentication) - 6);
+				add_header("Proxy-Authorization", proxy_string, HEADER_TYPE_DEFAULT);
+		}else{
+				hydra_report(stderr, "Out of memory for \"Proxy-Authorization\" header.");
+				hydra_child_exit(1);
+		}
+		if (getcookie) {
+			//doing a GET to save cookies
+//			sprintf(buffer, "GET http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla 5.0 (Hydra Proxy Auth)\r\n%s%s\r\n",
+//							webtarget, webport, cookieurl, webtarget, proxy_authentication, header, cuserheader);
+			buffer = prepare_http_request(type, url);
+			hydra_report(stdout, "HTTP headers (Proxy Auth Cookies): %s", buffer);
+/*			if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+				return 1;
+			}
+			i = analyze_server_response(s); // return value ignored
+			if (strlen(cookie) > 0) {
+				sprintf(header, "Cookie: %s\r\n", cookie);
+			}
+			hydra_reconnect(s, ip, port, options);*/
+		}
+		buffer = prepare_http_request(type, url);
+		hydra_report(stdout, "HTTP headers (Proxy Auth): %s", buffer);
+		/*if (strcmp(type, "POST") == 0) {
+			sprintf(buffer,
+							"POST http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/5.0 (Hydra Proxy Auth)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n%s%s\r\n%s",
+							webtarget, webport, url, webtarget, proxy_authentication, (int) strlen(upd3variables), header, cuserheader, upd3variables);
+			if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+				return 1;
+			}
+		} else {
+			sprintf(buffer,
+							"GET http://%s:%d%.600s?%s HTTP/1.0\r\nHost: %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/5.0 (Hydra Proxy Auth)\r\n%s%s\r\n",
+							webtarget, webport, url, upd3variables, webtarget, proxy_authentication, header, cuserheader);
+			if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+				return 1;
+			}
+		}*/
+	} else {
+		if (use_proxy == 1) {
+			// proxy without authentication
+			add_header("Host", webtarget, HEADER_TYPE_DEFAULT);
+			add_header("User-Agent", "Mozilla/5.0 (Hydra Proxy)", HEADER_TYPE_DEFAULT);
+			if (getcookie) {
+				//doing a GET to get cookies
+				buffer = prepare_http_request(type, url);
+				hydra_report(stdout, "HTTP headers (Proxy Noauth Cookies): %s", buffer);
+
+//				sprintf(buffer, "GET http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra Proxy)\r\n%s%s\r\n", webtarget, webport, cookieurl, webtarget, header,
+//								cuserheader);
+/*				if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+					return 1;
+				}
+				i = analyze_server_response(s); // ignore result
+				if (strlen(cookie) > 0) {
+					sprintf(header, "Cookie: %s\r\n", cookie);
+				}
+				hydra_reconnect(s, ip, port, options);*/
+			}
+			buffer = prepare_http_request(type, url);
+			hydra_report(stdout, "HTTP headers (Proxy Noauth): %s", buffer);
+			/*if (strcmp(type, "POST") == 0) {
+				sprintf(buffer,
+								"POST http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n%s%s\r\n%s",
+								webtarget, webport, url, webtarget, (int) strlen(upd3variables), header, cuserheader, upd3variables);
+				if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+					return 1;
+				}
+			} else {
+				sprintf(buffer, "GET http://%s:%d%.600s?%s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra)\r\n%s%s\r\n", webtarget, webport, url, upd3variables, webtarget,
+								header, cuserheader);
+				if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+					return 1;
+				}
+			}*/
+		} else {
+			// direct web server, no proxy
+			add_header("Host", webtarget, HEADER_TYPE_DEFAULT);
+			add_header("User-Agent", "Mozilla/5.0 (Hydra)", HEADER_TYPE_DEFAULT);
+			if (getcookie) {
+				//doing a GET to save cookies
+/*				sprintf(buffer, "GET %.600s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra)\r\n%s\r\n", cookieurl, webtarget, cuserheader);
+				if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+					return 1;
+				}
+				i = analyze_server_response(s); // ignore result
+				if (strlen(cookie) > 0) {
+					sprintf(header, "Cookie: %s\r\n", cookie);
+				}
+				hydra_reconnect(s, ip, port, options);*/
+				buffer = prepare_http_request(type, url);
+				hydra_report(stdout, "HTTP headers (Direct Cookies): %s", buffer);
+			}
+			buffer = prepare_http_request(type, url);
+			hydra_report(stdout, "HTTP headers (Direct): %s", buffer);
+			/*if (strcmp(type, "POST") == 0) {
+				sprintf(buffer,
+								"POST %.600s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n%s%s\r\n%s",
+								url, webtarget, (int) strlen(upd3variables), header, cuserheader, upd3variables);
+				if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+					return 1;
+				}
+			} else {
+				sprintf(buffer, "GET %.600s?%s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra)\r\n%s%s\r\n", url, upd3variables, webtarget, header, cuserheader);
+				if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+					return 1;
+				}
+			}*/
+		}
+	}
+
+	/*found = analyze_server_response(s);
+	if (auth_flag) { // we received a 401 error - user using wrong module
+		hydra_report(stderr, "[ERROR] the target is using HTTP auth, not a web form, received HTTP error code 401. Use module \"http%s-get\" instead.\n",
+								 (options & OPTION_SSL) > 0 ? "s" : "");
+		return 4;
+	}
+	if (strlen(cookie) > 0) {
+		sprintf(header, "Cookie: %.1000s\r\n", cookie);
+	}
+	//if page was redirected, follow the location header
+	redirected_cpt = MAX_REDIRECT;
+	if (debug)
+		printf("[DEBUG] attempt result: found %d, redirect %d, location: %s\n", found, redirected_flag, redirected_url_buff);
+	while (found == 0 && redirected_flag && (redirected_url_buff[0] != 0) && (redirected_cpt > 0)) {
+		//we have to split the location
+		char *startloc, *endloc;
+		char str[2048];
+		char str2[2048];
+		char str3[2048];
+
+		redirected_cpt--;
+		redirected_flag = 0;
+		//check if the redirect page contains the fail/success condition
+	#ifdef HAVE_PCRE
+		if (hydra_string_match(redirected_url_buff, cond) == 1) {
+	#else
+		if (strstr(redirected_url_buff, cond) != NULL) {
+	#endif
+			found = success_cond;
+		} else {
+			//location could be either absolute http(s):// or / something
+			//or relative
+			startloc = strstr(redirected_url_buff, "://");
+			if (startloc != NULL) {
+				startloc += strlen("://");
+
+				if ((endloc = strchr(startloc, '\r')) != NULL) {
+					startloc[endloc - startloc] = 0;
+				}
+				if ((endloc = strchr(startloc, '\n')) != NULL) {
+					startloc[endloc - startloc] = 0;
+				}
+				strcpy(str, startloc);
+
+				endloc = strchr(str, '/');
+				if (endloc != NULL) {
+					strncpy(str2, str, endloc - str);
+					str2[endloc - str] = 0;
+				} else
+					strncpy(str2, str, sizeof(str));
+
+				if (strlen(str) - strlen(str2) == 0) {
+					strcpy(str3, "/");
+				} else {
+					strncpy(str3, str + strlen(str2), strlen(str) - strlen(str2) - 1);
+					str3[strlen(str) - strlen(str2) - 1] = 0;
+				}
+			} else {
+				strncpy(str2, webtarget, sizeof(str2));
+				if (redirected_url_buff[0] != '/') {
+					//it's a relative path, so we have to concatenate it
+					//with the path from the first url given
+					char *urlpath;
+					char urlpath_extracted[2048];
+
+					memset(urlpath_extracted, 0, sizeof(urlpath_extracted));
+
+					urlpath = strrchr(url, '/');
+					if (urlpath != NULL) {
+						strncpy(urlpath_extracted, url, urlpath - url);
+						sprintf(str3, "%.1000s/%.1000s", urlpath_extracted, redirected_url_buff);
+					} else {
+						sprintf(str3, "%.1000s/%.1000s", url, redirected_url_buff);
+					}
+				} else
+					strncpy(str3, redirected_url_buff, sizeof(str3));
+				if (debug)
+					hydra_report(stderr, "[DEBUG] host=%s redirect=%s origin=%s\n", str2, str3, url);
+			}
+			if (str3[0] != '/') {
+				j = strlen(str3);
+				str3[j + 1] = 0;
+				for (i = j; i > 0; i--)
+					str3[i] = str3[i - 1];
+				str3[0] = '/';
+			}
+
+			if (verbose)
+				hydra_report(stderr, "[VERBOSE] Page redirected to http://%s%s\n", str2, str3);
+
+			//re-use the code above to check for proxy use
+			if (use_proxy == 1 && proxy_authentication != NULL) {
+				// proxy with authentication
+				sprintf(buffer, "GET http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\n%s\r\n",
+								webtarget, webport, str3, str2, proxy_authentication, header);
+			} else {
+				if (use_proxy == 1) {
+					// proxy without authentication
+					sprintf(buffer, "GET http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\n%s\r\n", webtarget, webport, str3, str2, header);
+				} else {
+					//direct web server, no proxy
+					sprintf(buffer, "GET %.600s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\n%s\r\n", str3, str2, header);
+				}
+			}
+
+			hydra_reconnect(s, ip, port, options);
+
+			if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+				return 1;
+			}
+			found = analyze_server_response(s);
+			if (strlen(cookie) > 0) {
+				sprintf(header, "Cookie: %s\r\n", cookie);
+			}
+		}
+	}
+
+	//if the last status is still 3xx, set it as a false
+	if (found != -1 && found == success_cond && redirected_flag == 0 && redirected_cpt >= 0) {
+		hydra_report_found_host(port, ip, "www-form", fp);
+		hydra_completed_pair_found();
+	} else {
+		hydra_completed_pair();
+	}
+	return 1;*/
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-  buffer = stringify_headers_and_clean();
-  hydra_report(stdout, "HTTP headers:\n%s\r\n%s", http_request, buffer);
+/*  char * http_request = prepare_http_request(type, url);
+  hydra_report(stdout, "HTTP headers:\n%s\r\n", http_request);*/
 
   hydra_child_exit(1);
   return 1;
@@ -534,23 +766,6 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
     success_cond = 0;
   }
 
-  // Prepare the HTTP requests that will follow
-  // Add the default HTTP headers
-  http_opts = 0;
-  if(use_proxy == 1 && proxy_authentication != NULL){
-		// proxy with authentication
-		// TODO Add default headers here
-  }else if(use_proxy == 1){
-		// proxy without authentication
-		// TODO Add default headers here
-  }else{
-		// direct web server, no proxy
-		add_header("Host", webtarget);
-		add_header("User-Agent", "Mozilla/5.0 (Hydra)");
-  }
-
-  prepare_httpreq(type, url);
-
   char *header = NULL, *value = NULL;
   while ( /*(optional1 = strtok(NULL, ":")) != NULL */ *optional1 != 0) {
     switch (optional1[0]) {
@@ -581,7 +796,7 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
        *  - (optional1 + 2) contains the header's name
        *  - ptr contains the header's value
        */
-      if(add_header(optional1 + 2, hydra_strrep(ptr, "\\:", ":"))){
+      if(add_header(optional1 + 2, hydra_strrep(ptr, "\\:", ":"), HEADER_TYPE_USERHEADER)){
       		// Success: break the switch and go ahead
       		optional1 = ptr2;
       		break;
@@ -607,7 +822,7 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
 			 *  - (optional1 + 2) contains the header's name
 			 *  - ptr contains the header's value
 			 */
-			if(add_or_replace_header(optional1 + 2, hydra_strrep(ptr, "\\:", ":"))){
+			if(add_header(optional1 + 2, hydra_strrep(ptr, "\\:", ":"), HEADER_TYPE_USERHEADER_REPL)){
 					// Success: break the switch and go ahead
 					optional1 = ptr2;
 					break;
