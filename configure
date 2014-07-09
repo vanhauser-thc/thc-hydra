@@ -3,17 +3,7 @@
 # uname -s = Linux | OpenBSD | FreeBSD
 # uname -m = i636 or x86_64
 
-if [ "$1" = "-h" ]; then
-  echo Options:
-  echo "  --prefix=path              path to install hydra and its datafiles to"
-  echo "  --with-oracle=prefix       prefix for oracle include dir"
-  echo "  --with-oracle-lib=prefix   prefix for oracle lib dir"
-  echo "  --disable-xhydra           disable compilation of hydra GUI"
-  echo "  --nostrip                  do not per default strip binaries before install"
-  echo "  --help                     this here"
-  exit 0
-fi
-if [ "$1" = "--help" ]; then
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
   echo Options:
   echo "  --prefix=path              path to install hydra and its datafiles to"
   echo "  --with-oracle=prefix       prefix for oracle include dir"
@@ -362,7 +352,7 @@ for i in $INCDIRS ; do
         if [ -d "$i/svn" ]; then
             SVN_IPATH="$i/svn"
         fi
-    fi  
+    fi
     if [ "X" = "X$APR_IPATH" ]; then
         if [ -d "$i/apr-1.0" ]; then
             APR_IPATH="$i/apr-1.0"
@@ -373,7 +363,7 @@ for i in $INCDIRS ; do
         if [ -d "$i/apr" ]; then
             APR_IPATH="$i/apr"
         fi
-    fi  
+    fi
 done
 
 if [ "X" = "X$SVN_PATH" -o "X" = "X$SVN_IPATH" -o "X" = "X$APR_IPATH" ]; then
