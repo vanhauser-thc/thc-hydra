@@ -3,17 +3,7 @@
 # uname -s = Linux | OpenBSD | FreeBSD
 # uname -m = i636 or x86_64
 
-if [ "$1" = "-h" ]; then
-  echo Options:
-  echo "  --prefix=path              path to install hydra and its datafiles to"
-  echo "  --with-oracle=prefix       prefix for oracle include dir"
-  echo "  --with-oracle-lib=prefix   prefix for oracle lib dir"
-  echo "  --disable-xhydra           disable compilation of hydra GUI"
-  echo "  --nostrip                  do not per default strip binaries before install"
-  echo "  --help                     this here"
-  exit 0
-fi
-if [ "$1" = "--help" ]; then
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
   echo Options:
   echo "  --prefix=path              path to install hydra and its datafiles to"
   echo "  --with-oracle=prefix       prefix for oracle include dir"
@@ -30,7 +20,8 @@ rm -f Makefile.in
 SYSS=`uname -s 2> /dev/null`
 SYSO=`uname -o 2> /dev/null`
 SIXFOUR=""
-if [ "$SYSS" = "Linux" -o "$SYSS" = "OpenBSD" -o "$SYSS" = "FreeBSD" -o "$SYSS" = "NetBSD" ]; then
+
+if [ "$SYSS" = "Linux" -o "$SYSS" = "OpenBSD" -o "$SYSS" = "FreeBSD" -o "$SYSS" = "NetBSD" -o "$SYSS" = "Darwin" ]; then
   SF=`uname -m | grep 64`
   if [ `uname -m` = "s390x" ]; then
     SF=64
@@ -42,7 +33,10 @@ if [ "$SYSS" = "Linux" -o "$SYSS" = "OpenBSD" -o "$SYSS" = "FreeBSD" -o "$SYSS" 
     SIXFOUR=64
     echo Detected 64 Bit $SYSS OS
   fi
+else
+  echo "Unsupported Platform"
 fi
+
 PREFIX=""
 NOSTRIP=""
 ORACLE_PATH=""
@@ -362,7 +356,7 @@ for i in $INCDIRS ; do
         if [ -d "$i/svn" ]; then
             SVN_IPATH="$i/svn"
         fi
-    fi  
+    fi
     if [ "X" = "X$APR_IPATH" ]; then
         if [ -d "$i/apr-1.0" ]; then
             APR_IPATH="$i/apr-1.0"
@@ -373,7 +367,7 @@ for i in $INCDIRS ; do
         if [ -d "$i/apr" ]; then
             APR_IPATH="$i/apr"
         fi
-    fi  
+    fi
 done
 
 if [ "X" = "X$SVN_PATH" -o "X" = "X$SVN_IPATH" -o "X" = "X$APR_IPATH" ]; then
