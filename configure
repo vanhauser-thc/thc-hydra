@@ -20,7 +20,8 @@ rm -f Makefile.in
 SYSS=`uname -s 2> /dev/null`
 SYSO=`uname -o 2> /dev/null`
 SIXFOUR=""
-if [ "$SYSS" = "Linux" -o "$SYSS" = "OpenBSD" -o "$SYSS" = "FreeBSD" -o "$SYSS" = "NetBSD" ]; then
+
+if [ "$SYSS" = "Linux" -o "$SYSS" = "OpenBSD" -o "$SYSS" = "FreeBSD" -o "$SYSS" = "NetBSD" -o "$SYSS" = "Darwin" ]; then
   SF=`uname -m | grep 64`
   if [ `uname -m` = "s390x" ]; then
     SF=64
@@ -32,7 +33,10 @@ if [ "$SYSS" = "Linux" -o "$SYSS" = "OpenBSD" -o "$SYSS" = "FreeBSD" -o "$SYSS" 
     SIXFOUR=64
     echo Detected 64 Bit $SYSS OS
   fi
+else
+  echo "Unsupported Platform"
 fi
+
 PREFIX=""
 NOSTRIP=""
 ORACLE_PATH=""
