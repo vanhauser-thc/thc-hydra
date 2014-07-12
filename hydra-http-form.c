@@ -100,15 +100,15 @@ ptr_header_node ptr_head = NULL;
 /*
  * Returns 1 if specified header exists, or 0 otherwise.
  */
-int header_exists(char * header){
-  ptr_header_node cur_ptr = NULL;
-  int header_exists = 0;
+ptr_header_node header_exists(char * header_name, char type){
+  ptr_header_node cur_ptr = NULL,
+  		found_header = NULL;
 
-  for(cur_ptr = ptr_head; cur_ptr && !header_exists; cur_ptr = cur_ptr->next)
-    if(cur_ptr->header && strcmp(cur_ptr->header, header) == 0)
-      header_exists = 1;
+  for(cur_ptr = ptr_head; cur_ptr && !found_header; cur_ptr = cur_ptr->next)
+    if(cur_ptr->header && strcmp(cur_ptr->header, header_name) == 0 && cur_ptr->type == type)
+      found_header = cur_ptr;
 
-  return header_exists;
+  return found_header;
 }
 
 /*
@@ -132,11 +132,41 @@ int add_header(char *header, char *value, char type){
   char * new_value = strdup(value);
 
   if(new_ptr && new_header && new_value){
-    // create a new item and append it to the list
-    new_ptr->header = new_header;
-    new_ptr->value = new_value;
-    new_ptr->type = type;
-    new_ptr->next = NULL;
+		if(type == HEADER_TYPE_USERHEADER){
+			// create a new item and append it to the list
+			new_ptr->header = new_header;
+			new_ptr->value = new_value;
+			new_ptr->type = type;
+			new_ptr->next = NULL;
+			hydra_report(stdout, "[DEBUG] Added header (HEADER_TYPE_USERHEADER) %s: %s\n", new_header, new_value);
+		}else if(type == HEADER_TYPE_DEFAULT && !header_exists(new_header, HEADER_TYPE_USERHEADER_REPL)){
+			// It's a default header and there are no user headers that replace it,
+			// so we create a new item and append it to the list
+			new_ptr->header = new_header;
+			new_ptr->value = new_value;
+			new_ptr->type = type;
+			new_ptr->next = NULL;
+			hydra_report(stdout, "[DEBUG] Added header (HEADER_TYPE_DEFAULT) %s: %s\n", new_header, new_value);
+		}else if(type == HEADER_TYPE_USERHEADER_REPL){
+				// It's a user-supplied header that must replace a default one
+				ptr_header_node hdr_val = header_exists(new_header, HEADER_TYPE_DEFAULT);
+				if(!hdr_val){
+						// There are no headers with the same name, so we act
+						// as if it was a normal header
+						new_ptr->header = new_header;
+						new_ptr->value = new_value;
+						new_ptr->type = type;
+						new_ptr->next = NULL;
+						hydra_report(stdout, "[DEBUG] Added header (HEADER_TYPE_USERHEADER_REPL) %s: %s\n", new_header, new_value);
+				}else{
+						// Replace the default header's value with this new value
+						free(hdr_val->value);
+						hdr_val->value = new_value;
+						hdr_val->type = type;
+						hydra_report(stdout, "[DEBUG] Replaced header (HEADER_TYPE_USERHEADER_REPL) %s: %s\n", hdr_val->header, hdr_val->value);
+						return 1;
+				}
+		}
   }else{
     // we're out of memory, so forcefully end
     return 0;
@@ -172,11 +202,12 @@ void hdrrep(char * oldvalue, char * newvalue){
 }
 
 /*
- * Concat all the headers in the list in a single string, and clean the whole list.
+ * Concat all the headers in the list in a single string.
+ * Leave the list itself intact: do not clean it here.
  */
-char * stringify_headers_and_clean(char * http_request){
+char * stringify_headers(char * http_request){
   char * headers_str = NULL;
-  ptr_header_node cur_ptr = ptr_head, tmp_ptr = NULL;
+  ptr_header_node cur_ptr = ptr_head;
   int ttl_size = strlen(http_request);
 
   while(cur_ptr){
@@ -185,7 +216,7 @@ char * stringify_headers_and_clean(char * http_request){
       if(headers_str)
       	headers_str = (char *) realloc(headers_str, sizeof(char) * ttl_size);
       else{
-      		// Garbage appears when strcat()-ing, if we don't blank newly allocated memory
+      		// Garbage appears when strcat()-ing, if we don't blank the newly allocated memory
       		headers_str = (char *) malloc(sizeof(char) * ttl_size);
       		if(headers_str)
       			memset(headers_str, 0, sizeof(char) * ttl_size);
@@ -201,12 +232,8 @@ char * stringify_headers_and_clean(char * http_request){
 				hydra_child_exit(1);
       }
     }
-    // Clean it up and get to the next header
-    tmp_ptr = cur_ptr;
+    // Get to the next header
     cur_ptr = cur_ptr->next;
-/*    free(tmp_ptr->header);
-    free(tmp_ptr->value);
-    free(tmp_ptr);*/
   }
 
   return headers_str;
@@ -228,7 +255,7 @@ char * prepare_http_request(char * method, char * path){
 	strncat(http_request, path, 1030 - sizeof(tail) - 5);
 	strcat(http_request, tail);
 
-	headers = stringify_headers_and_clean(http_request);
+	headers = stringify_headers(http_request);
 	request = (char *) malloc(strlen(http_request) + strlen(headers) + 3);
 	if(request && headers){
 			strcpy(request, http_request);
