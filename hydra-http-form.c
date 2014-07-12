@@ -127,56 +127,47 @@ int add_header(char *header, char *value, char type){
   // get to the last header
   for(cur_ptr = ptr_head; cur_ptr && cur_ptr->next; cur_ptr = cur_ptr->next);
 
-  ptr_header_node new_ptr = (ptr_header_node) malloc(sizeof(t_header_node));
+  ptr_header_node existing_hdr,
+  	new_ptr = (ptr_header_node) malloc(sizeof(t_header_node));
+
   char * new_header = strdup(header);
   char * new_value = strdup(value);
 
   if(new_ptr && new_header && new_value){
-		if(type == HEADER_TYPE_USERHEADER){
-			// create a new item and append it to the list
+  	if((type == HEADER_TYPE_USERHEADER) ||
+  			(type == HEADER_TYPE_DEFAULT && !header_exists(new_header, HEADER_TYPE_USERHEADER_REPL)) ||
+  			(type == HEADER_TYPE_USERHEADER_REPL && !header_exists(new_header, HEADER_TYPE_DEFAULT))){
+  		/*
+  		 * We are in one of the following scenarios:
+  		 * 	1. A default header with no user-supplied headers that replace it.
+  		 * 	2. A user-supplied header that must be appended (option 'h').
+  		 * 	3. A user-supplied header that must replace a default header (option 'h'),
+  		 * 	but no default headers exist with that name.
+  		 *
+  		 * In either case we just add the header to the list.
+  		 */
 			new_ptr->header = new_header;
 			new_ptr->value = new_value;
 			new_ptr->type = type;
 			new_ptr->next = NULL;
-			hydra_report(stdout, "[DEBUG] Added header (HEADER_TYPE_USERHEADER) %s: %s\n", new_header, new_value);
-		}else if(type == HEADER_TYPE_DEFAULT && !header_exists(new_header, HEADER_TYPE_USERHEADER_REPL)){
-			// It's a default header and there are no user headers that replace it,
-			// so we create a new item and append it to the list
-			new_ptr->header = new_header;
-			new_ptr->value = new_value;
-			new_ptr->type = type;
-			new_ptr->next = NULL;
-			hydra_report(stdout, "[DEBUG] Added header (HEADER_TYPE_DEFAULT) %s: %s\n", new_header, new_value);
-		}else if(type == HEADER_TYPE_USERHEADER_REPL){
+
+			if(cur_ptr)
+				cur_ptr->next = new_ptr;
+			else
+				// head is NULL, so the list is empty
+				ptr_head = new_ptr;
+  	}else if(type == HEADER_TYPE_USERHEADER_REPL && (existing_hdr = header_exists(new_header, HEADER_TYPE_DEFAULT))){
 				// It's a user-supplied header that must replace a default one
-				ptr_header_node hdr_val = header_exists(new_header, HEADER_TYPE_DEFAULT);
-				if(!hdr_val){
-						// There are no headers with the same name, so we act
-						// as if it was a normal header
-						new_ptr->header = new_header;
-						new_ptr->value = new_value;
-						new_ptr->type = type;
-						new_ptr->next = NULL;
-						hydra_report(stdout, "[DEBUG] Added header (HEADER_TYPE_USERHEADER_REPL) %s: %s\n", new_header, new_value);
-				}else{
-						// Replace the default header's value with this new value
-						free(hdr_val->value);
-						hdr_val->value = new_value;
-						hdr_val->type = type;
-						hydra_report(stdout, "[DEBUG] Replaced header (HEADER_TYPE_USERHEADER_REPL) %s: %s\n", hdr_val->header, hdr_val->value);
-						return 1;
-				}
+				// Replace the default header's value with this new value
+				free(existing_hdr->value);
+				existing_hdr->value = new_value;
+				existing_hdr->type = type;
+				hydra_report(stdout, "[DEBUG] Replaced header (HEADER_TYPE_USERHEADER_REPL) %s: %s\n", existing_hdr->header, existing_hdr->value);
 		}
   }else{
     // we're out of memory, so forcefully end
     return 0;
   }
-
-  if(cur_ptr)
-    cur_ptr->next = new_ptr;
-  else
-    // head is NULL, so the list is empty
-    ptr_head = new_ptr;
 
   return 1;
 }
