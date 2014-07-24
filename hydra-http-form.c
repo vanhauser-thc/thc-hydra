@@ -64,13 +64,15 @@ char redirected_url_buff[2048] = "";
 int redirected_flag = 0;
 
 #define MAX_REDIRECT 8
+#define DEFAULT_USER_AGENT "Mozilla/5.0 (Hydra)"
 int redirected_cpt = MAX_REDIRECT;
 char cookie[4096] = "", cmiscptr[1024];
 
 extern char *webtarget;
 extern char *slash;
 int webport, freemischttpform = 0;
-char bufferurl[1024], cookieurl[1024] = "", userheader[1024] = "", *url, *variables, *optional1;
+char bufferurl[1024], cookieurl[1024] = "", userheader[1024] = "", *url, *variables, *optional1, useragent[256];
+useragent[0] = '\0';
 
 int strpos(char *str, char *target) {
   char *res = strstr(str, target);
@@ -221,7 +223,10 @@ void hydra_reconnect(int s, char *ip, int port, unsigned char options) {
 int start_http_form(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *type) {
   char *empty = "";
   char *login, *pass, buffer[9000], clogin[256], cpass[256];
-  char header[8096], *upd3variables, cuserheader[1024];
+  char header[8096], *upd3variables;
+  char cuserheader[1295]; // 1024 + 256 + 15
+  char *cuserheader_start;
+  size_t cuserheader_size;
   int found = !success_cond, i, j;
 
   memset(header, 0, sizeof(header));
@@ -237,12 +242,22 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
   cpass[sizeof(cpass) - 1] = 0;
   upd3variables = hydra_strrep(variables, "^USER^", clogin);
   upd3variables = hydra_strrep(upd3variables, "^PASS^", cpass);
+  strcpy(cuserheader, "User-Agent: ");
+  if(strlen(useragent) == 0) {
+    strcat(cuserheader, DEFAULT_USER_AGENT);
+  } else {
+    strcat(cuserheader, useragent);
+  }
+  strcat(cuserheader, "\r\n");
+
   if (strstr(userheader, "^USER^") == NULL && strstr(userheader, "^PASS^") == NULL) {
-    strcpy(cuserheader, userheader);
+    strcat(cuserheader, userheader);
   } else {                      // we use the encoded version
-    strncpy(cuserheader, hydra_strrep(userheader, "^USER^", clogin), sizeof(cuserheader) - 1);
+    cuserheader_start = cuserheader + strlen(cuserheader);
+    cuserheader_size = sizeof(cuserheader) - strlen(cuserheader);
+    strncpy(cuserheader_start, hydra_strrep(cuserheader_start, "^USER^", clogin), cuserheader_size - 1);
     cuserheader[sizeof(cuserheader) - 1] = 0;
-    strncpy(cuserheader, hydra_strrep(cuserheader, "^PASS^", cpass), sizeof(cuserheader) - 1);
+    strncpy(cuserheader_start, hydra_strrep(cuserheader, "^PASS^", cpass), cuserheader_size - 1);
     cuserheader[sizeof(cuserheader) - 1] = 0;
   }
 
@@ -251,7 +266,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
     // proxy with authentication
     if (getcookie) {
       //doing a GET to save cookies
-      sprintf(buffer, "GET http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla 5.0 (Hydra Proxy Auth)\r\n%s%s\r\n",
+      sprintf(buffer, "GET http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nProxy-Authorization: Basic %s\r\n%s%s\r\n",
               webtarget, webport, cookieurl, webtarget, proxy_authentication, header, cuserheader);
       if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
         return 1;
@@ -265,14 +280,14 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
 
     if (strcmp(type, "POST") == 0) {
       sprintf(buffer,
-              "POST http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/5.0 (Hydra Proxy Auth)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n%s%s\r\n%s",
+              "POST http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nProxy-Authorization: Basic %s\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n%s%s\r\n%s",
               webtarget, webport, url, webtarget, proxy_authentication, (int) strlen(upd3variables), header, cuserheader, upd3variables);
       if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
         return 1;
       }
     } else {
       sprintf(buffer,
-              "GET http://%s:%d%.600s?%s HTTP/1.0\r\nHost: %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/5.0 (Hydra Proxy Auth)\r\n%s%s\r\n",
+              "GET http://%s:%d%.600s?%s HTTP/1.0\r\nHost: %s\r\nProxy-Authorization: Basic %s\r\n%s%s\r\n",
               webtarget, webport, url, upd3variables, webtarget, proxy_authentication, header, cuserheader);
       if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
         return 1;
@@ -283,7 +298,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
       // proxy without authentication
       if (getcookie) {
         //doing a GET to get cookies
-        sprintf(buffer, "GET http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra Proxy)\r\n%s%s\r\n", webtarget, webport, cookieurl, webtarget, header,
+        sprintf(buffer, "GET http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\n%s%s\r\n", webtarget, webport, cookieurl, webtarget, header,
                 cuserheader);
         if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
           return 1;
@@ -297,13 +312,13 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
 
       if (strcmp(type, "POST") == 0) {
         sprintf(buffer,
-                "POST http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n%s%s\r\n%s",
+                "POST http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n%s%s\r\n%s",
                 webtarget, webport, url, webtarget, (int) strlen(upd3variables), header, cuserheader, upd3variables);
         if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
           return 1;
         }
       } else {
-        sprintf(buffer, "GET http://%s:%d%.600s?%s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra)\r\n%s%s\r\n", webtarget, webport, url, upd3variables, webtarget,
+        sprintf(buffer, "GET http://%s:%d%.600s?%s HTTP/1.0\r\nHost: %s\r\n%s%s\r\n", webtarget, webport, url, upd3variables, webtarget,
                 header, cuserheader);
         if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
           return 1;
@@ -313,7 +328,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
       // direct web server, no proxy
       if (getcookie) {
         //doing a GET to save cookies
-        sprintf(buffer, "GET %.600s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra)\r\n%s\r\n", cookieurl, webtarget, cuserheader);
+        sprintf(buffer, "GET %.600s HTTP/1.0\r\nHost: %s\r\n%s\r\n", cookieurl, webtarget, cuserheader);
         if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
           return 1;
         }
@@ -326,13 +341,13 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
 
       if (strcmp(type, "POST") == 0) {
         sprintf(buffer,
-                "POST %.600s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n%s%s\r\n%s",
+                "POST %.600s HTTP/1.0\r\nHost: %s\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n%s%s\r\n%s",
                 url, webtarget, (int) strlen(upd3variables), header, cuserheader, upd3variables);
         if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
           return 1;
         }
       } else {
-        sprintf(buffer, "GET %.600s?%s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra)\r\n%s%s\r\n", url, upd3variables, webtarget, header, cuserheader);
+        sprintf(buffer, "GET %.600s?%s HTTP/1.0\r\nHost: %s\r\n%s%s\r\n", url, upd3variables, webtarget, header, cuserheader);
         if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
           return 1;
         }

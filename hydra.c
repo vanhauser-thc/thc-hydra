@@ -564,6 +564,7 @@ void module_usage() {
              "The following parameters are optional:\n"
              " C=/page/uri     to define a different page to gather initial cookies from\n"
              " H=My-Hdr: foo   to send a user defined HTTP header with each request\n"
+             " U=Mozilla 5.0   to define the user agent for each request\n"
              "                 ^USER^ and ^PASS^ can also be put into these headers!\n"
              "Examples:\n"
              " \"/login.php:user=^USER^&pass=^PASS^:incorrect\"\n"
