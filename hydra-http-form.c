@@ -87,6 +87,7 @@ char redirected_url_buff[2048] = "";
 int redirected_flag = 0;
 
 #define MAX_REDIRECT 8
+#define MAX_CONTENT_LENGTH	20
 int redirected_cpt = MAX_REDIRECT;
 char cookie[4096] = "", cmiscptr[1024];
 
@@ -123,17 +124,15 @@ ptr_header_node header_exists(char * header_name, char type){
  */
 int add_header(char *header, char *value, char type){
   ptr_header_node cur_ptr = NULL;
+  ptr_header_node existing_hdr, new_ptr;
 
   // get to the last header
   for(cur_ptr = ptr_head; cur_ptr && cur_ptr->next; cur_ptr = cur_ptr->next);
 
-  ptr_header_node existing_hdr,
-  	new_ptr = (ptr_header_node) malloc(sizeof(t_header_node));
-
   char * new_header = strdup(header);
   char * new_value = strdup(value);
 
-  if(new_ptr && new_header && new_value){
+  if(new_header && new_value){
   	if((type == HEADER_TYPE_USERHEADER) ||
   			(type == HEADER_TYPE_DEFAULT && !header_exists(new_header, HEADER_TYPE_USERHEADER_REPL)) ||
   			(type == HEADER_TYPE_USERHEADER_REPL && !header_exists(new_header, HEADER_TYPE_DEFAULT))){
@@ -146,6 +145,9 @@ int add_header(char *header, char *value, char type){
   		 *
   		 * In either case we just add the header to the list.
   		 */
+			new_ptr = (ptr_header_node) malloc(sizeof(t_header_node));
+			if(!new_ptr)
+				return 0;
 			new_ptr->header = new_header;
 			new_ptr->value = new_value;
 			new_ptr->type = type;
@@ -192,6 +194,19 @@ void hdrrep(char * oldvalue, char * newvalue){
 	}
 }
 
+void cleanup(){
+	ptr_header_node cur_ptr = ptr_head, next_ptr = cur_ptr;
+
+	while(next_ptr){
+		free(cur_ptr->header);
+		free(cur_ptr->value);
+		next_ptr = cur_ptr->next;
+		//free(cur_ptr);
+	}
+
+	ptr_head = NULL;
+}
+
 /*
  * Concat all the headers in the list in a single string.
  * Leave the list itself intact: do not clean it here.
@@ -230,7 +245,7 @@ char * stringify_headers(char * http_request){
   return headers_str;
 }
 
-char * prepare_http_request(char * method, char * path){
+char * prepare_http_request(char * method, char * path, char * postdata){
 	char * request = NULL, *headers = NULL;
 	char tail[] = " HTTP/1.0",
 			http_request[1030];
@@ -247,11 +262,14 @@ char * prepare_http_request(char * method, char * path){
 	strcat(http_request, tail);
 
 	headers = stringify_headers(http_request);
-	request = (char *) malloc(strlen(http_request) + strlen(headers) + 3);
+	request = (char *) malloc(strlen(http_request) + strlen(headers) + 5 + (strcmp(method, "POST") == 0 && postdata? strlen(postdata) : 0));
 	if(request && headers){
 			strcpy(request, http_request);
 			strcat(request, "\r\n");
 			strcat(request, headers);
+			strcat(request, "\r\n");
+			if(strcmp(method, "POST") == 0 && postdata)
+				strcat(request, postdata);
 	}
 
 	return request;
@@ -410,6 +428,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
   char *login, *pass, clogin[256], cpass[256];
   char header[8096], *upd3variables, cuserheader[1024];
   int found = !success_cond, i, j;
+  char content_length[MAX_CONTENT_LENGTH];
 
   memset(header, 0, sizeof(header));
   cookie[0] = 0;                // reset cookies from potential previous attempt
@@ -450,7 +469,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
 			//doing a GET to save cookies
 //			sprintf(buffer, "GET http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla 5.0 (Hydra Proxy Auth)\r\n%s%s\r\n",
 //							webtarget, webport, cookieurl, webtarget, proxy_authentication, header, cuserheader);
-			buffer = prepare_http_request(type, url);
+			buffer = prepare_http_request(type, url, NULL);
 			hydra_report(stdout, "HTTP headers (Proxy Auth Cookies): %s", buffer);
 /*			if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
 				return 1;
@@ -461,7 +480,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
 			}
 			hydra_reconnect(s, ip, port, options);*/
 		}
-		buffer = prepare_http_request(type, url);
+		buffer = prepare_http_request(type, url, NULL);
 		hydra_report(stdout, "HTTP headers (Proxy Auth): %s", buffer);
 		/*if (strcmp(type, "POST") == 0) {
 			sprintf(buffer,
@@ -485,7 +504,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
 			add_header("User-Agent", "Mozilla/5.0 (Hydra Proxy)", HEADER_TYPE_DEFAULT);
 			if (getcookie) {
 				//doing a GET to get cookies
-				buffer = prepare_http_request(type, url);
+				buffer = prepare_http_request(type, url, NULL);
 				hydra_report(stdout, "HTTP headers (Proxy Noauth Cookies): %s", buffer);
 
 //				sprintf(buffer, "GET http://%s:%d%.600s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra Proxy)\r\n%s%s\r\n", webtarget, webport, cookieurl, webtarget, header,
@@ -499,7 +518,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
 				}
 				hydra_reconnect(s, ip, port, options);*/
 			}
-			buffer = prepare_http_request(type, url);
+			buffer = prepare_http_request(type, url, NULL);
 			hydra_report(stdout, "HTTP headers (Proxy Noauth): %s", buffer);
 			/*if (strcmp(type, "POST") == 0) {
 				sprintf(buffer,
@@ -519,35 +538,38 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
 			// direct web server, no proxy
 			add_header("Host", webtarget, HEADER_TYPE_DEFAULT);
 			add_header("User-Agent", "Mozilla/5.0 (Hydra)", HEADER_TYPE_DEFAULT);
+
 			if (getcookie) {
 				//doing a GET to save cookies
-/*				sprintf(buffer, "GET %.600s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra)\r\n%s\r\n", cookieurl, webtarget, cuserheader);
+				buffer = prepare_http_request(type, url, NULL);
+				hydra_report(stdout, "HTTP headers (Direct Cookies): %s", buffer);
 				if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
 					return 1;
 				}
 				i = analyze_server_response(s); // ignore result
 				if (strlen(cookie) > 0) {
-					sprintf(header, "Cookie: %s\r\n", cookie);
+					add_header("Cookie", cookie, HEADER_TYPE_DEFAULT);
 				}
-				hydra_reconnect(s, ip, port, options);*/
-				buffer = prepare_http_request(type, url);
-				hydra_report(stdout, "HTTP headers (Direct Cookies): %s", buffer);
+				hydra_reconnect(s, ip, port, options);
 			}
-			buffer = prepare_http_request(type, url);
-			hydra_report(stdout, "HTTP headers (Direct): %s", buffer);
-			/*if (strcmp(type, "POST") == 0) {
-				sprintf(buffer,
-								"POST %.600s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra)\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n%s%s\r\n%s",
-								url, webtarget, (int) strlen(upd3variables), header, cuserheader, upd3variables);
+
+			// now prepare for the "real" request
+			if (strcmp(type, "POST") == 0) {
+				snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int) strlen(upd3variables));
+				add_header("Content-Length", content_length, HEADER_TYPE_DEFAULT);
+				add_header("Content-Type", "application/x-www-form-urlencoded", HEADER_TYPE_DEFAULT);
+				buffer = prepare_http_request(type, url, upd3variables);
+				hydra_report(stdout, "HTTP headers (Direct): %s", buffer);
 				if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
 					return 1;
 				}
 			} else {
-				sprintf(buffer, "GET %.600s?%s HTTP/1.0\r\nHost: %s\r\nUser-Agent: Mozilla/5.0 (Hydra)\r\n%s%s\r\n", url, upd3variables, webtarget, header, cuserheader);
+				buffer = prepare_http_request(type, url, NULL);
+				hydra_report(stdout, "HTTP headers (Direct): %s", buffer);
 				if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
 					return 1;
 				}
-			}*/
+			}
 		}
 	}
 
