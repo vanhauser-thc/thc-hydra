@@ -83,18 +83,20 @@ int success_cond = 0;
 int getcookie = 1;
 int auth_flag = 0;
 
-char redirected_url_buff[2048] = "";
-int redirected_flag = 0;
-
-#define MAX_REDIRECT 8
-#define MAX_CONTENT_LENGTH	20
-int redirected_cpt = MAX_REDIRECT;
 char cookie[4096] = "", cmiscptr[1024];
 
 extern char *webtarget;
 extern char *slash;
 int webport, freemischttpform = 0;
 char bufferurl[1024], cookieurl[1024] = "", userheader[1024] = "", *url, *variables, *optional1;
+
+#define MAX_REDIRECT 				8
+#define MAX_CONTENT_LENGTH	20
+#define MAX_PROXY_LENGTH		2048	// sizeof(cookieurl) * 2
+
+char redirected_url_buff[2048] = "";
+int redirected_flag = 0;
+int redirected_cpt = MAX_REDIRECT;
 
 char *cookie_request, *normal_request;	// Buffers for HTTP headers
 
@@ -446,10 +448,10 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
 	char *empty = "";
 	char * buffer;
   char *login, *pass, clogin[256], cpass[256];
-  char header[8096], *upd3variables, cuserheader[1024];
+  char header[8096], *upd3variables;
   char *http_request;
   int found = !success_cond, i, j;
-  char content_length[MAX_CONTENT_LENGTH];
+  char content_length[MAX_CONTENT_LENGTH], proxy_string[MAX_PROXY_LENGTH];
 
   memset(header, 0, sizeof(header));
   cookie[0] = 0;                // reset cookies from potential previous attempt
@@ -483,11 +485,34 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
 			// proxy without authentication
 			if (getcookie) {
 				//doing a GET to get cookies
-				//buffer = prepare_http_request(type, url, NULL);
-				hydra_report(stdout, "HTTP headers (Proxy Noauth Cookies): %s", buffer);
+				memset(proxy_string, 0, sizeof(proxy_string));
+				snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s:%d%.600s", webtarget, webport, cookieurl);
+				http_request = prepare_http_request("GET", proxy_string, NULL, cookie_request);
+				if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
+					return 1;
+				i = analyze_server_response(s); // ignore result
+				if (strlen(cookie) > 0)
+					add_header("Cookie", cookie, HEADER_TYPE_DEFAULT);
+				hydra_reconnect(s, ip, port, options);
 			}
-			//buffer = prepare_http_request(type, url, NULL);
-			hydra_report(stdout, "HTTP headers (Proxy Noauth): %s", buffer);
+
+			// now prepare for the "real" request
+			if (strcmp(type, "POST") == 0) {
+				memset(proxy_string, 0, sizeof(proxy_string));
+				snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s:%d%.600s", webtarget, webport, url);
+				snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int) strlen(upd3variables));
+				add_header("Content-Length", content_length, HEADER_TYPE_DEFAULT);
+				add_header("Content-Type", "application/x-www-form-urlencoded", HEADER_TYPE_DEFAULT);
+				normal_request = stringify_headers();
+				http_request = prepare_http_request("POST", proxy_string, upd3variables, normal_request);
+				if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
+					return 1;
+			} else {
+				normal_request = stringify_headers();
+				http_request = prepare_http_request("GET", url, upd3variables, normal_request);
+				if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
+					return 1;
+			}
 		} else {
 			// direct web server, no proxy
 			if (getcookie) {
