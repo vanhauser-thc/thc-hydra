@@ -7,6 +7,8 @@ Release 8.1-pre
 * Added xhydra gtk patch by Petar Kaleychev to support -e r reverse login attempt, thanks!
 * Fixed a crash in the cisco module (thanks to Anatoly Mamaev for reporting)
 * Small fix for HTTP form module for redirect pages where a S= string match would not work (thanks to mkosmach for reporting)
+* Updated configure to detect subversion packages on current Cygwin
+* Fixed RDP module to support the port option (thanks to and.enshin(at)gmail.com)
 
 
 Release 8.0

@@ -314,6 +314,12 @@ for i in $LIBDIRS ; do
         fi
     fi
     if [ "X" = "X$SVN_PATH" ]; then
+        if [ -f "$i/libsvn_client-1.dll.a" ]&&[ -f "$i/libapr-1.dll.a" ]&&[ -f "$i/libaprutil-1.dll.a" ]; then
+            SVN_PATH="$i"
+	    APR_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$SVN_PATH" ]; then
         if [ -f "$i/libsvn_client-1.dylib" ]&&[ -f "$i/libapr-1.dylib" ]&&[ -f "$i/libaprutil-1.dylib" ]; then
             SVN_PATH="$i"
 	    APR_PATH="$i"
