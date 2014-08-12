@@ -1285,26 +1285,3 @@ int hydra_memsearch(char *haystack, int hlen, char *needle, int nlen) {
       return i;
   return -1;
 }
-
-char * hydra_trim(char * str) {
-	size_t len = strlen(str);
-	char * str_ptr[] = {str, NULL};
-
-	// Truncate leading spaces
-	for(; *str_ptr[0] == ' ' && len > 0; str_ptr[0]++)
-		len--;
-
-	if(len == 0)
-		return NULL;
-
-	// Truncate trailing spaces
-	str_ptr[1] = str + len;
-	for(; *str_ptr[1] == ' '; str_ptr[1]--)
-		len--;
-	*(str_ptr[1] + 1) = 0;
-
-	char * trimmed_str = strndup(str_ptr[0], len);
-	free(str);
-
-	return trimmed_str;
-}
