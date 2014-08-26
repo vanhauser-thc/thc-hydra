@@ -22,8 +22,13 @@ void service_mysql(char *ip, int sp, unsigned char options, char *miscptr, FILE 
 
 #ifndef LIBMYSQLCLIENT
 #else
-
+#if defined(HAVE_MYSQL_MYSQL_H)
 #include <mysql/mysql.h>
+#elif defined(HAVE_MYSQL_H)
+#include <mysql.h>
+#else
+#error libmysqlclient found, but no usable headers available
+#endif
 MYSQL *mysql = NULL;
 #endif
 

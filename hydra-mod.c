@@ -3,6 +3,8 @@
 #ifdef LIBOPENSSL
 #include <openssl/ssl.h>
 #include <openssl/err.h>
+#include <openssl/bn.h>
+#include <openssl/rsa.h>
 #endif
 #ifdef HAVE_PCRE
 #include <pcre.h>

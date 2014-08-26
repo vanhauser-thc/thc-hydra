@@ -3,17 +3,7 @@
 # uname -s = Linux | OpenBSD | FreeBSD
 # uname -m = i636 or x86_64
 
-if [ "$1" = "-h" ]; then
-  echo Options:
-  echo "  --prefix=path              path to install hydra and its datafiles to"
-  echo "  --with-oracle=prefix       prefix for oracle include dir"
-  echo "  --with-oracle-lib=prefix   prefix for oracle lib dir"
-  echo "  --disable-xhydra           disable compilation of hydra GUI"
-  echo "  --nostrip                  do not per default strip binaries before install"
-  echo "  --help                     this here"
-  exit 0
-fi
-if [ "$1" = "--help" ]; then
+if [ "$1" = "-h" -o "$1" = "--help" ]; then
   echo Options:
   echo "  --prefix=path              path to install hydra and its datafiles to"
   echo "  --with-oracle=prefix       prefix for oracle include dir"
@@ -30,7 +20,7 @@ rm -f Makefile.in
 SYSS=`uname -s 2> /dev/null`
 SYSO=`uname -o 2> /dev/null`
 SIXFOUR=""
-if [ "$SYSS" = "Linux" -o "$SYSS" = "OpenBSD" -o "$SYSS" = "FreeBSD" -o "$SYSS" = "NetBSD" ]; then
+if [ "$SYSS" = "Linux" -o "$SYSS" = "OpenBSD" -o "$SYSS" = "FreeBSD" -o "$SYSS" = "NetBSD" -o "$SYSS" = "Darwin" ]; then
   SF=`uname -m | grep 64`
   if [ `uname -m` = "s390x" ]; then
     SF=64
@@ -324,6 +314,12 @@ for i in $LIBDIRS ; do
         fi
     fi
     if [ "X" = "X$SVN_PATH" ]; then
+        if [ -f "$i/libsvn_client-1.dll.a" ]&&[ -f "$i/libapr-1.dll.a" ]&&[ -f "$i/libaprutil-1.dll.a" ]; then
+            SVN_PATH="$i"
+	    APR_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$SVN_PATH" ]; then
         if [ -f "$i/libsvn_client-1.dylib" ]&&[ -f "$i/libapr-1.dylib" ]&&[ -f "$i/libaprutil-1.dylib" ]; then
             SVN_PATH="$i"
 	    APR_PATH="$i"
@@ -451,10 +447,15 @@ for i in $LIBDIRS ; do
         fi
     fi
 done
+MYSQLINSUBDIR=""
 for i in $INCDIRS ; do
     if [ "X" != "X$MYSQL_PATH" ]; then
         if [ -f "$i/mysql/mysql.h" ]; then
             MYSQL_IPATH="$i/mysql"
+            MYSQLINSUBDIR="mysql/"
+        fi
+        if [ -f "$i/mysql.h" ]; then
+            MYSQL_IPATH="$i"
         fi
     fi
 done
@@ -931,6 +932,11 @@ if [ -n "$SVN_IPATH" ]; then
 fi
 if [ -n "$MYSQL_IPATH" ]; then
     XIPATHS="$XIPATHS -I$MYSQL_IPATH"
+    if [ -n "$MYSQLINSUBDIR" ]; then
+       XDEFINES="$XDEFINES -DHAVE_MYSQL_MYSQL_H"
+    else
+       XDEFINES="$XDEFINES -DHAVE_MYSQL_H"
+    fi
 fi
 if [ -n "$AFP_IPATH" ]; then
     XIPATHS="$XIPATHS -I$AFP_IPATH"

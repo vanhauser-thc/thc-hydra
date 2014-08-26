@@ -2453,6 +2453,9 @@ void service_rdp(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
   int run = 1, next_run = 1;
   int myport = PORT_RDP;
 
+  if (port != 0)
+    myport = port;
+
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     return;

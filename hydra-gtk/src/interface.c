@@ -88,6 +88,7 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *table6;
   GtkWidget *chkPassLogin;
   GtkWidget *chkPassNull;
+  GtkWidget *chkPassReverse;
   GtkWidget *label2;
   GtkWidget *table4;
   GtkWidget *frame9;
@@ -528,7 +529,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(label20);
   gtk_frame_set_label_widget(GTK_FRAME(frame8), label20);
 
-  table6 = gtk_table_new(1, 2, FALSE);
+  table6 = gtk_table_new(1, 3, FALSE);
   gtk_widget_set_name(table6, "table6");
   gtk_widget_show(table6);
   gtk_box_pack_start(GTK_BOX(vbox2), table6, TRUE, TRUE, 0);
@@ -545,6 +546,12 @@ GtkWidget *create_wndMain(void) {
   gtk_table_attach(GTK_TABLE(table6), chkPassNull, 1, 2, 0, 1, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
   gtk_tooltips_set_tip(tooltips, chkPassNull, "Enable this option to try an empty password, in addition to the password/file", NULL);
 
+  chkPassReverse = gtk_check_button_new_with_mnemonic ("Try reversed login");
+  gtk_widget_set_name (chkPassReverse, "chkPassReverse");
+  gtk_widget_show (chkPassReverse);
+  gtk_table_attach (GTK_TABLE (table6), chkPassReverse, 2, 3, 0, 1, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
+  gtk_tooltips_set_tip (tooltips, chkPassReverse, "Enable this option to try an reverse password, in addition to the password/file", NULL);
+  
   label2 = gtk_label_new("Passwords");
   gtk_widget_set_name(label2, "label2");
   gtk_widget_show(label2);
@@ -1049,6 +1056,7 @@ GtkWidget *create_wndMain(void) {
   GLADE_HOOKUP_OBJECT(wndMain, table6, "table6");
   GLADE_HOOKUP_OBJECT(wndMain, chkPassLogin, "chkPassLogin");
   GLADE_HOOKUP_OBJECT(wndMain, chkPassNull, "chkPassNull");
+  GLADE_HOOKUP_OBJECT(wndMain, chkPassReverse, "chkPassReverse");
   GLADE_HOOKUP_OBJECT(wndMain, label2, "label2");
   GLADE_HOOKUP_OBJECT(wndMain, table4, "table4");
   GLADE_HOOKUP_OBJECT(wndMain, frame9, "frame9");

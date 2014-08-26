@@ -264,7 +264,9 @@ typedef struct {
 
 // external vars 
 extern char HYDRA_EXIT[5];
+#if !defined(ANDROID) && !defined(__BIONIC__)
 extern int errno;
+#endif
 extern int debug;
 extern int verbose;
 extern int waittime;
@@ -501,7 +503,7 @@ void module_usage() {
              "Examples:\n"
              "  hydra -P pass.txt target cisco-enable  (direct console access)\n"
              "  hydra -P pass.txt -m cisco target cisco-enable  (Logon password cisco)\n"
-             "  hydra -l foo -m bar -P pass.txt -m cisco target cisco-enable  (AAA Login foo, password bar)\n");
+             "  hydra -l foo -m bar -P pass.txt target cisco-enable  (AAA Login foo, password bar)\n");
       find = 1;
     }
     if (!find && (strcmp(hydra_options.service, "cisco") == 0)) {
@@ -2756,8 +2758,10 @@ int main(int argc, char *argv[]) {
     }
     if (strcmp(hydra_options.service, "cisco-enable") == 0) {
       i = 2;
-      if (hydra_options.login == NULL)
-        hydra_options.login = empty_login;
+      if (hydra_options.login == NULL) {
+        //hydra_options.login = empty_login;
+        i = 1; // login will be the initial Username: login, or line Password:
+      }
       if (hydra_options.miscptr == NULL) {
         fprintf(stderr, "[WARNING] You did not supply the initial support to the Cisco via -l, assuming direct console access\n");
       }
@@ -2920,7 +2924,7 @@ int main(int argc, char *argv[]) {
        fprintf(stderr, "[WARNING] you specified port 443 for attacking a http service, however did not specify the -S ssl switch nor used https-..., therefore using plain HTTP\n");
 
     if (hydra_options.loop_mode && hydra_options.colonfile != NULL)
-      bail("The  loop mode option (-u) works with all modes - except colon files (-C)\n");
+      bail("The loop mode option (-u) works with all modes - except colon files (-C)\n");
     if (strncmp(hydra_options.service, "http-", strlen("http-")) != 0 && strcmp(hydra_options.service, "http-head") != 0 && getenv("HYDRA_PROXY_HTTP") != NULL)
       fprintf(stderr, "[WARNING] the HYDRA_PROXY_HTTP environment variable works only with the http-head/http-get module, ignored...\n");
     if (i == 2) {
@@ -2978,12 +2982,16 @@ int main(int argc, char *argv[]) {
 
     if (hydra_options.colonfile == NULL) {
       if (hydra_options.loginfile != NULL) {
-        if ((lfp = fopen(hydra_options.loginfile, "r")) == NULL)
-          bail("File for logins not found!");
+        if ((lfp = fopen(hydra_options.loginfile, "r")) == NULL) {
+          fprintf(stderr, "[ERROR] File for logins not found: %s", hydra_options.loginfile);
+          exit(-1);
+        }
         hydra_brains.countlogin = countlines(lfp, 0);
         hydra_brains.sizelogin = size_of_data;
-        if (hydra_brains.countlogin == 0)
-          bail("File for logins is empty!");
+        if (hydra_brains.countlogin == 0) {
+          fprintf(stderr, "[ERROR] File for logins is empty: %s", hydra_options.loginfile);
+          exit(-1);
+        }
         if (hydra_brains.countlogin > MAX_LINES) {
           fprintf(stderr, "[ERROR] Maximum number of logins is %d, this file has %lu entries.\n", MAX_LINES, hydra_brains.countlogin);
           exit(-1);
@@ -3003,12 +3011,16 @@ int main(int argc, char *argv[]) {
         hydra_brains.countlogin = 1;
       }
       if (hydra_options.passfile != NULL) {
-        if ((pfp = fopen(hydra_options.passfile, "r")) == NULL)
-          bail("File for passwords not found!");
+        if ((pfp = fopen(hydra_options.passfile, "r")) == NULL) {
+          fprintf(stderr, "[ERROR] File for passwords not found: %s", hydra_options.passfile);
+          exit(-1);
+        }
         hydra_brains.countpass = countlines(pfp, 0);
         hydra_brains.sizepass = size_of_data;
-        if (hydra_brains.countpass == 0)
-          bail("File for passwords is empty!");
+        if (hydra_brains.countpass == 0) {
+          fprintf(stderr, "[ERROR] File for passwords is empty: %s", hydra_options.passfile);
+          exit(-1);
+        }
         if (hydra_brains.countpass > MAX_LINES) {
           fprintf(stderr, "[ERROR] Maximum number of passwords is %d, this file has %lu entries.\n", MAX_LINES, hydra_brains.countpass);
           exit(-1);
@@ -3046,12 +3058,16 @@ int main(int argc, char *argv[]) {
         }
       }
     } else {
-      if ((cfp = fopen(hydra_options.colonfile, "r")) == NULL)
-        bail("File with login:password information not found!");
+      if ((cfp = fopen(hydra_options.colonfile, "r")) == NULL) {
+        fprintf(stderr, "[ERROR] File for colon files (login:pass) not found: %s", hydra_options.colonfile);
+        exit(-1);
+      }
       hydra_brains.countlogin = countlines(cfp, 1);
       hydra_brains.sizelogin = size_of_data;
-      if (hydra_brains.countlogin == 0)
-        bail("File for login:password information is empty!");
+      if (hydra_brains.countlogin == 0) {
+        fprintf(stderr, "[ERROR] File for colon files (login:pass) is empty: %s", hydra_options.colonfile);
+        exit(-1);
+      }
       if (hydra_brains.countlogin > MAX_LINES / 2) {
         fprintf(stderr, "[ERROR] Maximum number of colon file entries is %d, this file has %lu entries.\n", MAX_LINES / 2, hydra_brains.countlogin);
         exit(-1);
@@ -3087,11 +3103,15 @@ int main(int argc, char *argv[]) {
     }
 
     if (hydra_options.infile_ptr != NULL) {
-      if ((ifp = fopen(hydra_options.infile_ptr, "r")) == NULL)
-        bail("File for IP addresses not found!");
+      if ((ifp = fopen(hydra_options.infile_ptr, "r")) == NULL) {
+        fprintf(stderr, "[ERROR] File for targets not found: %s", hydra_options.infile_ptr);
+        exit(-1);
+      }
       hydra_brains.targets = countservers = countinfile = countlines(ifp, 0);
-      if (countinfile == 0)
-        bail("File for IP addresses is empty!");
+      if (countinfile == 0) {
+        fprintf(stderr, "[ERROR] File for targets is empty: %s", hydra_options.infile_ptr);
+        exit(-1);
+      }
       hydra_targets = malloc(sizeof(hydra_targets) * (countservers + 2) + 8);
       if (hydra_targets == NULL)
         bail("Could not allocate enough memory for target data");

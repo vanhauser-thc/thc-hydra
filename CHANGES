@@ -1,6 +1,16 @@
 Changelog for hydra
 -------------------
 
+Release 8.1-pre
+* Fixed for cisco-enable if an intial Login/Password is used (thanks to joswr1te for reporting)
+* Added patch by tux-mind for better MySQL compilation and an Android patches and Makefile. Thanks!
+* Added xhydra gtk patch by Petar Kaleychev to support -e r reverse login attempt, thanks!
+* Fixed a crash in the cisco module (thanks to Anatoly Mamaev for reporting)
+* Small fix for HTTP form module for redirect pages where a S= string match would not work (thanks to mkosmach for reporting)
+* Updated configure to detect subversion packages on current Cygwin
+* Fixed RDP module to support the port option (thanks to and.enshin(at)gmail.com)
+
+
 Release 8.0
 ! Development moved to a public github repository: https://github.com/vanhauser-thc/thc-hydra
 * Added module for redis (submitted by Alejandro Ramos, thanks!)
