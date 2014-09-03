@@ -756,7 +756,7 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
 			break;
 		}
     case 2:                    /* run the cracking function */
-      next_run = start_http_form(sock, ip, port, options, miscptr, fp, type, ptr_head);
+      next_run = start_http_form(sock, ip, port, options, miscptr, fp, type, *ptr_head);
       break;
     case 3:                    /* clean exit */
       if (sock >= 0)
@@ -789,12 +789,12 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
 
 void service_http_get_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
 	ptr_header_node ptr_head = initialize(ip, options, miscptr);
-	service_http_form(ip, sp, options, miscptr, fp, port, "GET", ptr_head);
+	service_http_form(ip, sp, options, miscptr, fp, port, "GET", &ptr_head);
 }
 
 void service_http_post_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
 	ptr_header_node ptr_head = initialize(ip, options, miscptr);
-	service_http_form(ip, sp, options, miscptr, fp, port, "POST", ptr_head);
+	service_http_form(ip, sp, options, miscptr, fp, port, "POST", &ptr_head);
 }
 
 int service_http_form_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
@@ -977,35 +977,35 @@ ptr_header_node initialize(char * ip, unsigned char options, char * miscptr) {
 		/* again: no snprintf to be portable. dont worry, buffer cant overflow */
 		if (use_proxy == 1 && proxy_authentication != NULL) {
 			// proxy with authentication
-			add_header(ptr_head, "Host", webtarget, HEADER_TYPE_DEFAULT);
-			add_header(ptr_head, "User-Agent", "Mozilla 5.0 (Hydra Proxy Auth)", HEADER_TYPE_DEFAULT);
+			add_header(&ptr_head, "Host", webtarget, HEADER_TYPE_DEFAULT);
+			add_header(&ptr_head, "User-Agent", "Mozilla 5.0 (Hydra Proxy Auth)", HEADER_TYPE_DEFAULT);
 			proxy_string = (char *) malloc(strlen(proxy_authentication) + 6);
 			if(proxy_string) {
 					strcpy(proxy_string, "Basic ");
 					strncat(proxy_string, proxy_authentication, strlen(proxy_authentication) - 6);
-					add_header(ptr_head, "Proxy-Authorization", proxy_string, HEADER_TYPE_DEFAULT);
+					add_header(&ptr_head, "Proxy-Authorization", proxy_string, HEADER_TYPE_DEFAULT);
 			}else{
 					hydra_report(stderr, "Out of memory for \"Proxy-Authorization\" header.");
 					return -1;
 			}
 			if (getcookie) {
 				//doing a GET to save cookies
-				cookie_request = stringify_headers(ptr_head);
+				cookie_request = stringify_headers(&ptr_head);
 				hydra_report(stdout, "HTTP headers (Proxy Auth Cookies): %s", cookie_request);
 			}
-			normal_request = stringify_headers(ptr_head);
+			normal_request = stringify_headers(&ptr_head);
 			hydra_report(stdout, "HTTP headers (Proxy Auth): %s", normal_request);
 		} else {
 			if (use_proxy == 1) {
 				// proxy without authentication
-				add_header(ptr_head, "Host", webtarget, HEADER_TYPE_DEFAULT);
-				add_header(ptr_head, "User-Agent", "Mozilla/5.0 (Hydra Proxy)", HEADER_TYPE_DEFAULT);
+				add_header(&ptr_head, "Host", webtarget, HEADER_TYPE_DEFAULT);
+				add_header(&ptr_head, "User-Agent", "Mozilla/5.0 (Hydra Proxy)", HEADER_TYPE_DEFAULT);
 				if (getcookie) {
 					//doing a GET to get cookies
-					cookie_request = stringify_headers(ptr_head);
+					cookie_request = stringify_headers(&ptr_head);
 					hydra_report(stdout, "HTTP headers (Proxy Noauth Cookies): %s", cookie_request);
 				}
-				normal_request = stringify_headers(ptr_head);
+				normal_request = stringify_headers(&ptr_head);
 				hydra_report(stdout, "HTTP headers (Proxy Noauth): %s", normal_request);
 			} else {
 				// direct web server, no proxy
