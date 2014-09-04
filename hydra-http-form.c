@@ -789,12 +789,22 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
 
 void service_http_get_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
 	ptr_header_node ptr_head = initialize(ip, options, miscptr);
-	service_http_form(ip, sp, options, miscptr, fp, port, "GET", &ptr_head);
+	if(ptr_head)
+		service_http_form(ip, sp, options, miscptr, fp, port, "GET", &ptr_head);
+	else{
+		hydra_report(stderr, "[ERROR] Could not launch head.\n");
+		hydra_child_exit(1);
+	}
 }
 
 void service_http_post_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
 	ptr_header_node ptr_head = initialize(ip, options, miscptr);
-	service_http_form(ip, sp, options, miscptr, fp, port, "POST", &ptr_head);
+	if(ptr_head)
+		service_http_form(ip, sp, options, miscptr, fp, port, "POST", &ptr_head);
+	else{
+		hydra_report(stderr, "[ERROR] Could not launch head.\n");
+		hydra_child_exit(1);
+	}
 }
 
 int service_http_form_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
@@ -890,7 +900,7 @@ ptr_header_node initialize(char * ip, unsigned char options, char * miscptr) {
 
 		if (*cond == 0) {
 			fprintf(stderr, "[ERROR] invalid number of parameters in module option\n");
-			return -1;
+			return NULL;
 		}
 
 		sprintf(cookieurl, "%.1000s", url);
@@ -944,7 +954,7 @@ ptr_header_node initialize(char * ip, unsigned char options, char * miscptr) {
 				}
 				// Error: abort execution
 				hydra_report(stderr, "[ERROR] Out of memory for HTTP headers.");
-				return -1;
+				return NULL;
 			case 'H':
 				// add a new header, or replace an existing one's value
 				ptr = optional1 + 2;
@@ -969,7 +979,7 @@ ptr_header_node initialize(char * ip, unsigned char options, char * miscptr) {
 				}
 				// Error: abort execution
 				hydra_report(stderr, "[ERROR] Out of memory for HTTP headers.");
-				return -1;
+				return NULL;
 				// no default
 			}
 		}
@@ -986,7 +996,7 @@ ptr_header_node initialize(char * ip, unsigned char options, char * miscptr) {
 					add_header(&ptr_head, "Proxy-Authorization", proxy_string, HEADER_TYPE_DEFAULT);
 			}else{
 					hydra_report(stderr, "Out of memory for \"Proxy-Authorization\" header.");
-					return -1;
+					return NULL;
 			}
 			if (getcookie) {
 				//doing a GET to save cookies
