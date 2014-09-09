@@ -52,17 +52,6 @@ Added fail or success condition, getting cookies, and allow 5 redirections by da
 
 #include "hydra-mod.h"
 
-/*	HTTP Request Options	*/
-#define OPT_PROXY_AUTH		1
-#define OPT_PROXY_NOAUTH	2
-#define OPT_NOPROXY				4
-#define OPT_GETCOOKIES		8
-
-/*	Default HTTP Headers	*/
-#define DEFAULT_HOST					1
-#define DEFAULT_USER_AGENT		2
-#define DEFAULT_CONTENT_TYPE	4
-
 /*	HTTP Header Types	*/
 #define HEADER_TYPE_USERHEADER				'h'
 #define HEADER_TYPE_USERHEADER_REPL		'H'
@@ -100,8 +89,9 @@ int redirected_cpt = MAX_REDIRECT;
 
 char *cookie_request, *normal_request;	// Buffers for HTTP headers
 
-//ptr_header_node ptr_head = NULL;
-
+/*
+ * Function to perform some initial setup.
+ */
 ptr_header_node initialize(char * ip, unsigned char options, char * miscptr);
 
 /*
@@ -226,7 +216,6 @@ void cleanup(ptr_header_node * ptr_head){
 		free(cur_ptr->header);
 		free(cur_ptr->value);
 		next_ptr = cur_ptr->next;
-		//free(cur_ptr);
 	}
 
 	*ptr_head = NULL;
@@ -410,7 +399,7 @@ int analyze_server_response(int s) {
           }
         }
         ptr = index(str, '=');
-        // only copy the cookie if it has a value (otherwise the server wants to delete the cookie
+        // only copy the cookie if it has a value (otherwise the server wants to delete the cookie)
         if (ptr != NULL && *(ptr + 1) != ';' && *(ptr + 1) != 0 && *(ptr + 1) != '\n' && *(ptr + 1) != '\r') {
           if (strlen(cookie) > 0)
             strncat(cookie, "; ", sizeof(cookie) - strlen(cookie) - 1);
@@ -732,7 +721,7 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
   hydra_register_socket(sp);
 
   /*
-   * Iterate through the runs. Values are the following:
+   * Iterate through the runs. Possible values are the following:
    * 	- 1 -> Open connection to remote server.
    * 	- 2 -> Run password attempts.
    * 	- 3 -> Disconnect and end with success.
@@ -913,8 +902,6 @@ ptr_header_node initialize(char * ip, unsigned char options, char * miscptr) {
 		}
 		if (url == NULL || variables == NULL || cond == NULL /*|| optional1 == NULL */ )
 			hydra_child_exit(2);
-
-	//printf("url: %s, var: %s, cond: %s, opt: %s\n", url, variables, cond, optional1);
 
 		if (*cond == 0) {
 			fprintf(stderr, "[ERROR] invalid number of parameters in module option\n");
