@@ -563,13 +563,21 @@ void module_usage() {
              " failed string looks like and put it in this parameter!\n"
              "The following parameters are optional:\n"
              " C=/page/uri     to define a different page to gather initial cookies from\n"
-             " H=My-Hdr: foo   to send a user defined HTTP header with each request\n"
+             " (h|H)=My-Hdr: foo   to send a user defined HTTP header with each request\n"
              "                 ^USER^ and ^PASS^ can also be put into these headers!\n"
+      			 " Note that 'h' and 'H' are not the same. The former will add the user-defined header at the end"
+      			 " regardless it's already being sent by Hydra or not. The latter will replace the value of that header"
+      			 " if it exists, by the one supplied by the user, or add the header at the end if it does not exist."
+      		   " For example: 'h=User-Agent: Googlebot' would send two 'User-Agent' headers, the one supplied by default"
+      		   " ('Mozilla/5.0 (Hydra)'), and the one supplied by the user ('Googlebot'). 'H=User-Agent: Googlebot' would"
+      			 " only send a single 'User-Agent' header with the value supplied, effectively replacing the default user agent."
+      			 " This is useful to pass hidden CSRF token fields that are tied to a previously issued cookie and are unique"
+      			 " for each session. Various C/H/h parameters can be specified separated by colons and optionally intermixed."
              "Examples:\n"
              " \"/login.php:user=^USER^&pass=^PASS^:incorrect\"\n"
              " \"/login.php:user=^USER^&pass=^PASS^&colon=colon\\:escape:S=authlog=.*success\"\n"
              " \"/login.php:user=^USER^&pass=^PASS^&mid=123:authlog=.*failed\"\n"
-             " \"/:user=^USER&pass=^PASS^:failed:H=Authorization: Basic dT1w:H=X-User: ^USER^\"\n"
+             " \"/:user=^USER&pass=^PASS^:failed:H=Authorization: Basic dT1w:H=Cookie: sessid=aaaa:h=X-User: ^USER^\"\n"
              " \"/exchweb/bin/auth/owaauth.dll:destination=http%%3A%%2F%%2F<target>%%2Fexchange&flags=0&username=<domain>%%5C^USER^&password=^PASS^&SubmitCreds=x&trusted=0:reason=:C=/exchweb\"\n",
              hydra_options.service);
       find = 1;
