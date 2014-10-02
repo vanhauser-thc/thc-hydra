@@ -77,6 +77,13 @@ int start_teamspeak(int s, char *ip, int port, unsigned char options, char *misc
       hydra_report_found_host(port, ip, "teamspeak", fp);
       hydra_completed_pair_found();
     }
+    if (buf[0x4B] != 0) {
+      hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+      hydra_child_exit(1);
+    }
+  } else {
+    hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+    hydra_child_exit(1);
   }
 
   hydra_completed_pair();

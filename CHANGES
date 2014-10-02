@@ -7,6 +7,7 @@ Release 8.1-pre
 * Fixed for cisco-enable if an intial Login/Password is used (thanks to joswr1te for reporting)
 * Added patch by tux-mind for better MySQL compilation and an Android patches and Makefile. Thanks!
 * Added xhydra gtk patch by Petar Kaleychev to support -e r reverse login attempt, thanks!
+* Added patch for teamspeak to better identify server errors and auth failures (thanks to Petar Kaleychev)
 * Fixed a crash in the cisco module (thanks to Anatoly Mamaev for reporting)
 * Small fix for HTTP form module for redirect pages where a S= string match would not work (thanks to mkosmach for reporting)
 * Updated configure to detect subversion packages on current Cygwin
