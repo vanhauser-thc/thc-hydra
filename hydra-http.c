@@ -161,6 +161,8 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
     if (tmpreplybuf[0] == 0 && strstr(http_buf, "HTTP/1.") != NULL) {
       strncpy(tmpreplybuf, http_buf, sizeof(tmpreplybuf) - 1);
       tmpreplybuf[sizeof(tmpreplybuf) - 1] = 0;
+      free(http_buf);
+      http_buf = hydra_receive_line(s);
     } else if (tmpreplybuf[0] != 0) {
       complete_line = 1;
       if ((tmpreplybufptr = malloc(strlen(tmpreplybuf) + strlen(http_buf) + 1)) != NULL) {
@@ -168,6 +170,7 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
         strcat(tmpreplybufptr, http_buf);
         free(http_buf);
         http_buf = tmpreplybufptr;
+        if (debug) printf("http_buf now: %s\n", http_buf);
       }
     } else {
       free(http_buf);
