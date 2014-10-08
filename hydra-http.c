@@ -154,8 +154,10 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
     free(http_buf);
   http_buf = hydra_receive_line(s);
   complete_line = 0;
+  tmpreplybuf[0] = 0;
 
   while (http_buf != NULL && (strstr(http_buf, "HTTP/1.") == NULL || (index(http_buf, '\n') == NULL && complete_line == 0))) {
+    if (debug) printf("il: %d, tmpreplybuf: %s, http_buf: %s\n", complete_line, tmpreplybuf, http_buf);
     if (tmpreplybuf[0] == 0 && strstr(http_buf, "HTTP/1.") != NULL) {
       strncpy(tmpreplybuf, http_buf, sizeof(tmpreplybuf) - 1);
       tmpreplybuf[sizeof(tmpreplybuf) - 1] = 0;
