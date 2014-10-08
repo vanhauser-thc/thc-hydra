@@ -6,7 +6,6 @@ char *webtarget = NULL;
 char *slash = "/";
 char *http_buf = NULL;
 int webport, freemischttp = 0;
-
 int http_auth_mechanism = AUTH_BASIC;
 
 int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *type) {
@@ -14,6 +13,8 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
   char *login, *pass, buffer[500], buffer2[500];
   char *header = "";            /* XXX TODO */
   char *ptr, *fooptr;
+  int complete_line = 0;
+  char tmpreplybuf[1024] = "", *tmpreplybufptr;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -152,9 +153,24 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
   if (http_buf != NULL)
     free(http_buf);
   http_buf = hydra_receive_line(s);
-  while (http_buf != NULL && strstr(http_buf, "HTTP/1.") == NULL) {
-    free(http_buf);
-    http_buf = hydra_receive_line(s);
+  complete_line = 0;
+
+  while (http_buf != NULL && (strstr(http_buf, "HTTP/1.") == NULL || (index(http_buf, '\n') == NULL && complete_line == 0))) {
+    if (tmpreplybuf[0] == 0 && strstr(http_buf, "HTTP/1.") != NULL) {
+      strncpy(tmpreplybuf, http_buf, sizeof(tmpreplybuf) - 1);
+      tmpreplybuf[sizeof(tmpreplybuf) - 1] = 0;
+    } else if (tmpreplybuf[0] != 0) {
+      complete_line = 1;
+      if ((tmpreplybufptr = malloc(strlen(tmpreplybuf) + strlen(http_buf) + 1)) != NULL) {
+        strcpy(tmpreplybufptr, tmpreplybuf);
+        strcat(tmpreplybufptr, http_buf);
+        free(http_buf);
+        http_buf = tmpreplybufptr;
+      }
+    } else {
+      free(http_buf);
+      http_buf = hydra_receive_line(s);
+    }
   }
 
   //if server cut the connection, just exit cleanly or 
