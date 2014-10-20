@@ -3,6 +3,10 @@ Fix issues with escape characters
 Cmd line:
   -l aaa -p aaa -t 2 -w 30 -d 'http-form-get://81.169.244.210:80/test.php:user=^USER^&pass=^PASS^&mid=123:incorrect:h=XXX\: YYY:H=User-Agent\: Foobar'
 Result:
+  GET /test.php HTTP/1.0
+  XXX\: YYY:H=User-Agent: Foobar
+  Host:81.169.244.210
+  User-Agent:Mozilla/5.0 (Hydra)
 
 Cmd line:
   -l aaa -p aaa -t 2 -w 30 -d 'http-form-get://81.169.244.210:80/test.php:user=^USER^&pass=^PASS^&mid=123:incorrect:h=XXX: YYY:H=User-Agent\: Foobar'
