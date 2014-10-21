@@ -229,7 +229,7 @@ char *stringify_headers(ptr_header_node * ptr_head) {
   int ttl_size = 0;
 
   for (; cur_ptr; cur_ptr = cur_ptr->next)
-    ttl_size += strlen(cur_ptr->header) + strlen(cur_ptr->value) + 3;
+    ttl_size += strlen(cur_ptr->header) + strlen(cur_ptr->value) + 4;
 
   headers_str = (char *) malloc(ttl_size + 1);
 
@@ -237,7 +237,7 @@ char *stringify_headers(ptr_header_node * ptr_head) {
     memset(headers_str, 0, ttl_size + 1);
     for (cur_ptr = *ptr_head; cur_ptr; cur_ptr = cur_ptr->next) {
       strcat(headers_str, cur_ptr->header);
-      strcat(headers_str, ":");
+      strcat(headers_str, ": ");
       strcat(headers_str, cur_ptr->value);
       strcat(headers_str, "\r\n");
     }
@@ -567,6 +567,9 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
       }
     }
   }
+
+  if (debug)
+  	hydra_report_debug(stdout, "HTTP request sent:\n%s\n", http_request);
 
   found = analyze_server_response(s);
 
@@ -917,7 +920,11 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     success_cond = 0;
   }
 
-  while ( /*(optional1 = strtok(NULL, ":")) != NULL */ *optional1 != 0) {
+  /*
+   * Parse the user-supplied options.
+   * Beware of the backslashes (\)!
+   */
+  while (*optional1 != 0) {
     switch (optional1[0]) {
     case 'c':                  // fall through
     case 'C':
@@ -931,11 +938,15 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
       break;
     case 'h':
       // add a new header at the end
-      ptr = optional1 + 2;
-      while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
-        ptr++;
-      if (*ptr != 0)
-        *ptr++ = 0;
+			ptr = optional1 + 2;
+      while (*ptr != 0 && *ptr != ':')
+      	ptr++;
+			if (*(ptr - 1) == '\\')
+				*(ptr - 1) = 0;
+			if (*ptr != 0){
+				*ptr = 0;
+				ptr += 2;
+			}
       ptr2 = ptr;
       while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
         ptr2++;
@@ -956,11 +967,15 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
       return NULL;
     case 'H':
       // add a new header, or replace an existing one's value
-      ptr = optional1 + 2;
-      while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
-        ptr++;
-      if (*ptr != 0)
-        *ptr++ = 0;
+			ptr = optional1 + 2;
+      while (*ptr != 0 && *ptr != ':')
+      	ptr++;
+			if (*(ptr - 1) == '\\')
+				*(ptr - 1) = 0;
+			if (*ptr != 0){
+				*ptr = 0;
+				ptr += 2;
+			}
       ptr2 = ptr;
       while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
         ptr2++;
