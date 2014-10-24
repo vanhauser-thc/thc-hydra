@@ -1,3 +1,4 @@
+
 /*
  * hydra (c) 2001-2014 by van Hauser / THC <vh@thc.org>
  * http://www.thc.org
@@ -569,10 +570,10 @@ void module_usage() {
              "                 regardless it's already being sent by Hydra or not.\n"
              "                 'H' will replace the value of that header if it exists, by the\n"
              "                 one supplied by the user, or add the header at the end\n"
-      			 "Note that if you are going to put colons (:) in your headers you should escape them with a backslash (\).\n"
-      			 " All colons that are not option separators should be escaped (see the examples above and below).\n"
-      			 " You can specify a header without escaping the colons, but that way you will not be able to put colons\n"
-      			 " in the header value itself, as they will be interpreted by hydra as option separators.\n"
+             "Note that if you are going to put colons (:) in your headers you should escape them with a backslash (\\).\n"
+             " All colons that are not option separators should be escaped (see the examples above and below).\n"
+             " You can specify a header without escaping the colons, but that way you will not be able to put colons\n"
+             " in the header value itself, as they will be interpreted by hydra as option separators.\n"
              "\nExamples:\n"
              " \"/login.php:user=^USER^&pass=^PASS^:incorrect\"\n"
              " \"/login.php:user=^USER^&pass=^PASS^&colon=colon\\:escape:S=authlog=.*success\"\n"
