@@ -58,6 +58,8 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *chkAttempts;
   GtkWidget *chkIPV6;
   GtkWidget *chkSSL;
+  GtkWidget *chkServiceDetails;
+  GtkWidget *chkCompleteHelp;
   GtkWidget *label29;
   GtkWidget *label1;
   GtkWidget *vbox2;
@@ -116,6 +118,7 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *spnTasks;
   GtkWidget *label32;
   GtkWidget *label31;
+  GtkWidget *chkExitF;
   GtkWidget *label30;
   GtkWidget *label3;
   GtkWidget *vbox4;
@@ -349,7 +352,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(frame12);
   gtk_box_pack_start(GTK_BOX(vbox5), frame12, TRUE, TRUE, 0);
 
-  table9 = gtk_table_new(2, 2, FALSE);
+  table9 = gtk_table_new(3, 2, FALSE);
   gtk_widget_set_name(table9, "table9");
   gtk_widget_show(table9);
   gtk_container_add(GTK_CONTAINER(frame12), table9);
@@ -377,6 +380,22 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(chkSSL);
   gtk_table_attach(GTK_TABLE(table9), chkSSL, 0, 1, 0, 1, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
   gtk_tooltips_set_tip(tooltips, chkSSL, "Enable to use SSL (the target must have SSL enabled!", NULL);
+
+  chkServiceDetails = gtk_check_button_new_with_mnemonic ("Service Module Usage Details");
+  gtk_widget_set_name (chkServiceDetails, "chkServiceDetails");
+  gtk_widget_show (chkServiceDetails);
+  gtk_table_attach (GTK_TABLE (table9), chkServiceDetails, 1, 2, 2, 3,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK),
+                    (GtkAttachOptions) (GTK_EXPAND), 0, 0);
+  gtk_tooltips_set_tip (tooltips, chkServiceDetails, "Service Module Usage Details", NULL);
+
+  chkCompleteHelp = gtk_check_button_new_with_mnemonic ("COMPLETE HELP");
+  gtk_widget_set_name (chkCompleteHelp, "chkCompleteHelp");
+  gtk_widget_show (chkCompleteHelp);
+  gtk_table_attach (GTK_TABLE (table9), chkCompleteHelp, 0, 1, 2, 3,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK),
+                    (GtkAttachOptions) (GTK_EXPAND), 0, 0);
+  gtk_tooltips_set_tip (tooltips, chkCompleteHelp, "Complete Help", NULL);
 
   label29 = gtk_label_new("Output Options");
   gtk_widget_set_name(label29, "label29");
@@ -662,16 +681,16 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(frame13);
   gtk_table_attach(GTK_TABLE(table4), frame13, 0, 1, 0, 1, (GtkAttachOptions) (GTK_FILL), (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
 
-  table10 = gtk_table_new(3, 2, FALSE);
+  table10 = gtk_table_new(4, 2, FALSE);
   gtk_widget_set_name(table10, "table10");
   gtk_widget_show(table10);
   gtk_container_add(GTK_CONTAINER(frame13), table10);
 
-  chkExitf = gtk_check_button_new_with_mnemonic("Exit after first found pair");
+  chkExitf = gtk_check_button_new_with_mnemonic("Exit after first found pair (per host)");
   gtk_widget_set_name(chkExitf, "chkExitf");
   gtk_widget_show(chkExitf);
   gtk_table_attach(GTK_TABLE(table10), chkExitf, 0, 2, 2, 3, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkExitf, "Enable this to stop all attacking processes once a valid login/password pair is found", NULL);
+  gtk_tooltips_set_tip(tooltips, chkExitf, "Enable this to stop all attacking processes once a valid login/password pair is found (per host)", NULL);
 
   spnTimeout_adj = gtk_adjustment_new(30, 0, 295, 1, 10, 0);
   spnTimeout = gtk_spin_button_new(GTK_ADJUSTMENT(spnTimeout_adj), 1, 0);
@@ -698,6 +717,14 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(label31);
   gtk_table_attach(GTK_TABLE(table10), label31, 0, 1, 0, 1, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
   gtk_misc_set_alignment(GTK_MISC(label31), 0, 0.5);
+
+  chkExitF = gtk_check_button_new_with_mnemonic ("Exit after first found pair (global)");
+  gtk_widget_set_name (chkExitF, "chkExitF");
+  gtk_widget_show (chkExitF);
+  gtk_table_attach (GTK_TABLE (table10), chkExitF, 0, 2, 3, 4,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK),
+                    (GtkAttachOptions) (GTK_EXPAND), 0, 0);
+  gtk_tooltips_set_tip (tooltips, chkExitF, "Enable this to stop all attacking processes once a valid login/password pair is found (global)", NULL);
 
   label30 = gtk_label_new("Performance Options");
   gtk_widget_set_name(label30, "label30");
@@ -1028,6 +1055,8 @@ GtkWidget *create_wndMain(void) {
   GLADE_HOOKUP_OBJECT(wndMain, chkAttempts, "chkAttempts");
   GLADE_HOOKUP_OBJECT(wndMain, chkIPV6, "chkIPV6");
   GLADE_HOOKUP_OBJECT(wndMain, chkSSL, "chkSSL");
+  GLADE_HOOKUP_OBJECT(wndMain, chkServiceDetails, "chkServiceDetails");
+  GLADE_HOOKUP_OBJECT(wndMain, chkCompleteHelp, "chkCompleteHelp");
   GLADE_HOOKUP_OBJECT(wndMain, label29, "label29");
   GLADE_HOOKUP_OBJECT(wndMain, label1, "label1");
   GLADE_HOOKUP_OBJECT(wndMain, vbox2, "vbox2");
@@ -1081,6 +1110,7 @@ GtkWidget *create_wndMain(void) {
   GLADE_HOOKUP_OBJECT(wndMain, spnTasks, "spnTasks");
   GLADE_HOOKUP_OBJECT(wndMain, label32, "label32");
   GLADE_HOOKUP_OBJECT(wndMain, label31, "label31");
+  GLADE_HOOKUP_OBJECT(wndMain, chkExitF, "chkExitF");
   GLADE_HOOKUP_OBJECT(wndMain, label30, "label30");
   GLADE_HOOKUP_OBJECT(wndMain, label3, "label3");
   GLADE_HOOKUP_OBJECT(wndMain, vbox4, "vbox4");
