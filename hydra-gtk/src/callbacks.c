@@ -223,9 +223,9 @@ int hydra_get_options(char *options[]) {
     options[i++] = "-f";
   }
   /* global */
-  widget = lookup_widget(GTK_WIDGET(wndMain), "chkExitf");
+  widget = lookup_widget(GTK_WIDGET(wndMain), "chkExitF");
   if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
-    options[i++] = "-f";
+    options[i++] = "-F";
   }
 
   /* get additional parameters */
