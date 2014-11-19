@@ -2346,6 +2346,7 @@ int main(int argc, char *argv[]) {
         bail("You need to define a service to attack");
       if (optind + 2 == argc)
         fprintf(stderr, "[WARNING] With the -M FILE option you can not specify a server on the commandline. Lets hope you did everything right!\n");
+/*!!!*/ fprintf(stderr, "[WARNING] the -M option is not working correctly at the moment for larger target lists!\n");
       hydra_options.server = NULL;
       hydra_options.service = argv[optind];
       if (optind + 2 == argc)
@@ -2930,7 +2931,7 @@ int main(int argc, char *argv[]) {
       hydra_options.port = port;
     }
 
-    if (hydra_options.ssl == 1 && strncmp(hydra_options.service, "http-", 5) == 0 && hydra_options.port == 443)
+    if (hydra_options.ssl == 0 && hydra_options.port == 443)
       fprintf(stderr,
               "[WARNING] you specified port 443 for attacking a http service, however did not specify the -S ssl switch nor used https-..., therefore using plain HTTP\n");
 
@@ -3376,7 +3377,7 @@ int main(int argc, char *argv[]) {
            hydra_brains.targets, hydra_brains.targets == 1 ? "" : "s", hydra_options.max_use, hydra_brains.todo, hydra_brains.todo == 1 ? "y" : "ies",
            (unsigned long int) hydra_brains.countlogin, (unsigned long int) hydra_brains.countpass, math2, math2 == 1 ? "y" : "ies");
 
-  printf("[DATA] attacking service %s on port %d\n", hydra_options.service, port);
+  printf("[DATA] attacking service %s on port %d%s\n", hydra_options.service, port,  hydra_options.ssl == 1 ? " with SSL" : "");
 
   if (hydra_options.outfile_ptr != NULL) {
     if ((hydra_brains.ofp = fopen(hydra_options.outfile_ptr, "a+")) == NULL) {

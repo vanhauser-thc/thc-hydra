@@ -1,5 +1,7 @@
 
 Prio 1:
+* fix -M
+* print hostnames if present, not IP
 * hydra-smb more than 1 connection?
 * add help hints?
 * test teamspeak, icq
