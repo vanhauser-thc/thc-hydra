@@ -119,6 +119,7 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *label32;
   GtkWidget *label31;
   GtkWidget *chkExitF;
+  GtkWidget *chkNoErr;
   GtkWidget *label30;
   GtkWidget *label3;
   GtkWidget *vbox4;
@@ -681,7 +682,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(frame13);
   gtk_table_attach(GTK_TABLE(table4), frame13, 0, 1, 0, 1, (GtkAttachOptions) (GTK_FILL), (GtkAttachOptions) (GTK_EXPAND | GTK_FILL), 0, 0);
 
-  table10 = gtk_table_new(4, 2, FALSE);
+  table10 = gtk_table_new(5, 2, FALSE);
   gtk_widget_set_name(table10, "table10");
   gtk_widget_show(table10);
   gtk_container_add(GTK_CONTAINER(frame13), table10);
@@ -725,6 +726,14 @@ GtkWidget *create_wndMain(void) {
                     (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK),
                     (GtkAttachOptions) (GTK_EXPAND), 0, 0);
   gtk_tooltips_set_tip (tooltips, chkExitF, "Enable this to stop all attacking processes once a valid login/password pair is found (global)", NULL);
+
+  chkNoErr = gtk_check_button_new_with_mnemonic ("Do not print messages about connection errors");
+  gtk_widget_set_name (chkNoErr, "chkNoErr");
+  gtk_widget_show (chkNoErr);
+  gtk_table_attach (GTK_TABLE (table10), chkNoErr, 0, 2, 4, 5,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK),
+                    (GtkAttachOptions) (GTK_EXPAND), 0, 0);
+  gtk_tooltips_set_tip (tooltips, chkNoErr, "Do not print messages about connection errors", NULL);
 
   label30 = gtk_label_new("Performance Options");
   gtk_widget_set_name(label30, "label30");
@@ -1111,6 +1120,7 @@ GtkWidget *create_wndMain(void) {
   GLADE_HOOKUP_OBJECT(wndMain, label32, "label32");
   GLADE_HOOKUP_OBJECT(wndMain, label31, "label31");
   GLADE_HOOKUP_OBJECT(wndMain, chkExitF, "chkExitF");
+  GLADE_HOOKUP_OBJECT(wndMain, chkNoErr, "chkNoErr");
   GLADE_HOOKUP_OBJECT(wndMain, label30, "label30");
   GLADE_HOOKUP_OBJECT(wndMain, label3, "label3");
   GLADE_HOOKUP_OBJECT(wndMain, vbox4, "vbox4");

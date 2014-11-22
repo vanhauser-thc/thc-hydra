@@ -228,6 +228,12 @@ int hydra_get_options(char *options[]) {
     options[i++] = "-F";
   }
 
+  /* Do not print messages about connection errors */
+  widget = lookup_widget(GTK_WIDGET(wndMain), "chkNoErr");
+  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+    options[i++] = "-q";
+  }
+
   /* get additional parameters */
   widget = lookup_widget(GTK_WIDGET(wndMain), "entProtocol");
   tmp = (char *) gtk_entry_get_text((GtkEntry *) widget);
