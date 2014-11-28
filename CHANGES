@@ -6,7 +6,7 @@ Release 8.1-pre
 * Added patch from Ander Juaristi which adds h/H header options for http-form-*, great work, thanks!
 * Fixed for cisco-enable if an intial Login/Password is used (thanks to joswr1te for reporting)
 * Added patch by tux-mind for better MySQL compilation and an Android patches and Makefile. Thanks!
-* Added xhydra gtk patches by Petar Kaleychev to support -h, -U, -q and -e r options, thanks!
+* Added xhydra gtk patches by Petar Kaleychev to support -h, -U, -f, -F, -q and -e r options, thanks!
 * Added patch for teamspeak to better identify server errors and auth failures (thanks to Petar Kaleychev)
 * Fixed a crash in the cisco module (thanks to Anatoly Mamaev for reporting)
 * Small fix for HTTP form module for redirect pages where a S= string match would not work (thanks to mkosmach for reporting)
@@ -221,7 +221,7 @@ Release 6.4
 
 
 Release 6.3
-* Added patch by Petar(dot)Kaley(at)gmail.com which adds nice icons to cygwin hydra files
+* Added patch by Petar Kaleychev which adds nice icons to cygwin hydra files
 * Added patch by Gauillaume Rousse which fixes a warning display
 * New Oracle module (for databases via OCI, for TNS Listener passwd, for SID enumeration)
 * New SMTP user enum module (using VRFY, EXPN or RCPT command)

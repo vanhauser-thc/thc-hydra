@@ -1142,7 +1142,8 @@ char *hydra_address2string(char *address) {
   } else
 #endif
   {
-    fprintf(stderr, "[ERROR] unknown address string size!\n");
+    if (debug)
+      fprintf(stderr, "[ERROR] unknown address string size!\n");
     return NULL;
   }
   return NULL;                  // not reached

@@ -2346,7 +2346,6 @@ int main(int argc, char *argv[]) {
         bail("You need to define a service to attack");
       if (optind + 2 == argc)
         fprintf(stderr, "[WARNING] With the -M FILE option you can not specify a server on the commandline. Lets hope you did everything right!\n");
-/*!!!*/ fprintf(stderr, "[WARNING] the -M option is not working correctly at the moment for larger target lists!\n");
       hydra_options.server = NULL;
       hydra_options.service = argv[optind];
       if (optind + 2 == argc)
@@ -3124,6 +3123,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "[ERROR] File for targets is empty: %s", hydra_options.infile_ptr);
         exit(-1);
       }
+/*!!!*/ if (countinfile > 60) fprintf(stderr, "[WARNING] the -M option is not working correctly at the moment for target lists > 60!\n");
       hydra_targets = malloc(sizeof(hydra_targets) * (countservers + 2) + 8);
       if (hydra_targets == NULL)
         bail("Could not allocate enough memory for target data");
