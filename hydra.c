@@ -3603,7 +3603,7 @@ int main(int argc, char *argv[]) {
                 }
                 for (j = 0; j < hydra_options.max_use; j++)
                   if (hydra_heads[j]->active >= 0 && (hydra_heads[j]->target_no == target_no || hydra_options.exit_found == 2)) {
-                    if (hydra_brains.targets > 1 && hydra_options.exit_found < 2)
+                    if (hydra_brains.targets > hydra_brains.finished && hydra_options.exit_found < 2)
                       hydra_kill_head(j, 1, 0);   // kill all heads working on the target 
                     else
                       hydra_kill_head(j, 1, 2);   // kill all heads working on the target 

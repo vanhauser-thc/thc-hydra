@@ -900,7 +900,7 @@ unsigned long SMBSessionSetup(int s, char *szLogin, char *szPassword, char *misc
   unsigned char *NTLMv2hash = NULL;
   unsigned char *NTLMhash = NULL;
   unsigned char *LMhash = NULL;
-  unsigned char unicodeLogin[32 * 2];
+//  unsigned char unicodeLogin[32 * 2];
   int j;
   char bufReceive[512];
   int nReceiveBufferSize = 0;

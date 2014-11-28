@@ -96,9 +96,8 @@ int start_telnet(int s, char *ip, int port, unsigned char options, char *miscptr
 }
 
 void service_telnet(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  int run = 1, next_run = 1, sock = -1;
+  int run = 1, next_run = 1, sock = -1, fck;
   int myport = PORT_TELNET, mysslport = PORT_TELNET_SSL;
-  int fck = 0;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)

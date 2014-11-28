@@ -24,7 +24,7 @@ extern int new_session;
 int start_sshkey(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *key, keep_login[300];
-  int auth_state = 0, rc = 0, i = 0;
+  int auth_state = 0, rc = 0;
   ssh_private_key privkey;
 
   if (strlen(login = hydra_get_next_login()) == 0)

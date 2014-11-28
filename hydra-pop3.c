@@ -406,7 +406,7 @@ int start_pop3(int s, char *ip, int port, unsigned char options, char *miscptr, 
 }
 
 void service_pop3(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  int run = 1, next_run = 1, sock = -1, i;
+  int run = 1, next_run = 1, sock = -1;
   char *ptr = NULL;
 
   //extract data from the pool, ip is the key

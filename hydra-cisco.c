@@ -167,7 +167,7 @@ void service_cisco(char *ip, int sp, unsigned char options, char *miscptr, FILE 
               hydra_child_exit(0);
             }
           }
-          if (buf2 != NULL && hydra_strcasestr(buf2, "ress ENTER") != NULL)
+          if (buf2 != NULL && hydra_strcasestr((char*)buf2, "ress ENTER") != NULL)
             hydra_send(sock, "\r\n", 2, 0);
         } while (strstr((char *) buf2, "assw") == NULL);
         free(buf2);
