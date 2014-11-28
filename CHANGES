@@ -2,6 +2,7 @@ Changelog for hydra
 -------------------
 
 Release 8.1-pre
+* Fixed the -M option, works now with many many targets :-)
 * David Maciejak, my co-maintainer moved to a different job and country and can not help with Hydra anymore - sadly! Wish you all the best!
 * Added patch from Ander Juaristi which adds h/H header options for http-form-*, great work, thanks!
 * Fixed for cisco-enable if an intial Login/Password is used (thanks to joswr1te for reporting)

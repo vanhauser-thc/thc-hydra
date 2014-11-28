@@ -1,4 +1,3 @@
-
 /*
  * hydra (c) 2001-2014 by van Hauser / THC <vh@thc.org>
  * http://www.thc.org
@@ -1464,8 +1463,9 @@ int hydra_lookup_port(char *service) {
     return port;
 }
 
-// killit = 1 : kill(pid); fail = 1 : redo, fail = 2 : disable
+// killit = 1 : kill(pid); fail = 1 : redo, fail = 2/3 : disable
 void hydra_kill_head(int head_no, int killit, int fail) {
+  if (debug) printf("[DEBUG] head_no %d, kill %d, fail %d\n", head_no, killit, fail);
   if (head_no < 0)
     return;
   if (hydra_heads[head_no]->active > 0) {
@@ -1548,7 +1548,6 @@ void hydra_increase_fail_count(int target_no, int head_no) {
         hydra_heads[head_no]->current_pass_ptr = empty_login;
       }
       if (hydra_targets[target_no]->fail_count >= MAXFAIL + hydra_options.tasks * hydra_targets[target_no]->ok) {
-        hydra_kill_head(head_no, 1, 2);
         if (hydra_targets[target_no]->done == 0 && hydra_options.max_use == hydra_targets[target_no]->failed) {
           if (hydra_targets[target_no]->ok == 1)
             hydra_targets[target_no]->done = 2; // mark target as done by errors
@@ -1559,6 +1558,10 @@ void hydra_increase_fail_count(int target_no, int head_no) {
                   && index(hydra_targets[target_no]->target, ':') != NULL ? "[" : "", hydra_targets[target_no]->target, hydra_targets[target_no]->ip[0] == 16
                   && index(hydra_targets[target_no]->target, ':') != NULL ? "]" : "", hydra_targets[target_no]->port);
         }
+        if (hydra_brains.targets > hydra_brains.finished)
+          hydra_kill_head(head_no, 1, 0);
+        else
+          hydra_kill_head(head_no, 1, 2);
       }                         // we keep the last one alive as long as it make sense
     } else {
       // we need to put this in a list, otherwise we fail one login+pw test
@@ -1575,14 +1578,18 @@ void hydra_increase_fail_count(int target_no, int head_no) {
         hydra_heads[head_no]->current_login_ptr = empty_login;
         hydra_heads[head_no]->current_pass_ptr = empty_login;
       }
-      hydra_kill_head(head_no, 1, 2);
       hydra_targets[target_no]->fail_count--;
       if (k < 5 && hydra_targets[target_no]->ok)
         hydra_targets[target_no]->fail_count--;
       if (k == 2 && hydra_targets[target_no]->ok)
         hydra_targets[target_no]->fail_count--;
-      if (verbose)
-        printf("[VERBOSE] Disabled child %d because of too many errors\n", head_no);
+      if (hydra_brains.targets > hydra_brains.finished)
+        hydra_kill_head(head_no, 1, 0);
+      else {
+        hydra_kill_head(head_no, 1, 2);
+        if (verbose)
+          printf("[VERBOSE] Disabled child %d because of too many errors\n", head_no);
+      }
     }
   } else {
     hydra_kill_head(head_no, 1, 1);
@@ -1880,7 +1887,8 @@ int hydra_send_next_pair(int target_no, int head_no) {
         printf("[STATUS] attack finished for %s (waiting for children to finish) ...\n", hydra_targets[target_no]->target);
       }
     }
-    //hydra_kill_head(head_no, 1, 2); // done in main while loop
+    if (hydra_brains.targets > hydra_brains.finished)
+      hydra_kill_head(head_no, 1, 0); // otherwise done in main while loop
   } else {
     if (hydra_targets[target_no]->skipcnt > 0) {
       snpj = 0;
@@ -2023,7 +2031,7 @@ int hydra_select_target() {
   int target_no = -1, i, j = -1000;
 
   for (i = 0; i < hydra_brains.targets; i++)
-    if (hydra_targets[i]->use_count < hydra_options.tasks)
+    if (hydra_targets[i]->use_count < hydra_options.tasks && hydra_targets[i]->done == 0)
       if (j < hydra_options.tasks - hydra_targets[i]->failed - hydra_targets[i]->use_count) {
         target_no = i;
         j = hydra_options.tasks - hydra_targets[i]->failed - hydra_targets[i]->use_count;
@@ -3123,7 +3131,7 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "[ERROR] File for targets is empty: %s", hydra_options.infile_ptr);
         exit(-1);
       }
-/*!!!*/ if (countinfile > 60) fprintf(stderr, "[WARNING] the -M option is not working correctly at the moment for target lists > 60!\n");
+// if (countinfile > 60) fprintf(stderr, "[WARNING] the -M option is not working correctly at the moment for target lists > 60!\n");
       hydra_targets = malloc(sizeof(hydra_targets) * (countservers + 2) + 8);
       if (hydra_targets == NULL)
         bail("Could not allocate enough memory for target data");
@@ -3343,23 +3351,25 @@ int main(int argc, char *argv[]) {
       hydra_options.tasks = hydra_brains.todo;
     }
   }
-  if (hydra_options.max_use < hydra_brains.targets * hydra_options.tasks)
-    hydra_options.max_use = hydra_brains.targets * hydra_options.tasks;
-  if (hydra_options.max_use > MAXTASKS)
-    hydra_options.max_use = MAXTASKS;
-  if (hydra_options.max_use < hydra_brains.targets * hydra_options.tasks) {
+  if (hydra_options.max_use == MAXTASKS) { // only if it was not set via -T
+    if (hydra_options.max_use < hydra_brains.targets * hydra_options.tasks)
+      hydra_options.max_use = hydra_brains.targets * hydra_options.tasks;
+    if (hydra_options.max_use > MAXTASKS)
+      hydra_options.max_use = MAXTASKS;
+  }
+  if ((hydra_options.tasks == TASKS || hydra_options.tasks <= 8) && hydra_options.max_use < hydra_brains.targets * hydra_options.tasks) {
     if ((hydra_options.tasks = hydra_options.max_use / hydra_brains.targets) == 0)
       hydra_options.tasks = 1;
-    fprintf(stderr, "[WARNING] More tasks defined per server than allowed for maximal connections. Tasks per server reduced to %d.\n", hydra_options.tasks);
+    //fprintf(stderr, "[WARNING] More tasks defined per server than allowed for maximal connections. Tasks per server reduced to %d.\n", hydra_options.tasks);
   } else {
     if (hydra_options.tasks > MAXTASKS) {
-      fprintf(stderr, "[WARNING] reducing tasks to MAXTASKS (%d)\n", MAXTASKS);
+      //fprintf(stderr, "[WARNING] reducing tasks to MAXTASKS (%d)\n", MAXTASKS);
       hydra_options.tasks = MAXTASKS;
     }
   }
-  hydra_options.max_use = hydra_brains.targets * hydra_options.tasks;
-  if (hydra_options.max_use > MAXTASKS)
-    hydra_options.max_use = MAXTASKS;
+//  hydra_options.max_use = hydra_brains.targets * hydra_options.tasks;
+//  if (hydra_options.max_use > MAXTASKS)
+//    hydra_options.max_use = MAXTASKS;
   math2 = (hydra_brains.todo / hydra_options.tasks);
   if (hydra_brains.todo % hydra_options.tasks)
     math2++;
@@ -3525,7 +3535,7 @@ int main(int argc, char *argv[]) {
     tmp_time = time(NULL);
 
     for (head_no = 0; head_no < hydra_options.max_use; head_no++) {
-//      if (debug) printf("[DEBUG] head_no[%d] active %d\n", head_no, hydra_heads[head_no]->active);
+      if (debug) printf("[DEBUG] head_no[%d] to target_no %d active %d\n", head_no, hydra_heads[head_no]->target_no, hydra_heads[head_no]->active);
       switch (hydra_heads[head_no]->active) {
       case -1:
         // disabled head, ignored
@@ -3534,13 +3544,16 @@ int main(int argc, char *argv[]) {
         if (hydra_heads[head_no]->redo) {
           hydra_spawn_head(head_no, hydra_heads[head_no]->target_no);
         } else {
-          if (hydra_brains.targets > 1)
+          if (hydra_brains.targets > hydra_brains.finished)
             hydra_heads[head_no]->target_no = hydra_select_target();
+          else
+            hydra_heads[head_no]->target_no = -1;
           if (debug)
             printf("[DEBUG] child %d got target %d selected\n", head_no, hydra_heads[head_no]->target_no);
-          if (hydra_heads[head_no]->target_no < 0)
+          if (hydra_heads[head_no]->target_no < 0) {
+            if (debug) printf("[DEBUG] hydra_select_target() reports no more targets left\n");
             hydra_kill_head(head_no, 0, 3);
-          else
+          } else
             hydra_spawn_head(head_no, hydra_heads[head_no]->target_no); // target_no is ignored if head->redo == 1
         }
         break;
@@ -3569,17 +3582,13 @@ int main(int argc, char *argv[]) {
               // no break here 
             case 'n':          // mother sends this to itself initially
               loop_cnt = 0;
-              if (hydra_send_next_pair(hydra_heads[head_no]->target_no, head_no) == -1) {
-                hydra_kill_head(head_no, 1, 2);
-              }
+              if (hydra_send_next_pair(hydra_heads[head_no]->target_no, head_no) == -1)
+                hydra_kill_head(head_no, 1, 0);
               break;
 
             case 'F':          // valid password found
               hydra_brains.found++;
               if (hydra_options.exit_found) {   // option set says quit target after on valid login/pass pair is found 
-                for (j = 0; j < hydra_options.max_use; j++)
-                  if (hydra_heads[j]->active >= 0 && (hydra_heads[j]->target_no == target_no || hydra_options.exit_found == 2))
-                    hydra_kill_head(j, 1, 2);   // kill all heads working on the target 
                 if (hydra_targets[hydra_heads[head_no]->target_no]->done == 0) {
                   hydra_targets[hydra_heads[head_no]->target_no]->done = 1;     // mark target as done 
                   hydra_brains.finished++;
@@ -3591,6 +3600,13 @@ int main(int argc, char *argv[]) {
                       hydra_targets[j]->done = 1;
                       hydra_brains.finished++;
                     }
+                }
+                for (j = 0; j < hydra_options.max_use; j++)
+                  if (hydra_heads[j]->active >= 0 && (hydra_heads[j]->target_no == target_no || hydra_options.exit_found == 2)) {
+                    if (hydra_brains.targets > 1 && hydra_options.exit_found < 2)
+                      hydra_kill_head(j, 1, 0);   // kill all heads working on the target 
+                    else
+                      hydra_kill_head(j, 1, 2);   // kill all heads working on the target 
                 }
                 continue;
               }
@@ -3729,6 +3745,7 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "[ERROR] illegal target result value (%d=>%d)\n", i, hydra_targets[i]->done);
     }
 
+  if (debug) printf("[DEBUG] killing all remaining childs now that might be stuck\n");
   for (i = 0; i < hydra_options.max_use; i++)
     if (hydra_heads[i]->active > 0 && hydra_heads[i]->pid > 0)
       hydra_kill_head(i, 1, 3);
