@@ -662,6 +662,7 @@ void hydra_report_debug(FILE * st, char *format, ...) {
 }
 
 void hydra_report_found(int port, char *svc, FILE * fp) {
+/*
   if (!strcmp(svc, "rsh"))
     if (colored_output)
       fprintf(fp, "[\e[31m%d\e[0m][\e[31m%s\e[0m] login: \e[32m%s\e[0m\n", port, svc, hydra_get_next_login());
@@ -680,10 +681,12 @@ void hydra_report_found(int port, char *svc, FILE * fp) {
   }
 
   fflush(fp);
+*/
 }
 
 /* needed for irc module to display the general server password */
 void hydra_report_pass_found(int port, char *ip, char *svc, FILE * fp) {
+/*
   strcpy(ipaddr_str, hydra_address2string(ip));
   if (colored_output)
     fprintf(fp, "[\e[31m%d\e[0m][\e[31m%s\e[0m] host: \e[32m%s\e[0m   password: \e[32m%s\e[0m\n", port, svc, ipaddr_str, hydra_get_next_password());
@@ -692,10 +695,11 @@ void hydra_report_pass_found(int port, char *ip, char *svc, FILE * fp) {
   if (stdout != fp)
     printf("[%d][%s] host: %s   password: %s\n", port, svc, ipaddr_str, hydra_get_next_password());
   fflush(fp);
+*/
 }
 
 void hydra_report_found_host(int port, char *ip, char *svc, FILE * fp) {
-  char *keyw = "password";
+/*  char *keyw = "password";
 
   strcpy(ipaddr_str, hydra_address2string(ip));
   if (!strcmp(svc, "smtp-enum"))
@@ -732,9 +736,11 @@ void hydra_report_found_host(int port, char *ip, char *svc, FILE * fp) {
   }
   fflush(fp);
   fflush(stdout);
+*/
 }
 
 void hydra_report_found_host_msg(int port, char *ip, char *svc, FILE * fp, char *msg) {
+/*
   strcpy(ipaddr_str, hydra_address2string(ip));
   if (colored_output)
     fprintf(fp, "[\e[31m%d\e[0m][\e[31m%s\e[0m] host: \e[32m%s\e[0m   login: \e[32m%s\e[0m   password: \e[32m%s\e[0m  [%s]\n", port, svc, ipaddr_str, hydra_get_next_login(),
@@ -744,6 +750,7 @@ void hydra_report_found_host_msg(int port, char *ip, char *svc, FILE * fp, char 
   if (stdout != fp)
     printf("[%d][%s] host: %s   login: %s   password: %s\n", port, svc, ipaddr_str, hydra_get_next_login(), hydra_get_next_password());
   fflush(fp);
+*/
 }
 
 int hydra_connect_to_ssl(int socket) {

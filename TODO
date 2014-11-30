@@ -1,6 +1,5 @@
 
 Prio 1:
-* print hostnames if present, not IP
 * hydra-smb more than 1 connection?
 * add help hints?
 * test teamspeak, icq
@@ -23,7 +22,7 @@ Prio 2:
 
 Prio 3:
 * Specify user-agent for http-form module as extra optional option
-* ipv6 support for sip
+* IPv6 support for sip
 * add RIP, OSPF, BGP, PIM
 * add diameter support
 * round robin proxy support ?
