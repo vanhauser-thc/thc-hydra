@@ -2182,7 +2182,7 @@ int main(int argc, char *argv[]) {
       break;
     case 'R':
       hydra_options.restore = 1;
-      if (argc != 2)
+      if (argc > 2 + debug + verbose)
         bail("no option may be supplied together with -R");
       break;
     case 'd':
