@@ -7,7 +7,7 @@ echo "Welcome to the Hydra Wizard"
 echo
 read -p "Enter the service to attack (eg: ftp, ssh, http-post-form): " service
 test -z "$service" && { echo Error: service may not be empty ; exit 1 ; }
-read -p "Enter the the target to attack (or filename with targets): " target
+read -p "Enter the target to attack (or filename with targets): " target
 test -z "$target" && { echo Error: target may not be empty ; exit 1 ; }
 read -p "Enter a username to test or a filename: " user
 test -z "$user" && { echo Error: user may not be empty ; exit 1 ; }

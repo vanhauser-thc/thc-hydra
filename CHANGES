@@ -1,12 +1,16 @@
 Changelog for hydra
 -------------------
 
-Release 8.1-pre
-* Found login:password combinations are now printed with the name specified (hostname or IP), not always IP
-* Fixed the -M option, works now with many many targets :-)
-* -M option now supports ports, add a colon in between: "host:port", or, if IPv6, "[ipv6ipaddress]:port"
+Release 8.2-pre
+* ... your patch?
+
+
+Release 8.1
 * David Maciejak, my co-maintainer moved to a different job and country and can not help with Hydra anymore - sadly! Wish you all the best!
 * Added patch from Ander Juaristi which adds h/H header options for http-form-*, great work, thanks!
+* Fixed the -M option, works now with many many targets :-)
+* -M option now supports ports, add a colon in between: "host:port", or, if IPv6, "[ipv6ipaddress]:port"
+* Found login:password combinations are now printed with the name specified (hostname or IP), not always IP
 * Fixed for cisco-enable if an intial Login/Password is used (thanks to joswr1te for reporting)
 * Added patch by tux-mind for better MySQL compilation and an Android patches and Makefile. Thanks!
 * Added xhydra gtk patches by Petar Kaleychev to support -h, -U, -f, -F, -q and -e r options, thanks!
