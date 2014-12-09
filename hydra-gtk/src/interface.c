@@ -68,6 +68,7 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *entUsernameFile;
   GtkWidget *entUsername;
   GtkWidget *chkUsernameLoop;
+  GtkWidget *chkDisUser;
   GtkWidget *radioUsername1;
   GSList *radioUsername1_group = NULL;
   GtkWidget *radioUsername2;
@@ -263,6 +264,7 @@ GtkWidget *create_wndMain(void) {
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "pcanywhere");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "postgres");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rdp");
+  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "redis");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rexec");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rlogin");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rsh");
@@ -454,8 +456,14 @@ GtkWidget *create_wndMain(void) {
   chkUsernameLoop = gtk_check_button_new_with_mnemonic("Loop around users");
   gtk_widget_set_name(chkUsernameLoop, "chkUsernameLoop");
   gtk_widget_show(chkUsernameLoop);
-  gtk_table_attach(GTK_TABLE(table2), chkUsernameLoop, 0, 2, 2, 3, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
+  gtk_table_attach(GTK_TABLE(table2), chkUsernameLoop, 0, 1, 2, 3, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
   gtk_tooltips_set_tip(tooltips, chkUsernameLoop, "Enable this option to loop around users not passwords", NULL);
+
+  chkDisUser = gtk_check_button_new_with_mnemonic("Protocol does not require usernames");
+  gtk_widget_set_name(chkDisUser, "chkDisUser");
+  gtk_widget_show(chkDisUser);
+  gtk_table_attach(GTK_TABLE (table2), chkDisUser, 1, 2, 2, 3, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
+  gtk_tooltips_set_tip(tooltips, chkDisUser, "Protocols like Cisco, Cisco enable, redis, Oracle listener, SNMP, S7-300, VNC etc. are not using usernames", NULL);
 
   label8 = gtk_label_new("Username");
   gtk_widget_set_name(label8, "label8");
@@ -536,7 +544,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(chkColon, "chkColon");
   gtk_widget_show(chkColon);
   gtk_table_attach(GTK_TABLE(table5), chkColon, 0, 1, 0, 1, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkColon, "\"Enable this option to use a colon file for login/password attempts", NULL);
+  gtk_tooltips_set_tip(tooltips, chkColon, "Enable this option to use a colon file for login/password attempts", NULL);
 
   entColonFile = gtk_entry_new();
   gtk_widget_set_name(entColonFile, "entColonFile");
@@ -1030,6 +1038,7 @@ GtkWidget *create_wndMain(void) {
   g_signal_connect((gpointer) quit1, "button-press-event", G_CALLBACK(on_quit1_activate), NULL);
   g_signal_connect((gpointer) entTargetFile, "button_press_event", G_CALLBACK(on_entTargetFile_button_press_event), NULL);
   g_signal_connect((gpointer) entUsernameFile, "button_press_event", G_CALLBACK(on_entUsernameFile_button_press_event), NULL);
+  g_signal_connect((gpointer) chkDisUser, "toggled", G_CALLBACK (on_chkDisUser_toggled), NULL);
   g_signal_connect((gpointer) entPassFile, "button_press_event", G_CALLBACK(on_entPassFile_button_press_event), NULL);
   g_signal_connect((gpointer) chkColon, "toggled", G_CALLBACK(on_chkColon_toggled), NULL);
   g_signal_connect((gpointer) entColonFile, "button_press_event", G_CALLBACK(on_entColonFile_button_press_event), NULL);
@@ -1076,6 +1085,7 @@ GtkWidget *create_wndMain(void) {
   GLADE_HOOKUP_OBJECT(wndMain, radioUsername1, "radioUsername1");
   GLADE_HOOKUP_OBJECT(wndMain, chkUsernameLoop, "chkUsernameLoop");
   GLADE_HOOKUP_OBJECT(wndMain, radioUsername2, "radioUsername2");
+  GLADE_HOOKUP_OBJECT (wndMain, chkDisUser, "chkDisUser");
   GLADE_HOOKUP_OBJECT(wndMain, label8, "label8");
   GLADE_HOOKUP_OBJECT(wndMain, frmPass, "frmPass");
   GLADE_HOOKUP_OBJECT(wndMain, table3, "table3");

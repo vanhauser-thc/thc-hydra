@@ -2,6 +2,7 @@ Changelog for hydra
 -------------------
 
 Release 8.2-pre
+* Added xhydra gtk patche by Petar Kaleychev to support modules that do not use usernames
 * ... your patch?
 
 

@@ -25,3 +25,5 @@ gboolean on_entColonFile_button_press_event(GtkWidget * widget, GdkEventButton *
 void on_chkColon_toggled(GtkToggleButton * togglebutton, gpointer user_data);
 
 void on_btnClear_clicked(GtkButton * button, gpointer user_data);
+
+void on_chkDisUser_toggled(GtkToggleButton * togglebutton, gpointer user_data);
