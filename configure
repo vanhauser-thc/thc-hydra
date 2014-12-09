@@ -10,8 +10,54 @@ if [ "$1" = "-h" -o "$1" = "--help" ]; then
   echo "  --with-oracle-lib=prefix   prefix for oracle lib dir"
   echo "  --disable-xhydra           disable compilation of hydra GUI"
   echo "  --nostrip                  do not per default strip binaries before install"
+  echo "  --debug                    show debug output to trace errors"
   echo "  --help                     this here"
   exit 0
+fi
+
+SIXFOUR=""
+DEBUG=""
+
+if [ '!' "X" = "X$*" ]; then
+  while [ $# -gt 0 ] ; do
+    if [ "X" = "X$PREFIX" ]; then
+  	  PREFIX_TMP=`echo "$1"|sed 's/.*--prefix=//'`
+	  if [ "$PREFIX_TMP" != "$1" ]; then
+		  PREFIX=$PREFIX_TMP
+	  fi
+    fi
+    if [ "X" = "X$NOSTRIP" ]; then
+  	  NOSTRIP_TMP=`echo "$1"|sed 's/.*--nostrip//'`
+	  if [ -z "$NOSTRIP_TMP" ]; then
+		  NOSTRIP="yes"
+	  fi
+    fi
+    if [ "X" = "X$DEBUG" ]; then
+  	  DEBUG_TMP=`echo "$1"|sed 's/.*--debug//'`
+	  if [ -z "$DEBUG_TMP" ]; then
+		  DEBUG="yes"
+	  fi
+    fi
+    if [ "X" = "X$XHYDRA_SUPPORT" ]; then
+       XHYDRA_SUPPORT_TMP=`echo "$1"|sed 's/.*--disable-xhydra//'`
+       if [ -z "$XHYDRA_SUPPORT_TMP" ]; then
+	     XHYDRA_SUPPORT="disable"
+       fi
+    fi
+    if [ "X" = "X$WORACLE_PATH" ]; then
+  	  WORACLE_PATH_TMP=`echo "$1"|sed 's/.*--with-oracle=//'`
+	  if [ "$WORACLE_PATH_TMP" != "$1" ]; then
+		  WORACLE_PATH="$WORACLE_PATH_TMP"
+	  fi
+    fi
+    if [ "X" = "X$WORACLE_LIB_PATH" ]; then
+  	  WORACLE_LIB_PATH_TMP=`echo "$1"|sed 's/.*--with-oracle-lib=//'`
+	  if [ "$WORACLE_LIB_PATH_TMP" != "$1" ]; then
+		  WORACLE_LIB_PATH="$WORACLE_LIB_PATH_TMP"
+	  fi
+    fi
+    shift
+  done
 fi
 
 echo
@@ -19,7 +65,6 @@ echo "Starting hydra auto configuration ..."
 rm -f Makefile.in
 SYSS=`uname -s 2> /dev/null`
 SYSO=`uname -o 2> /dev/null`
-SIXFOUR=""
 if [ "$SYSS" = "Linux" -o "$SYSS" = "OpenBSD" -o "$SYSS" = "FreeBSD" -o "$SYSS" = "NetBSD" -o "$SYSS" = "Darwin" ]; then
   SF=`uname -m | grep 64`
   if [ `uname -m` = "s390x" ]; then
@@ -79,6 +124,11 @@ STRIP="strip"
 echo
 
 echo "Checking for openssl (libssl, libcrypto, ssl.h, sha.h) ..."
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: SSL_LIB=$LIBDIRS `ls -d /*ssl /usr/*ssl /opt/*ssl /usr/local/*ssl /opt/local/*ssl /*ssl/lib /usr/*ssl/lib /opt/*ssl/lib /usr/local/*ssl/lib /opt/local/*ssl/lib 2> /dev/null`
+   echo DEBUG: SSL_INC=$INCDIRS `ls -d /*ssl/include /opt/*ssl/include /usr/*ssl/include /usr/local/*ssl/include 2> /dev/null`
+fi
+
 for i in $LIBDIRS \
 /*ssl /usr/*ssl /opt/*ssl /usr/local/*ssl /opt/local/*ssl \
 /*ssl/lib /usr/*ssl/lib /opt/*ssl/lib /usr/local/*ssl/lib /opt/local/*ssl/lib
@@ -117,6 +167,11 @@ do
         fi
     fi
 done
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: SSL_PATH=$SSL_PATH/libssl
+   echo DEBUG: CRYPTO_PATH=$CRYPTO_PATH/libcrypto
+   echo DEBUG: SSL_INC=$SSL_IPATH/openssl/ssl.h
+fi
 
 if [ "X" = "X$SSL_PATH" ]; then
     SSL_IPATH=""
@@ -167,6 +222,11 @@ for i in $INCDIRS ; do
         fi
     fi
 done
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: IDN_PATH=$IDN_PATH/libidn
+   echo DEBUG: IDN_IPATH=$IDN_IPATH/stringprep.h
+   echo DEBUG: PR29_IPATH=$PR29_IPATH/pr29.h
+fi
 if [ -n "$IDN_PATH" -a -n "$IDN_IPATH" ]; then
     echo "                             ... found"
 fi
@@ -208,6 +268,10 @@ for i in $INCDIRS ; do
         fi
     fi
 done
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: CURSES_PATH=$CURSES_PATH/libcurses
+   echo DEBUG: CURSES_IPATH=$CURSES_IPATH/term.h
+fi
 if [ -n "$CURSES_PATH" -a -n "$CURSES_IPATH" ]; then
     echo "                                            ... found, color output enabled"
 fi
@@ -244,6 +308,10 @@ for i in $INCDIRS ; do
         fi
     fi
 done
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: PCRE_PATH=$PCRE_PATH/libpcre
+   echo DEBUG: PCRE_IPATH=$PCRE_IPATH/pcre.h
+fi
 if [ -n "$PCRE_PATH" -a -n "$PCRE_IPATH" ]; then
     echo "                                       ... found"
 fi
@@ -295,6 +363,10 @@ echo "Checking for Postgres (libpq.so, libpq-fe.h) ..."
     fi
   done
 
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: POSTGRES_PATH=$POSTGRES_PATH/libpq
+   echo DEBUG: POSTGRES_IPATH=$POSTGRES_IPATH/libpq-fe.h
+fi
   if [ -n "$POSTGRES_PATH" -a -n "$POSTGRES_IPATH" ]; then
     echo "                                             ... found"
   fi
@@ -371,6 +443,12 @@ for i in $INCDIRS ; do
         fi
     fi  
 done
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: SVN_PATH=$SVN_PATH/libsvn_client-1
+   echo DEBUG: APR_PATH="$APR_PATH/libarp*"
+   echo DEBUG: SVN_IPATH=$APR_IPATH/
+   echo DEBUG: APR_IPATH=$APR_IPATH/
+fi
 
 if [ "X" = "X$SVN_PATH" -o "X" = "X$SVN_IPATH" -o "X" = "X$APR_IPATH" ]; then
     SVN_PATH=""
@@ -418,6 +496,10 @@ for i in $INCDIRS ; do
         fi
     fi
 done
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: FIREBIRD_PATH=$FIREBIRD_PATH/libfbclient
+   echo DEBUG: FIREBIRD_IPATH=$FIREBIRD_IPATH/ibase.h
+fi
 if [ -n "$FIREBIRD_PATH" -a -n "$FIREBIRD_IPATH" ]; then
     echo "                                       ... found"
 fi
@@ -459,6 +541,10 @@ for i in $INCDIRS ; do
         fi
     fi
 done
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: MYSQL_PATH=$MYSQL_PATH/libmysqlclient
+   echo DEBUG: MYSQL_IPATH=$MYSQL_IPATH/mysql.h
+fi
 MATH=""
 if [ -f "/usr/include/math.h" ]; then
    MATH="-DHAVE_MATH_H"
@@ -499,6 +585,10 @@ for i in $INCDIRS ; do
         fi
     fi
 done
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: AFP_PATH=$AFP_PATH/libafpclient
+   echo DEBUG: AFP_IPATH=$AFP_IPATH/afp.h
+fi
 if [ -n "$AFP_PATH" -a -n "$AFP_IPATH" ]; then
     echo "                                   ... found"
 fi
@@ -535,6 +625,10 @@ for i in $INCDIRS ; do
         fi
     fi
 done
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: NCP_PATH=$NCP_PATH/libncp
+   echo DEBUG: NCP_IPATH=$NCP_IPATH/ncp/nwcalls.h
+fi
 if [ -n "$NCP_PATH" -a -n "$NCP_IPATH" ]; then
     echo "                                         ... found"
 fi
@@ -565,6 +659,10 @@ for i in $INCDIRS ; do
         fi
     fi
 done
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: SAPR3_PATH=$SAPR3_PATH/librfc
+   echo DEBUG: SAPR3_IPATH=$SAPR3_IPATH/saprfc.h
+fi
 if [ "X" = "X$SAPR3_PATH" ]; then
     SAPR3_IPATH=""
 fi
@@ -609,6 +707,10 @@ for i in $INCDIRS ; do
         fi
     fi
 done
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: SSH_PATH=$SSH_PATH/libssh
+   echo DEBUG: SSH_IPATH=$SSH_IPATH/libssh/libssh.h
+fi
 if [ "X" = "X$SSH_PATH" ]; then
     SSH_IPATH=""
 fi
@@ -626,43 +728,6 @@ if [ "$SSH_IPATH" = "/usr/include" ]; then
     SSH_IPATH=""
 fi
 
-if [ '!' "X" = "X$*" ]; then
-  while [ $# -gt 0 ] ; do
-    if [ "X" = "X$PREFIX" ]; then
-  	  PREFIX_TMP=`echo "$1"|sed 's/.*--prefix=//'`
-	  if [ "$PREFIX_TMP" != "$1" ]; then
-		  PREFIX=$PREFIX_TMP
-	  fi
-    fi
-    if [ "X" = "X$NOSTRIP" ]; then
-  	  NOSTRIP_TMP=`echo "$1"|sed 's/.*--nostrip//'`
-	  if [ -z "$NOSTRIP_TMP" ]; then
-		  NOSTRIP="yes"
-	  fi
-    fi
-    if [ "X" = "X$XHYDRA_SUPPORT" ]; then
-       XHYDRA_SUPPORT_TMP=`echo "$1"|sed 's/.*--disable-xhydra//'`
-       if [ -z "$XHYDRA_SUPPORT_TMP" ]; then
-	     XHYDRA_SUPPORT="disable"
-       fi
-    fi
-    if [ "X" = "X$WORACLE_PATH" ]; then
-  	  WORACLE_PATH_TMP=`echo "$1"|sed 's/.*--with-oracle=//'`
-	  if [ "$WORACLE_PATH_TMP" != "$1" ]; then
-		  WORACLE_PATH="$WORACLE_PATH_TMP"
-	  fi
-    fi
-    if [ "X" = "X$WORACLE_LIB_PATH" ]; then
-  	  WORACLE_LIB_PATH_TMP=`echo "$1"|sed 's/.*--with-oracle-lib=//'`
-	  if [ "$WORACLE_LIB_PATH_TMP" != "$1" ]; then
-		  WORACLE_LIB_PATH="$WORACLE_LIB_PATH_TMP"
-	  fi
-    fi
-    shift
-  done
-fi
-
-
 echo "Checking for Oracle (libocci.so libclntsh.so / oci.h and libaio.so) ..."
 #assume if we find oci.h other headers should also be in that dir
 #for libs we will test the 2
@@ -671,6 +736,10 @@ if [ "X" != "X$WORACLE_PATH" ]; then
 fi
 if [ "X" != "X$WORACLE_LIB_PATH" ]; then
     LIBDIRS="$LIBDIRS $WORACLE_LIB_PATH"
+fi
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: ORACLE_LIB=$LIBDIRS
+   echo DEBUG: ORACLE_INC=$INCDIRS
 fi
 
 for i in $LIBDIRS ; do
@@ -714,6 +783,9 @@ for i in $LIBDIRS ; do
         fi
     fi
 done
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: ORACLE_PATH=$ORACLE_PATH/libocci
+fi
 #check for Kernel Asynchronous I/O (AIO) lib support
 if [ "X" != "X$ORACLE_PATH" ]; then
   LIBAIO=""
@@ -738,6 +810,9 @@ if [ "X" != "X$ORACLE_PATH" ]; then
     ORACLE_PATH=""
   fi
 fi
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: ORACLE_PATH=$ORACLE_PATH/libaio
+fi
 
 for i in $INCDIRS ; do
     if [ "X" != "X$ORACLE_PATH" ]; then
@@ -746,6 +821,9 @@ for i in $INCDIRS ; do
         fi
     fi
 done
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: ORACLE_IPATH=$ORACLE_IPATH/oci.h
+fi
 if [ -n "$ORACLE_PATH" -a -n "$ORACLE_IPATH" ]; then
     echo "                                                                    ... found"
 fi
@@ -1016,6 +1094,16 @@ fi
 echo "Hydra will be installed into .../bin of: $PREFIX"
 echo "  (change this by running ./configure --prefix=path)"
 echo
+
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: XDEFINES=$XDEFINES $MATH
+   echo DEBUG: XLIBS=$XLIBS
+   echo DEBUG: XLIBPATHS=$XLIBPATHS
+   echo DEBUG: XIPATHS=$XIPATHS
+   echo DEBUG: PREFIX=$PREFIX
+   echo DEBUG: XHYDRA_SUPPORT=$XHYDRA_SUPPORT
+   echo DEBUG: STRIP=$STRIP
+fi
 
 echo "Writing Makefile.in ..."
 echo "XDEFINES=$XDEFINES $MATH" >> Makefile.in

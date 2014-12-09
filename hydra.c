@@ -158,7 +158,7 @@ char *SERVICES =
 #define RESTOREFILE "./hydra.restore"
 
 #define PROGRAM   "Hydra"
-#define VERSION   "v8.2-dev"
+#define VERSION   "v8.1"
 #define AUTHOR    "van Hauser/THC"
 #define EMAIL     "<vh@thc.org>"
 #define RESOURCE  "http://www.thc.org/thc-hydra"
@@ -753,9 +753,10 @@ void hydra_restore_write(int print_msg) {
 void hydra_restore_read() {
   FILE *f;
   char mynull[4];
-  int i, j;
+  int i, j, orig_debug = debug;
   char out[1024];
 
+  if (debug) printf("[DEBUG] reading restore file %s\n", RESTOREFILE);
   if ((f = fopen(RESTOREFILE, "r")) == NULL) {
     fprintf(stderr, "[ERROR] restore file (%s) not found - ", RESTOREFILE);
     perror("");
@@ -771,6 +772,7 @@ void hydra_restore_read() {
   }
   fck = (int) fread(&bf_options, sizeof(bf_options), 1, f);
   fck = (int) fread(mynull, sizeof(mynull), 1, f);
+  if (debug) printf("[DEBUG] reading restore file: Step 1 complete\n");
   if (mynull[0] + mynull[1] + mynull[2] + mynull[3] == 0) {
     bf_options.crs = NULL;
   } else {
@@ -778,6 +780,7 @@ void hydra_restore_read() {
     memcpy(bf_options.crs, mynull, sizeof(mynull));
     fck = fread(bf_options.crs + sizeof(mynull), BF_CHARSMAX - sizeof(mynull), 1, f);
   }
+  if (debug) printf("[DEBUG] reading restore file: Step 2 complete\n");
 
   fck = (int) fread(&hydra_brains, sizeof(hydra_brain), 1, f);
   hydra_brains.ofp = stdout;
@@ -785,6 +788,11 @@ void hydra_restore_read() {
   hydra_options.restore = 1;
   verbose = hydra_options.verbose;
   debug = hydra_options.debug;
+  if (debug || orig_debug) printf("[DEBUG] run_debug %d, orig_debug %d\n", debug, orig_debug);
+  if (orig_debug) {
+    debug = 1;
+    hydra_options.debug = 1;
+  }
   waittime = hydra_options.waittime;
   conwait = hydra_options.conwait;
   port = hydra_options.port;
@@ -795,28 +803,35 @@ void hydra_restore_read() {
   sck = fgets(out, sizeof(out), f);
   if (out[0] != 0 && out[strlen(out) - 1] == '\n')
     out[strlen(out) - 1] = 0;
+  if (debug) printf("[DEBUG] reading restore file: Step 3 complete\n");
   if (strlen(out) > 0) {
     hydra_options.outfile_ptr = malloc(strlen(out) + 1);
     strcpy(hydra_options.outfile_ptr, out);
   } else
     hydra_options.outfile_ptr = NULL;
+  if (debug) printf("[DEBUG] reading restore file: Step 4 complete\n");
   sck = fgets(out, sizeof(out), f);
   if (out[0] != 0 && out[strlen(out) - 1] == '\n')
     out[strlen(out) - 1] = 0;
+  if (debug) printf("[DEBUG] reading restore file: Step 5 complete\n");
   if (strlen(out) == 0)
     hydra_options.miscptr = NULL;
   else {
     hydra_options.miscptr = malloc(strlen(out) + 1);
     strcpy(hydra_options.miscptr, out);
   }
+  if (debug) printf("[DEBUG] reading restore file: Step 6 complete\n");
   sck = fgets(out, sizeof(out), f);
   if (out[0] != 0 && out[strlen(out) - 1] == '\n')
     out[strlen(out) - 1] = 0;
+  if (debug) printf("[DEBUG] reading restore file: Step 7 complete\n");
   hydra_options.service = malloc(strlen(out) + 1);
   strcpy(hydra_options.service, out);
+  if (debug) printf("[DEBUG] reading restore file: Step 8 complete\n");
 
   login_ptr = malloc(hydra_brains.sizelogin);
   fck = (int) fread(login_ptr, hydra_brains.sizelogin, 1, f);
+  if (debug) printf("[DEBUG] reading restore file: Step 9 complete\n");
   if ((hydra_options.mode & 64) != 64) {        // NOT colonfile mode
     pass_ptr = malloc(hydra_brains.sizepass);
     fck = (int) fread(pass_ptr, hydra_brains.sizepass, 1, f);
@@ -824,6 +839,7 @@ void hydra_restore_read() {
     hydra_options.colonfile = empty_login;      // dummy 
     pass_ptr = csv_ptr = login_ptr;
   }
+  if (debug) printf("[DEBUG] reading restore file: Step 10 complete\n");
 
   hydra_targets = malloc((hydra_brains.targets + 3) * sizeof(hydra_targets));
   for (j = 0; j < hydra_brains.targets; j++) {
@@ -873,6 +889,7 @@ void hydra_restore_read() {
     hydra_targets[j]->use_count = 0;
     hydra_targets[j]->failed = 0;
   }
+  if (debug) printf("[DEBUG] reading restore file: Step 11 complete\n");
   hydra_heads = malloc((hydra_options.max_use + 2) * sizeof(int) + 8);
   for (j = 0; j < hydra_options.max_use; j++) {
     hydra_heads[j] = malloc(sizeof(hydra_head));
@@ -890,6 +907,7 @@ void hydra_restore_read() {
     if (hydra_heads[j]->redo) {
       if (out[0] != 0 && out[strlen(out) - 1] == '\n')
         out[strlen(out) - 1] = 0;
+if (debug) printf("[DEBUG] TEMP head %d: out[0] == %d, hydra_heads[j]->current_login_ptr[0] == %d\n", j, out[0], hydra_heads[j]->current_login_ptr[0]);
       if (out[0] != 0 || hydra_heads[j]->current_login_ptr[0] != 0) {
         hydra_heads[j]->current_pass_ptr = malloc(strlen(out) + 1);
         strcpy(hydra_heads[j]->current_pass_ptr, out);
@@ -904,6 +922,7 @@ void hydra_restore_read() {
       hydra_heads[j]->current_login_ptr = hydra_heads[j]->current_pass_ptr = empty_login;
     }
   }
+  if (debug) printf("[DEBUG] reading restore file: Step 12 complete\n");
   sck = fgets(out, sizeof(out), f);
   if (out[0] != 0 && out[strlen(out) - 1] == '\n')
     out[strlen(out) - 1] = 0;
@@ -2161,7 +2180,7 @@ int main(int argc, char *argv[]) {
   // command line processing
   if (argc > 1 && strncmp(argv[1], "-h", 2) == 0)
     help(1);
-  if (argc < 3 && (argc < 2 || strcmp(argv[1], "-R") != 0))
+  if (argc < 2)
     help(0);
   while ((i = getopt(argc, argv, "hq64Rde:vVl:fFg:L:p:P:o:M:C:t:T:m:w:W:s:SUux:")) >= 0) {
     switch (i) {
@@ -2182,8 +2201,6 @@ int main(int argc, char *argv[]) {
       break;
     case 'R':
       hydra_options.restore = 1;
-      if (argc > 2 + debug + verbose)
-        bail("no option may be supplied together with -R");
       break;
     case 'd':
       hydra_options.debug = debug = 1;
@@ -2321,6 +2338,9 @@ int main(int argc, char *argv[]) {
 
   if (debug)
     printf("[DEBUG] Ouput color flag is %d\n", colored_output);
+
+  if (hydra_options.restore && argc > 2 + debug + verbose)
+    bail("no option may be supplied together with -R");
 
   printf("%s (%s) starting at %s\n", PROGRAM, RESOURCE, hydra_build_time());
   if (debug) {
