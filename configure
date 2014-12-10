@@ -118,6 +118,9 @@ LIBDIRS=`cat /etc/ld.so.conf /etc/ld.so.conf.d/* 2> /dev/null | grep -v '^#' | s
 if [ "$SIXFOUR" = "64" ]; then
   LIBDIRS="$LIBDIRS /lib64 /usr/lib64 /usr/local/lib64 /opt/local/lib64"
 fi
+if [ -d "/Library/Developer/CommandLineTools/usr/lib" ]; then
+  LIBDIRS="$LIBDIRS /Library/Developer/CommandLineTools/usr/lib /Library/Developer/CommandLineTools/lib"
+fi
 LIBDIRS="$LIBDIRS /lib /usr/lib /usr/local/lib /opt/local/lib"
 INCDIRS="/usr/include /usr/local/include /opt/include /opt/local/include"
 STRIP="strip"
@@ -380,44 +383,78 @@ fi
 echo "Checking for SVN (libsvn_client-1 libapr-1.so libaprutil-1.so) ..."
 for i in $LIBDIRS ; do
     if [ "X" = "X$SVN_PATH" ]; then
-        if [ -f "$i/libsvn_client-1.so" ]&&[ -f "$i/libapr-1.so" ]&&[ -f "$i/libaprutil-1.so" ]; then
+        if [ -f "$i/libsvn_client-1.so" ]; then
             SVN_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$APR_PATH" ]; then   
+        if [ -f "$i/libapr-1.so" -a -f "$i/libaprutil-1.so" ]; then
 	    APR_PATH="$i"
         fi
     fi
     if [ "X" = "X$SVN_PATH" ]; then
-        if [ -f "$i/libsvn_client-1.dll.a" ]&&[ -f "$i/libapr-1.dll.a" ]&&[ -f "$i/libaprutil-1.dll.a" ]; then
+        if [ -f "$i/libsvn_client-1.dll.a" ]; then
             SVN_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$APR_PATH" ]; then   
+        if [ -f "$i/libapr-1.dll.a" -a -f "$i/libaprutil-1.dll.a" ]; then
 	    APR_PATH="$i"
         fi
     fi
     if [ "X" = "X$SVN_PATH" ]; then
-        if [ -f "$i/libsvn_client-1.dylib" ]&&[ -f "$i/libapr-1.dylib" ]&&[ -f "$i/libaprutil-1.dylib" ]; then
+        if [ -f "$i/libsvn_client-1.dylib" ]; then
             SVN_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$APR_PATH" ]; then   
+        if [ -f "$i/libapr-1.dylib" -a -f "$i/libaprutil-1.dylib" ]; then
 	    APR_PATH="$i"
         fi
     fi
     if [ "X" = "X$SVN_PATH" ]; then
-        if [ -f "$i/libsvn_client-1.a" ]&&[ -f "$i/libapr-1.a" ]&&[ -f "$i/libaprutil-1.a" ]; then
+        if [ -f "$i/libsvn_client-1.a" ]; then
             SVN_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$APR_PATH" ]; then   
+        if [ -f "$i/libapr-1.a" -a -f "$i/libaprutil-1.a" ]; then
+	    APR_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$SVN_PATH" ]; then
+        if [ -f "$i/libsvn_client-1.0.dylib" ]; then
+            SVN_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$APR_PATH" ]; then   
+        if [ -f "$i/libapr-1.0.dylib" -a -f "$i/libaprutil-1.0.dylib" ]; then
 	    APR_PATH="$i"
         fi
     fi
     if [ "X" = "X$SVN_PATH" ]; then
         TMP_LIB1=`/bin/ls $i/libsvn_client*.so* 2> /dev/null | grep libsvn_client.`
+        if [ -n "$TMP_LIB1" ]; then
+          SVN_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$APR_PATH" ]; then   
         TMP_LIB2=`/bin/ls $i/libapr-1*.so* 2> /dev/null | grep libsvn_client.`
         TMP_LIB3=`/bin/ls $i/libaprutil-1*.so* 2> /dev/null | grep libsvn_client.`
-        if [ -n "$TMP_LIB1" -a -n "$TMP_LIB2" -a -n "$TMP_LIB3" ]; then
-          SVN_PATH="$i"
+        if [ -n "$TMP_LIB2" -a -n "$TMP_LIB3" ]; then
 	  APR_PATH="$i"
         fi
     fi
     if [ "X" = "X$SVN_PATH" ]; then
         TMP_LIB1=`/bin/ls $i/libsvn_client*.dll* 2> /dev/null | grep libsvn_client.`
+        if [ -n "$TMP_LIB1" ]; then
+          SVN_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$APR_PATH" ]; then   
         TMP_LIB2=`/bin/ls $i/libapr-1*.dll* 2> /dev/null | grep libsvn_client.`
         TMP_LIB3=`/bin/ls $i/libaprutil-1*.dll* 2> /dev/null | grep libsvn_client.`
-        if [ -n "$TMP_LIB1" -a -n "$TMP_LIB2" -a -n "$TMP_LIB3" ]; then
-          SVN_PATH="$i"
+        if [ -n "$TMP_LIB2" -a -n "$TMP_LIB3" ]; then
 	  APR_PATH="$i"
         fi
     fi
@@ -445,7 +482,7 @@ for i in $INCDIRS ; do
 done
 if [ "X" != "X$DEBUG" ]; then
    echo DEBUG: SVN_PATH=$SVN_PATH/libsvn_client-1
-   echo DEBUG: APR_PATH="$APR_PATH/libarp*"
+   echo DEBUG: APR_PATH=$APR_PATH/libapr
    echo DEBUG: SVN_IPATH=$APR_IPATH/
    echo DEBUG: APR_IPATH=$APR_IPATH/
 fi
@@ -744,17 +781,17 @@ fi
 
 for i in $LIBDIRS ; do
     if [ "X" = "X$ORACLE_PATH" ]; then
-        if [ -f "$i/libocci.so" ]&&[ -f "$i/libclntsh.so" ]; then
+        if [ -f "$i/libocci.so" -a -f "$i/libclntsh.so" ]; then
             ORACLE_PATH="$i"
         fi
     fi
     if [ "X" = "X$ORACLE_PATH" ]; then
-        if [ -f "$i/libocci.dylib" ]&&[ -f "$i/libclntsh.dylib" ]; then
+        if [ -f "$i/libocci.dylib" -a -f "$i/libclntsh.dylib" ]; then
             ORACLE_PATH="$i"
         fi
     fi
     if [ "X" = "X$ORACLE_PATH" ]; then
-        if [ -f "$i/libocci.a" ]&&[ -f "$i/libclntsh.a" ]; then
+        if [ -f "$i/libocci.a" -a -f "$i/libclntsh.a" ]; then
             ORACLE_PATH="$i"
         fi
     fi

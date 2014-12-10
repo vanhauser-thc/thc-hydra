@@ -3,6 +3,7 @@ Changelog for hydra
 
 Release 8.2-pre
 * Added xhydra gtk patche by Petar Kaleychev to support modules that do not use usernames
+* Better library finding in ./configure for SVN + support for Darwin Homebrew
 * ... your patch?
 
 
