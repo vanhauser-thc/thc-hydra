@@ -974,8 +974,8 @@ int make_to_lower(char *buf) {
 
 char *hydra_strrep(char *string, char *oldpiece, char *newpiece) {
   int str_index, newstr_index, oldpiece_index, end, new_len, old_len, cpy_len;
-  char *c, oldstring[1024];
-  static char newstring[1024];
+  char *c, oldstring[1024], newstring[1024];
+  static char finalstring[1024];
 
   if (string == NULL || oldpiece == NULL || newpiece == NULL || strlen(string) >= sizeof(oldstring) - 1
       || (strlen(string) + strlen(newpiece) - strlen(oldpiece) >= sizeof(newstring) - 1 && strlen(string) > strlen(oldpiece)))
@@ -1011,7 +1011,8 @@ char *hydra_strrep(char *string, char *oldpiece, char *newpiece) {
   strcpy(newstring + newstr_index, oldstring + str_index);
   strcpy(oldstring, newstring);
 //  }
-  return newstring;
+  strcpy(finalstring, newstring);
+  return finalstring;
 }
 
 unsigned char hydra_conv64(unsigned char in) {
