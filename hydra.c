@@ -342,7 +342,7 @@ void help(int ext) {
   if (ext)
     printf("  -w / -W TIME  waittime for responses (%ds) / between connects per thread\n", WAITTIME);
   if (ext)
-    printf("  -4 / -6   prefer IPv4 (default) or IPv6 addresses\n");
+    printf("  -4 / -6   user IPv4 (default) / IPv6 addresses (put always in [] also in -M)\n");
   if (ext)
     printf("  -v / -V / -d  verbose mode / show login+pass for each attempt / debug mode \n");
   if (ext)
