@@ -466,7 +466,8 @@ int internal__hydra_connect_to_ssl(int socket) {
 
   if (sslContext == NULL) {
     /* context: ssl2 + ssl3 is allowed, whatever the server demands */
-    if ((sslContext = SSL_CTX_new(SSLv23_client_method())) == NULL) {
+//    if ((sslContext = SSL_CTX_new(SSLv23_client_method())) == NULL) {
+    if ((sslContext = SSL_CTX_new(TLSv1_2_client_method())) == NULL) {
       if (verbose) {
         err = ERR_get_error();
         fprintf(stderr, "[ERROR] SSL allocating context: %s\n", ERR_error_string(err, NULL));
@@ -475,8 +476,8 @@ int internal__hydra_connect_to_ssl(int socket) {
     }
     /* set the compatbility mode */
     SSL_CTX_set_options(sslContext, SSL_OP_ALL);
-    SSL_CTX_set_options(sslContext, SSL_OP_NO_SSLv2);
-    SSL_CTX_set_options(sslContext, SSL_OP_NO_TLSv1);
+//    SSL_CTX_set_options(sslContext, SSL_OP_NO_SSLv2);
+//    SSL_CTX_set_options(sslContext, SSL_OP_NO_TLSv1);
 
     /* we set the default verifiers and dont care for the results */
     (void) SSL_CTX_set_default_verify_paths(sslContext);
