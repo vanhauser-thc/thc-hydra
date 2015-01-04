@@ -439,15 +439,17 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
 
 #ifdef LIBOPENSSL
 RSA *ssl_temp_rsa_cb(SSL * ssl, int export, int keylength) {
-  if (rsa == NULL) {
+  if(rsa->n && RSA_size(rsa)!=(keylength/8)){
+      RSA_free(rsa);
+  }
+  if (rsa->n == 0) {
 #ifdef NO_RSA_LEGACY
-    RSA *private = RSA_new();
+    RSA *rsa = RSA_new();
     BIGNUM *f4 = BN_new();
-
     BN_set_word(f4, RSA_F4);
-    RSA_generate_key_ex(rsa, 1024, f4, NULL);
+    RSA_generate_key_ex(rsa, keylength, f4, NULL);
 #else
-    rsa = RSA_generate_key(1024, RSA_F4, NULL, NULL);
+    rsa = RSA_generate_key(keylength, RSA_F4, NULL, NULL);
 #endif
   }
   return rsa;

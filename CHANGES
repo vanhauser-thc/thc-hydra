@@ -6,6 +6,7 @@ Release 8.2-pre
 * Better library finding in ./configure for SVN + support for Darwin Homebrew
 * Fixed http-form module crash that only occurs on *BSD/OSX systems. Thanks to zdk for reporting!
 * Fixed for SSL connection to support TLSv1.2 etc.
+* Support for different RSA keylengths, thanks to fann95 for the patch
 * ... your patch?
 
 
