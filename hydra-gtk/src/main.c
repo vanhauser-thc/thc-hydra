@@ -10,6 +10,7 @@
 
 #include <gtk/gtk.h>
 #include <string.h>
+#include <locale.h>
 #include "interface.h"
 #include "support.h"
 #include "callbacks.h"
