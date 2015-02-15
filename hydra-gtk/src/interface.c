@@ -184,7 +184,8 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(wndMain, "wndMain");
   gtk_window_set_title(GTK_WINDOW(wndMain), "xHydra");
 
-  vbox1 = gtk_vbox_new(FALSE, 0);
+  vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_set_homogeneous(GTK_BOX(vbox1), FALSE);
   gtk_widget_set_name(vbox1, "vbox1");
   gtk_widget_show(vbox1);
   gtk_container_add(GTK_CONTAINER(wndMain), vbox1);
@@ -204,7 +205,8 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(ntbMain);
   gtk_box_pack_start(GTK_BOX(vbox1), ntbMain, TRUE, TRUE, 0);
 
-  vbox5 = gtk_vbox_new(FALSE, 0);
+  vbox5 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_set_homogeneous(GTK_BOX(vbox5), FALSE);
   gtk_widget_set_name(vbox5, "vbox5");
   gtk_widget_show(vbox5);
   gtk_container_add(GTK_CONTAINER(ntbMain), vbox5);
