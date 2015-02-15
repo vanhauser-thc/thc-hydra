@@ -24,7 +24,7 @@ GtkWidget *lookup_widget(GtkWidget * widget, const gchar * widget_name) {
     if (GTK_IS_MENU(widget))
       parent = gtk_menu_get_attach_widget(GTK_MENU(widget));
     else
-      parent = widget->parent;
+      parent = gtk_widget_get_parent(widget);
     if (!parent)
       parent = (GtkWidget *) g_object_get_data(G_OBJECT(widget), "GladeParentKey");
     if (parent == NULL)
