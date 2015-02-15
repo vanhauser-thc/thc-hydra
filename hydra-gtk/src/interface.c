@@ -42,7 +42,7 @@ GtkWidget *create_wndMain(void) {
   GList *cmbProtocol_items = NULL;
   GtkWidget *entProtocol;
   GtkWidget *label7;
-  GtkObject *spnPort_adj;
+  GtkWidget *spnPort_adj;
   GtkWidget *spnPort;
   GtkWidget *label6;
   GtkWidget *radioTarget2;
@@ -113,9 +113,9 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *frame13;
   GtkWidget *table10;
   GtkWidget *chkExitf;
-  GtkObject *spnTimeout_adj;
+  GtkWidget *spnTimeout_adj;
   GtkWidget *spnTimeout;
-  GtkObject *spnTasks_adj;
+  GtkWidget *spnTasks_adj;
   GtkWidget *spnTasks;
   GtkWidget *label32;
   GtkWidget *label31;
@@ -143,7 +143,7 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *chkNTLM;
   GtkWidget *label18;
   GtkWidget *frame7;
-  GtkObject *spnSAPR3_adj;
+  GtkWidget *spnSAPR3_adj;
   GtkWidget *spnSAPR3;
   GtkWidget *label19;
   GtkWidget *frame15;
