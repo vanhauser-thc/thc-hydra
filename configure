@@ -1122,7 +1122,7 @@ if [ "X" = "X$PREFIX" ]; then
     PREFIX="/usr/local"
 fi
 
-if [ "X" = "X$XHYDRA_SUPPORT" ]; then
+if [ "X" = "X$XHYDRA_SUPPORT" -o "Xdisable" = "X$XHYDRA_SUPPORT" ]; then
     XHYDRA_SUPPORT=""
 else
     XHYDRA_SUPPORT="xhydra"
