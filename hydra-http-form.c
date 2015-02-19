@@ -52,9 +52,10 @@ Added fail or success condition, getting cookies, and allow 5 redirections by da
 #include "hydra-mod.h"
 
 /*	HTTP Header Types	*/
-#define HEADER_TYPE_USERHEADER				'h'
-#define HEADER_TYPE_USERHEADER_REPL		'H'
-#define HEADER_TYPE_DEFAULT						'D'
+#define HEADER_TYPE_USERHEADER                  'h'
+#define HEADER_TYPE_USERHEADER_REPL             'H'
+#define HEADER_TYPE_DEFAULT                     'D'
+#define HEADER_TYPE_DEFAULT_REPL                'd'
 
 extern char *HYDRA_EXIT;
 char *buf;
@@ -129,7 +130,9 @@ int add_header(ptr_header_node * ptr_head, char *header, char *value, char type)
   if (new_header && new_value) {
     if ((type == HEADER_TYPE_USERHEADER) ||
         (type == HEADER_TYPE_DEFAULT && !header_exists(ptr_head, new_header, HEADER_TYPE_USERHEADER_REPL)) ||
-        (type == HEADER_TYPE_USERHEADER_REPL && !header_exists(ptr_head, new_header, HEADER_TYPE_DEFAULT))) {
+        (type == HEADER_TYPE_USERHEADER_REPL && !header_exists(ptr_head, new_header, HEADER_TYPE_DEFAULT)) ||
+        (type == HEADER_TYPE_DEFAULT_REPL && !header_exists(ptr_head, new_header, HEADER_TYPE_DEFAULT))
+       ) {
       /*
        * We are in one of the following scenarios:
        *      1. A default header with no user-supplied headers that replace it.
@@ -153,7 +156,7 @@ int add_header(ptr_header_node * ptr_head, char *header, char *value, char type)
         // head is NULL, so the list is empty
         *ptr_head = new_ptr;
       }
-    } else if (type == HEADER_TYPE_USERHEADER_REPL && (existing_hdr = header_exists(ptr_head, new_header, HEADER_TYPE_DEFAULT))) {
+    } else if ((type == HEADER_TYPE_DEFAULT_REPL || type == HEADER_TYPE_USERHEADER_REPL) && (existing_hdr = header_exists(ptr_head, new_header, HEADER_TYPE_DEFAULT)) != NULL) {
       // It's a user-supplied header that must replace a default one
       // Replace the default header's value with this new value
       free(existing_hdr->value);
@@ -207,10 +210,10 @@ void hdrrepv(ptr_header_node * ptr_head, char *hdrname, char *new_value) {
   }
 }
 
-void cleanup(ptr_header_node * ptr_head) {
+void cleanup(ptr_header_node *ptr_head) {
   ptr_header_node cur_ptr = *ptr_head, next_ptr = cur_ptr;
 
-  while (next_ptr) {
+  while (next_ptr != NULL) {
     free(cur_ptr->header);
     free(cur_ptr->value);
     next_ptr = cur_ptr->next;
@@ -472,7 +475,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         return 1;
       i = analyze_server_response(s);   // ignore result
       if (strlen(cookie) > 0)
-        add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT);
+        add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT_REPL);
       hydra_reconnect(s, ip, port, options);
     }
     // now prepare for the "real" request
@@ -508,7 +511,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
           return 1;
         i = analyze_server_response(s); // ignore result
         if (strlen(cookie) > 0)
-          add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT);
+          add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT_REPL);
         hydra_reconnect(s, ip, port, options);
       }
       // now prepare for the "real" request
@@ -540,8 +543,8 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
           return 1;
         i = analyze_server_response(s); // ignore result
-        if (strlen(cookie) > 0 && !header_exists(&ptr_head, "Cookie", HEADER_TYPE_DEFAULT)) {
-          add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT);
+        if (strlen(cookie) > 0) {
+          add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT_REPL);
           normal_request = stringify_headers(&ptr_head);
         }
         hydra_reconnect(s, ip, port, options);
@@ -579,8 +582,8 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
     return 4;
   }
 
-  if (strlen(cookie) > 0 && !header_exists(&ptr_head, "Cookie", HEADER_TYPE_DEFAULT))
-    add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT);
+  if (strlen(cookie) > 0)
+    add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT_REPL);
 
   //if page was redirected, follow the location header
   redirected_cpt = MAX_REDIRECT;
@@ -694,8 +697,8 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         return 1;
 
       found = analyze_server_response(s);
-      if (strlen(cookie) > 0 && !header_exists(&ptr_head, "Cookie", HEADER_TYPE_DEFAULT))
-        add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT);
+      if (strlen(cookie) > 0)
+        add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT_REPL);
     }
   }
 
@@ -843,10 +846,11 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
         miscptr = slash;        /* to make things easier to user */
     } else if ((ptr2 = index(webtarget, '/')) != NULL) {
       if (freemischttpform == 0) {
-        freemischttpform = 1;
-        miscptr = malloc(strlen(ptr2) + 1);
-        strcpy(miscptr, ptr2);
-        *ptr2 = 0;
+        if ((miscptr = malloc(strlen(ptr2) + 1)) != NULL) {
+          freemischttpform = 1;
+          strcpy(miscptr, ptr2);
+          *ptr2 = 0;
+        }
       }
     } else
       webtarget = NULL;
