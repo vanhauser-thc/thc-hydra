@@ -2382,7 +2382,7 @@ int main(int argc, char *argv[]) {
       hydra_options.service = argv[optind];
       if (optind + 2 == argc)
         hydra_options.miscptr = argv[optind + 1];
-    } else if (optind + 2 != argc && optind + 3 != argc) {
+    } else if (optind + 2 != argc && optind + 3 != argc && optind < argc) {
       // check if targetdef follow syntax <service-name>://<target>[:<port-number>][/<parameters>] or it's a syntax error 
       char *targetdef = strdup(argv[optind]);
       char *service_pos, *target_pos, *port_pos = NULL, *param_pos = NULL;
