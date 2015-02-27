@@ -68,6 +68,13 @@ typedef struct header_node {
   struct header_node *next;
 } t_header_node, *ptr_header_node;
 
+typedef struct cookie_node {
+	char *name;
+	char *value;
+	struct cookie_node *prev;
+	struct cookie_node *next;
+} t_cookie_node, *ptr_cookie_node;
+
 int success_cond = 0;
 int getcookie = 1;
 int auth_flag = 0;
@@ -105,6 +112,82 @@ ptr_header_node header_exists(ptr_header_node * ptr_head, char *header_name, cha
       found_header = cur_ptr;
 
   return found_header;
+}
+
+int append_cookie(char *name, char *value, ptr_cookie_node *last_cookie)
+{
+	ptr_cookie_node new_ptr = (ptr_cookie_node) malloc(sizeof(t_cookie_node));
+	if (!new_ptr)
+		return 0;
+	new_ptr->name = name;
+	new_ptr->value = value;
+	new_ptr->next = NULL;
+	new_ptr->prev = NULL;
+	
+	if (*last_cookie == NULL)
+		*last_cookie = new_ptr;
+	else
+		(*last_cookie)->next = new_ptr;
+	
+	return 1;
+}
+
+void traverse_cookies(ptr_cookie_node ptr_cookie)
+{
+	printf("-- COOKIES START --\n");
+	ptr_cookie_node cur_ptr = NULL;
+	for (cur_ptr = ptr_cookie; cur_ptr; cur_ptr = cur_ptr->next)
+		printf("Cookie: %s=%s\n", cur_ptr->name, cur_ptr->value);
+	printf("-- COOKIES END --\n");
+}
+
+/*
+ * Cookie list layout:
+ * 	+----------+     +--------+     +------+
+ * 	| ptr_head | --> | next   | --> | NULL |
+ * 	+----------+     | header |     +------+
+ * 	                 | value  |
+ * 	                 +--------+
+ * Returns 1 if success, or 0 otherwise.
+ */
+int add_or_update_cookie(ptr_cookie_node * ptr_cookie, char * cookie_expr)
+{
+// 	printf("[DEBUG] Added cookie: %s\n", cookie_expr);
+	ptr_cookie_node cur_ptr = NULL, new_ptr = NULL;
+	char * cookie_name = NULL,
+			* cookie_value = strstr(cookie_expr, "=");
+	if (cookie_value) {
+		cookie_name = strndup(cookie_expr, cookie_value - cookie_expr);
+		cookie_value = strdup(cookie_value + 1);
+// 		printf("\t[DEBUG] Name: %s\n", cookie_name);
+// 		printf("\t[DEBUG] Value: %s\n", cookie_value);
+		
+		// we've got the cookie's name and value, now it's time to insert or update the list
+		if (*ptr_cookie == NULL) {
+			// no cookies
+			append_cookie(cookie_name, cookie_value, ptr_cookie);
+// 			if (append_cookie(cookie_name, cookie_value, ptr_cookie))
+// 				printf("New cookie: %s=%s\n", (*ptr_cookie)->name, (*ptr_cookie)->value);
+		} else {
+			for (cur_ptr = *ptr_cookie; cur_ptr; cur_ptr = cur_ptr->next) {
+				if (strcmp(cur_ptr->name, cookie_name) == 0) {
+// 					printf("Cookie %s already exists. Replacing.\n", cookie_name);
+					free(cur_ptr->value);
+					cur_ptr->value = cookie_value;
+					break;
+				}
+				if (cur_ptr->next == NULL) {
+// 					printf("Cookie %s does not exist. Adding.\n", cookie_name);
+					append_cookie(cookie_name, cookie_value, &cur_ptr);
+					break;
+				}
+			}
+		}
+		
+		traverse_cookies(*ptr_cookie);
+	} else
+		return 0;
+	return 1;
 }
 
 /*
@@ -163,6 +246,9 @@ int add_header(ptr_header_node * ptr_head, char *header, char *value, char type)
       existing_hdr->value = new_value;
       existing_hdr->type = type;
     }
+    // DEBUG
+    printf("[DEBUG] Added header: %s = %s\n", header, value);
+    // END DEBUG
   } else {
     // we're out of memory, so forcefully end
     return 0;
@@ -438,7 +524,7 @@ void hydra_reconnect(int s, char *ip, int port, unsigned char options) {
   }
 }
 
-int start_http_form(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *type, ptr_header_node ptr_head) {
+int start_http_form(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *type, ptr_header_node ptr_head, ptr_cookie_node ptr_cookie) {
   char *empty = "";
   char *login, *pass, clogin[256], cpass[256];
   char header[8096], *upd3variables;
@@ -475,7 +561,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         return 1;
       i = analyze_server_response(s);   // ignore result
       if (strlen(cookie) > 0)
-        add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT_REPL);
+        add_or_update_cookie(&ptr_cookie, cookie);
       hydra_reconnect(s, ip, port, options);
     }
     // now prepare for the "real" request
@@ -511,7 +597,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
           return 1;
         i = analyze_server_response(s); // ignore result
         if (strlen(cookie) > 0)
-          add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT_REPL);
+          add_or_update_cookie(&ptr_cookie, cookie);
         hydra_reconnect(s, ip, port, options);
       }
       // now prepare for the "real" request
@@ -544,7 +630,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
           return 1;
         i = analyze_server_response(s); // ignore result
         if (strlen(cookie) > 0) {
-          add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT_REPL);
+          add_or_update_cookie(&ptr_cookie, cookie);
           normal_request = stringify_headers(&ptr_head);
         }
         hydra_reconnect(s, ip, port, options);
@@ -583,7 +669,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
   }
 
   if (strlen(cookie) > 0)
-    add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT_REPL);
+    add_or_update_cookie(&ptr_cookie, cookie);
 
   //if page was redirected, follow the location header
   redirected_cpt = MAX_REDIRECT;
@@ -697,8 +783,8 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         return 1;
 
       found = analyze_server_response(s);
-      if (strlen(cookie) > 0)
-        add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT_REPL);
+//      if (strlen(cookie) > 0)
+//        add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT_REPL);
     }
   }
 
@@ -713,7 +799,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
   return 1;
 }
 
-void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *type, ptr_header_node * ptr_head) {
+void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *type, ptr_header_node * ptr_head, ptr_cookie_node * ptr_cookie) {
   int run = 1, next_run = 1, sock = -1;
   int myport = PORT_HTTP, mysslport = PORT_HTTP_SSL;
 
@@ -763,7 +849,7 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
         break;
       }
     case 2:                    /* run the cracking function */
-      next_run = start_http_form(sock, ip, port, options, miscptr, fp, type, *ptr_head);
+      next_run = start_http_form(sock, ip, port, options, miscptr, fp, type, *ptr_head, *ptr_cookie);
       break;
     case 3:                    /* clean exit */
       if (sock >= 0)
@@ -795,10 +881,11 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
 }
 
 void service_http_get_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  ptr_header_node ptr_head = initialize(ip, options, miscptr);
+  ptr_cookie_node ptr_cookie = NULL;
+	ptr_header_node ptr_head = initialize(ip, options, miscptr);
 
   if (ptr_head)
-    service_http_form(ip, sp, options, miscptr, fp, port, "GET", &ptr_head);
+    service_http_form(ip, sp, options, miscptr, fp, port, "GET", &ptr_head, &ptr_cookie);
   else {
     hydra_report(stderr, "[ERROR] Could not launch head. Error while initializing.\n");
     hydra_child_exit(1);
@@ -806,10 +893,11 @@ void service_http_get_form(char *ip, int sp, unsigned char options, char *miscpt
 }
 
 void service_http_post_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  ptr_header_node ptr_head = initialize(ip, options, miscptr);
+  ptr_cookie_node ptr_cookie = NULL;
+	ptr_header_node ptr_head = initialize(ip, options, miscptr);
 
   if (ptr_head)
-    service_http_form(ip, sp, options, miscptr, fp, port, "POST", &ptr_head);
+    service_http_form(ip, sp, options, miscptr, fp, port, "POST", &ptr_head, &ptr_cookie);
   else {
     hydra_report(stderr, "[ERROR] Could not launch head. Error while initializing.\n");
     hydra_child_exit(1);
