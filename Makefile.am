@@ -40,7 +40,7 @@ all:	pw-inspector hydra $(XHYDRA_SUPPORT)
 hydra:	hydra.c $(OBJ)
 	$(CC) $(OPTS) $(SEC) $(LIBS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o hydra $(HYDRA_LOGO) hydra.c $(OBJ) $(LIBS) $(XLIBS) $(XLIBPATHS) $(XIPATHS) $(XDEFINES)
 	@echo
-	@echo  It is a poverty to decide that a child must die so that you may live as you wish. ~Blessed Teresa of Calcutta, M.C.
+	@echo It is a poverty to decide that a child must die so that you may live as you wish. ~Blessed Teresa of Calcutta, M.C.
 	@echo
 
 xhydra:	
