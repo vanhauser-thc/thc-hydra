@@ -2,6 +2,7 @@ Changelog for hydra
 -------------------
 
 Release 8.2-pre
+* Replaced deprecated des_ and fix LibreSSL build, thanks to Bernard Spil for the patch
 * Added xhydra gtk patche by Petar Kaleychev to support modules that do not use usernames
 * Better library finding in ./configure for SVN + support for Darwin Homebrew
 * Fixed http-form module crash that only occurs on *BSD/OSX systems. Thanks to zdk for reporting!
