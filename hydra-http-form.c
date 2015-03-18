@@ -132,13 +132,37 @@ int append_cookie(char *name, char *value, ptr_cookie_node *last_cookie)
 	return 1;
 }
 
-void traverse_cookies(ptr_cookie_node ptr_cookie)
+char * stringify_cookies(ptr_cookie_node ptr_cookie)
 {
-	printf("-- COOKIES START --\n");
 	ptr_cookie_node cur_ptr = NULL;
-	for (cur_ptr = ptr_cookie; cur_ptr; cur_ptr = cur_ptr->next)
-		printf("Cookie: %s=%s\n", cur_ptr->name, cur_ptr->value);
-	printf("-- COOKIES END --\n");
+	unsigned int length = 1;
+	char *cookie_hdr = (char *) malloc(length);
+
+	if (cookie_hdr) {
+		memset(cookie_hdr, 0, length);
+		for (cur_ptr = ptr_cookie; cur_ptr; cur_ptr = cur_ptr->next) {
+			length += 2 + strlen(cur_ptr->name) + strlen(cur_ptr->value);
+			cookie_hdr = (char *) realloc(cookie_hdr, length);
+			if (cookie_hdr) {
+				strcat(cookie_hdr, cur_ptr->name);
+				strcat(cookie_hdr, "=");
+				strcat(cookie_hdr, cur_ptr->value);
+				if (cur_ptr->next)
+					strcat(cookie_hdr, ";");
+			} else
+					goto bail;
+		}
+		goto success;
+	}
+
+bail:
+	if (cookie_hdr) {
+		free(cookie_hdr);
+		cookie_hdr = NULL;
+	}
+
+success:
+	return cookie_hdr;
 }
 
 /*
@@ -154,6 +178,7 @@ int add_or_update_cookie(ptr_cookie_node * ptr_cookie, char * cookie_expr)
 {
 // 	printf("[DEBUG] Added cookie: %s\n", cookie_expr);
 	ptr_cookie_node cur_ptr = NULL, new_ptr = NULL;
+	char * cookie = strdup(cookie_expr);
 	char * cookie_name = NULL,
 			* cookie_value = strstr(cookie_expr, "=");
 	if (cookie_value) {
@@ -183,11 +208,29 @@ int add_or_update_cookie(ptr_cookie_node * ptr_cookie, char * cookie_expr)
 				}
 			}
 		}
-		
-		traverse_cookies(*ptr_cookie);
 	} else
 		return 0;
 	return 1;
+}
+
+int process_cookies(ptr_cookie_node * ptr_cookie, char * cookie_expr)
+{
+	char *tok = NULL;
+	char *expr = strdup(cookie_expr);
+	int res = 0;
+
+	if (strstr(cookie_expr, ";")) {
+		tok = strtok(expr, ";");
+		while (tok) {
+			res = add_or_update_cookie(ptr_cookie, tok);
+			if (!res)
+				return res;
+			tok = strtok(NULL, ";");
+		}
+		return res;
+	} else {
+		return add_or_update_cookie(ptr_cookie, expr);
+	}
 }
 
 /*
@@ -528,6 +571,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
   char *empty = "";
   char *login, *pass, clogin[256], cpass[256];
   char header[8096], *upd3variables;
+  char *cookie_header = NULL;
   char *http_request;
   int found = !success_cond, i, j;
   char content_length[MAX_CONTENT_LENGTH], proxy_string[MAX_PROXY_LENGTH];
@@ -561,7 +605,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         return 1;
       i = analyze_server_response(s);   // ignore result
       if (strlen(cookie) > 0)
-        add_or_update_cookie(&ptr_cookie, cookie);
+        process_cookies(&ptr_cookie, cookie);
       hydra_reconnect(s, ip, port, options);
     }
     // now prepare for the "real" request
@@ -575,12 +619,16 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
       if (!header_exists(&ptr_head, "Content-Type", HEADER_TYPE_DEFAULT))
         add_header(&ptr_head, "Content-Type", "application/x-www-form-urlencoded", HEADER_TYPE_DEFAULT);
+      cookie_header = stringify_cookies(ptr_cookie);
+      printf("[DEBUG] %s", cookie_header);
       normal_request = stringify_headers(&ptr_head);
       http_request = prepare_http_request("POST", proxy_string, upd3variables, normal_request);
       if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
         return 1;
     } else {
-      normal_request = stringify_headers(&ptr_head);
+      cookie_header = stringify_cookies(ptr_cookie);
+      printf("[DEBUG] %s", cookie_header);
+    	normal_request = stringify_headers(&ptr_head);
       http_request = prepare_http_request("GET", url, upd3variables, normal_request);
       if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
         return 1;
@@ -597,7 +645,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
           return 1;
         i = analyze_server_response(s); // ignore result
         if (strlen(cookie) > 0)
-          add_or_update_cookie(&ptr_cookie, cookie);
+          process_cookies(&ptr_cookie, cookie);
         hydra_reconnect(s, ip, port, options);
       }
       // now prepare for the "real" request
@@ -611,12 +659,16 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
           add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
         if (!header_exists(&ptr_head, "Content-Type", HEADER_TYPE_DEFAULT))
           add_header(&ptr_head, "Content-Type", "application/x-www-form-urlencoded", HEADER_TYPE_DEFAULT);
+        cookie_header = stringify_cookies(ptr_cookie);
+        printf("[DEBUG] %s", cookie_header);
         normal_request = stringify_headers(&ptr_head);
         http_request = prepare_http_request("POST", proxy_string, upd3variables, normal_request);
         if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
           return 1;
       } else {
-        normal_request = stringify_headers(&ptr_head);
+      	cookie_header = stringify_cookies(ptr_cookie);
+				printf("[DEBUG] %s", cookie_header);
+      	normal_request = stringify_headers(&ptr_head);
         http_request = prepare_http_request("GET", url, upd3variables, normal_request);
         if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
           return 1;
@@ -630,7 +682,8 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
           return 1;
         i = analyze_server_response(s); // ignore result
         if (strlen(cookie) > 0) {
-          add_or_update_cookie(&ptr_cookie, cookie);
+          //printf("[DEBUG] Got cookie: %s\n", cookie);
+        	process_cookies(&ptr_cookie, cookie);
           normal_request = stringify_headers(&ptr_head);
         }
         hydra_reconnect(s, ip, port, options);
@@ -644,12 +697,16 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
           add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
         if (!header_exists(&ptr_head, "Content-Type", HEADER_TYPE_DEFAULT))
           add_header(&ptr_head, "Content-Type", "application/x-www-form-urlencoded", HEADER_TYPE_DEFAULT);
+        cookie_header = stringify_cookies(ptr_cookie);
+        printf("[DEBUG] %s\n", cookie_header);
         normal_request = stringify_headers(&ptr_head);
         http_request = prepare_http_request("POST", url, upd3variables, normal_request);
         if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
           return 1;
       } else {
-        normal_request = stringify_headers(&ptr_head);
+      	cookie_header = stringify_cookies(ptr_cookie);
+				printf("[DEBUG] %s\n", cookie_header);
+				normal_request = stringify_headers(&ptr_head);
         http_request = prepare_http_request("GET", url, upd3variables, normal_request);
         if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
           return 1;
@@ -669,7 +726,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
   }
 
   if (strlen(cookie) > 0)
-    add_or_update_cookie(&ptr_cookie, cookie);
+    process_cookies(&ptr_cookie, cookie);
 
   //if page was redirected, follow the location header
   redirected_cpt = MAX_REDIRECT;
@@ -783,8 +840,8 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         return 1;
 
       found = analyze_server_response(s);
-//      if (strlen(cookie) > 0)
-//        add_header(&ptr_head, "Cookie", cookie, HEADER_TYPE_DEFAULT_REPL);
+      if (strlen(cookie) > 0)
+	process_cookies(ptr_cookie, cookie);
     }
   }
 
