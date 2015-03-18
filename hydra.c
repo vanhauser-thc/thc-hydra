@@ -2799,14 +2799,12 @@ int main(int argc, char *argv[]) {
       i = 2;
     }
     if (strcmp(hydra_options.service, "cisco-enable") == 0) {
-      i = 2;
-      if (hydra_options.login == NULL) {
-        //hydra_options.login = empty_login;
+      if (hydra_options.login != NULL || hydra_options.loginfile != NULL)
         i = 1;                  // login will be the initial Username: login, or line Password:
-      }
-      if (hydra_options.miscptr == NULL) {
+      else
+      i = 2;
+      if (hydra_options.miscptr == NULL)
         fprintf(stderr, "[WARNING] You did not supply the initial support to the Cisco via -l, assuming direct console access\n");
-      }
       if (hydra_options.tasks > 4)
         fprintf(stderr, "[WARNING] you should set the number of parallel task to 4 for cisco enable services.\n");
     }
