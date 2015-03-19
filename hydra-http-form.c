@@ -176,7 +176,6 @@ success:
  */
 int add_or_update_cookie(ptr_cookie_node * ptr_cookie, char * cookie_expr)
 {
-// 	printf("[DEBUG] Added cookie: %s\n", cookie_expr);
 	ptr_cookie_node cur_ptr = NULL, new_ptr = NULL;
 	char * cookie = strdup(cookie_expr);
 	char * cookie_name = NULL,
@@ -184,25 +183,19 @@ int add_or_update_cookie(ptr_cookie_node * ptr_cookie, char * cookie_expr)
 	if (cookie_value) {
 		cookie_name = strndup(cookie_expr, cookie_value - cookie_expr);
 		cookie_value = strdup(cookie_value + 1);
-// 		printf("\t[DEBUG] Name: %s\n", cookie_name);
-// 		printf("\t[DEBUG] Value: %s\n", cookie_value);
 		
 		// we've got the cookie's name and value, now it's time to insert or update the list
 		if (*ptr_cookie == NULL) {
 			// no cookies
 			append_cookie(cookie_name, cookie_value, ptr_cookie);
-// 			if (append_cookie(cookie_name, cookie_value, ptr_cookie))
-// 				printf("New cookie: %s=%s\n", (*ptr_cookie)->name, (*ptr_cookie)->value);
 		} else {
 			for (cur_ptr = *ptr_cookie; cur_ptr; cur_ptr = cur_ptr->next) {
 				if (strcmp(cur_ptr->name, cookie_name) == 0) {
-// 					printf("Cookie %s already exists. Replacing.\n", cookie_name);
 					free(cur_ptr->value);
 					cur_ptr->value = cookie_value;
 					break;
 				}
 				if (cur_ptr->next == NULL) {
-// 					printf("Cookie %s does not exist. Adding.\n", cookie_name);
 					append_cookie(cookie_name, cookie_value, &cur_ptr);
 					break;
 				}
