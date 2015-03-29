@@ -47,6 +47,7 @@ int __first_connect = 1;
 char ipstring[64];
 unsigned int colored_output = 1;
 char quiet = 0;
+int old_ssl = 0;
 
 #ifdef LIBOPENSSL
 SSL *ssl = NULL;
@@ -468,13 +469,23 @@ int internal__hydra_connect_to_ssl(int socket) {
 
   if (sslContext == NULL) {
     /* context: ssl2 + ssl3 is allowed, whatever the server demands */
-//    if ((sslContext = SSL_CTX_new(SSLv23_client_method())) == NULL) {
-    if ((sslContext = SSL_CTX_new(TLSv1_2_client_method())) == NULL) {
-      if (verbose) {
-        err = ERR_get_error();
-        fprintf(stderr, "[ERROR] SSL allocating context: %s\n", ERR_error_string(err, NULL));
+    if (old_ssl) {
+      if ((sslContext = SSL_CTX_new(SSLv23_client_method())) == NULL) {
+        if (verbose) {
+          err = ERR_get_error();
+          fprintf(stderr, "[ERROR] SSL allocating context: %s\n", ERR_error_string(err, NULL));
+        }
+        return -1;
       }
-      return -1;
+    } else {
+//    if ((sslContext = SSL_CTX_new(SSLv23_client_method())) == NULL) {
+      if ((sslContext = SSL_CTX_new(TLSv1_2_client_method())) == NULL) {
+        if (verbose) {
+          err = ERR_get_error();
+          fprintf(stderr, "[ERROR] SSL allocating context: %s\n", ERR_error_string(err, NULL));
+        }
+        return -1;
+      }
     }
     /* set the compatbility mode */
     SSL_CTX_set_options(sslContext, SSL_OP_ALL);

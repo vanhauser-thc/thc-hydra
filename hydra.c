@@ -170,6 +170,7 @@ extern char *hydra_address2string(char *address);
 extern int colored_output;
 extern char quiet;
 extern int do_retry;
+extern int old_ssl;
 
 void hydra_kill_head(int head_no, int killit, int fail);
 
@@ -310,7 +311,7 @@ void help(int ext) {
 #ifdef HAVE_MATH_H
          " [-x MIN:MAX:CHARSET]"
 #endif
-         " [-SuvVd46] "
+         " [-SOuvVd46] "
          //"[server service [OPT]]|"
          "[service://server[:PORT][/OPT]]\n");
   printf("\nOptions:\n");
@@ -346,7 +347,9 @@ void help(int ext) {
   if (ext)
     printf("  -v / -V / -d  verbose mode / show login+pass for each attempt / debug mode \n");
   if (ext)
-    printf("  -q        do not print messages about connection erros\n");
+    printf("  -O        use old SSL v2 and v3\n");
+  if (ext)
+    printf("  -q        do not print messages about connection errors\n");
   printf("  -U        service module usage details\n");
   if (ext == 0)
     printf("  -h        more command line options (COMPLETE HELP)\n");
@@ -2186,13 +2189,16 @@ int main(int argc, char *argv[]) {
     help(1);
   if (argc < 2)
     help(0);
-  while ((i = getopt(argc, argv, "hq64Rde:vVl:fFg:L:p:P:o:M:C:t:T:m:w:W:s:SUux:")) >= 0) {
+  while ((i = getopt(argc, argv, "hq64Rde:vVl:fFg:L:p:OP:o:M:C:t:T:m:w:W:s:SUux:")) >= 0) {
     switch (i) {
     case 'h':
       help(1);
       break;
     case 'q':
       quiet = 1;
+      break;
+    case 'O':
+      old_ssl = 1;
       break;
     case 'u':
       hydra_options.loop_mode = 1;
