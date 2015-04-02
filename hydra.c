@@ -2458,7 +2458,7 @@ int main(int argc, char *argv[]) {
       if (optind + 3 == argc)
         hydra_options.miscptr = argv[optind + 2];
     }
-
+    
     if (strcmp(hydra_options.service, "pop3s") == 0 || strcmp(hydra_options.service, "smtps") == 0 || strcmp(hydra_options.service, "imaps") == 0
         || strcmp(hydra_options.service, "telnets") == 0 || (strncmp(hydra_options.service, "ldap", 4) == 0 && hydra_options.service[strlen(hydra_options.service) - 1] == 's')) {
       hydra_options.ssl = 1;
@@ -3026,6 +3026,10 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "[WARNING] reducing maximum tasks to MAXTASKS (%d)\n", MAXTASKS);
       hydra_options.max_use = MAXTASKS;
     }
+
+    // script kiddie patch
+    if (hydra_options.server != NULL && (hydra_strcasestr(hydra_options.server, "gmail.") != NULL || hydra_strcasestr(hydra_options.server, "googlemail.") != NULL))
+      fprintf(stderr, "[WARNING] Google Mail has bruteforce detection and sends false positives. You are not doing anything illegal right?!\n");
 
     if (hydra_options.colonfile == NULL) {
       if (hydra_options.loginfile != NULL) {

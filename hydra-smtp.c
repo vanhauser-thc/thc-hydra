@@ -180,7 +180,7 @@ int start_smtp(int s, char *ip, int port, unsigned char options, char *miscptr, 
 
     /* 504 5.7.4 Unrecognized authentication type  */
     if (strstr(buf, "334") == NULL) {
-      hydra_report(stderr, "[ERROR] SMTP LOGIN AUTH, either this auth is disabled\nor server is not using auth: %s\n", buf);
+      hydra_report(stderr, "[ERROR] SMTP LOGIN AUTH, either this auth is disabled or server is not using auth: %s\n", buf);
       free(buf);
       return 3;
     }
