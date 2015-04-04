@@ -968,6 +968,14 @@ XIPATHS=""
 if [ -n "$FIREBIRD_PATH" -o -n "$PCRE_PATH" -o -n "$IDN_PATH" -o -n "$SSL_PATH" -o -n "$CRYPTO_PATH" -o -n "$NSL_PATH" -o -n "$SOCKET_PATH" -o -n "$RESOLV_PATH" -o -n "$SAPR3_PATH" -o -n "$SSH_PATH" -o -n "$POSTGRES_PATH" -o -n "$SVN_PATH" -o -n "$NCP_PATH" -o -n "$CURSES_PATH" -o -n "$ORACLE_PATH" -o -n "$AFP_PATH" -o -n "$MYSQL_PATH" ]; then
     XLIBPATHS="-L/usr/lib -L/usr/local/lib -L/lib"
 fi
+if [ -n "$MYSQL_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$MYSQL_IPATH"
+    if [ -n "$MYSQLINSUBDIR" ]; then
+       XDEFINES="$XDEFINES -DHAVE_MYSQL_MYSQL_H"
+    else
+       XDEFINES="$XDEFINES -DHAVE_MYSQL_H"
+    fi
+fi
 if [ -n "$SSL_PATH" ]; then
     if [ -n "$SSLNEW" ]; then
         XDEFINES="$XDEFINES -DLIBOPENSSL"
@@ -1016,7 +1024,7 @@ if [ -n "$RSA" ]; then
     XDEFINES="$XDEFINES -DNO_RSA_LEGACY"
 fi
 OLDPATH=""
-for i in $SSL_PATH $CRYPTO_PATH $SSH_PATH $NSL_PATH $SOCKET_PATH $RESOLV_PATH $SAPR3_PATH $POSTGRES_PATH $SVN_PATH $NCP_PATH $CURSES_PATH $ORACLE_PATH $AFP_PATH $MYSQL_PATH; do
+for i in $SSL_PATH $FIREBIRD_PATH $WORACLE_LIB_PATH $PCRE_PATH $IDN_PATH $CRYPTO_PATH $SSH_PATH $NSL_PATH $SOCKET_PATH $RESOLV_PATH $SAPR3_PATH $POSTGRES_PATH $SVN_PATH $NCP_PATH $CURSES_PATH $ORACLE_PATH $AFP_PATH $MYSQL_PATH; do
     if [ "$OLDPATH" = "$i" ]; then
       OLDPATH="$i"
     else
@@ -1024,11 +1032,29 @@ for i in $SSL_PATH $CRYPTO_PATH $SSH_PATH $NSL_PATH $SOCKET_PATH $RESOLV_PATH $S
       OLDPATH="$i"
     fi
 done
-if [ -n "$SSL_IPATH" ]; then
-    XIPATHS="-I$SSL_IPATH"
+if [ -n "$CURSES_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$CURSES_IPATH"
 fi
-if [ -n "$CURSES_PATH" ]; then
-    XLIBS="$XLIBS -lcurses"
+if [ -n "$FIREBIRD_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$FIREBIRD_IPATH"
+fi
+if [ -n "$IDN_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$IDN_IPATH"
+fi
+if [ -n "$NCP_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$NCP_IPATH"
+fi
+if [ -n "$PCRE_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$PCRE_IPATH"
+fi
+if [ -n "$POSTGRES_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$POSTGRES_IPATH"
+fi
+if [ -n "$PR29_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$PR29_IPATH"
+fi
+if [ -n "$SSL_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$SSL_IPATH"
 fi
 if [ -n "$SAPR3_IPATH" ]; then
     XIPATHS="$XIPATHS -I$SAPR3_IPATH"
@@ -1045,19 +1071,14 @@ fi
 if [ -n "$SVN_IPATH" ]; then
     XIPATHS="$XIPATHS -I$SVN_IPATH"
 fi
-if [ -n "$MYSQL_IPATH" ]; then
-    XIPATHS="$XIPATHS -I$MYSQL_IPATH"
-    if [ -n "$MYSQLINSUBDIR" ]; then
-       XDEFINES="$XDEFINES -DHAVE_MYSQL_MYSQL_H"
-    else
-       XDEFINES="$XDEFINES -DHAVE_MYSQL_H"
-    fi
-fi
 if [ -n "$AFP_IPATH" ]; then
     XIPATHS="$XIPATHS -I$AFP_IPATH"
 fi
 if [ -n "$ORACLE_IPATH" ]; then
     XIPATHS="$XIPATHS -I$ORACLE_IPATH"
+fi
+if [ -n "$CURSES_PATH" ]; then
+    XLIBS="$XLIBS -lcurses"
 fi
 if [ -n "$SSL_PATH" ]; then
     XLIBS="$XLIBS -lssl"
