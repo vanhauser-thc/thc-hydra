@@ -189,7 +189,9 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
   if (debug)
     hydra_report(stderr, "S:%s\n", http_buf);
 
-  ptr = ((char *) index(http_buf, ' ')) + 1;
+  ptr = ((char *) index(http_buf, ' '));
+  if (ptr != NULL)
+    ptr++;
   if (ptr != NULL && (*ptr == '2' || *ptr == '3' || strncmp(ptr, "403", 3) == 0 || strncmp(ptr, "404", 3) == 0)) {
     hydra_report_found_host(port, ip, "www", fp);
     hydra_completed_pair_found();
@@ -199,7 +201,7 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
     }
   } else {
     if (ptr != NULL && *ptr != '4')
-      fprintf(stderr, "[WARNING] Unusual return code: %c for %s:%s\n", (char) *(index(http_buf, ' ') + 1), login, pass);
+      fprintf(stderr, "[WARNING] Unusual return code: %.3s for %s:%s\n", (char) *ptr, ' ') + 1), login, pass);
 
     //the first authentication type failed, check the type from server header
     if ((hydra_strcasestr(http_buf, "WWW-Authenticate: Basic") == NULL) && (http_auth_mechanism == AUTH_BASIC)) {
