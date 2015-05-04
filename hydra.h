@@ -118,6 +118,8 @@
 #define PORT_S7_300_SSL  102
 #define PORT_REDIS      6379
 #define PORT_REDIS_SSL   6379
+#define PORT_RTSP      554
+#define PORT_RTSP_SSL  554
 
 #define False 0
 #define True  1
