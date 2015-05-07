@@ -125,7 +125,8 @@ int start_rtsp(int s, char *ip, int port, unsigned char options, char *miscptr, 
     }
 
     if (use_Digest_Auth(lresp) == 1) {
-      char *dbuf = dbuffer[500] = "";
+      char *dbuf;
+      char dbuffer[500] = "";
       char aux[500] = "";
 
       char *pbuffer = hydra_strcasestr(lresp, "WWW-Authenticate: Digest ");
