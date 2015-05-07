@@ -74,7 +74,7 @@ void create_core_packet(int control, char *ip, int port) {
     }
   } else {
     if (strlen(packet2) <= 0) {
-      sprintf(packet2, "DESCRIBE rtsp://%s.260:%i RTSP/1.0\r\nCSeq: 3\r\n", target, port);
+      sprintf(packet2, "DESCRIBE rtsp://%.260s:%i RTSP/1.0\r\nCSeq: 3\r\n", target, port);
     }
   }
 }
