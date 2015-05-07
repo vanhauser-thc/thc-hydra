@@ -2,6 +2,7 @@ Changelog for hydra
 -------------------
 
 Release 8.2-pre
+* Added RTSP module, thanks to jjavi89 for supplying!
 * Added new -O option to hydra to support SSL servers that do not suport TLS
 * Added xhydra gtk patche by Petar Kaleychev to support modules that do not use usernames
 * Added patch to redis for initial service checking by Petar Kaleychev - thanks a lot!

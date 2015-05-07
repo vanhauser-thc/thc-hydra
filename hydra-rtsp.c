@@ -69,12 +69,11 @@ void create_core_packet(int control,char* ip, int port){
     char * target=hydra_address2string(ip);
     if (control==0){
     	if (strlen(packet) <= 0){
-		sprintf(packet, "DESCRIBE rtsp://%s:%i RTSP/1.0\r\nCSeq: 2\r\n\r\n",target,port); 
-		
+		sprintf(packet, "DESCRIBE rtsp://%.260s:%i RTSP/1.0\r\nCSeq: 2\r\n\r\n",target,port); 
     	}
     }else{
 	if (strlen(packet2) <= 0){
-		sprintf(packet2, "DESCRIBE rtsp://%s:%i RTSP/1.0\r\nCSeq: 3\r\n",target,port); 
+		sprintf(packet2, "DESCRIBE rtsp://%s.260:%i RTSP/1.0\r\nCSeq: 3\r\n",target,port); 
 	}
      }
 }
@@ -89,7 +88,6 @@ int start_rtsp(int s, char *ip, int port, unsigned char options, char *miscptr, 
         login = empty;
     if (strlen(pass = hydra_get_next_password()) == 0) 
         pass = empty;
-	
     
     create_core_packet(0,ip,port);
 	
@@ -99,12 +97,12 @@ int start_rtsp(int s, char *ip, int port, unsigned char options, char *miscptr, 
         lresp = hydra_receive_line(s);
     
     if (lresp == NULL){
-        printf("null");
+        fprintf(stderr, "[ERROR] no server reply");
         return 1;
     }
 	
     if (is_NotFound(lresp)){
-        printf("Server dont need credentials\r\n"); 
+        printf("[INFO] Server does not need credentials\n"); 
         hydra_completed_pair_found();
         if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0){ 
             return 3;
@@ -116,7 +114,7 @@ int start_rtsp(int s, char *ip, int port, unsigned char options, char *miscptr, 
 	
 	if (use_Basic_Auth(lresp)==1) {
            
-            sprintf(buffer2,"%s:%s",login,pass);
+            sprintf(buffer2,"%.260s:%.260s",login,pass);
             hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
 
             sprintf(buffer, "%sAuthorization: : Basic %s\r\n\r\n",packet2,buffer2); 
@@ -127,25 +125,24 @@ int start_rtsp(int s, char *ip, int port, unsigned char options, char *miscptr, 
         } 
 	
 	if(use_Digest_Auth(lresp)==1){
-          	
-      		char dbuffer[500];
- 		char aux[500];
-		
+      		char *dbuf = dbuffer[500] = "";
+ 		char aux[500] = "";
 
 	 	char *pbuffer = hydra_strcasestr(lresp,"WWW-Authenticate: Digest ");
 	 	strncpy(aux,pbuffer + strlen("WWW-Authenticate: Digest "), sizeof(buffer));
 	 	aux[sizeof(aux)-1]='\0';
-	
 #ifdef LIBOPENSSL
-
-  		sasl_digest_md5(&dbuffer, login, pass, aux, miscptr, "rtsp", hydra_address2string(ip), port, "");
+  		sasl_digest_md5(dbuf, login, pass, aux, miscptr, "rtsp", hydra_address2string(ip), port, "");
+#endif
+                printf("[ERROR] Digest auth required but compiled without OpenSSL/MD5 support\n");
+                return 3;
 #endif
 		
-            if (dbuffer==NULL) {
-                printf("digest fail, dbuffer null\r\n");
+            if (dbuf == NULL) {
+                fprintf(stderr, "[ERROR] digest generation failed\n");
                 return 3;
             }
-            sprintf(buffer, "%sAuthorization: Digest %s\r\n\r\n", packet2, dbuffer);
+            sprintf(buffer, "%sAuthorization: Digest %s\r\n\r\n", packet2, dbuf);
             
 	if (debug){
                 hydra_report(stderr, "C:%s\n", buffer);
@@ -221,8 +218,6 @@ void service_rtsp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
                     sock = hydra_disconnect(sock);
                 }
                 hydra_child_exit(0);
-                printf("end");
-                return;
 		break;
             default:
                 hydra_report(stderr, "[ERROR] Caught unknown return code, exiting!\n");
