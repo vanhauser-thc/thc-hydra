@@ -4,7 +4,10 @@
 OPTS=-I. -O3
 # -Wall -g -pedantic
 LIBS=-lm
-DIR=/bin
+BINDIR = /bin
+MANDIR ?= /man/man1
+DATADIR ?= /etc
+DESTDIR ?=
 
 SRC = hydra-vnc.c hydra-pcnfs.c hydra-rexec.c hydra-nntp.c hydra-socks5.c \
       hydra-telnet.c hydra-cisco.c hydra-http.c hydra-ftp.c hydra-imap.c \
@@ -57,15 +60,15 @@ strip:	all
 	-echo OK > /dev/null && test -x xhydra && strip xhydra || echo OK > /dev/null
 
 install:	strip
-	-mkdir -p $(PREFIX)$(DIR)
-	cp -f hydra-wizard.sh $(BINS) $(PREFIX)$(DIR) && cd $(PREFIX)$(DIR) && chmod 755 hydra-wizard.sh $(BINS)
-	-echo OK > /dev/null && test -x xhydra && cp xhydra $(PREFIX)$(DIR) && cd $(PREFIX)$(DIR) && chmod 755 xhydra || echo OK > /dev/null
-	-sed -e "s|^INSTALLDIR=.*|INSTALLDIR="$(PREFIX)"|" dpl4hydra.sh > $(PREFIX)/bin/dpl4hydra.sh
-	-chmod 755 $(PREFIX)/bin/dpl4hydra.sh
-	-mkdir -p $(PREFIX)/etc/
-	-cp -f *.csv $(PREFIX)/etc/
-	-mkdir -p $(PREFIX)/man/man1
-	-cp -f hydra.1 xhydra.1 pw-inspector.1 $(PREFIX)/man/man1
+	-mkdir -p $(DESTDIR)$(PREFIX)$(BINDIR)
+	cp -f hydra-wizard.sh $(BINS) $(DESTDIR)$(PREFIX)$(BINDIR) && cd $(DESTDIR)$(PREFIX)$(BINDIR) && chmod 755 hydra-wizard.sh $(BINS)
+	-echo OK > /dev/null && test -x xhydra && cp xhydra $(DESTDIR)$(PREFIX)$(BINDIR) && cd $(DESTDIR)$(PREFIX)$(BINDIR) && chmod 755 xhydra || echo OK > /dev/null
+	-sed -e "s|^INSTALLDIR=.*|INSTALLDIR="$(PREFIX)"|" dpl4hydra.sh | sed -e "s|^LOCATION=.*|LOCATION="$(DATADIR)"|" > $(DESTDIR)$(PREFIX)$(BINDIR)/dpl4hydra.sh
+	-chmod 755 $(DESTDIR)$(PREFIX)$(BINDIR)/dpl4hydra.sh
+	-mkdir -p $(DESTDIR)$(PREFIX)$(DATADIR)
+	-cp -f *.csv $(DESTDIR)$(PREFIX)$(DATADIR)
+	-mkdir -p $(DESTDIR)$(PREFIX)$(MANDIR)
+	-cp -f hydra.1 xhydra.1 pw-inspector.1 $(DESTDIR)$(PREFIX)$(MANDIR)
 
 clean:
 	rm -rf xhydra pw-inspector hydra *.o core *.core *.stackdump *~ Makefile.in Makefile dev_rfc hydra.restore arm/*.ipk arm/ipkg/usr/bin/* hydra-gtk/src/*.o hydra-gtk/src/xhydra hydra-gtk/stamp-h hydra-gtk/config.status hydra-gtk/errors hydra-gtk/config.log hydra-gtk/src/.deps hydra-gtk/src/Makefile hydra-gtk/Makefile
