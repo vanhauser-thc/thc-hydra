@@ -299,11 +299,11 @@ void hdrrep(ptr_header_node * ptr_head, char *oldvalue, char *newvalue) {
 
   for (cur_ptr = *ptr_head; cur_ptr; cur_ptr = cur_ptr->next) {
     if ((cur_ptr->type == HEADER_TYPE_USERHEADER || cur_ptr->type == HEADER_TYPE_USERHEADER_REPL) && strstr(cur_ptr->value, oldvalue)) {
-      cur_ptr->value = (char *) realloc(cur_ptr->value, strlen(newvalue));
+      cur_ptr->value = (char *) realloc(cur_ptr->value, strlen(newvalue) + 1);
       if (cur_ptr->value)
         strcpy(cur_ptr->value, newvalue);
       else {
-        hydra_report(stderr, "[ERROR] Out of memory.");
+        hydra_report(stderr, "[ERROR] Out of memory (hddrep).");
         hydra_child_exit(0);
       }
     }
@@ -318,11 +318,11 @@ void hdrrepv(ptr_header_node * ptr_head, char *hdrname, char *new_value) {
 
   for (cur_ptr = *ptr_head; cur_ptr; cur_ptr = cur_ptr->next) {
     if ((cur_ptr->type == HEADER_TYPE_DEFAULT) && strcmp(cur_ptr->header, hdrname) == 0) {
-      cur_ptr->value = (char *) realloc(cur_ptr->value, strlen(new_value));
+      cur_ptr->value = (char *) realloc(cur_ptr->value, strlen(new_value) + 1);
       if (cur_ptr->value)
         strcpy(cur_ptr->value, new_value);
       else {
-        hydra_report(stderr, "[ERROR] Out of memory");
+        hydra_report(stderr, "[ERROR] Out of memory (hdrrepv %d)", strlen(new_value) + 1);
         hydra_child_exit(0);
       }
     }
@@ -1120,7 +1120,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
         break;
       }
       // Error: abort execution
-      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers.");
+      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (h).");
       return NULL;
     case 'H':
       // add a new header, or replace an existing one's value
@@ -1149,7 +1149,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
         break;
       }
       // Error: abort execution
-      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers.");
+      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (H).");
       return NULL;
       // no default
     }
