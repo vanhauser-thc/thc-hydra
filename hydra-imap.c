@@ -102,10 +102,9 @@ int start_imap(int s, char *ip, int port, unsigned char options, char *miscptr, 
     }
     free(buf);
 
-    memset(buffer, 0, sizeof(buffer));
-    sasl_plain(buffer, login, pass);
-    if (debug) printf("[DEBUG] sasl_plain: %s + %s = %s\n", login, pass, buffer);
-    sprintf(buffer, "%.250s\r\n", buffer);
+    memset(buffer2, 0, sizeof(buffer2));
+    sasl_plain(buffer2, login, pass);
+    sprintf(buffer, "%.250s\r\n", buffer2);
     break;
 
 #ifdef LIBOPENSSL
