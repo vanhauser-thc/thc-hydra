@@ -104,6 +104,7 @@ int start_imap(int s, char *ip, int port, unsigned char options, char *miscptr, 
 
     memset(buffer, 0, sizeof(buffer));
     sasl_plain(buffer, login, pass);
+    if (debug) printf("[DEBUG] sasl_plain: %s + %s = %s\n", login, pass, buffer);
     sprintf(buffer, "%.250s\r\n", buffer);
     break;
 
