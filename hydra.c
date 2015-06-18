@@ -1,4 +1,3 @@
-
 /*
  * hydra (c) 2001-2014 by van Hauser / THC <vh@thc.org>
  * http://www.thc.org
@@ -742,8 +741,8 @@ void hydra_restore_write(int print_msg) {
         || (hh.current_pass_ptr != NULL && hh.current_pass_ptr != empty_login)) {
       hh.redo = 1;
       if (print_msg && debug)
-        printf("[DEBUG] we will redo the following combination: target %s  login \"%s\"  pass \"%s\"\n", hydra_targets[hh.target_no]->target,
-               hh.current_login_ptr, hh.current_pass_ptr);
+        printf("[DEBUG] we will redo the following combination: target %s  child %d  login \"%s\"  pass \"%s\"\n", hydra_targets[hh.target_no]->target,
+               j, hh.current_login_ptr, hh.current_pass_ptr);
     }
     fck = fwrite((char *) &hh, sizeof(hydra_head), 1, f);
     if (hh.redo /* && (hydra_options.bfg == 0 || (hh.current_pass_ptr == hydra_targets[hh.target_no]->bfg_ptr[j] && isprint((char) hh.current_pass_ptr[0]))) */ )
@@ -886,6 +885,7 @@ void hydra_restore_read() {
       strcpy(hydra_targets[j]->pass_ptr, out);
     }
     if (hydra_targets[j]->redo > 0)
+      if (debug) printf("[DEBUG] target %d redo %d\n", j, hydra_targets[j]->redo);
       for (i = 0; i < hydra_targets[j]->redo; i++) {
         sck = fgets(out, sizeof(out), f);
         if (out[0] != 0 && out[strlen(out) - 1] == '\n')
@@ -914,7 +914,7 @@ void hydra_restore_read() {
   }
   if (debug)
     printf("[DEBUG] reading restore file: Step 11 complete\n");
-  hydra_heads = malloc((hydra_options.max_use + 2) * sizeof(int) + 8);
+  hydra_heads = malloc((hydra_options.max_use + 2) * sizeof(int) + 16);
   for (j = 0; j < hydra_options.max_use; j++) {
     hydra_heads[j] = malloc(sizeof(hydra_head));
     fck = (int) fread(hydra_heads[j], sizeof(hydra_head), 1, f);
@@ -922,6 +922,7 @@ void hydra_restore_read() {
     hydra_heads[j]->sp[1] = -1;
     sck = fgets(out, sizeof(out), f);
     if (hydra_heads[j]->redo) {
+      if (debug) printf("[DEBUG] head %d redo\n", j);
       if (out[0] != 0 && out[strlen(out) - 1] == '\n')
         out[strlen(out) - 1] = 0;
       hydra_heads[j]->current_login_ptr = malloc(strlen(out) + 1);
@@ -932,7 +933,7 @@ void hydra_restore_read() {
       if (out[0] != 0 && out[strlen(out) - 1] == '\n')
         out[strlen(out) - 1] = 0;
       if (debug)
-        printf("[DEBUG] TEMP head %d: out[0] == %d, hydra_heads[j]->current_login_ptr[0] == %d\n", j, out[0], hydra_heads[j]->current_login_ptr[0]);
+        printf("[DEBUG] TEMP head %d: pass == %s, login == %s\n", j, out, hydra_heads[j]->current_login_ptr);
       if (out[0] != 0 || hydra_heads[j]->current_login_ptr[0] != 0) {
         hydra_heads[j]->current_pass_ptr = malloc(strlen(out) + 1);
         strcpy(hydra_heads[j]->current_pass_ptr, out);

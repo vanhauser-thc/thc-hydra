@@ -11,6 +11,8 @@ Release 8.2-pre
 * Fixed for SSL connection to support TLSv1.2 etc.
 * Support for different RSA keylengths, thanks to fann95 for the patch
 * Fixed a bug where the cisco-enable module was not working with the password-only logon mode
+* Fixed an out of memory bug in http-form
+* Fixed imap PLAIN method
 * ... your patch?
 
 
