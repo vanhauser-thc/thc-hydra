@@ -1656,15 +1656,50 @@ void hydra_increase_fail_count(int target_no, int head_no) {
 }
 
 char *hydra_reverse_login(int head_no, char *login) {
-  int i, j = strlen(login);
+  int i, j;
+  char *start, *pos;
+  unsigned char keep;
+
+  if (login == NULL || (j = strlen(login)) < 1)
+    return empty_login;
 
   if (j > 248)
     j = 248;
-  else if (j == 0)
-    return empty_login;
+
   for (i = 0; i < j; i++)
     hydra_heads[head_no]->reverse[i] = login[j - (i + 1)];
   hydra_heads[head_no]->reverse[j] = 0;
+
+  // UTF stuff now
+  start = hydra_heads[head_no]->reverse;
+  pos = start + j;
+  
+  while(start < --pos) {
+    switch( (*pos & 0xF0) >> 4 ) {
+    case 0xF: /* U+010000-U+10FFFF: four bytes. */
+      keep = *pos;
+      *pos = *(pos-3);
+      *(pos-3) = keep;
+      keep = *(pos-1);
+      *(pos-1) = *(pos-2);
+      *(pos-2) = keep;
+      pos -= 3;
+      break;
+    case 0xE: /* U+000800-U+00FFFF: three bytes. */
+      keep = *pos;
+      *pos = *(pos-2);
+      *(pos-2) = keep;
+      pos -= 2;
+      break;
+    case 0xC: /* fall-through */
+    case 0xD: /* U+000080-U+0007FF: two bytes. */
+      keep = *pos;
+      *pos = *(pos-1);
+      *(pos-1) = keep;
+      pos--;
+      break;
+    }
+  }
 
   return hydra_heads[head_no]->reverse;
 }
