@@ -1209,16 +1209,20 @@ char *hydra_string_replace(const char *string, const char *substr, const char *r
   char *tok = NULL;
   char *newstr = NULL;
 
+  if (string == NULL)
+    return NULL;
+  if (substr == NULL || replacement == NULL)
+    return strdup(string);
   tok = strstr(string, substr);
   if (tok == NULL)
     return strdup(string);
-  newstr = malloc(strlen(string) - strlen(substr) + strlen(replacement) + 1);
+  newstr = malloc(strlen(string) - strlen(substr) + strlen(replacement) + 2);
   if (newstr == NULL)
     return NULL;
+  memset(newstr, 0, strlen(string) - strlen(substr) + strlen(replacement) + 2);
   memcpy(newstr, string, tok - string);
   memcpy(newstr + (tok - string), replacement, strlen(replacement));
   memcpy(newstr + (tok - string) + strlen(replacement), tok + strlen(substr), strlen(string) - strlen(substr) - (tok - string));
-  memset(newstr + strlen(string) - strlen(substr) + strlen(replacement), 0, 1);
   return newstr;
 }
 
