@@ -1,10 +1,8 @@
 #include "sasl.h"
 
-/* 
-
+/*
 print_hex is used for debug
 it displays the string buf hexa values of size len
-
 */
 int print_hex(unsigned char *buf, int len) {
   int i;
@@ -19,23 +17,18 @@ int print_hex(unsigned char *buf, int len) {
     n++;
   }
   printf("\n");
-
   return (0);
 }
 
 /*
-
 RFC 4013: SASLprep: Stringprep Profile for User Names and Passwords
 code based on gsasl_saslprep from GSASL project
-
 */
-
 int sasl_saslprep(const char *in, sasl_saslprep_flags flags, char **out) {
 #if LIBIDN
   int rc;
 
   rc = stringprep_profile(in, out, "SASLprep", (flags & SASL_ALLOW_UNASSIGNED) ? STRINGPREP_NO_UNASSIGNED : 0);
-
   if (rc != STRINGPREP_OK) {
     *out = NULL;
     return -1;
@@ -47,7 +40,6 @@ int sasl_saslprep(const char *in, sasl_saslprep_flags flags, char **out) {
     return -1;
   }
 #endif
-
 #else
   size_t i, inlen = strlen(in);
 
@@ -68,36 +60,27 @@ int sasl_saslprep(const char *in, sasl_saslprep_flags flags, char **out) {
   return 0;
 }
 
-
 /*
-
 RFC 4616: The PLAIN Simple Authentication and Security Layer (SASL) Mechanism
-
 sasl_plain computes the plain authentication from strings login and password
 and stored the value in variable result
-
 the first parameter result must be able to hold at least 255 bytes!
-
 */
-
 void sasl_plain(char *result, char *login, char *pass) {
   char *preplogin;
   char *preppasswd;
-
   int rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
 
   if (rc) {
     result = NULL;
     return;
   }
-
   rc = sasl_saslprep(pass, 0, &preppasswd);
   if (rc) {
     free(preplogin);
     result = NULL;
     return;
   }
-
   if (2 * strlen(preplogin) + 3 + strlen(preppasswd) < 180) {
     strcpy(result, preplogin);
     strcpy(result + strlen(preplogin) + 1, preplogin);
@@ -111,17 +94,12 @@ void sasl_plain(char *result, char *login, char *pass) {
 #ifdef LIBOPENSSL
 
 /*
-
 RFC 2195: IMAP/POP AUTHorize Extension for Simple Challenge/Response
-
 sasl_cram_md5 computes the cram-md5 authentication from password string
 and the challenge sent by the server, and stored the value in variable
 result
-
 the parameter result must be able to hold at least 100 bytes!
-
 */
-
 void sasl_cram_md5(char *result, char *pass, char *challenge) {
   char ipad[64];
   char opad[64];
@@ -134,16 +112,13 @@ void sasl_cram_md5(char *result, char *pass, char *challenge) {
     result = NULL;
     return;
   }
-
   rc = sasl_saslprep(pass, 0, &preppasswd);
   if (rc) {
     result = NULL;
     return;
   }
-
   memset(ipad, 0, sizeof(ipad));
   memset(opad, 0, sizeof(opad));
-
   if (strlen(preppasswd) >= 64) {
     MD5_Init(&md5c);
     MD5_Update(&md5c, preppasswd, strlen(preppasswd));
@@ -154,7 +129,6 @@ void sasl_cram_md5(char *result, char *pass, char *challenge) {
     strcpy(ipad, preppasswd);   // safe
     strcpy(opad, preppasswd);   // safe
   }
-
   for (i = 0; i < 64; i++) {
     ipad[i] ^= 0x36;
     opad[i] ^= 0x5c;
@@ -163,7 +137,6 @@ void sasl_cram_md5(char *result, char *pass, char *challenge) {
   MD5_Update(&md5c, ipad, 64);
   MD5_Update(&md5c, challenge, strlen(challenge));
   MD5_Final(md5_raw, &md5c);
-
   MD5_Init(&md5c);
   MD5_Update(&md5c, opad, 64);
   MD5_Update(&md5c, md5_raw, MD5_DIGEST_LENGTH);
@@ -176,13 +149,10 @@ void sasl_cram_md5(char *result, char *pass, char *challenge) {
 }
 
 /*
-
 sasl_cram_sha1 computes the cram-sha1 authentication from password string
 and the challenge sent by the server, and stored the value in variable
 result
-
 the parameter result must be able to hold at least 100 bytes!
-
 */
 void sasl_cram_sha1(char *result, char *pass, char *challenge) {
   char ipad[64];
@@ -196,16 +166,13 @@ void sasl_cram_sha1(char *result, char *pass, char *challenge) {
     result = NULL;
     return;
   }
-
   rc = sasl_saslprep(pass, 0, &preppasswd);
   if (rc) {
     result = NULL;
     return;
   }
-
   memset(ipad, 0, sizeof(ipad));
   memset(opad, 0, sizeof(opad));
-
   if (strlen(preppasswd) >= 64) {
     SHA1_Init(&shac);
     SHA1_Update(&shac, preppasswd, strlen(preppasswd));
@@ -216,22 +183,18 @@ void sasl_cram_sha1(char *result, char *pass, char *challenge) {
     strcpy(ipad, preppasswd);   // safe
     strcpy(opad, preppasswd);   // safe
   }
-
   for (i = 0; i < 64; i++) {
     ipad[i] ^= 0x36;
     opad[i] ^= 0x5c;
   }
-
   SHA1_Init(&shac);
   SHA1_Update(&shac, ipad, 64);
   SHA1_Update(&shac, challenge, strlen(challenge));
   SHA1_Final(sha1_raw, &shac);
-
   SHA1_Init(&shac);
   SHA1_Update(&shac, opad, 64);
   SHA1_Update(&shac, sha1_raw, SHA_DIGEST_LENGTH);
   SHA1_Final(sha1_raw, &shac);
-
   for (i = 0; i < SHA_DIGEST_LENGTH; i++) {
     sprintf(result, "%02x", sha1_raw[i]);
     result += 2;
@@ -240,13 +203,10 @@ void sasl_cram_sha1(char *result, char *pass, char *challenge) {
 }
 
 /*
-
 sasl_cram_sha256 computes the cram-sha256 authentication from password string
 and the challenge sent by the server, and stored the value in variable
 result
-
 the parameter result must be able to hold at least 100 bytes!
-
 */
 void sasl_cram_sha256(char *result, char *pass, char *challenge) {
   char ipad[64];
@@ -260,16 +220,13 @@ void sasl_cram_sha256(char *result, char *pass, char *challenge) {
     result = NULL;
     return;
   }
-
   memset(ipad, 0, sizeof(ipad));
   memset(opad, 0, sizeof(opad));
-
   rc = sasl_saslprep(pass, 0, &preppasswd);
   if (rc) {
     result = NULL;
     return;
   }
-
   if (strlen(preppasswd) >= 64) {
     SHA256_Init(&sha256c);
     SHA256_Update(&sha256c, preppasswd, strlen(preppasswd));
@@ -280,22 +237,18 @@ void sasl_cram_sha256(char *result, char *pass, char *challenge) {
     strcpy(ipad, preppasswd);   // safe
     strcpy(opad, preppasswd);   // safe
   }
-
   for (i = 0; i < 64; i++) {
     ipad[i] ^= 0x36;
     opad[i] ^= 0x5c;
   }
-
   SHA256_Init(&sha256c);
   SHA256_Update(&sha256c, ipad, 64);
   SHA256_Update(&sha256c, challenge, strlen(challenge));
   SHA256_Final(sha256_raw, &sha256c);
-
   SHA256_Init(&sha256c);
   SHA256_Update(&sha256c, opad, 64);
   SHA256_Update(&sha256c, sha256_raw, SHA256_DIGEST_LENGTH);
   SHA256_Final(sha256_raw, &sha256c);
-
   for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
     sprintf(result, "%02x", sha256_raw[i]);
     result += 2;
@@ -304,11 +257,8 @@ void sasl_cram_sha256(char *result, char *pass, char *challenge) {
 }
 
 /*
-
 RFC 2831: Using Digest Authentication as a SASL Mechanism
-
 the parameter result must be able to hold at least 500 bytes!!
-
 */
 void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *miscptr, char *type, char *webtarget, int webport, char *header) {
   char *pbuffer = NULL;
@@ -320,27 +270,23 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
   MD5_CTX md5c;
   char *preplogin;
   char *preppasswd;
-
   int rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
 
   memset(realm, 0, sizeof(realm));
-
   if (rc) {
     result = NULL;
     return;
   }
-
   rc = sasl_saslprep(pass, 0, &preppasswd);
   if (rc) {
     free(preplogin);
     result = NULL;
     return;
   }
-  //DEBUG S: nonce="HB3HGAk+hxKpijy/ichq7Wob3Zo17LPM9rr4kMX7xRM=",realm="tida",qop="auth",maxbuf=4096,charset=utf-8,algorithm=md5-sess
-  //DEBUG S: nonce="1Mr6c8WjOd/x5r8GUnGeQIRNUtOVtItu3kQOGAmsZfM=",realm="test.com",qop="auth,auth-int,auth-conf",cipher="rc4-40,rc4-56,rc4,des,3des",maxbuf=4096,charset=utf-8,algorithm=md5-sess
-  //warning some not well configured xmpp server is sending no realm
-  //DEBUG S: nonce="3448160828",qop="auth",charset=utf-8,algorithm=md5-sess
-
+//DEBUG S: nonce="HB3HGAk+hxKpijy/ichq7Wob3Zo17LPM9rr4kMX7xRM=",realm="tida",qop="auth",maxbuf=4096,charset=utf-8,algorithm=md5-sess
+//DEBUG S: nonce="1Mr6c8WjOd/x5r8GUnGeQIRNUtOVtItu3kQOGAmsZfM=",realm="test.com",qop="auth,auth-int,auth-conf",cipher="rc4-40,rc4-56,rc4,des,3des",maxbuf=4096,charset=utf-8,algorithm=md5-sess
+//warning some not well configured xmpp server is sending no realm
+//DEBUG S: nonce="3448160828",qop="auth",charset=utf-8,algorithm=md5-sess
   pbuffer = buffer;
   do {
     currentpos++;
@@ -361,17 +307,15 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
     }
     pbuffer++;
   } while ((pbuffer[0] != '\0') && (pbuffer[0] > 31) && (ind < array_size));
-
-  //save the latest one 
+//save the latest one
   if (ind < array_size) {
     array[ind] = malloc(currentpos + 1);
     strncpy(array[ind], buffer + lastpos, currentpos);
     array[ind][currentpos] = '\0';
     ind++;
   }
-
   for (i = 0; i < ind; i++) {
-    //removing space chars between comma separated value if any
+//removing space chars between comma separated value if any
     while ((array[i] != NULL) && (array[i][0] == ' ')) {
       char *tmp = strdup(array[i]);
 
@@ -380,9 +324,9 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
       free(tmp);
     }
     if (strstr(array[i], "nonce=") != NULL) {
-      //check if it contains double-quote
+//check if it contains double-quote
       if (strstr(array[i], "\"") != NULL) {
-        //assume last char is also a double-quote
+//assume last char is also a double-quote
         int nonce_string_len = strlen(array[i]) - strlen("nonce=\"") - 1;
 
         if ((nonce_string_len > 0) && (nonce_string_len <= sizeof(nonce) - 1)) {
@@ -405,7 +349,7 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
     }
     if (strstr(array[i], "realm=") != NULL) {
       if (strstr(array[i], "\"") != NULL) {
-        //assume last char is also a double-quote
+//assume last char is also a double-quote
         int realm_string_len = strlen(array[i]) - strlen("realm=\"") - 1;
 
         if ((realm_string_len > 0) && (realm_string_len <= sizeof(realm) - 1)) {
@@ -427,11 +371,12 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
       }
     }
     if (strstr(array[i], "qop=") != NULL) {
-      /*
-         The value "auth" indicates authentication; the value "auth-int" indicates
-         authentication with integrity protection; the value "auth-conf"
-         indicates authentication with integrity protection and encryption.
-       */
+
+/*
+The value "auth" indicates authentication; the value "auth-int" indicates
+authentication with integrity protection; the value "auth-conf"
+indicates authentication with integrity protection and encryption.
+*/
       auth_find = 1;
       if ((strstr(array[i], "\"auth\"") == NULL) && (strstr(array[i], "\"auth,") == NULL) && (strstr(array[i], ",auth\"") == NULL)) {
         int j;
@@ -446,7 +391,7 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
     }
     if (strstr(array[i], "algorithm=") != NULL) {
       if (strstr(array[i], "\"") != NULL) {
-        //assume last char is also a double-quote
+//assume last char is also a double-quote
         int algo_string_len = strlen(array[i]) - strlen("algorithm=\"") - 1;
 
         if ((algo_string_len > 0) && (algo_string_len <= sizeof(algo) - 1)) {
@@ -480,29 +425,25 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
     free(array[i]);
     array[i] = NULL;
   }
-
   if (!strlen(algo)) {
-    //assuming by default algo is MD5
+//assuming by default algo is MD5
     memset(algo, 0, sizeof(algo));
     strcpy(algo, "MD5");
   }
-  //xmpp case, some xmpp server is not sending the realm so we have to set it up
+//xmpp case, some xmpp server is not sending the realm so we have to set it up
   if ((strlen(realm) == 0) && (strstr(type, "xmpp") != NULL))
     snprintf(realm, sizeof(realm), "%s", miscptr);
-
-  //compute ha1
-  //support for algo = MD5
+//compute ha1
+//support for algo = MD5
   snprintf(buffer, 500, "%s:%s:%s", preplogin, realm, preppasswd);
-
   MD5_Init(&md5c);
   MD5_Update(&md5c, buffer, strlen(buffer));
   MD5_Final(response, &md5c);
-
-  //for MD5-sess
+//for MD5-sess
   if (strstr(algo, "5-sess") != NULL) {
-    buffer[0] = 0;  //memset(buffer, 0, sizeof(buffer)); => buffer is char*!
+    buffer[0] = 0;              //memset(buffer, 0, sizeof(buffer)); => buffer is char*!
 
-    /* per RFC 2617 Errata ID 1649 */
+/* per RFC 2617 Errata ID 1649 */
     if ((strstr(type, "proxy") != NULL) || (strstr(type, "GET") != NULL) || (strstr(type, "HEAD") != NULL)) {
       memset(buffer3, 0, sizeof(buffer3));
       pbuffer = buffer3;
@@ -515,7 +456,6 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
       memcpy(buffer, response, sizeof(response));
       sprintf(buffer + sizeof(response), ":%s:%s", nonce, "hydra");
     }
-
     MD5_Init(&md5c);
     MD5_Update(&md5c, buffer, strlen(buffer));
     MD5_Final(response, &md5c);
@@ -526,34 +466,35 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
     sprintf(pbuffer, "%02x", response[i]);
     pbuffer += 2;
   }
-
-  //compute ha2
-  //proxy case
+//compute ha2
+//proxy case
   if (strstr(type, "proxy") != NULL)
     sprintf(buffer, "%s:%s", "HEAD", miscptr);
   else
-    //http case
+//http case
   if ((strstr(type, "GET") != NULL) || (strstr(type, "HEAD") != NULL))
     sprintf(buffer, "%s:%s", type, miscptr);
   else
-    //sip case
+//sip case
   if (strstr(type, "sip") != NULL)
     sprintf(buffer, "REGISTER:%s:%s", type, miscptr);
   else
-    //others
+//others
+  if (strstr(type, "rtsp") != NULL)
+    sprintf(buffer, "DESCRIBE:%s://%s:%i", type, webtarget, port);
+  else
+//others
     sprintf(buffer, "AUTHENTICATE:%s/%s", type, realm);
 
   MD5_Init(&md5c);
   MD5_Update(&md5c, buffer, strlen(buffer));
   MD5_Final(response, &md5c);
-
   pbuffer = buffer2;
   for (i = 0; i < MD5_DIGEST_LENGTH; i++) {
     sprintf(pbuffer, "%02x", response[i]);
     pbuffer += 2;
   }
-
-  //compute response
+//compute response
   if (!auth_find)
     snprintf(buffer, 500, "%s:%s", nonce, buffer2);
   else
@@ -563,14 +504,12 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
   MD5_Update(&md5c, ":", 1);
   MD5_Update(&md5c, buffer, strlen(buffer));
   MD5_Final(response, &md5c);
-
   pbuffer = buffer;
   for (i = 0; i < MD5_DIGEST_LENGTH; i++) {
     sprintf(pbuffer, "%02x", response[i]);
     pbuffer += 2;
   }
-
-  //create the auth response
+//create the auth response
   if (strstr(type, "proxy") != NULL) {
     snprintf(result, 500,
              "HEAD %s HTTP/1.0\r\n%sProxy-Authorization: Digest username=\"%s\", realm=\"%s\", response=\"%s\", nonce=\"%s\", cnonce=\"hydra\", nc=00000001, algorithm=%s, qop=auth, uri=\"%s\"\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
@@ -584,19 +523,23 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
       if (strstr(type, "sip") != NULL) {
         snprintf(result, 500, "username=\"%s\",realm=\"%s\",nonce=\"%s\",uri=\"%s:%s\",response=%s", preplogin, realm, nonce, type, realm, buffer);
       } else {
-        if (use_proxy == 1 && proxy_authentication != NULL)
-          snprintf(result, 500,
-                   "%s http://%s:%d%s HTTP/1.0\r\nHost: %s\r\nAuthorization: Digest username=\"%s\", realm=\"%s\", response=\"%s\", nonce=\"%s\", cnonce=\"hydra\", nc=00000001, algorithm=%s, qop=auth, uri=\"%s\"\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
-                   type, webtarget, webport, miscptr, webtarget, preplogin, realm, buffer, nonce, algo, miscptr, proxy_authentication, header);
-        else {
-          if (use_proxy == 1)
+        if (strstr(type, "rtsp") != NULL) {
+          snprintf(result, 500, "username=\"%s\", realm=\"%s\", nonce=\"%s\", uri=\"%s://%s:%i\", response=\"%s\"\r\n", preplogin, realm, nonce, type, webtarget, port, buffer);
+        } else {
+          if (use_proxy == 1 && proxy_authentication != NULL)
             snprintf(result, 500,
-                     "%s http://%s:%d%s HTTP/1.0\r\nHost: %s\r\nAuthorization: Digest username=\"%s\", realm=\"%s\", response=\"%s\", nonce=\"%s\", cnonce=\"hydra\", nc=00000001, algorithm=%s, qop=auth, uri=\"%s\"\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
-                     type, webtarget, webport, miscptr, webtarget, preplogin, realm, buffer, nonce, algo, miscptr, header);
-          else
-            snprintf(result, 500,
-                     "%s %s HTTP/1.0\r\nHost: %s\r\nAuthorization: Digest username=\"%s\", realm=\"%s\", response=\"%s\", nonce=\"%s\", cnonce=\"hydra\", nc=00000001, algorithm=%s, qop=auth, uri=\"%s\"\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
-                     type, miscptr, webtarget, preplogin, realm, buffer, nonce, algo, miscptr, header);
+                     "%s http://%s:%d%s HTTP/1.0\r\nHost: %s\r\nAuthorization: Digest username=\"%s\", realm=\"%s\", response=\"%s\", nonce=\"%s\", cnonce=\"hydra\", nc=00000001, algorithm=%s, qop=auth, uri=\"%s\"\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
+                     type, webtarget, webport, miscptr, webtarget, preplogin, realm, buffer, nonce, algo, miscptr, proxy_authentication, header);
+          else {
+            if (use_proxy == 1)
+              snprintf(result, 500,
+                       "%s http://%s:%d%s HTTP/1.0\r\nHost: %s\r\nAuthorization: Digest username=\"%s\", realm=\"%s\", response=\"%s\", nonce=\"%s\", cnonce=\"hydra\", nc=00000001, algorithm=%s, qop=auth, uri=\"%s\"\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
+                       type, webtarget, webport, miscptr, webtarget, preplogin, realm, buffer, nonce, algo, miscptr, header);
+            else
+              snprintf(result, 500,
+                       "%s %s HTTP/1.0\r\nHost: %s\r\nAuthorization: Digest username=\"%s\", realm=\"%s\", response=\"%s\", nonce=\"%s\", cnonce=\"hydra\", nc=00000001, algorithm=%s, qop=auth, uri=\"%s\"\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
+                       type, miscptr, webtarget, preplogin, realm, buffer, nonce, algo, miscptr, header);
+          }
         }
       }
     }
@@ -605,17 +548,12 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
   free(preppasswd);
 }
 
-
 /*
-
 RFC 5802: Salted Challenge Response Authentication Mechanism
 Note: SCRAM is a client-first SASL mechanism
-
 I want to thx Simon Josefsson for his public server test,
 and my girlfriend that let me work on that 2 whole nights ;)
-
 clientfirstmessagebare must be at least 500 bytes in size!
-
 */
 void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, char *serverfirstmessage) {
   int saltlen = 0;
@@ -632,7 +570,6 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
   char ClientProof[SHA_DIGEST_LENGTH];
   unsigned char clientproof_b64[50];
   char *preppasswd;
-
   int rc = sasl_saslprep(pass, 0, &preppasswd);
 
   if (rc) {
@@ -640,11 +577,10 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
     return;
   }
 
-  /*client-final-message */
+/*client-final-message */
   if (debug)
     hydra_report(stderr, "DEBUG S: %s\n", serverfirstmessage);
-
-  //r=hydra28Bo7kduPpAZLzhRQiLxc8Y9tiwgw+yP,s=ldDgevctH+Kg7b8RnnA3qA==,i=4096
+//r=hydra28Bo7kduPpAZLzhRQiLxc8Y9tiwgw+yP,s=ldDgevctH+Kg7b8RnnA3qA==,i=4096
   if (strstr(serverfirstmessage, "r=") == NULL) {
     hydra_report(stderr, "Error: Can't understand server message\n");
     free(preppasswd);
@@ -654,10 +590,9 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
   strncpy(buffer, serverfirstmessage, sizeof(buffer) - 1);
   buffer[sizeof(buffer) - 1] = '\0';
   nonce = strtok(buffer, ",");
-  //continue to search from the previous successful call
+//continue to search from the previous successful call
   salt = strtok(NULL, ",");
   ic = strtok(NULL, ",");
-
   iter = atoi(ic + 2);
   if (iter == 0) {
     hydra_report(stderr, "Error: Can't understand server response\n");
@@ -665,7 +600,6 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
     result = NULL;
     return;
   }
-
   if ((nonce != NULL) && (strlen(nonce) > 2))
     snprintf(clientfinalmessagewithoutproof, sizeof(clientfinalmessagewithoutproof), "c=biws,%s", nonce);
   else {
@@ -674,9 +608,8 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
     result = NULL;
     return;
   }
-
   if ((salt != NULL) && (strlen(salt) > 2) && (strlen(salt) <= sizeof(buffer)))
-    //s=ghgIAfLl1+yUy/Xl1WD5Tw== remove the header s=
+//s=ghgIAfLl1+yUy/Xl1WD5Tw== remove the header s=
     strcpy(buffer, salt + 2);
   else {
     hydra_report(stderr, "Error: Could not identify server salt value\n");
@@ -685,9 +618,8 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
     return;
   }
 
-  /* SaltedPassword  := Hi(Normalize(password), salt, i) */
+/* SaltedPassword := Hi(Normalize(password), salt, i) */
   saltlen = from64tobits((char *) salt, buffer);
-
   if (PKCS5_PBKDF2_HMAC_SHA1(preppasswd, strlen(preppasswd), (unsigned char *) salt, saltlen, iter, SHA_DIGEST_LENGTH, SaltedPassword) != 1) {
     hydra_report(stderr, "Error: Failed to generate PBKDF2\n");
     free(preppasswd);
@@ -695,21 +627,20 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
     return;
   }
 
-  /*  ClientKey       := HMAC(SaltedPassword, "Client Key") */
+/* ClientKey := HMAC(SaltedPassword, "Client Key") */
 #define CLIENT_KEY "Client Key"
   HMAC(EVP_sha1(), SaltedPassword, SHA_DIGEST_LENGTH, (const unsigned char *) CLIENT_KEY, strlen(CLIENT_KEY), ClientKey, &resultlen);
 
-  /* StoredKey       := H(ClientKey) */
+/* StoredKey := H(ClientKey) */
   SHA1((const unsigned char *) ClientKey, SHA_DIGEST_LENGTH, StoredKey);
 
-  /* ClientSignature := HMAC(StoredKey, AuthMessage) */
+/* ClientSignature := HMAC(StoredKey, AuthMessage) */
   snprintf(AuthMessage, 500, "%s,%s,%s", clientfirstmessagebare, serverfirstmessage, clientfinalmessagewithoutproof);
   HMAC(EVP_sha1(), StoredKey, SHA_DIGEST_LENGTH, (const unsigned char *) AuthMessage, strlen(AuthMessage), ClientSignature, &resultlen);
 
-  /* ClientProof     := ClientKey XOR ClientSignature */
+/* ClientProof := ClientKey XOR ClientSignature */
   xor(ClientProof, (char *) ClientKey, (char *) ClientSignature, 20);
   to64frombits(clientproof_b64, (const unsigned char *) ClientProof, 20);
-
   snprintf(result, 500, "%s,p=%s", clientfinalmessagewithoutproof, clientproof_b64);
   if (debug)
     hydra_report(stderr, "DEBUG C: %s\n", result);

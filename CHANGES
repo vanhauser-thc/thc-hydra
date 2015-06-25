@@ -2,11 +2,17 @@ Changelog for hydra
 -------------------
 
 Release 8.2-pre
+* Added RTSP module, thanks to jjavi89 for supplying!
+* Added new -O option to hydra to support SSL servers that do not suport TLS
 * Added xhydra gtk patche by Petar Kaleychev to support modules that do not use usernames
-* Better library finding in ./configure for SVN + support for Darwin Homebrew
+* Added patch to redis for initial service checking by Petar Kaleychev - thanks a lot!
+* Better library finding in ./configure for SVN + support for Darwin Homebrew (and further enhanced)
 * Fixed http-form module crash that only occurs on *BSD/OSX systems. Thanks to zdk for reporting!
 * Fixed for SSL connection to support TLSv1.2 etc.
 * Support for different RSA keylengths, thanks to fann95 for the patch
+* Fixed a bug where the cisco-enable module was not working with the password-only logon mode
+* Fixed an out of memory bug in http-form
+* Fixed imap PLAIN method
 * ... your patch?
 
 
