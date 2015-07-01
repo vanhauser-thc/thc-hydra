@@ -89,6 +89,8 @@ unsigned int crc32_tab[] = {
   0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
+#ifndef HAVE_ZLIB
+
 unsigned int crc32(const void *buf, unsigned int size) {
   const unsigned char *p;
   unsigned int crc;
@@ -101,3 +103,5 @@ unsigned int crc32(const void *buf, unsigned int size) {
 
   return crc ^ ~0U;
 }
+
+#endif
