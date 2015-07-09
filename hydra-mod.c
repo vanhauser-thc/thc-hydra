@@ -479,6 +479,9 @@ int internal__hydra_connect_to_ssl(int socket) {
       }
     } else {
 //    if ((sslContext = SSL_CTX_new(SSLv23_client_method())) == NULL) {
+#ifndef TLSv1_2_client_method
+#define TLSv1_2_client_method TLSv1_client_method
+#endif
       if ((sslContext = SSL_CTX_new(TLSv1_2_client_method())) == NULL) {
         if (verbose) {
           err = ERR_get_error();
