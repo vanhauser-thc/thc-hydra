@@ -35,6 +35,10 @@
 #include <libssh/libssh.h>
 #endif
 
+#ifdef HAVE_ZLIB
+#include <zlib.h>
+#endif
+
 #define OPTION_SSL 1
 
 #define PORT_NOPORT     -1

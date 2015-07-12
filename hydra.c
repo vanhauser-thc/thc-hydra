@@ -7,7 +7,6 @@
  *
  * License: GNU AFFERO GENERAL PUBLIC LICENSE v3.0, see LICENSE file
  */
-
 #include "hydra.h"
 #include "bfg.h"
 
@@ -1000,14 +999,27 @@ void kill_children(int signo) {
   exit(0);
 }
 
-unsigned long int countlines(FILE * fp, int colonmode) {
+unsigned long int countlines(FILE * fd, int colonmode) {
   size_t lines = 0;
   char *buf = malloc(MAXLINESIZE);
   int only_one_empty_line = 0;
-  struct stat st;
 
+#ifdef HAVE_ZLIB
+  gzFile fp = gzdopen(fileno(fd), "r");
+#else
+  FILE *fp = fd;
+#endif
+ 
+  size_of_data = 0;
+
+#ifdef HAVE_ZLIB
+  while (!gzeof(fp)) {
+    if (gzgets(fp, buf, MAXLINESIZE) != NULL) {
+#else
   while (!feof(fp)) {
     if (fgets(buf, MAXLINESIZE, fp) != NULL) {
+#endif
+      size_of_data += strlen(buf);
       if (buf[0] != 0) {
         if (buf[0] == '\r' || buf[0] == '\n') {
           if (only_one_empty_line == 0) {
@@ -1020,20 +1032,30 @@ unsigned long int countlines(FILE * fp, int colonmode) {
       }
     }
   }
+#ifdef HAVE_ZLIB
+  gzrewind(fp);
+#else
   rewind(fp);
+#endif
   free(buf);
-  (void) fstat(fileno(fp), &st);
-  size_of_data = st.st_size + 1;
   return lines;
 }
 
-void fill_mem(char *ptr, FILE * fp, int colonmode) {
+void fill_mem(char *ptr, FILE * fd, int colonmode) {
   char tmp[MAXBUF + 4] = "", *ptr2;
   unsigned int len;
   int only_one_empty_line = 0;
+#ifdef HAVE_ZLIB
+  gzFile fp = gzdopen(fileno(fd), "r");
+
+  while (!gzeof(fp)) {
+    if (gzgets(fp, tmp, MAXLINESIZE) != NULL) {
+#else
+  FILE *fp = fd;
 
   while (!feof(fp)) {
     if (fgets(tmp, MAXLINESIZE, fp) != NULL) {
+#endif
       if (tmp[0] != 0) {
         if (tmp[strlen(tmp) - 1] == '\n')
           tmp[strlen(tmp) - 1] = '\0';
@@ -1069,7 +1091,11 @@ void fill_mem(char *ptr, FILE * fp, int colonmode) {
       }
     }
   }
+#ifdef HAVE_ZLIB
+  gzclose(fp);
+#else
   fclose(fp);
+#endif
 }
 
 char *hydra_build_time() {

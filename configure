@@ -126,6 +126,19 @@ INCDIRS="/usr/include /usr/local/include /opt/include /opt/local/include"
 STRIP="strip"
 echo
 
+echo "Checking for zlib (libz.so, zlib.h) ..."
+for i in $INCDIRS; do
+   if [ -f "$i/zlib.h" ]; then
+	HAVE_ZLIB="y"
+   fi
+done
+
+if [ -n "$HAVE_ZLIB" ]; then
+   echo "                                        ... found"
+else
+   echo "                                        ... zlib not found, gzip support disabled"
+fi
+
 echo "Checking for openssl (libssl, libcrypto, ssl.h, sha.h) ..."
 if [ "X" != "X$DEBUG" ]; then
    echo DEBUG: SSL_LIB=$LIBDIRS `ls -d /*ssl /usr/*ssl /opt/*ssl /usr/local/*ssl /opt/local/*ssl /*ssl/lib /usr/*ssl/lib /opt/*ssl/lib /usr/local/*ssl/lib /opt/local/*ssl/lib 2> /dev/null`
@@ -1023,6 +1036,10 @@ fi
 if [ -n "$RSA" ]; then
     XDEFINES="$XDEFINES -DNO_RSA_LEGACY"
 fi
+if [ -n "$HAVE_ZLIB" ]; then
+    XDEFINES="$XDEFINES -DHAVE_ZLIB"
+fi
+
 OLDPATH=""
 for i in $SSL_PATH $FIREBIRD_PATH $WORACLE_LIB_PATH $PCRE_PATH $IDN_PATH $CRYPTO_PATH $SSH_PATH $NSL_PATH $SOCKET_PATH $RESOLV_PATH $SAPR3_PATH $POSTGRES_PATH $SVN_PATH $NCP_PATH $CURSES_PATH $ORACLE_PATH $AFP_PATH $MYSQL_PATH; do
     if [ "$OLDPATH" = "$i" ]; then
@@ -1076,6 +1093,9 @@ if [ -n "$AFP_IPATH" ]; then
 fi
 if [ -n "$ORACLE_IPATH" ]; then
     XIPATHS="$XIPATHS -I$ORACLE_IPATH"
+fi
+if [ -n "$HAVE_ZLIB" ]; then
+    XLIBS="$XLIBS -lz"
 fi
 if [ -n "$CURSES_PATH" ]; then
     XLIBS="$XLIBS -lcurses"

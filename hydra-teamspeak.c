@@ -1,5 +1,10 @@
 #include "hydra-mod.h"
+
+#ifdef HAVE_ZLIB
+#include <zlib.h>
+#else
 #include "crc32.h"
+#endif
 
 /*
 
@@ -65,7 +70,11 @@ int start_teamspeak(int s, char *ip, int port, unsigned char options, char *misc
   teamspeak.loginlen = 0;
   strcpy((char *) &teamspeak.login, "");
 
+#ifdef HAVE_ZLIB
+  teamspeak.crc = crc32(0L, &teamspeak, sizeof(struct team_speak));
+#else
   teamspeak.crc = crc32(&teamspeak, sizeof(struct team_speak));
+#endif
 
   if (hydra_send(s, (char *) &teamspeak, sizeof(struct team_speak), 0) < 0) {
     return 3;
