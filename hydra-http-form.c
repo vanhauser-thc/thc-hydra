@@ -368,6 +368,7 @@ char *stringify_headers(ptr_header_node * ptr_head) {
   return headers_str;
 }
 
+
 char *prepare_http_request(char *type, char *path, char *params, char *headers) {
   unsigned int reqlen = 0;
   char *http_request = NULL;
@@ -619,6 +620,8 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
       if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
         return 1;
     } else {
+      if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
+        hdrrepv(&ptr_head, "Content-Length", "0");
       cookie_header = stringify_cookies(ptr_cookie);
       if (!header_exists(&ptr_head, "Cookie", HEADER_TYPE_DEFAULT))
 				add_header(&ptr_head, "Cookie", cookie_header, HEADER_TYPE_DEFAULT);
@@ -665,6 +668,8 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
           return 1;
       } else {
+        if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
+          hdrrepv(&ptr_head, "Content-Length", "0");
       	cookie_header = stringify_cookies(ptr_cookie);
       	if (!header_exists(&ptr_head, "Cookie", HEADER_TYPE_DEFAULT))
 					add_header(&ptr_head, "Cookie", cookie_header, HEADER_TYPE_DEFAULT);
@@ -709,6 +714,8 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
           return 1;
       } else {
+        if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
+          hdrrepv(&ptr_head, "Content-Length", "0");
       	cookie_header = stringify_cookies(ptr_cookie);
       	if (!header_exists(&ptr_head, "Cookie", HEADER_TYPE_DEFAULT))
 					add_header(&ptr_head, "Cookie", cookie_header, HEADER_TYPE_DEFAULT);
@@ -817,6 +824,9 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
 
       if (verbose)
         hydra_report(stderr, "[VERBOSE] Page redirected to http://%s%s\n", str2, str3);
+
+      if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
+        hdrrepv(&ptr_head, "Content-Length", "0");
 
       //re-use the code above to check for proxy use
       if (use_proxy == 1 && proxy_authentication != NULL) {

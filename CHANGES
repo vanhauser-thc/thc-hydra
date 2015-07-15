@@ -6,6 +6,7 @@ Release 8.2-pre
 * Added new -O option to hydra to support SSL servers that do not suport TLS
 * Added xhydra gtk patche by Petar Kaleychev to support modules that do not use usernames
 * Added patch to redis for initial service checking by Petar Kaleychev - thanks a lot!
+* Fixed bug in HTTP Form redirection following - thanks for everyone who reported and especially to Hayden Young for setting up a test page for debugging
 * Better library finding in ./configure for SVN + support for Darwin Homebrew (and further enhanced)
 * Fixed http-form module crash that only occurs on *BSD/OSX systems. Thanks to zdk for reporting!
 * Fixed for SSL connection to support TLSv1.2 etc.
