@@ -2158,7 +2158,7 @@ int hydra_select_target() {
 }
 
 int main(int argc, char *argv[]) {
-  char *proxy_string = NULL, *device = NULL, *memcheck;
+  char *proxy_string = NULL, *device = NULL, *memcheck, *cmdtarget = NULL;
   FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL;
   size_t countinfile = 1, sizeinfile = 0;
   unsigned long int math2;
@@ -2484,6 +2484,7 @@ int main(int argc, char *argv[]) {
       // check if targetdef follow syntax <service-name>://<target>[:<port-number>][/<parameters>] or it's a syntax error
       char *targetdef = strdup(argv[optind]);
       char *service_pos, *target_pos, *port_pos = NULL, *param_pos = NULL;
+      cmdtarget = argv[optind];
 
       if ((targetdef != NULL) && (strstr(targetdef, "://") != NULL)) {
         service_pos = strstr(targetdef, "://");
@@ -2549,6 +2550,11 @@ int main(int argc, char *argv[]) {
       hydra_options.service = argv[optind + 1];
       if (optind + 3 == argc)
         hydra_options.miscptr = argv[optind + 2];
+    }
+
+    if (strcmp(hydra_options.service, "http") == 0 || strcmp(hydra_options.service, "https") == 0) {
+      fprintf(stderr, "[ERROR] There is no service \"%s\", most likely you mean one of the many web modules, e.g. http-get or http-form-post. Read it up!\n", hydra_options.service);
+      exit(-1);
     }
 
     if (strcmp(hydra_options.service, "pop3s") == 0 || strcmp(hydra_options.service, "smtps") == 0 || strcmp(hydra_options.service, "imaps") == 0
@@ -3302,6 +3308,17 @@ int main(int argc, char *argv[]) {
         tmpptr++;
       }
     } else if (index(hydra_options.server, '/') != NULL) {
+     if (strstr(cmdtarget, "://") != NULL) {
+       tmpptr = index(hydra_options.server, '/');
+       *tmpptr = 0;
+       countservers = hydra_brains.targets = 1;
+       hydra_targets = malloc(sizeof(int) * 4);
+       hydra_targets[0] = malloc(sizeof(hydra_target));
+       memset(hydra_targets[0], 0, sizeof(hydra_target));
+       hydra_targets[0]->target = servers_ptr = hydra_options.server;
+       hydra_targets[0]->port = hydra_options.port;
+       sizeservers = strlen(hydra_options.server) + 1;
+     } else {
       /* CIDR notation on command line, e.g. 192.168.0.0/24 */
       unsigned int four_from, four_to, addr_cur, addr_cur2, k, l;
       in_addr_t addr4;
@@ -3350,6 +3367,7 @@ int main(int argc, char *argv[]) {
       if (verbose)
         printf("[VERBOSE] CIDR attack from %s to %s\n", hydra_targets[0]->target, hydra_targets[l - 1]->target);
       printf("[WARNING] The CIDR attack mode is still beta. Please report issues.\n");
+     }
     } else {                    // standard: single target on command line
       countservers = hydra_brains.targets = 1;
       hydra_targets = malloc(sizeof(int) * 4);
