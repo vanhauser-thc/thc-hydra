@@ -8,6 +8,8 @@ if [ "$1" = "-h" -o "$1" = "--help" ]; then
   echo "  --prefix=path              path to install hydra and its datafiles to"
   echo "  --with-oracle=prefix       prefix for oracle include dir"
   echo "  --with-oracle-lib=prefix   prefix for oracle lib dir"
+  echo "  --with-ssl=prefix          prefix for SSL headers"
+  echo "  --with-ssl-lib=prefix      prefix for SSL libraries"
   echo "  --disable-xhydra           disable compilation of hydra GUI"
   echo "  --nostrip                  do not per default strip binaries before install"
   echo "  --debug                    show debug output to trace errors"
@@ -25,6 +27,8 @@ WORACLE_PATH=""
 WORACLE_LIB_PATH=""
 SSL_PATH=""
 SSL_IPATH=""
+WSSL_PATH=""
+WSSL_LIB_PATH=""
 CURSES_PATH=""
 CURSES_IPATH=""
 CRYPTO_PATH=""
@@ -145,10 +149,14 @@ if [ "X" != "X$DEBUG" ]; then
    echo DEBUG: SSL_INC=$INCDIRS `ls -d /*ssl/include /opt/*ssl/include /usr/*ssl/include /usr/local/*ssl/include 2> /dev/null`
 fi
 
-for i in $LIBDIRS \
-/*ssl /usr/*ssl /opt/*ssl /usr/local/*ssl /opt/local/*ssl \
-/*ssl/lib /usr/*ssl/lib /opt/*ssl/lib /usr/local/*ssl/lib /opt/local/*ssl/lib
-do
+if [ "X" = "X$WSSL_LIB_PATH" ]; then
+    SSL_PATH="$i"
+    CRYPTO_PATH="$i"
+else
+  for i in $LIBDIRS \
+  /*ssl /usr/*ssl /opt/*ssl /usr/local/*ssl /opt/local/*ssl \
+  /*ssl/lib /usr/*ssl/lib /opt/*ssl/lib /usr/local/*ssl/lib /opt/local/*ssl/lib
+  do
     if [ "X" = "X$SSL_PATH" ]; then
         if [ -f "$i/libssl.so" -o -f "$i/libssl.dylib" -o -f "$i/libssl.a" ]; then
             SSL_PATH="$i"
@@ -171,18 +179,24 @@ do
           CRYPTO_PATH="$i"
         fi
     fi
-done
+  done
+fi
 
 SSLNEW=""
-for i in $INCDIRS /*ssl/include /opt/*ssl/include /usr/*ssl/include /usr/local/*ssl/include
-do
+if [ "X" = "X$WSSL_PATH" ]; then
+      SSL_PATH="$i"
+      SSLNEW=`grep SHA256_CTX $i/openssl/sha.h 2> /dev/null`
+else
+  for i in $INCDIRS /*ssl/include /opt/*ssl/include /usr/*ssl/include /usr/local/*ssl/include
+  do
     if [ "X" = "X$SSL_IPATH" ]; then
         if [ -f "$i/openssl/ssl.h" ]; then
             SSL_IPATH="$i"
             SSLNEW=`grep SHA256_CTX $i/openssl/sha.h 2> /dev/null`
         fi
     fi
-done
+  done
+fi
 if [ "X" != "X$DEBUG" ]; then
    echo DEBUG: SSL_PATH=$SSL_PATH/libssl
    echo DEBUG: CRYPTO_PATH=$CRYPTO_PATH/libcrypto
