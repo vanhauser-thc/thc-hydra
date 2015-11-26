@@ -93,7 +93,7 @@ LOCAL_STATIC_LIBRARIES := \
 	libiconv\
 	libneon\
 	libcrypto_static\
-	libssl_static
+	libssl
 						
 LOCAL_SHARED_LIBRARIES := \
 	libsqlite\
