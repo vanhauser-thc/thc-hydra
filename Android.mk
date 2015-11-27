@@ -57,6 +57,7 @@ LOCAL_SRC_FILES:= \
 	hydra-rexec.c\
 	hydra-rlogin.c\
 	hydra-rsh.c\
+	hydra-rtsp.c\
 	hydra-s7-300.c\
 	hydra-sapr3.c\
 	hydra-sip.c\
