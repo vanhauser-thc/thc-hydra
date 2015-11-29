@@ -91,8 +91,8 @@ LOCAL_STATIC_LIBRARIES := \
 	libaprutil-1 \
 	libiconv\
 	libneon\
-	libcrypto_static\
-	libssl
+	libssl_static\
+	libcrypto_static
 						
 LOCAL_SHARED_LIBRARIES := \
 	libsqlite\
