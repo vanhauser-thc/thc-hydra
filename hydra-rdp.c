@@ -896,7 +896,7 @@ SSL_CERT *ssl_cert_read(uint8 * data, uint32 len) {
   return d2i_X509(NULL, (D2I_X509_CONST unsigned char **) &data, len);
 }
 
-void ssl_cert_free(SSL_CERT * cert) {
+static void ssl_cert_free(SSL_CERT * cert) {
   X509_free(cert);
 }
 
