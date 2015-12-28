@@ -149,7 +149,7 @@ if [ "X" != "X$DEBUG" ]; then
    echo DEBUG: SSL_INC=$INCDIRS `ls -d /*ssl/include /opt/*ssl/include /usr/*ssl/include /usr/local/*ssl/include 2> /dev/null`
 fi
 
-if [ "X" = "X$WSSL_LIB_PATH" ]; then
+if [ "X" != "X$WSSL_LIB_PATH" ]; then
     SSL_PATH="$i"
     CRYPTO_PATH="$i"
 else
