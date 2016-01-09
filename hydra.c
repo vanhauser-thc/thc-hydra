@@ -2552,6 +2552,9 @@ int main(int argc, char *argv[]) {
         hydra_options.miscptr = argv[optind + 2];
     }
 
+    if (getenv("HYDRA_PROXY_CONNECT"))
+      fprintf(stderr, "[WARNING] The environment variable HYDRA_PROXY_CONNECT is not used! Use HYDRA_PROXY instead!\n");
+
     if (strcmp(hydra_options.service, "http") == 0 || strcmp(hydra_options.service, "https") == 0) {
       fprintf(stderr, "[ERROR] There is no service \"%s\", most likely you mean one of the many web modules, e.g. http-get or http-form-post. Read it up!\n", hydra_options.service);
       exit(-1);
