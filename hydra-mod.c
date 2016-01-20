@@ -480,7 +480,7 @@ int internal__hydra_connect_to_ssl(int socket) {
     } else {
 //    if ((sslContext = SSL_CTX_new(SSLv23_client_method())) == NULL) {
 #ifndef TLSv1_2_client_method
-#define TLSv1_2_client_method TLSv1_client_method
+  #define TLSv1_2_client_method TLSv1_client_method
 #endif
       if ((sslContext = SSL_CTX_new(TLSv1_2_client_method())) == NULL) {
         if (verbose) {
@@ -774,6 +774,7 @@ int hydra_connect_to_ssl(int socket) {
 #ifdef LIBOPENSSL
   return (internal__hydra_connect_to_ssl(socket));
 #else
+  fprintf(stderr, "Error: not compiled with SSL\n");
   return -1;
 #endif
 }
@@ -786,7 +787,8 @@ int hydra_connect_ssl(char *host, int port) {
 #ifdef LIBOPENSSL
   return (internal__hydra_connect_ssl(host, port, SOCK_STREAM, 6));
 #else
-  return (internal__hydra_connect(host, port, SOCK_STREAM, 6));
+  fprintf(stderr, "Error: not compiled with SSL\n");
+  return -1;
 #endif
 }
 

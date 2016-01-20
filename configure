@@ -191,7 +191,7 @@ else
 fi
 
 SSLNEW=""
-if [ "X" = "X$WSSL_PATH" ]; then
+if [ "X" = "X$SSL_PATH" ]; then
       SSL_PATH="$i"
       SSLNEW=`grep SHA256_CTX $i/openssl/sha.h 2> /dev/null`
 else
