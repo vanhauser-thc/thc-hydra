@@ -1172,7 +1172,7 @@ static void dumpRaw(FILE * fp, unsigned char *buf, size_t len) {
 
 static char *unicodeToString(char *p, size_t len) {
   int i;
-  static char buf[1024];
+  static char buf[4096];
 
   assert(len + 1 < sizeof buf);
 
@@ -1186,7 +1186,7 @@ static char *unicodeToString(char *p, size_t len) {
 }
 
 static unsigned char *strToUnicode(char *p) {
-  static unsigned char buf[1024];
+  static unsigned char buf[4096];
   size_t l = strlen(p);
   int i = 0;
 
@@ -1201,7 +1201,7 @@ static unsigned char *strToUnicode(char *p) {
 }
 
 static unsigned char *toString(char *p, size_t len) {
-  static unsigned char buf[1024];
+  static unsigned char buf[4096];
 
   assert(len + 1 < sizeof buf);
 
