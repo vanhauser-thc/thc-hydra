@@ -1,5 +1,5 @@
 /*
- * hydra (c) 2001-2014 by van Hauser / THC <vh@thc.org>
+ * hydra (c) 2001-2016 by van Hauser / THC <vh@thc.org>
  * http://www.thc.org
  *
  * Parallized network login hacker.
@@ -2173,7 +2173,7 @@ int main(int argc, char *argv[]) {
   struct sockaddr_in6 *ipv6 = NULL;
   struct sockaddr_in *ipv4 = NULL;
 
-  printf("%s %s (c) 2014 by %s - Please do not use in military or secret service organizations, or for illegal purposes.\n\n", PROGRAM, VERSION, AUTHOR);
+  printf("%s %s (c) 2016 by %s - Please do not use in military or secret service organizations, or for illegal purposes.\n\n", PROGRAM, VERSION, AUTHOR);
 #ifndef LIBPOSTGRES
   SERVICES = hydra_string_replace(SERVICES, "postgres ", "");
   strcat(unsupported, "postgres ");
@@ -2552,6 +2552,9 @@ int main(int argc, char *argv[]) {
         hydra_options.miscptr = argv[optind + 2];
     }
 
+    if (getenv("HYDRA_PROXY_CONNECT"))
+      fprintf(stderr, "[WARNING] The environment variable HYDRA_PROXY_CONNECT is not used! Use HYDRA_PROXY instead!\n");
+
     if (strcmp(hydra_options.service, "http") == 0 || strcmp(hydra_options.service, "https") == 0) {
       fprintf(stderr, "[ERROR] There is no service \"%s\", most likely you mean one of the many web modules, e.g. http-get or http-form-post. Read it up!\n", hydra_options.service);
       exit(-1);
@@ -2841,8 +2844,7 @@ int main(int argc, char *argv[]) {
         if (hydra_options.colonfile == NULL
             && ((hydra_options.login == NULL && hydra_options.loginfile == NULL) || (hydra_options.pass == NULL && hydra_options.passfile == NULL && hydra_options.bfg == 0))) {
           if (j > 3) {
-            fprintf(stderr,
-                    "[ERROR] you specified SNMPv3, defined hashing/encryption but only gave one of login or password list. Either supply both logins and passwords (this is what is usually used in SNMPv3), or remove the hashing/encryption option (unusual)\n");
+            fprintf(stderr, "[ERROR] you specified SNMPv3, defined hashing/encryption but only gave one of login or password list. Either supply both logins and passwords (this is what is usually used in SNMPv3), or remove the hashing/encryption option (unusual)\n");
             exit(-1);
           }
           fprintf(stderr, "[WARNING] you specified SNMPv3 but gave no logins, NoAuthNoPriv is assumed. This is an unusual case, you should know what you are doing\n");
@@ -3030,7 +3032,7 @@ int main(int argc, char *argv[]) {
             }
             break;
           default:
-            fprintf(stderr, "[ERROR] Unknown optional argument: %s", optional1);
+            fprintf(stderr, "[ERROR] Unknown optional argument: %s\n", optional1);
           }
         }
       }
@@ -3068,8 +3070,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (hydra_options.ssl == 0 && hydra_options.port == 443)
-      fprintf(stderr,
-              "[WARNING] you specified port 443 for attacking a http service, however did not specify the -S ssl switch nor used https-..., therefore using plain HTTP\n");
+      fprintf(stderr, "[WARNING] you specified port 443 for attacking a http service, however did not specify the -S ssl switch nor used https-..., therefore using plain HTTP\n");
 
     if (hydra_options.loop_mode && hydra_options.colonfile != NULL)
       bail("The loop mode option (-u) works with all modes - except colon files (-C)\n");
@@ -3134,13 +3135,13 @@ int main(int argc, char *argv[]) {
     if (hydra_options.colonfile == NULL) {
       if (hydra_options.loginfile != NULL) {
         if ((lfp = fopen(hydra_options.loginfile, "r")) == NULL) {
-          fprintf(stderr, "[ERROR] File for logins not found: %s", hydra_options.loginfile);
+          fprintf(stderr, "[ERROR] File for logins not found: %s\n", hydra_options.loginfile);
           exit(-1);
         }
         hydra_brains.countlogin = countlines(lfp, 0);
         hydra_brains.sizelogin = size_of_data;
         if (hydra_brains.countlogin == 0) {
-          fprintf(stderr, "[ERROR] File for logins is empty: %s", hydra_options.loginfile);
+          fprintf(stderr, "[ERROR] File for logins is empty: %s\n", hydra_options.loginfile);
           exit(-1);
         }
         if (hydra_brains.countlogin > MAX_LINES) {
@@ -3163,13 +3164,13 @@ int main(int argc, char *argv[]) {
       }
       if (hydra_options.passfile != NULL) {
         if ((pfp = fopen(hydra_options.passfile, "r")) == NULL) {
-          fprintf(stderr, "[ERROR] File for passwords not found: %s", hydra_options.passfile);
+          fprintf(stderr, "[ERROR] File for passwords not found: %s\n", hydra_options.passfile);
           exit(-1);
         }
         hydra_brains.countpass = countlines(pfp, 0);
         hydra_brains.sizepass = size_of_data;
         if (hydra_brains.countpass == 0) {
-          fprintf(stderr, "[ERROR] File for passwords is empty: %s", hydra_options.passfile);
+          fprintf(stderr, "[ERROR] File for passwords is empty: %s\n", hydra_options.passfile);
           exit(-1);
         }
         if (hydra_brains.countpass > MAX_LINES) {
@@ -3210,13 +3211,13 @@ int main(int argc, char *argv[]) {
       }
     } else {
       if ((cfp = fopen(hydra_options.colonfile, "r")) == NULL) {
-        fprintf(stderr, "[ERROR] File for colon files (login:pass) not found: %s", hydra_options.colonfile);
+        fprintf(stderr, "[ERROR] File for colon files (login:pass) not found: %s\n", hydra_options.colonfile);
         exit(-1);
       }
       hydra_brains.countlogin = countlines(cfp, 1);
       hydra_brains.sizelogin = size_of_data;
       if (hydra_brains.countlogin == 0) {
-        fprintf(stderr, "[ERROR] File for colon files (login:pass) is empty: %s", hydra_options.colonfile);
+        fprintf(stderr, "[ERROR] File for colon files (login:pass) is empty: %s\n", hydra_options.colonfile);
         exit(-1);
       }
       if (hydra_brains.countlogin > MAX_LINES / 2) {
@@ -3255,12 +3256,12 @@ int main(int argc, char *argv[]) {
 
     if (hydra_options.infile_ptr != NULL) {
       if ((ifp = fopen(hydra_options.infile_ptr, "r")) == NULL) {
-        fprintf(stderr, "[ERROR] File for targets not found: %s", hydra_options.infile_ptr);
+        fprintf(stderr, "[ERROR] File for targets not found: %s\n", hydra_options.infile_ptr);
         exit(-1);
       }
       hydra_brains.targets = countservers = countinfile = countlines(ifp, 0);
       if (countinfile == 0) {
-        fprintf(stderr, "[ERROR] File for targets is empty: %s", hydra_options.infile_ptr);
+        fprintf(stderr, "[ERROR] File for targets is empty: %s\n", hydra_options.infile_ptr);
         exit(-1);
       }
       // if (countinfile > 60) fprintf(stderr, "[WARNING] the -M option is not working correctly at the moment for target lists > 60!\n");

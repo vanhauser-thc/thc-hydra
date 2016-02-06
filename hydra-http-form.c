@@ -432,7 +432,7 @@ char *html_encode(char *string) {
   if (index(ret, '&') != NULL)
     ret = hydra_strrep(ret, "&", "%26");
   if (index(ret, '#') != NULL)
-    ret = hydra_strrep(ret, "&", "%23");
+    ret = hydra_strrep(ret, "#", "%23");
 
   return ret;
 }

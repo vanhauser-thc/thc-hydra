@@ -6,6 +6,7 @@
 if [ "$1" = "-h" -o "$1" = "--help" ]; then
   echo Options:
   echo "  --prefix=path              path to install hydra and its datafiles to"
+  echo "  --fhs                      install according to the File System Hierarchy Standard"
   echo "  --with-oracle=prefix       prefix for oracle include dir"
   echo "  --with-oracle-lib=prefix   prefix for oracle lib dir"
   echo "  --with-ssl=prefix          prefix for SSL headers"
@@ -17,6 +18,7 @@ if [ "$1" = "-h" -o "$1" = "--help" ]; then
   exit 0
 fi
 
+FHS=""
 SIXFOUR=""
 DEBUG=""
 PREFIX=""
@@ -70,6 +72,12 @@ if [ '!' "X" = "X$*" ]; then
   	  NOSTRIP_TMP=`echo "$1"|sed 's/.*--nostrip//'`
 	  if [ -z "$NOSTRIP_TMP" ]; then
 		  NOSTRIP="yes"
+	  fi
+    fi
+    if [ "X" = "X$FHS" ]; then
+  	  FHS_TMP=`echo "$1"|sed 's/.*--fhs//'`
+	  if [ -z "$FHS_TMP" ]; then
+		  FHS="yes"
 	  fi
     fi
     if [ "X" = "X$DEBUG" ]; then
@@ -191,7 +199,7 @@ else
 fi
 
 SSLNEW=""
-if [ "X" = "X$WSSL_PATH" ]; then
+if [ "X" = "X$SSL_PATH" ]; then
       SSL_PATH="$i"
       SSLNEW=`grep SHA256_CTX $i/openssl/sha.h 2> /dev/null`
 else
@@ -1191,9 +1199,16 @@ else
     XHYDRA_SUPPORT="xhydra"
 fi
 
-echo "Hydra will be installed into .../bin of: $PREFIX"
-echo "  (change this by running ./configure --prefix=path)"
-echo
+if [ "X" != "X$FHS" ]; then
+  PREFIX=/usr
+  echo "Hydra will be installed into .../bin of: $PREFIX"
+  echo "  (according to the File System Hierarchy Standard)"
+  echo
+else
+  echo "Hydra will be installed into .../bin of: $PREFIX"
+  echo "  (change this by running ./configure --prefix=path)"
+  echo
+fi
 
 if [ "X" != "X$DEBUG" ]; then
    echo DEBUG: XDEFINES=$XDEFINES $MATH
@@ -1206,6 +1221,10 @@ if [ "X" != "X$DEBUG" ]; then
 fi
 
 echo "Writing Makefile.in ..."
+if [ "X" != "X$FHS" ]; then
+  echo "MANDIR = /share/man/man1" >> Makefile.in
+  echo "DATADIR = /share/hydra" >> Makefile.in
+fi
 echo "XDEFINES=$XDEFINES $MATH" >> Makefile.in
 echo "XLIBS=$XLIBS" >> Makefile.in
 echo "XLIBPATHS=$XLIBPATHS" >> Makefile.in
