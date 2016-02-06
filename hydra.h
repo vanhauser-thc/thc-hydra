@@ -132,9 +132,19 @@
 #define INET_ADDRSTRLEN 16
 #endif
 
-int sleepn(time_t seconds);
+#ifndef _WIN32
 
+int sleepn(time_t seconds);
 int usleepn(long int useconds);
+
+#endif
+
+#ifdef _WIN32
+
+int sleepn(unsigned int seconds);
+int usleepn(unsigned int useconds);
+
+#endif
 
 #define _HYDRA_H
 #endif
