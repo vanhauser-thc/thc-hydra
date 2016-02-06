@@ -15,9 +15,9 @@ int usleepn(long int milisec) {
 	ts.tv_nsec = (milisec % 1000) * 1000000L;
 	return nanosleep(&ts, NULL);
 }
-#endif
 
-#ifdef _WIN32
+#else
+
 #include <windows.h>
 int sleepn(unsigned int seconds) 
 {

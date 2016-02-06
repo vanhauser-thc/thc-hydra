@@ -137,9 +137,7 @@
 int sleepn(time_t seconds);
 int usleepn(long int useconds);
 
-#endif
-
-#ifdef _WIN32
+#else
 
 int sleepn(unsigned int seconds);
 int usleepn(unsigned int useconds);
