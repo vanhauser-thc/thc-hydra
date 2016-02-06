@@ -47,7 +47,7 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
   }
 
   hydra_send(s, buffer, strlen(buffer), 0);
-  usleep(300000);
+  sleepn(300);
   if ((buf = hydra_receive_line(s)) == NULL)
     return 3;
 
@@ -244,7 +244,7 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
     if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
       return 1;
     }
-    usleep(50000);
+    sleepn(50);
     buf = hydra_receive_line(s);
     if (buf == NULL)
       return 1;
@@ -334,7 +334,7 @@ void service_xmpp(char *target, char *ip, int sp, unsigned char options, char *m
         hydra_child_exit(1);
       }
       //some server is longer to answer
-      usleep(300000);
+      sleepn(300);
       do {
         if ((buf = hydra_receive_line(sock)) == NULL) {
           /* no auth method identified */
@@ -435,7 +435,7 @@ void service_xmpp(char *target, char *ip, int sp, unsigned char options, char *m
         char *STARTTLS = "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>";
 
         hydra_send(sock, STARTTLS, strlen(STARTTLS), 0);
-        usleep(300000);
+        sleepn(300);
         buf = hydra_receive_line(sock);
 
         if (buf == NULL || strstr(buf, "<failure") != NULL) {
@@ -460,7 +460,7 @@ void service_xmpp(char *target, char *ip, int sp, unsigned char options, char *m
             hydra_child_exit(1);
           }
           //some server is longer to answer
-          usleep(300000);
+          sleepn(300);
           buf = hydra_receive_line(sock);
           if ((buf == NULL) || (strstr(buf, "<stream:stream") == NULL))
             hydra_child_exit(1);

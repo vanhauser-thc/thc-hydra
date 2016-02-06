@@ -74,7 +74,7 @@ void service_cisco_enable(char *ip, int sp, unsigned char options, char *miscptr
       {
         if (sock >= 0)
           sock = hydra_disconnect(sock);
-//        usleep(275000);
+//        sleepn(275);
         if ((options & OPTION_SSL) == 0) {
           if (port != 0)
             myport = port;

@@ -132,5 +132,9 @@
 #define INET_ADDRSTRLEN 16
 #endif
 
+int sleepn(time_t seconds);
+
+int usleepn(long int useconds);
+
 #define _HYDRA_H
 #endif
