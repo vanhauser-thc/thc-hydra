@@ -3876,7 +3876,7 @@ int main(int argc, char *argv[]) {
       }
     }
 
-    usleep(USLEEP_LOOP);
+    usleepn(USLEEP_LOOP);
     (void) wait3(NULL, WNOHANG, NULL);
     // write restore file and report status 
     if (process_restore == 1 && time(NULL) - elapsed_restore > 299) {

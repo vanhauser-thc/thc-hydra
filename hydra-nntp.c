@@ -272,7 +272,7 @@ void service_nntp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
     case 1:                    /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
-//      usleep(300000);
+//      sleepn(300);
       if ((options & OPTION_SSL) == 0) {
         if (port != 0)
           myport = port;
@@ -289,7 +289,7 @@ void service_nntp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
           hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
         hydra_child_exit(1);
       }
-//      usleep(300000);
+//      sleepn(300);
       buf = hydra_receive_line(sock);
       if (buf == NULL || buf[0] != '2') {       /* check the first line */
         if (verbose || debug)
@@ -445,7 +445,7 @@ SASL PLAIN DIGEST-MD5 LOGIN NTLM CRAM-MD5
           break;
         }
       }
-      usleep(25000);
+      sleepn(25);
       free(buf);
       next_run = 2;
       break;

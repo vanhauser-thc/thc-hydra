@@ -576,7 +576,7 @@ void hydra_child_exit(int code) {
     __fck = write(intern_socket, "E", 1);
   }
   do {
-    usleep(10000);
+    sleepn(10);
   } while (read(intern_socket, buf, 1) <= 0);
 //  sleep(2); // be sure that mommy receives our message
   exit(0);                      // might be killed before reaching this
@@ -920,7 +920,7 @@ char *hydra_receive_line(int socket) {
         if (buff[k] == 0)
           buff[k] = 32;
       buff[got] = 0;
-      usleep(100);
+      usleepn(100);
     }
   }
 
@@ -940,7 +940,7 @@ char *hydra_receive_line(int socket) {
       got += j;
       buff[got] = 0;
     }
-    usleep(100);
+    usleepn(100);
   }
 
   if (debug) {

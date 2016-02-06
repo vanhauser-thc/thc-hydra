@@ -77,7 +77,7 @@ void service_vmauthd(char *ip, int sp, unsigned char options, char *miscptr, FIL
     case 1:                    /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
-//      usleep(300000);
+//      sleepn(300);
       if ((options & OPTION_SSL) == 0) {
         if (port != 0)
           myport = port;

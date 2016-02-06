@@ -62,7 +62,7 @@ void service_redis_core(char *ip, int sp, unsigned char options, char *miscptr, 
           hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
         hydra_child_exit(1);
       }
-      usleep(250);
+      usleepn(250);
       next_run = 2;
       break;
     case 2:                    /* run the cracking function */
