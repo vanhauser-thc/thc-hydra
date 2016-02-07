@@ -158,11 +158,18 @@ int bf_init(char *arg) {
 
 unsigned long int bf_get_pcount() {
   int i;
-  unsigned long int count = 0;
+  double count = 0;
+  unsigned long int foo;
 
   for (i = bf_options.from; i <= bf_options.to; i++)
-    count += (unsigned long int) (pow((float) bf_options.crs_len, (float) i));
-  return count;
+    count += (pow((double) bf_options.crs_len, (double) i));
+  if (count >= 0xffffffff) {
+    fprintf(stderr, "\n[ERROR] definition for password bruteforce (-x) generates more than 4 billion passwords\n");
+    exit(-1);
+  }
+
+  foo = count / 1;
+  return foo;
 }
 
 

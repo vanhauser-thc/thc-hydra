@@ -14,6 +14,7 @@ Release 8.2-pre
 * Fixed a bug where the cisco-enable module was not working with the password-only logon mode
 * Fixed an out of memory bug in http-form
 * Fixed imap PLAIN method
+* Fixed -x option to bail if it would generate too many passwords (more than 4 billion)
 * Added warning if HYDRA_PROXY_CONNECT environment is detected, that is an outdated setting
 * Added --fhs switch to configure (for Linux distribution usage)
 * ... your patch?
