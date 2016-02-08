@@ -3677,6 +3677,8 @@ int main(int argc, char *argv[]) {
 
   // this is the big function which starts the attacking children, feeds login/password pairs, etc.! 
   while (exit_condition == 0) {
+    memset(&fdreadheads, 0, sizeof(fdreadheads));
+    max_fd = 0;
     FD_ZERO(&fdreadheads);
     for (head_no = 0, max_fd = 1; head_no < hydra_options.max_use; head_no++) {
       if (hydra_heads[head_no]->active > 0) {

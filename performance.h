@@ -18,7 +18,9 @@ int my_select(int fd, fd_set * fdread, fd_set * fdwrite, fd_set * fdex, long sec
     fde2 = fdex;
     stv.tv_sec = sec;
     stv.tv_usec = usec;
+    if (debug) printf("before select\n");
     ret_val = select(fd, fdr2, fdw2, fde2, &stv);
+    if (debug) printf("after select\n");
   /* XXX select() sometimes returns errno=EINTR (signal found) */
   } while (ret_val == -1 && errno == EINTR);
 
