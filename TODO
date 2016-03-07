@@ -9,6 +9,9 @@ Prio 1:
 * add snmpv3 privacy support
 * http: option to specify an url for testing if the login was right or wrong
 * does hydra-oracle work with service names? (often SIDs do not work anymore)
+* fix crash for -R on x64
+* IPv6 addresses in txt file does not work
+* prot://ipv6addr:port does not have []
 
 
 Prio 2:
