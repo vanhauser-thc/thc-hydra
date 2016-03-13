@@ -80,7 +80,7 @@ int start_ssh(int s, char *ip, int port, unsigned char options, char *miscptr, F
     return 4;
   }
 
-  if (auth_state == SSH_AUTH_ERROR) {
+  if (auth_state == SSH_AUTH_ERROR || !ssh_is_connected(session)) {
     new_session = 1;
     return 1;
   }
