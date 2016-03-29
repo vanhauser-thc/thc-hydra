@@ -99,6 +99,8 @@ void service_redis(char *ip, int sp, unsigned char options, char *miscptr, FILE 
 *    PONG
 *    when the server requires password, leads to:
 *    (error) NOAUTH Authentication required.
+*    or
+*    (error) ERR operation not permitted      (for older redis versions)
 * That is used for initial password authentication and redis server response tests in service_redis_init
 */
 int service_redis_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
@@ -111,7 +113,7 @@ int service_redis_init(char *ip, int sp, unsigned char options, char *miscptr, F
 
   int sock = -1;
   int myport = PORT_REDIS, mysslport = PORT_REDIS_SSL;
-  char buffer[] = "\x2a\x31\x0d\x0a\x24\x34\x0d\x0a\x70\x69\x6e\x67\x0d\x0a";
+  char buffer[] = "*1\r\n$4\r\nping\r\n";
 
   hydra_register_socket(sp);
   if (sock >= 0)
@@ -153,7 +155,7 @@ int service_redis_init(char *ip, int sp, unsigned char options, char *miscptr, F
     return 1;
   }
   // server response test
-  if (strstr(buf, "-NOAUTH Authentication required") == NULL) {
+  if (strstr(buf, "-NOAUTH Authentication required") == NULL && strstr(buf, "-ERR operation not permitted") == NULL) {
     hydra_report(stderr, "[ERROR] The server is not redis, exit.\n");
     free(buf);
     return 1;
