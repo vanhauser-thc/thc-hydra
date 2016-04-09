@@ -1761,7 +1761,7 @@ int hydra_send_next_pair(int target_no, int head_no) {
 
   if (loop_cnt > (hydra_brains.countlogin * 2) + 1 && loop_cnt > (hydra_brains.countpass * 2) + 1) {
     if (debug)
-      printf("[DEBUG] too many loops in send_next_pair, returning -1 (loop_cnt %d, sent %ld, todo %ld)\n", loop_cnt, hydra_targets[target_no]->sent, hydra_brains.todo);
+      printf("[DEBUG] too many loops in send_next_pair, returning -1 (loop_cnt %d, sent %lu, todo %lu)\n", loop_cnt, hydra_targets[target_no]->sent, hydra_brains.todo);
     return -1;
   }
 
@@ -2534,7 +2534,7 @@ int main(int argc, char *argv[]) {
         }
         //printf("target: %s  service: %s  port: %s  opt: %s\n", target_pos, hydra_options.service, port_pos, param_pos);
         if (debug)
-          printf("[DEBUG] opt:%d argc:%d mod:%s tgt:%s port:%d misc:%s\n", optind, argc, hydra_options.service, hydra_options.server, hydra_options.port, hydra_options.miscptr);
+          printf("[DEBUG] opt:%d argc:%d mod:%s tgt:%s port:%u misc:%s\n", optind, argc, hydra_options.service, hydra_options.server, hydra_options.port, hydra_options.miscptr);
       } else {
         hydra_options.server = NULL;
         hydra_options.service = NULL;

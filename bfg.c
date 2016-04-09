@@ -150,7 +150,7 @@ int bf_init(char *arg) {
   bf_options.current = bf_options.from;
   memset((char *) bf_options.state, 0, sizeof(bf_options.state));
   if (debug)
-    printf("[DEBUG] bfg INIT: from %d, to %d, len: %d, set: %s\n", bf_options.from, bf_options.to, bf_options.crs_len, bf_options.crs);
+    printf("[DEBUG] bfg INIT: from %u, to %u, len: %u, set: %s\n", bf_options.from, bf_options.to, bf_options.crs_len, bf_options.crs);
 
   return 0;
 }
@@ -189,9 +189,9 @@ char *bf_next() {
   bf_options.ptr[bf_options.current] = 0;
 
   if (debug) {
-    printf("[DEBUG] bfg IN: len %d, from %d, current %d, to %d, state:", bf_options.crs_len, bf_options.from, bf_options.current, bf_options.to);
+    printf("[DEBUG] bfg IN: len %u, from %u, current %u, to %u, state:", bf_options.crs_len, bf_options.from, bf_options.current, bf_options.to);
     for (i = 0; i < bf_options.current; i++)
-      printf(" %d", bf_options.state[i]);
+      printf(" %u", bf_options.state[i]);
     printf(", x: %s\n", bf_options.ptr);
   }
 

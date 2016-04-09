@@ -201,7 +201,7 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
     }
   } else {
     if (ptr != NULL && *ptr != '4')
-      fprintf(stderr, "[WARNING] Unusual return code: %.3s for %s:%s\n", (char) *ptr, login, pass);
+      fprintf(stderr, "[WARNING] Unusual return code: %.3s for %s:%s\n", (char *) ptr, login, pass);
 
     //the first authentication type failed, check the type from server header
     if ((hydra_strcasestr(http_buf, "WWW-Authenticate: Basic") == NULL) && (http_auth_mechanism == AUTH_BASIC)) {
