@@ -205,7 +205,10 @@ int start_pop3(int s, char *ip, int port, unsigned char options, char *miscptr, 
 
       memset(buffer, 0, sizeof(buffer));
       sasl_plain(buffer, login, pass);
-      sprintf(buffer, "%.250s\r\n", buffer);
+
+      char tmp_buffer[sizeof(buffer)];
+      sprintf(tmp_buffer, "%.250s\r\n", buffer);
+      strcpy(buffer, tmp_buffer);
     }
     break;
 
@@ -279,7 +282,10 @@ int start_pop3(int s, char *ip, int port, unsigned char options, char *miscptr, 
         break;
       }
       hydra_tobase64((unsigned char *) buffer, strlen(buffer), sizeof(buffer));
-      sprintf(buffer, "%.250s\r\n", buffer);
+
+      char tmp_buffer[sizeof(buffer)];
+      sprintf(tmp_buffer, "%.250s\r\n", buffer);
+      strcpy(buffer, tmp_buffer);
       free(preplogin);
     }
     break;
