@@ -177,7 +177,11 @@ int start_imap(int s, char *ip, int port, unsigned char options, char *miscptr, 
         break;
       }
       hydra_tobase64((unsigned char *) buffer, strlen(buffer), sizeof(buffer));
-      sprintf(buffer, "%.250s\r\n", buffer);
+
+      char tmp_buffer[sizeof(buffer)];
+      sprintf(tmp_buffer, "%.250s\r\n", buffer);
+      strcpy(buffer, tmp_buffer);
+
       free(preplogin);
     }
     break;
