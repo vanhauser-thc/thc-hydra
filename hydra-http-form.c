@@ -789,8 +789,8 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         if (strlen(str) - strlen(str2) == 0) {
           strcpy(str3, "/");
         } else {
-          strncpy(str3, str + strlen(str2), strlen(str) - strlen(str2) - 1);
-          str3[strlen(str) - strlen(str2) - 1] = 0;
+          strncpy(str3, str + strlen(str2), strlen(str) - strlen(str2));
+          str3[strlen(str) - strlen(str2)] = 0;
         }
       } else {
         strncpy(str2, webtarget, sizeof(str2));
@@ -859,7 +859,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
 
       found = analyze_server_response(s);
       if (strlen(cookie) > 0)
-      	process_cookies(ptr_cookie, cookie);
+      	process_cookies(&ptr_cookie, cookie);
     }
   }
 
