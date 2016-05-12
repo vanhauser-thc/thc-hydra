@@ -10,6 +10,7 @@
 
 #include <gtk/gtk.h>
 #include <string.h>
+#include <locale.h>
 #include "interface.h"
 #include "support.h"
 #include "callbacks.h"
@@ -26,7 +27,7 @@ int main(int argc, char *argv[]) {
   GtkWidget *output;
   GtkTextBuffer *outputbuf;
 
-  gtk_set_locale();
+  setlocale(LC_ALL, "");
   gtk_init(&argc, &argv);
 
   add_pixmap_directory(PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps");
