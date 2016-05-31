@@ -732,7 +732,7 @@ void hydra_restore_write(int print_msg) {
   for (j = 0; j < hydra_options.max_use; j++) {
     memcpy((char *) &hh, hydra_heads[j], sizeof(hydra_head));
     if (j == 0 && debug) {
-      printf("[DEBUG] sizeof hydra_head: %d\n", sizeof(hydra_head));
+      printf("[DEBUG] sizeof hydra_head: %lu\n", sizeof(hydra_head));
       printf("[DEBUG] memcmp: %d\n", memcmp(hydra_heads[j], &hh, sizeof(hydra_head)));
     }
     hh.active = 0;              // re-enable disabled heads
