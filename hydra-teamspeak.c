@@ -71,7 +71,7 @@ int start_teamspeak(int s, char *ip, int port, unsigned char options, char *misc
   strcpy((char *) &teamspeak.login, "");
 
 #ifdef HAVE_ZLIB
-  teamspeak.crc = crc32(0L, &teamspeak, sizeof(struct team_speak));
+  teamspeak.crc = crc32(0L, (const Bytef *)&teamspeak, sizeof(struct team_speak));
 #else
   teamspeak.crc = crc32(&teamspeak, sizeof(struct team_speak));
 #endif

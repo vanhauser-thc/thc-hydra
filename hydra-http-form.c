@@ -322,7 +322,7 @@ void hdrrepv(ptr_header_node * ptr_head, char *hdrname, char *new_value) {
       if (cur_ptr->value)
         strcpy(cur_ptr->value, new_value);
       else {
-        hydra_report(stderr, "[ERROR] Out of memory (hdrrepv %d)", strlen(new_value) + 1);
+        hydra_report(stderr, "[ERROR] Out of memory (hdrrepv %lu)", strlen(new_value) + 1);
         hydra_child_exit(0);
       }
     }
