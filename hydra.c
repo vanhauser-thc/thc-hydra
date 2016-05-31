@@ -10,6 +10,11 @@
 #include "hydra.h"
 #include "bfg.h"
 
+#ifdef LIBNCURSES
+#include <curses.h>
+#include <term.h>
+#endif
+
 extern void service_asterisk(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
 extern void service_telnet(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
 extern void service_ftp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
@@ -1000,7 +1005,7 @@ void kill_children(int signo) {
 }
 
 unsigned long int countlines(FILE * fd, int colonmode) {
-  size_t lines = 0;
+  size_t clines = 0;
   char *buf = malloc(MAXLINESIZE);
   int only_one_empty_line = 0;
 
@@ -1024,10 +1029,10 @@ unsigned long int countlines(FILE * fd, int colonmode) {
         if (buf[0] == '\r' || buf[0] == '\n') {
           if (only_one_empty_line == 0) {
             only_one_empty_line = 1;
-            lines++;
+            clines++;
           }
         } else {
-          lines++;
+          clines++;
         }
       }
     }
@@ -1038,7 +1043,7 @@ unsigned long int countlines(FILE * fd, int colonmode) {
   rewind(fp);
 #endif
   free(buf);
-  return lines;
+  return clines;
 }
 
 void fill_mem(char *ptr, FILE * fd, int colonmode) {
