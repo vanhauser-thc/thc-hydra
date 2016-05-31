@@ -192,7 +192,9 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
   ptr = ((char *) index(http_buf, ' '));
   if (ptr != NULL)
     ptr++;
-  if (ptr != NULL && (*ptr == '2' || *ptr == '3' || strncmp(ptr, "403", 3) == 0 || strncmp(ptr, "404", 3) == 0)) {
+// Make this optional
+//  if (ptr != NULL && (*ptr == '2' || *ptr == '3' || strncmp(ptr, "403", 3) == 0 || strncmp(ptr, "404", 3) == 0)) {
+  if (ptr != NULL && (*ptr == '2' || *ptr == '3' || strncmp(ptr, "404", 3) == 0)) {
     hydra_report_found_host(port, ip, "www", fp);
     hydra_completed_pair_found();
     if (http_buf != NULL) {
@@ -325,6 +327,10 @@ void service_http_get(char *ip, int sp, unsigned char options, char *miscptr, FI
 
 void service_http_head(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
   service_http(ip, sp, options, miscptr, fp, port, "HEAD");
+}
+
+void service_http_post(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+  service_http(ip, sp, options, miscptr, fp, port, "POST");
 }
 
 int service_http_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {

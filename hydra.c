@@ -36,6 +36,7 @@ extern void service_rsh(char *ip, int sp, unsigned char options, char *miscptr, 
 extern void service_nntp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
 extern void service_http_head(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
 extern void service_http_get(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
+extern void service_http_post(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
 extern void service_http_get_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
 extern void service_http_post_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
 extern void service_icq(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
@@ -147,7 +148,7 @@ extern int service_rtsp_init(char *ip, int sp, unsigned char options, char *misc
 
 // ADD NEW SERVICES HERE
 char *SERVICES =
-  "asterisk afp cisco cisco-enable cvs firebird ftp ftps http[s]-{head|get} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres rdp redis rexec rlogin rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
+  "asterisk afp cisco cisco-enable cvs firebird ftp ftps http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres rdp redis rexec rlogin rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
 
 #define MAXBUF       520
 #define MAXLINESIZE  ( ( MAXBUF / 2 ) - 4 )
@@ -1137,7 +1138,7 @@ void hydra_service_init(int target_no) {
     x = service_ftp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port);
   if (strcmp(hydra_options.service, "redis") == 0 || strcmp(hydra_options.service, "redis") == 0)
     x = service_redis_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port);
-  if (strcmp(hydra_options.service, "http-get") == 0 || strcmp(hydra_options.service, "http-head") == 0)
+  if (strcmp(hydra_options.service, "http-get") == 0 || strcmp(hydra_options.service, "http-head") == 0 || strcmp(hydra_options.service, "http-post") == 0)
     x = service_http_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port);
   if (strcmp(hydra_options.service, "http-form") == 0 || strcmp(hydra_options.service, "http-get-form") == 0 || strcmp(hydra_options.service, "http-post-form") == 0)
     x = service_http_form_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port);
@@ -1321,6 +1322,8 @@ int hydra_spawn_head(int head_no, int target_no) {
         service_ldap3(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port);
       if (strcmp(hydra_options.service, "http-head") == 0)
         service_http_head(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port);
+      if (strcmp(hydra_options.service, "http-post") == 0)
+        service_http_post(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port);
       if (strcmp(hydra_options.service, "ldap3-crammd5") == 0)
         service_ldap3_cram_md5(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port);
       if (strcmp(hydra_options.service, "ldap3-digestmd5") == 0)
@@ -1475,6 +1478,7 @@ int hydra_lookup_port(char *service) {
     {"ftp", PORT_FTP, PORT_FTP_SSL},
     {"ftps", PORT_FTP, PORT_FTP_SSL},
     {"http-head", PORT_HTTP, PORT_HTTP_SSL},
+    {"http-post", PORT_HTTP, PORT_HTTP_SSL},
     {"http-get", PORT_HTTP, PORT_HTTP_SSL},
     {"http-get-form", PORT_HTTP, PORT_HTTP_SSL},
     {"http-post-form", PORT_HTTP, PORT_HTTP_SSL},
@@ -2465,7 +2469,7 @@ int main(int argc, char *argv[]) {
     // stuff we have to copy from the non-restore part
     if (strncmp(hydra_options.service, "http-", 5) == 0) {
       if (getenv("HYDRA_PROXY_HTTP") && getenv("HYDRA_PROXY"))
-        bail("Found HYDRA_PROXY_HTTP *and* HYDRA_PROXY environment variables - you can use only ONE for the service http-head/http-get!");
+        bail("Found HYDRA_PROXY_HTTP *and* HYDRA_PROXY environment variables - you can use only ONE for the service http-head/http-get/http-post!");
       if (getenv("HYDRA_PROXY_HTTP")) {
         printf("[INFO] Using HTTP Proxy: %s\n", getenv("HYDRA_PROXY_HTTP"));
         use_proxy = 1;
@@ -2585,7 +2589,7 @@ int main(int argc, char *argv[]) {
 
     if (strcmp(hydra_options.service, "ssl") == 0 || strcmp(hydra_options.service, "www") == 0 || strcmp(hydra_options.service, "http") == 0
         || strcmp(hydra_options.service, "https") == 0) {
-      fprintf(stderr, "[WARNING] The service http has been replaced with http-head and http-get, using by default GET method. Same for https.\n");
+      fprintf(stderr, "[WARNING] The service http has been replaced with http-head/http-get/http-post using by default GET method. Same for https.\n");
       if (strcmp(hydra_options.service, "http") == 0) {
         hydra_options.service = malloc(strlen("http-get") + 1);
         strcpy(hydra_options.service, "http-get");
@@ -2935,19 +2939,22 @@ int main(int argc, char *argv[]) {
       if (hydra_options.tasks > 4)
         fprintf(stderr, "[WARNING] you should set the number of parallel task to 4 for vnc services.\n");
     }
-    if (strcmp(hydra_options.service, "https-head") == 0 || strcmp(hydra_options.service, "https-get") == 0) {
+    if (strcmp(hydra_options.service, "https-head") == 0 || strcmp(hydra_options.service, "https-get") == 0 || strcmp(hydra_options.service, "https-post") == 0) {
 #ifdef LIBOPENSSL
       i = 1;
       hydra_options.ssl = 1;
       if (strcmp(hydra_options.service, "https-head") == 0)
         strcpy(hydra_options.service, "http-head");
-      else
+      else if (strcmp(hydra_options.service, "https-get") == 0)
         strcpy(hydra_options.service, "http-get");
+      else
+        strcpy(hydra_options.service, "http-post");
+      
 #else
       bail("Compiled without SSL support, module not available");
 #endif
     }
-    if (strcmp(hydra_options.service, "http-get") == 0 || strcmp(hydra_options.service, "http-head") == 0) {
+    if (strcmp(hydra_options.service, "http-get") == 0 || strcmp(hydra_options.service, "http-head") == 0 || strcmp(hydra_options.service, "http-post") == 0) {
       i = 1;
       if (hydra_options.miscptr == NULL) {
         fprintf(stderr, "[WARNING] You must supply the web page as an additional option or via -m, default path set to /\n");
@@ -2957,7 +2964,7 @@ int main(int argc, char *argv[]) {
       if (*hydra_options.miscptr != '/' && strstr(hydra_options.miscptr, "://") == NULL)
         bail("The web page you supplied must start with a \"/\", \"http://\" or \"https://\", e.g. \"/protected/login\"");
       if (getenv("HYDRA_PROXY_HTTP") && getenv("HYDRA_PROXY"))
-        bail("Found HYDRA_PROXY_HTTP *and* HYDRA_PROXY environment variables - you can use only ONE for the service http-head/http-get!");
+        bail("Found HYDRA_PROXY_HTTP *and* HYDRA_PROXY environment variables - you can use only ONE for the service http-head/http-get/http-post!");
       if (getenv("HYDRA_PROXY_HTTP")) {
         printf("[INFO] Using HTTP Proxy: %s\n", getenv("HYDRA_PROXY_HTTP"));
         use_proxy = 1;
@@ -2994,7 +3001,7 @@ int main(int argc, char *argv[]) {
       if (hydra_options.miscptr[0] != '/')
         bail("optional parameter must start with a '/' slash!\n");
       if (getenv("HYDRA_PROXY_HTTP") && getenv("HYDRA_PROXY"))
-        bail("Found HYDRA_PROXY_HTTP *and* HYDRA_PROXY environment variables - you can use only ONE for the service http-head/http-get!");
+        bail("Found HYDRA_PROXY_HTTP *and* HYDRA_PROXY environment variables - you can use only ONE for the service http-head/http-get/http-post!");
       if (getenv("HYDRA_PROXY_HTTP")) {
         printf("[INFO] Using HTTP Proxy: %s\n", getenv("HYDRA_PROXY_HTTP"));
         use_proxy = 1;
