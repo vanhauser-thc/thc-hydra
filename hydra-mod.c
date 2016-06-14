@@ -511,7 +511,11 @@ int internal__hydra_connect_to_ssl(int socket) {
     return -1;
   }
 
+    /* add SNI */
+    SSL_set_tlsext_host_name(ssl, "localhost");
+
   SSL_set_fd(ssl, socket);
+
   if (SSL_connect(ssl) <= 0) {
 //    fprintf(stderr, "[ERROR] SSL Connect %d\n", SSL_connect(ssl));
     if (verbose) {

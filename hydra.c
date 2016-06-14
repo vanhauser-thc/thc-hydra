@@ -50,6 +50,7 @@ extern void service_pcanywhere(char *ip, int sp, unsigned char options, char *mi
 extern void service_http_proxy(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
 extern void service_xmpp(char *target, char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
 extern void service_irc(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
+extern void service_redis(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
 extern void service_http_proxy_urlenum(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
 extern void service_s7_300(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
 extern void service_rtsp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port);
