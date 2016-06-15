@@ -3917,6 +3917,7 @@ int main(int argc, char *argv[]) {
       for (j = 0; j < hydra_options.max_use; j++)
         if (hydra_heads[j]->active >= 0)
           k++;
+          if ((long)(hydra_brains.todo_all - hydra_brains.sent) <= 0) exit(0); //in case of overflow of unsigned "-1"
       printf("[STATUS] %.2f tries/min, %lu tries in %02lu:%02luh, %lu to do in %02lu:%02luh, %d active\n", (1.0 * hydra_brains.sent) / (((elapsed_status - starttime) * 1.0) / 60),     // tries/min 
              hydra_brains.sent, // tries 
              (long unsigned int) ((elapsed_status - starttime) / 3600), // hours 
