@@ -196,7 +196,7 @@ int start_icq(int sock, char *ip, int port, FILE * output, char *miscptr, FILE *
   return 1;
 }
 
-void service_icq(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+void service_icq(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   int run = 1, next_run = 1, sock = -1;
   int myport = PORT_ICQ;
 
@@ -241,7 +241,7 @@ void service_icq(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
   }
 }
 
-int service_icq_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int service_icq_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

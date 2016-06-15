@@ -65,7 +65,7 @@ int start_vmauthd(int s, char *ip, int port, unsigned char options, char *miscpt
   return 2;
 }
 
-void service_vmauthd(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+void service_vmauthd(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   int run = 1, next_run = 1, sock = -1;
   int myport = PORT_VMAUTHD, mysslport = PORT_VMAUTHD_SSL;
 
@@ -86,7 +86,7 @@ void service_vmauthd(char *ip, int sp, unsigned char options, char *miscptr, FIL
       } else {
         if (port != 0)
           mysslport = port;
-        sock = hydra_connect_ssl(ip, mysslport);
+        sock = hydra_connect_ssl(ip, mysslport, hostname);
         port = mysslport;
       }
 
@@ -116,7 +116,7 @@ void service_vmauthd(char *ip, int sp, unsigned char options, char *miscptr, FIL
       if (strstr(buf, "SSL Required") != NULL) {
         if ((options & OPTION_SSL) == 0) {
           //reconnecting using SSL
-          if (hydra_connect_to_ssl(sock) == -1) {
+          if (hydra_connect_to_ssl(sock, hostname) == -1) {
             free(buf);
             hydra_report(stderr, "[ERROR] Can't use SSL\n");
             hydra_child_exit(2);
@@ -142,7 +142,7 @@ void service_vmauthd(char *ip, int sp, unsigned char options, char *miscptr, FIL
   }
 }
 
-int service_vmauthd_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int service_vmauthd_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

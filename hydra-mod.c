@@ -457,7 +457,7 @@ RSA *ssl_temp_rsa_cb(SSL * ssl, int export, int keylength) {
 }
 
 
-int internal__hydra_connect_to_ssl(int socket) {
+int internal__hydra_connect_to_ssl(int socket, char *hostname) {
   int err;
 
   if (ssl_first) {
@@ -511,8 +511,8 @@ int internal__hydra_connect_to_ssl(int socket) {
     return -1;
   }
 
-    /* add SNI */
-    SSL_set_tlsext_host_name(ssl, "localhost");
+  /* add SNI */
+  SSL_set_tlsext_host_name(ssl, hostname);
 
   SSL_set_fd(ssl, socket);
 
@@ -533,13 +533,13 @@ int internal__hydra_connect_to_ssl(int socket) {
   return socket;
 }
 
-int internal__hydra_connect_ssl(char *host, int port, int protocol, int type) {
+int internal__hydra_connect_ssl(char *host, int port, int protocol, int type, char *hostname) {
   int socket;
 
   if ((socket = internal__hydra_connect(host, port, protocol, type)) < 0)
     return -1;
 
-  return internal__hydra_connect_to_ssl(socket);
+  return internal__hydra_connect_to_ssl(socket, hostname);
 }
 #endif
 
@@ -774,22 +774,22 @@ void hydra_report_found_host_msg(int port, char *ip, char *svc, FILE * fp, char 
 */
 }
 
-int hydra_connect_to_ssl(int socket) {
+int hydra_connect_to_ssl(int socket, char *hostname) {
 #ifdef LIBOPENSSL
-  return (internal__hydra_connect_to_ssl(socket));
+  return (internal__hydra_connect_to_ssl(socket, hostname));
 #else
   fprintf(stderr, "Error: not compiled with SSL\n");
   return -1;
 #endif
 }
 
-int hydra_connect_ssl(char *host, int port) {
+int hydra_connect_ssl(char *host, int port, char *hostname) {
   if (__first_connect != 0)
     __first_connect = 0;
   else
     sleep(conwait);
 #ifdef LIBOPENSSL
-  return (internal__hydra_connect_ssl(host, port, SOCK_STREAM, 6));
+  return (internal__hydra_connect_ssl(host, port, SOCK_STREAM, 6, hostname));
 #else
   fprintf(stderr, "Error: not compiled with SSL\n");
   return -1;

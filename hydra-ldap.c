@@ -7,7 +7,7 @@ unsigned char *buf;
 int counter;
 int tls_required = 0;
 
-int start_ldap(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char version, int auth_method) {
+int start_ldap(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *hostname, char version, int auth_method) {
   char *empty = "";
   char *login = "", *pass, *fooptr = "";
   unsigned char buffer[512];
@@ -351,7 +351,7 @@ int start_ldap(int s, char *ip, int port, unsigned char options, char *miscptr, 
   return 2;
 }
 
-void service_ldap(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char version, int auth_method) {
+void service_ldap(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname, char version, int auth_method) {
   int run = 1, next_run = 1, sock = -1;
   int myport = PORT_LDAP, mysslport = PORT_LDAP_SSL;
 
@@ -372,7 +372,7 @@ void service_ldap(char *ip, int sp, unsigned char options, char *miscptr, FILE *
       } else {
         if (port != 0)
           mysslport = port;
-        sock = hydra_connect_ssl(ip, mysslport);
+        sock = hydra_connect_ssl(ip, mysslport, hostname);
         port = mysslport;
       }
       if (sock < 0) {
@@ -393,7 +393,7 @@ void service_ldap(char *ip, int sp, unsigned char options, char *miscptr, FILE *
 
         if ((buf[0] != 0 && buf[9] == 0) || (buf[0] != 32 && buf[9] == 32)) {
           /* TLS option negociation goes well, now trying to connect */
-          if ((hydra_connect_to_ssl(sock) == -1) && verbose) {
+          if ((hydra_connect_to_ssl(sock, hostname) == -1) && verbose) {
             hydra_report(stderr, "[ERROR] Can't use TLS\n");
             hydra_child_exit(1);
           } else {
@@ -409,7 +409,7 @@ void service_ldap(char *ip, int sp, unsigned char options, char *miscptr, FILE *
       next_run = 2;
       break;
     case 2:                    /* run the cracking function */
-      next_run = start_ldap(sock, ip, port, options, miscptr, fp, version, auth_method);
+      next_run = start_ldap(sock, ip, port, options, miscptr, fp, hostname, version, auth_method);
       counter++;
       break;
     case 3:                    /* clean exit */
@@ -425,23 +425,23 @@ void service_ldap(char *ip, int sp, unsigned char options, char *miscptr, FILE *
   }
 }
 
-void service_ldap2(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  service_ldap(ip, sp, options, miscptr, fp, port, 2, AUTH_CLEAR);
+void service_ldap2(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+  service_ldap(ip, sp, options, miscptr, fp, port, hostname, 2, AUTH_CLEAR);
 }
 
-void service_ldap3(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  service_ldap(ip, sp, options, miscptr, fp, port, 3, AUTH_CLEAR);
+void service_ldap3(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+  service_ldap(ip, sp, options, miscptr, fp, port, hostname, 3, AUTH_CLEAR);
 }
 
-void service_ldap3_cram_md5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  service_ldap(ip, sp, options, miscptr, fp, port, 3, AUTH_CRAMMD5);
+void service_ldap3_cram_md5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+  service_ldap(ip, sp, options, miscptr, fp, port, hostname, 3, AUTH_CRAMMD5);
 }
 
-void service_ldap3_digest_md5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  service_ldap(ip, sp, options, miscptr, fp, port, 3, AUTH_DIGESTMD5);
+void service_ldap3_digest_md5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+  service_ldap(ip, sp, options, miscptr, fp, port, hostname, 3, AUTH_DIGESTMD5);
 }
 
-int service_ldap_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int service_ldap_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

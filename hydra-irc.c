@@ -60,7 +60,7 @@ int send_nick(int s, char *ip, char *pass) {
   return 0;
 }
 
-int irc_server_connect(char *ip, int sock, int port, unsigned char options) {
+int irc_server_connect(char *ip, int sock, int port, unsigned char options, char *hostname) {
   if (sock >= 0)
     sock = hydra_disconnect(sock);
 //        sleepn(275);
@@ -72,13 +72,13 @@ int irc_server_connect(char *ip, int sock, int port, unsigned char options) {
   } else {
     if (port != 0)
       mysslport = port;
-    sock = hydra_connect_ssl(ip, mysslport);
+    sock = hydra_connect_ssl(ip, mysslport, hostname);
     port = mysslport;
   }
   return sock;
 }
 
-int start_pass_irc(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int start_pass_irc(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *hostname) {
   char *empty = "";
   char *pass;
   int ret;
@@ -86,7 +86,7 @@ int start_pass_irc(int s, char *ip, int port, unsigned char options, char *miscp
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
 
-  s = irc_server_connect(ip, s, port, options);
+  s = irc_server_connect(ip, s, port, options, hostname);
   if (s < 0) {
     hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
     return 3;
@@ -118,7 +118,7 @@ int start_pass_irc(int s, char *ip, int port, unsigned char options, char *miscp
   return 4;
 }
 
-void service_irc(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+void service_irc(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   int run = 1, next_run = 1, sock = -1, ret;
   char *buf;
 
@@ -131,7 +131,7 @@ void service_irc(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
     switch (run) {
     case 1:                    /* connect and service init function */
 
-      sock = irc_server_connect(ip, sock, port, options);
+      sock = irc_server_connect(ip, sock, port, options, hostname);
       if (sock < 0) {
         hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
         hydra_child_exit(1);
@@ -199,7 +199,7 @@ void service_irc(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
       hydra_child_exit(0);
       return;
     case 4:
-      next_run = start_pass_irc(sock, ip, port, options, miscptr, fp);
+      next_run = start_pass_irc(sock, ip, port, options, miscptr, fp, hostname);
       break;
     default:
       hydra_report(stderr, "[ERROR] Caught unknown return code, exiting!\n");
@@ -209,7 +209,7 @@ void service_irc(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
   }
 }
 
-int service_irc_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int service_irc_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

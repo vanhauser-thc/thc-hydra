@@ -548,17 +548,17 @@ int analyze_server_response(int s) {
   return 0;
 }
 
-void hydra_reconnect(int s, char *ip, int port, unsigned char options) {
+void hydra_reconnect(int s, char *ip, int port, unsigned char options, char *hostname) {
   if (s >= 0)
     s = hydra_disconnect(s);
   if ((options & OPTION_SSL) == 0) {
     s = hydra_connect_tcp(ip, port);
   } else {
-    s = hydra_connect_ssl(ip, port);
+    s = hydra_connect_ssl(ip, port, hostname);
   }
 }
 
-int start_http_form(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *type, ptr_header_node ptr_head, ptr_cookie_node ptr_cookie) {
+int start_http_form(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *hostname, char *type, ptr_header_node ptr_head, ptr_cookie_node ptr_cookie) {
   char *empty = "";
   char *login, *pass, clogin[256], cpass[256];
   char header[8096], *upd3variables;
@@ -597,7 +597,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
       i = analyze_server_response(s);   // ignore result
       if (strlen(cookie) > 0)
         process_cookies(&ptr_cookie, cookie);
-      hydra_reconnect(s, ip, port, options);
+      hydra_reconnect(s, ip, port, options, hostname);
     }
     // now prepare for the "real" request
     if (strcmp(type, "POST") == 0) {
@@ -645,7 +645,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         i = analyze_server_response(s); // ignore result
         if (strlen(cookie) > 0)
           process_cookies(&ptr_cookie, cookie);
-        hydra_reconnect(s, ip, port, options);
+        hydra_reconnect(s, ip, port, options, hostname);
       }
       // now prepare for the "real" request
       if (strcmp(type, "POST") == 0) {
@@ -693,7 +693,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         	process_cookies(&ptr_cookie, cookie);
           normal_request = stringify_headers(&ptr_head);
         }
-        hydra_reconnect(s, ip, port, options);
+        hydra_reconnect(s, ip, port, options, hostname);
       }
       // now prepare for the "real" request
       if (strcmp(type, "POST") == 0) {
@@ -852,7 +852,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         }
       }
 
-      hydra_reconnect(s, ip, port, options);
+      hydra_reconnect(s, ip, port, options, hostname);
 
       if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
         return 1;
@@ -874,7 +874,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
   return 1;
 }
 
-void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *type, ptr_header_node * ptr_head, ptr_cookie_node * ptr_cookie) {
+void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname, char *type, ptr_header_node * ptr_head, ptr_cookie_node * ptr_cookie) {
   int run = 1, next_run = 1, sock = -1;
   int myport = PORT_HTTP, mysslport = PORT_HTTP_SSL;
 
@@ -910,7 +910,7 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
         } else {
           if (port != 0)
             mysslport = port;
-          sock = hydra_connect_ssl(ip, mysslport);
+          sock = hydra_connect_ssl(ip, mysslport, hostname);
           port = mysslport;
         }
         if (sock < 0) {
@@ -924,7 +924,7 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
         break;
       }
     case 2:                    /* run the cracking function */
-      next_run = start_http_form(sock, ip, port, options, miscptr, fp, type, *ptr_head, *ptr_cookie);
+      next_run = start_http_form(sock, ip, port, options, miscptr, fp, hostname, type, *ptr_head, *ptr_cookie);
       break;
     case 3:                    /* clean exit */
       if (sock >= 0)
@@ -955,31 +955,31 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
     free(miscptr);
 }
 
-void service_http_get_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+void service_http_get_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   ptr_cookie_node ptr_cookie = NULL;
 	ptr_header_node ptr_head = initialize(ip, options, miscptr);
 
   if (ptr_head)
-    service_http_form(ip, sp, options, miscptr, fp, port, "GET", &ptr_head, &ptr_cookie);
+    service_http_form(ip, sp, options, miscptr, fp, port, hostname, "GET", &ptr_head, &ptr_cookie);
   else {
     hydra_report(stderr, "[ERROR] Could not launch head. Error while initializing.\n");
     hydra_child_exit(1);
   }
 }
 
-void service_http_post_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+void service_http_post_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   ptr_cookie_node ptr_cookie = NULL;
 	ptr_header_node ptr_head = initialize(ip, options, miscptr);
 
   if (ptr_head)
-    service_http_form(ip, sp, options, miscptr, fp, port, "POST", &ptr_head, &ptr_cookie);
+    service_http_form(ip, sp, options, miscptr, fp, port, hostname, "POST", &ptr_head, &ptr_cookie);
   else {
     hydra_report(stderr, "[ERROR] Could not launch head. Error while initializing.\n");
     hydra_child_exit(1);
   }
 }
 
-int service_http_form_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int service_http_form_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

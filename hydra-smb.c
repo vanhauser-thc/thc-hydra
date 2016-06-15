@@ -1303,7 +1303,7 @@ int start_smb(int s, char *ip, int port, unsigned char options, char *miscptr, F
   return 1;
 }
 
-void service_smb(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+void service_smb(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   int run = 1, next_run = 1, sock = -1;
 
   //default is both (local and domain) checks and normal passwd
@@ -1427,7 +1427,7 @@ void service_smb(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
 }
 #endif
 
-int service_smb_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int service_smb_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

@@ -254,7 +254,7 @@ int start_smtp(int s, char *ip, int port, unsigned char options, char *miscptr, 
   return 2;
 }
 
-void service_smtp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+void service_smtp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   int run = 1, next_run = 1, sock = -1, i = 0;
   int myport = PORT_SMTP, mysslport = PORT_SMTP_SSL, disable_tls = 1;
   char *buf;
@@ -277,7 +277,7 @@ void service_smtp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
       } else {
         if (port != 0)
           mysslport = port;
-        sock = hydra_connect_ssl(ip, mysslport);
+        sock = hydra_connect_ssl(ip, mysslport, hostname);
         port = mysslport;
       }
       if (sock < 0) {
@@ -328,7 +328,7 @@ void service_smtp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
               hydra_report(stderr, "[ERROR] TLS negotiation failed, no answer received from STARTTLS request\n");
             } else {
               free(buf);
-              if ((hydra_connect_to_ssl(sock) == -1)) {
+              if ((hydra_connect_to_ssl(sock, hostname) == -1)) {
                 if (verbose)
                   hydra_report(stderr, "[ERROR] Can't use TLS\n");
                 disable_tls = 1;
@@ -443,7 +443,7 @@ void service_smtp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
   }
 }
 
-int service_smtp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int service_smtp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

@@ -180,7 +180,7 @@ int start_rtsp(int s, char *ip, int port, unsigned char options, char *miscptr, 
   return 2;
 }
 
-void service_rtsp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+void service_rtsp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   int run = 1, next_run = 1, sock = -1;
   int myport = PORT_RTSP, mysslport = PORT_RTSP_SSL;
   char *ptr, *ptr2;
@@ -229,7 +229,7 @@ void service_rtsp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
   }
 }
 
-int service_rtsp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int service_rtsp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

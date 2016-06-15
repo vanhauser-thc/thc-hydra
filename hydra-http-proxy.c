@@ -5,7 +5,7 @@ extern char *HYDRA_EXIT;
 static int http_proxy_auth_mechanism = AUTH_ERROR;
 char *http_proxy_buf = NULL;
 
-int start_http_proxy(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int start_http_proxy(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *hostname) {
   char *empty = "";
   char *login, *pass, buffer[500], buffer2[500];
   char url[210], host[30];
@@ -74,7 +74,7 @@ int start_http_proxy(int s, char *ip, int port, unsigned char options, char *mis
     if ((options & OPTION_SSL) == 0) {
       s = hydra_connect_tcp(ip, port);
     } else {
-      s = hydra_connect_ssl(ip, port);
+      s = hydra_connect_ssl(ip, port, hostname);
     }
   }
 
@@ -246,7 +246,7 @@ int start_http_proxy(int s, char *ip, int port, unsigned char options, char *mis
     return 1;
 }
 
-void service_http_proxy(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+void service_http_proxy(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   int run = 1, next_run = 1, sock = -1;
   int myport = PORT_HTTP_PROXY, mysslport = PORT_HTTP_PROXY_SSL;
 
@@ -272,7 +272,7 @@ void service_http_proxy(char *ip, int sp, unsigned char options, char *miscptr, 
         } else {
           if (port != 0)
             mysslport = port;
-          sock = hydra_connect_ssl(ip, mysslport);
+          sock = hydra_connect_ssl(ip, mysslport, hostname);
           port = mysslport;
         }
 
@@ -284,7 +284,7 @@ void service_http_proxy(char *ip, int sp, unsigned char options, char *miscptr, 
         break;
       }
     case 2:                    /* run the cracking function */
-      next_run = start_http_proxy(sock, ip, port, options, miscptr, fp);
+      next_run = start_http_proxy(sock, ip, port, options, miscptr, fp, hostname);
       break;
     case 3:                    /* clean exit */
       if (sock >= 0)
@@ -299,7 +299,7 @@ void service_http_proxy(char *ip, int sp, unsigned char options, char *miscptr, 
   }
 }
 
-int service_http_proxy_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int service_http_proxy_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

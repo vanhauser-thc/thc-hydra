@@ -11,7 +11,7 @@ void dummy_mysql() {
   printf("\n");
 }
 
-void service_mysql(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+void service_mysql(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   printf("\n");
 }
 #else
@@ -308,7 +308,7 @@ int start_mysql(int sock, char *ip, int port, unsigned char options, char *miscp
   return 1;
 }
 
-void service_mysql(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+void service_mysql(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   int run = 1, next_run = 1, sock = -1;
   int myport = PORT_MYSQL;
 
@@ -424,7 +424,7 @@ char *hydra_scramble(char *to, const char *message, const char *password) {
 }
 #endif
 
-int service_mysql_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int service_mysql_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
