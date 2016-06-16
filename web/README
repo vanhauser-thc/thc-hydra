@@ -18,7 +18,7 @@ INTRODUCTION
 Number one of the biggest security holes are passwords, as every password
 security study shows.
 This tool is a proof of concept code, to give researchers and security
-consultants the possiblity to show how easy it would be to gain unauthorized
+consultants the possibility to show how easy it would be to gain unauthorized
 access from remote to a system.
 
 THIS TOOL IS FOR LEGAL PURPOSES ONLY!
@@ -35,7 +35,7 @@ Currently this tool supports the following protocols:
  HTTP-FORM-GET, HTTP-FORM-POST, HTTP-GET, HTTP-HEAD, HTTP-PROXY, HTTPS-FORM-GET,
  HTTPS-FORM-POST, HTTPS-GET, HTTPS-HEAD, HTTP-Proxy, ICQ, IMAP, IRC, LDAP,
  MS-SQL, MYSQL, NCP, NNTP, Oracle Listener, Oracle SID, Oracle, PC-Anywhere,
- PCNFS, POP3, POSTGRES, RDP, Rexec, Rlogin, Rsh, SAP/R3, SIP, SMB, SMTP,
+ PCNFS, POP3, POSTGRES, RDP, Rexec, Rlogin, Rsh, RTSP, SAP/R3, SIP, SMB, SMTP,
  SMTP Enum, SNMP v1+v2+v3, SOCKS5, SSH (v1 and v2), SSHKEY, Subversion,
  Teamspeak (TS2), Telnet, VMware-Auth, VNC and XMPP.
 
@@ -82,7 +82,7 @@ install from the vendor's web sites.
 
 For all other Linux derivates and BSD based systems, use the system
 software installer and look for similar named libraries like in the
-comand above. In all other cases you have to download all source libraries
+command above. In all other cases you have to download all source libraries
 and compile them manually.
 
 
@@ -103,7 +103,7 @@ options available.
 Type "./hydra -h" to see all available command line options.
 
 Note that NO login/password file is included. Generate them yourself.
-A default password list is hoever present, use "dpl4hydra.sh" to generate
+A default password list is however present, use "dpl4hydra.sh" to generate
 a list.
 
 For Linux users, a GTK gui is available, try "./xhydra"
@@ -195,7 +195,7 @@ specify "-e sn" on the command line.
 
 
 But there are two more modes for trying passwords than -p/-P:
-You can use text file which where a login and password pair is seperated by a colon,
+You can use text file which where a login and password pair is separated by a colon,
 e.g.:
   admin:password
   test:test
@@ -224,7 +224,7 @@ Example:
 SPECIAL OPTIONS FOR MODULES
 ---------------------------
 Via the third command line parameter (TARGET SERVICE OPTIONAL) or the -m
-commandline option, you can pass one option to a module.
+command line option, you can pass one option to a module.
 Many modules use this, a few require it!
 
 To see the special option of a module, type:
@@ -244,11 +244,11 @@ Examples (they are all equal):
 
 RESTORING AN ABORTED/CRASHED SESSION
 ------------------------------------
-When hydra is aborted with Control-C, killed or crashs, it leavs a
+When hydra is aborted with Control-C, killed or crashes, it leaves a
 "hydra.restore" file behind which contains all necessary information to
 restore the session. This session file is written every 5 minutes.
 NOTE: the hydra.restore file can NOT be copied to a different platform (e.g.
-from little indian to big indian, or from solaris to aix)
+from little endian to big endian, or from solaris to aix)
 
 
 
@@ -286,7 +286,7 @@ ADDITIONAL HINTS
 
 SPEED
 -----
-through the parallizing feature, this password cracker tool can be very
+through the parallelizing feature, this password cracker tool can be very
 fast, however it depends on the protocol. The fastest are generally POP3
 and FTP.
 Experiment with the task option (-t) to speed things up! The higher - the

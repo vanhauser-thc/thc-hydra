@@ -1,6 +1,45 @@
 Changelog for hydra
 -------------------
 
+Release 8.2-pre
+* Added RTSP module, thanks to jjavi89 for supplying!
+* Added patch for ssh that fixes hyra stopping to connect, thanks to ShantonRU for the patch
+* Added new -O option to hydra to support SSL servers that do not suport TLS
+* Added xhydra gtk patche by Petar Kaleychev to support modules that do not use usernames
+* Added patch to redis for initial service checking by Petar Kaleychev - thanks a lot!
+* Added support in hydra-http for http-post (content length 0)
+* Fixed important bug in http-*://server/url command line processing
+* Added SSL SNI support
+* Fixed bug in HTTP Form redirection following - thanks for everyone who reported and especially to Hayden Young for setting up a test page for debugging
+* Better library finding in ./configure for SVN + support for Darwin Homebrew (and further enhanced)
+* Fixed http-form module crash that only occurs on *BSD/OSX systems. Thanks to zdk for reporting!
+* Fixed for SSL connection to support TLSv1.2 etc.
+* Support for different RSA keylengths, thanks to fann95 for the patch
+* Fixed a bug where the cisco-enable module was not working with the password-only logon mode
+* Fixed an out of memory bug in http-form
+* Fixed imap PLAIN method
+* Fixed -x option to bail if it would generate too many passwords (more than 4 billion)
+* Added warning if HYDRA_PROXY_CONNECT environment is detected, that is an outdated setting
+* Added --fhs switch to configure (for Linux distribution usage)
+* ... your patch?
+
+
+Release 8.1
+* David Maciejak, my co-maintainer moved to a different job and country and can not help with Hydra anymore - sadly! Wish you all the best!
+* Added patch from Ander Juaristi which adds h/H header options for http-form-*, great work, thanks!
+* Fixed the -M option, works now with many many targets :-)
+* -M option now supports ports, add a colon in between: "host:port", or, if IPv6, "[ipv6ipaddress]:port"
+* Found login:password combinations are now printed with the name specified (hostname or IP), not always IP
+* Fixed for cisco-enable if an intial Login/Password is used (thanks to joswr1te for reporting)
+* Added patch by tux-mind for better MySQL compilation and an Android patches and Makefile. Thanks!
+* Added xhydra gtk patches by Petar Kaleychev to support -h, -U, -f, -F, -q and -e r options, thanks!
+* Added patch for teamspeak to better identify server errors and auth failures (thanks to Petar Kaleychev)
+* Fixed a crash in the cisco module (thanks to Anatoly Mamaev for reporting)
+* Small fix for HTTP form module for redirect pages where a S= string match would not work (thanks to mkosmach for reporting)
+* Updated configure to detect subversion packages on current Cygwin
+* Fixed RDP module to support the port option (thanks to and.enshin(at)gmail.com)
+
+
 Release 8.0
 ! Development moved to a public github repository: https://github.com/vanhauser-thc/thc-hydra
 * Added module for redis (submitted by Alejandro Ramos, thanks!)
@@ -208,7 +247,7 @@ Release 6.4
 
 
 Release 6.3
-* Added patch by Petar(dot)Kaley(at)gmail.com which adds nice icons to cygwin hydra files
+* Added patch by Petar Kaleychev which adds nice icons to cygwin hydra files
 * Added patch by Gauillaume Rousse which fixes a warning display
 * New Oracle module (for databases via OCI, for TNS Listener passwd, for SID enumeration)
 * New SMTP user enum module (using VRFY, EXPN or RCPT command)

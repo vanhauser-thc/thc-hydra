@@ -1,7 +1,11 @@
 Changelog for hydra
 -------------------
 
-Release 8.2-pre
+Release 8.3-dev
+* ...
+
+
+Release 8.2
 * Added RTSP module, thanks to jjavi89 for supplying!
 * Added patch for ssh that fixes hyra stopping to connect, thanks to ShantonRU for the patch
 * Added new -O option to hydra to support SSL servers that do not suport TLS
