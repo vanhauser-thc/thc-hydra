@@ -350,7 +350,7 @@ void help(int ext) {
     printf("  -f / -F   exit when a login/pass pair is found (-M: -f per host, -F global)\n");
   printf("  -t TASKS  run TASKS number of connects in parallel (per host, default: %d)\n", TASKS);
   if (ext)
-    printf("  -w / -W TIME  waittime for responses (%ds) / between connects per thread\n", WAITTIME);
+    printf("  -w / -W TIME  waittime for responses (%d) / between connects per thread (%d)\n", WAITTIME, conwait);
   if (ext)
     printf("  -4 / -6   use IPv4 (default) / IPv6 addresses (put always in [] also in -M)\n");
   if (ext)
@@ -3918,11 +3918,12 @@ int main(int argc, char *argv[]) {
       for (j = 0; j < hydra_options.max_use; j++)
         if (hydra_heads[j]->active >= 0)
           k++;
-      if ((long)(hydra_brains.todo_all - hydra_brains.sent) <= 0) { //in case of overflow of unsigned "-1"
+      if (hydra_brains.todo_all < hydra_brains.sent) { //in case of overflow of unsigned "-1"
         for (i = 0; i < hydra_options.max_use; i++)
           if (hydra_heads[i]->active > 0 && hydra_heads[i]->pid > 0)
             hydra_kill_head(i, 1, 3);
         if (debug) printf("DEBUG: %lu %lu\n", hydra_brains.todo_all, hydra_brains.sent);
+//        printf("ERROR: weird bug detected!\n");
         bail("Weird bug detected where more tests were performed than possible. Please post your command line here: https://github.com/vanhauser-thc/thc-hydra/issues/113 or send it in an email to vh@thc.org");
       }
       printf("[STATUS] %.2f tries/min, %lu tries in %02lu:%02luh, %lu to do in %02lu:%02luh, %d active\n", (1.0 * hydra_brains.sent) / (((elapsed_status - starttime) * 1.0) / 60),     // tries/min 
