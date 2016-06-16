@@ -3890,6 +3890,7 @@ int main(int argc, char *argv[]) {
         hydra_increase_fail_count(hydra_heads[head_no]->target_no, head_no);
       }
     }
+    if (debug) printf("DEBUG: bug hunt: %lu %lu\n", hydra_brains.todo_all, hydra_brains.sent);
 
     usleepn(USLEEP_LOOP);
     (void) wait3(NULL, WNOHANG, NULL);
@@ -3917,8 +3918,13 @@ int main(int argc, char *argv[]) {
       for (j = 0; j < hydra_options.max_use; j++)
         if (hydra_heads[j]->active >= 0)
           k++;
-      if ((long)(hydra_brains.todo_all - hydra_brains.sent) <= 0) //in case of overflow of unsigned "-1"
+      if ((long)(hydra_brains.todo_all - hydra_brains.sent) <= 0) { //in case of overflow of unsigned "-1"
+        for (i = 0; i < hydra_options.max_use; i++)
+          if (hydra_heads[i]->active > 0 && hydra_heads[i]->pid > 0)
+            hydra_kill_head(i, 1, 3);
+        if (debug) printf("DEBUG: %lu %lu\n", hydra_brains.todo_all, hydra_brains.sent);
         bail("Weird bug detected where more tests were performed than possible. Please post your command line here: https://github.com/vanhauser-thc/thc-hydra/issues/113 or send it in an email to vh@thc.org");
+      }
       printf("[STATUS] %.2f tries/min, %lu tries in %02lu:%02luh, %lu to do in %02lu:%02luh, %d active\n", (1.0 * hydra_brains.sent) / (((elapsed_status - starttime) * 1.0) / 60),     // tries/min 
              hydra_brains.sent, // tries 
              (long unsigned int) ((elapsed_status - starttime) / 3600), // hours 
