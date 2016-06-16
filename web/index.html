@@ -16,8 +16,8 @@
  A very fast network logon cracker which support many different services.
  See feature sets and services coverage <a href="network_password_cracker_comparison.html">page</a> - incl. a speed comparison against ncrack and medusa<br>
 </h4><h3>
- Current Version: 8.0
- Last update 2014-05-12
+ Current Version: 8.2
+ Last update 2016-06-16
 </h3>
 </pre>
 </td>
@@ -33,26 +33,29 @@
         Read below for Linux compilation notes.
 </b>        
 
-        CHANGELOG for 8.0
+        CHANGELOG for 8.2
         ===================
         ! Development moved to a public github repository: https://github.com/vanhauser-thc/thc-hydra
-        * Added module for redis (submitted by Alejandro Ramos, thanks!)
-        * Added patch which adds Unicode support for the SMB module (thanks to Max Kosmach)
-        * Added initial interactive password authentication test for ssh (thanks to Joshua Houghton)
-        * Added patch for xhydra that adds bruteforce generator to the GUI (thanks to Petar Kaleychev)
-        * Target on the command line can now be a CIDR definition, e.g. 192.168.0.0/24
-        * with "-M targetfile", you can now specify a port for each entry (use "target:port" per line)
-        * Verified that hydra compiles cleanly on QNX / Blackberry 10 :-)
-        * Bugfixes for -x option:
-          - password tries were lost when connection errors happened (thanks to Vineet Kumar for reporting)
-          - fixed crash when used together with -e option
-        * Fixed a bug that hydra would not compile without libssh (introduced in v7.6)
-        * Various bugfixes if many targets where attacked in parallel
-        * Cygwin's Postgresql is working again, hence configure detection re-enabled
-        * Added gcc compilation security options (if detected to be supported by configure script)
-        * Enhancements to the secure compilation options
-        * Checked code with cppcheck and fixed some minor issues.
-        * Checked code with Coverity. Fixed a lot of small and medium issues.
+        
+        * Added RTSP module, thanks to jjavi89 for supplying!
+        * Added patch for ssh that fixes hyra stopping to connect, thanks to ShantonRU for the patch
+        * Added new -O option to hydra to support SSL servers that do not suport TLS
+        * Added xhydra gtk patche by Petar Kaleychev to support modules that do not use usernames
+        * Added patch to redis for initial service checking by Petar Kaleychev - thanks a lot!
+        * Added support in hydra-http for http-post (content length 0)
+        * Fixed important bug in http-*://server/url command line processing
+        * Added SSL SNI support
+        * Fixed bug in HTTP Form redirection following - thanks for everyone who reported and especially to Hayden Young for setting up a test page for debugging
+        * Better library finding in ./configure for SVN + support for Darwin Homebrew (and further enhanced)
+        * Fixed http-form module crash that only occurs on *BSD/OSX systems. Thanks to zdk for reporting!
+        * Fixed for SSL connection to support TLSv1.2 etc.
+        * Support for different RSA keylengths, thanks to fann95 for the patch
+        * Fixed a bug where the cisco-enable module was not working with the password-only logon mode
+        * Fixed an out of memory bug in http-form
+        * Fixed imap PLAIN method
+        * Fixed -x option to bail if it would generate too many passwords (more than 4 billion)
+        * Added warning if HYDRA_PROXY_CONNECT environment is detected, that is an outdated setting
+        * Added --fhs switch to configure (for Linux distribution usage)
 
 	You can also take a look at the full <a href="CHANGES">CHANGES</a> file
 
@@ -70,10 +73,10 @@
 
 	Currently this tool supports:
 	  Asterisk, AFP, Cisco AAA, Cisco auth, Cisco enable, CVS, Firebird, FTP, HTTP-FORM-GET, HTTP-FORM-POST,
-	  HTTP-GET, HTTP-HEAD, HTTP-PROXY, HTTPS-FORM-GET, HTTPS-FORM-POST, HTTPS-GET, HTTPS-HEAD,
+	  HTTP-GET, HTTP-HEAD, HTTP-POST, HTTP-PROXY, HTTPS-FORM-GET, HTTPS-FORM-POST, HTTPS-GET, HTTPS-POST, HTTPS-HEAD,
 	  HTTP-Proxy, ICQ, IMAP, IRC, LDAP, MS-SQL, MYSQL, NCP, NNTP, Oracle Listener, Oracle SID, Oracle,
-	  PC-Anywhere, PCNFS, POP3, POSTGRES, RDP, Rexec, Rlogin, Rsh, S7-300, SAP/R3, SIP, SMB, SMTP, SMTP Enum,
-	  SNMP, SOCKS5, SSH (v1 and v2), Subversion, Teamspeak (TS2), Telnet, VMware-Auth, VNC and XMPP.
+	  PC-Anywhere, PCNFS, POP3, POSTGRES, RDP, Rexec, Rlogin, Rsh, RTSP, S7-300, SAP/R3, SIP, SMB, SMTP,
+	  SMTP Enum, SNMP, SOCKS5, SSH (v1 and v2), Subversion, Teamspeak (TS2), Telnet, VMware-Auth, VNC and XMPP.
 
         For HTTP, POP3, IMAP and SMTP, several login mechanisms like plain and MD5 digest etc. are supported.
 
@@ -137,7 +140,7 @@
  [0x05] The Art of Downloading: Source and Binaries
  
 	1. PRODUCTION/RELEASE VERSION:
-	   The source code of state-of-the-art Hydra: <a href="http://www.thc.org/releases/hydra-8.0.tar.gz">hydra-8.0.tar.gz</a>
+	   The source code of state-of-the-art Hydra: <a href="http://www.thc.org/releases/hydra-8.2.tar.gz">hydra-8.2.tar.gz</a>
 	   (compiles on all UNIX based platforms - even MacOS X, Cygwin on Windows, ARM-Linux, Android, iPhone, Blackberry 10, etc.)
 
         2. DEVELOPMENT VERSION:
