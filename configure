@@ -136,10 +136,10 @@ fi
 LIBDIRS="$LIBDIRS /lib /usr/lib /usr/local/lib /opt/local/lib"
 INCDIRS="/usr/include /usr/local/include /opt/include /opt/local/include"
 if [ -n "$PREFIX" ]; then
-    if [ -d "$PREFIX/lib"]; then
+    if [ -d "$PREFIX/lib" ]; then
         LIBDIRS="$LIBDIRS $PREFIX/lib"
     fi
-    if [ -d "$PREFIX/include"]; then
+    if [ -d "$PREFIX/include" ]; then
         INCDIRS="$INCDIRS $PREFIX/include"
     fi
 fi
