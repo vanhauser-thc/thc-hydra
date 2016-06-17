@@ -166,27 +166,27 @@ static unsigned char Get7Bits(unsigned char *input, int startBit) {
 }
 
 /* Make the key */
-static void MakeKey(unsigned char *key, unsigned char *des_key) {
-  des_key[0] = Get7Bits(key, 0);
-  des_key[1] = Get7Bits(key, 7);
-  des_key[2] = Get7Bits(key, 14);
-  des_key[3] = Get7Bits(key, 21);
-  des_key[4] = Get7Bits(key, 28);
-  des_key[5] = Get7Bits(key, 35);
-  des_key[6] = Get7Bits(key, 42);
-  des_key[7] = Get7Bits(key, 49);
+static void MakeKey(unsigned char *key, unsigned char *DES_key) {
+  DES_key[0] = Get7Bits(key, 0);
+  DES_key[1] = Get7Bits(key, 7);
+  DES_key[2] = Get7Bits(key, 14);
+  DES_key[3] = Get7Bits(key, 21);
+  DES_key[4] = Get7Bits(key, 28);
+  DES_key[5] = Get7Bits(key, 35);
+  DES_key[6] = Get7Bits(key, 42);
+  DES_key[7] = Get7Bits(key, 49);
 
-  des_set_odd_parity((DES_cblock *) des_key);
+  DES_set_odd_parity((DES_cblock *) DES_key);
 }
 
 /* Do the DesEncryption */
 void DesEncrypt(unsigned char *clear, unsigned char *key, unsigned char *cipher) {
-  DES_cblock des_key;
-  des_key_schedule key_schedule;
+  DES_cblock DES_key;
+  DES_key_schedule key_schedule;
 
-  MakeKey(key, des_key);
-  des_set_key(&des_key, key_schedule);
-  des_ecb_encrypt((DES_cblock *) clear, (DES_cblock *) cipher, key_schedule, 1);
+  MakeKey(key, DES_key);
+  DES_set_key(&DES_key, &key_schedule);
+  DES_ecb_encrypt((DES_cblock *) clear, (DES_cblock *) cipher, &key_schedule, 1);
 }
 
 /*

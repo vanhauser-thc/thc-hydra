@@ -246,8 +246,6 @@ void service_http(char *ip, int sp, unsigned char options, char *miscptr, FILE *
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     return;
 
-  printf("DEBUG0: %s\n", miscptr);
-
   if ((webtarget = strstr(miscptr, "://")) != NULL) {
     webtarget += strlen("://");
     if ((ptr2 = index(webtarget, ':')) != NULL) {       /* step over port if present */

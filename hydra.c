@@ -3685,6 +3685,15 @@ int main(int argc, char *argv[]) {
   fflush(stderr);
   fflush(hydra_brains.ofp);
 
+
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+  if (hydra_options.ssl) {
+    fprintf(stderr, "[WARNING] *****************************************************\n");
+    fprintf(stderr, "[WARNING] OPENSSL v1.1 development changes are active - modules SMB, SNMP, RDP, ORACLE LISTENER and SSL in general might not work properly! Please test and report to vh@thc.org.\n");
+    fprintf(stderr, "[WARNING] *****************************************************\n");
+  }
+#endif
+
   hydra_debug(0, "attack");
   process_restore = 1;
 

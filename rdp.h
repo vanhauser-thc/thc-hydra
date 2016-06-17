@@ -49,6 +49,8 @@
 #include <sys/stat.h>           /* stat */
 #include <sys/time.h>           /* gettimeofday */
 #include <sys/times.h>          /* times */
+#include <openssl/rsa.h>
+#include <openssl/hmac.h>
 
 //fixme
 

@@ -41,6 +41,14 @@
 
 #define OPTION_SSL 1
 
+#ifdef LIBOPENSSL
+  #ifndef NO_RSA_LEGACY
+    #if OPENSSL_VERSION_NUMBER >= 0x10100000L
+      #define NO_RSA_LEGACY
+    #endif
+  #endif
+#endif
+
 #define PORT_NOPORT     -1
 #define PORT_FTP	21
 #define PORT_FTP_SSL	990

@@ -440,11 +440,25 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
 
 #ifdef LIBOPENSSL
 RSA *ssl_temp_rsa_cb(SSL * ssl, int export, int keylength) {
-  if(rsa->n && RSA_size(rsa)!=(keylength/8)){
+  int ok = 0;
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+  BIGNUM *n;
+  n = BN_new();
+  RSA_get0_key(rsa, &n, NULL, NULL);
+  ok = BN_zero(n);
+#else
+  if (rsa->n == 0)
+    ok = 1;
+#endif
+  if(ok == 0 && RSA_size(rsa)!=(keylength/8)){ // n is not zero
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+      BN_free(n);
+#endif
       RSA_free(rsa);
+      rsa = NULL;
   }
-  if (rsa->n == 0) {
-#ifdef NO_RSA_LEGACY
+  if (ok != 0) { // n is zero
+#if defined(NO_RSA_LEGACY) || OPENSSL_VERSION_NUMBER >= 0x10100000L
     RSA *rsa = RSA_new();
     BIGNUM *f4 = BN_new();
     BN_set_word(f4, RSA_F4);
@@ -453,6 +467,9 @@ RSA *ssl_temp_rsa_cb(SSL * ssl, int export, int keylength) {
     rsa = RSA_generate_key(keylength, RSA_F4, NULL, NULL);
 #endif
   }
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+  BN_free(n);
+#endif
   return rsa;
 }
 
@@ -480,7 +497,11 @@ int internal__hydra_connect_to_ssl(int socket, char *hostname) {
     } else {
 //    if ((sslContext = SSL_CTX_new(SSLv23_client_method())) == NULL) {
 #ifndef TLSv1_2_client_method
-  #define TLSv1_2_client_method TLSv1_client_method
+  #if OPENSSL_VERSION_NUMBER < 0x10100000L
+    #define TLSv1_2_client_method TLSv1_client_method
+  #else
+    #define TLSv1_2_client_method TLS_client_method
+  #endif
 #endif
       if ((sslContext = SSL_CTX_new(TLSv1_2_client_method())) == NULL) {
         if (verbose) {
@@ -497,7 +518,9 @@ int internal__hydra_connect_to_ssl(int socket, char *hostname) {
 
     /* we set the default verifiers and dont care for the results */
     (void) SSL_CTX_set_default_verify_paths(sslContext);
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
     SSL_CTX_set_tmp_rsa_callback(sslContext, ssl_temp_rsa_cb);
+#endif
     SSL_CTX_set_verify(sslContext, SSL_VERIFY_NONE, NULL);
   }
 

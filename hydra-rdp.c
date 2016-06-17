@@ -1,4 +1,3 @@
-
 /*
    david: this module is heavily based on rdesktop v 1.7.0
 
@@ -859,7 +858,7 @@ static void reverse(uint8 * p, int len) {
 
 void ssl_rsa_encrypt(uint8 * out, uint8 * in, int len, uint32 modulus_size, uint8 * modulus, uint8 * exponent) {
   BN_CTX *ctx;
-  BIGNUM mod, exp, x, y;
+  BIGNUM *mod, *exp, *x, *y;
   uint8 inr[SEC_MAX_MODULUS_SIZE];
   int outlen;
 
@@ -869,39 +868,39 @@ void ssl_rsa_encrypt(uint8 * out, uint8 * in, int len, uint32 modulus_size, uint
   reverse(inr, len);
 
   ctx = BN_CTX_new();
-  BN_init(&mod);
-  BN_init(&exp);
-  BN_init(&x);
-  BN_init(&y);
+  mod = BN_new();
+  exp = BN_new();
+  x = BN_new();
+  y = BN_new();
 
-  BN_bin2bn(modulus, modulus_size, &mod);
-  BN_bin2bn(exponent, SEC_EXPONENT_SIZE, &exp);
-  BN_bin2bn(inr, len, &x);
-  BN_mod_exp(&y, &x, &exp, &mod, ctx);
-  outlen = BN_bn2bin(&y, out);
+  BN_bin2bn(modulus, modulus_size, mod);
+  BN_bin2bn(exponent, SEC_EXPONENT_SIZE, exp);
+  BN_bin2bn(inr, len, x);
+  BN_mod_exp(y, x, exp, mod, ctx);
+  outlen = BN_bn2bin(y, out);
   reverse(out, outlen);
   if (outlen < (int) modulus_size)
     memset(out + outlen, 0, modulus_size - outlen);
 
-  BN_free(&y);
-  BN_clear_free(&x);
-  BN_free(&exp);
-  BN_free(&mod);
+  BN_free(y);
+  BN_free(x);
+  BN_free(exp);
+  BN_free(mod);
   BN_CTX_free(ctx);
 }
 
-/* returns newly allocated SSL_CERT or NULL */
-SSL_CERT *ssl_cert_read(uint8 * data, uint32 len) {
+/* returns newly allocated X509 or NULL */
+X509 *ssl_cert_read(uint8 * data, uint32 len) {
   /* this will move the data pointer but we don't care, we don't use it again */
   return d2i_X509(NULL, (D2I_X509_CONST unsigned char **) &data, len);
 }
 
-static void ssl_cert_free(SSL_CERT * cert) {
+static void ssl_cert_free(X509 * cert) {
   X509_free(cert);
 }
 
 /* returns newly allocated SSL_RKEY or NULL */
-SSL_RKEY *ssl_cert_to_rkey(SSL_CERT * cert, uint32 * key_len) {
+SSL_RKEY *ssl_cert_to_rkey(X509 * cert, uint32 * key_len) {
   EVP_PKEY *epk = NULL;
   SSL_RKEY *lkey;
   int nid;
@@ -909,13 +908,19 @@ SSL_RKEY *ssl_cert_to_rkey(SSL_CERT * cert, uint32 * key_len) {
   /* By some reason, Microsoft sets the OID of the Public RSA key to
      the oid for "MD5 with RSA Encryption" instead of "RSA Encryption"
 
-     Kudos to Richard Levitte for the following (. intiutive .) 
+     Kudos to Richard Levitte for the following (. intuitive .) 
      lines of code that resets the OID and let's us extract the key. */
-  nid = OBJ_obj2nid(cert->cert_info->key->algor->algorithm);
+  //nid = OBJ_obj2nid(cert->cert_info->key->algor->algorithm);
+  nid = X509_get_signature_nid(cert);
   if ((nid == NID_md5WithRSAEncryption) || (nid == NID_shaWithRSAEncryption)) {
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+    fprintf(stderr, "[ERROR] the current experimental openssl-1.1 support in hydra does not support RDP :( \n");
+    hydra_child_exit(2);
+#else 
     DEBUG_RDP5(("Re-setting algorithm type to RSA in server certificate\n"));
     ASN1_OBJECT_free(cert->cert_info->key->algor->algorithm);
     cert->cert_info->key->algor->algorithm = OBJ_nid2obj(NID_rsaEncryption);
+#endif
   }
   epk = X509_get_pubkey(cert);
   if (NULL == epk) {
@@ -929,7 +934,7 @@ SSL_RKEY *ssl_cert_to_rkey(SSL_CERT * cert, uint32 * key_len) {
   return lkey;
 }
 
-int ssl_cert_print_fp(FILE * fp, SSL_CERT * cert) {
+int ssl_cert_print_fp(FILE * fp, X509 * cert) {
   return X509_print_fp(fp, cert);
 }
 
@@ -941,13 +946,29 @@ void ssl_rkey_free(SSL_RKEY * rkey) {
 int ssl_rkey_get_exp_mod(SSL_RKEY * rkey, uint8 * exponent, uint32 max_exp_len, uint8 * modulus, uint32 max_mod_len) {
   int len;
 
-  if ((BN_num_bytes(rkey->e) > (int) max_exp_len) || (BN_num_bytes(rkey->n) > (int) max_mod_len)) {
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+  BIGNUM *n, *e, *d;
+
+  n = BN_new();
+  e = BN_new();
+  RSA_get0_key(rkey, &n, &e, NULL);
+  if ((BN_num_bytes(e) > (int) max_exp_len) || (BN_num_bytes(n) > (int) max_mod_len)) {
     return 1;
   }
+  len = BN_bn2bin(e, exponent);
+  reverse(exponent, len);
+  len = BN_bn2bin(n, modulus);
+  reverse(modulus, len);
+  BN_free(n);
+  BN_free(e);
+#else
+  if ((BN_num_bytes(rkey->e) > (int) max_exp_len) || (BN_num_bytes(rkey->n) > (int) max_mod_len))
+    return 1;
   len = BN_bn2bin(rkey->e, exponent);
   reverse(exponent, len);
   len = BN_bn2bin(rkey->n, modulus);
   reverse(modulus, len);
+#endif
   return 0;
 }
 
@@ -958,11 +979,17 @@ BOOL ssl_sig_ok(uint8 * exponent, uint32 exp_len, uint8 * modulus, uint32 mod_le
 
 
 void ssl_hmac_md5(const void *key, int key_len, const unsigned char *msg, int msg_len, unsigned char *md) {
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+  HMAC_CTX *ctx;
+  ctx = HMAC_CTX_new();
+  HMAC(EVP_md5(), key, key_len, msg, msg_len, md, NULL);
+  HMAC_CTX_free(ctx);
+#else
   HMAC_CTX ctx;
-
   HMAC_CTX_init(&ctx);
   HMAC(EVP_md5(), key, key_len, msg, msg_len, md, NULL);
   HMAC_CTX_cleanup(&ctx);
+#endif
 }
 
 
@@ -1373,7 +1400,7 @@ static BOOL sec_parse_public_sig(STREAM s, uint32 len, uint8 * modulus, uint8 * 
 static BOOL sec_parse_crypt_info(STREAM s, uint32 * rc4_key_size, uint8 ** server_random, uint8 * modulus, uint8 * exponent) {
   uint32 crypt_level, random_len, rsa_info_len;
   uint32 cacert_len, cert_len, flags;
-  SSL_CERT *cacert, *server_cert;
+  X509 *cacert, *server_cert;
   SSL_RKEY *server_public_key;
   uint16 tag, length;
   uint8 *next_tag, *end;
@@ -1438,7 +1465,7 @@ static BOOL sec_parse_crypt_info(STREAM s, uint32 * rc4_key_size, uint8 ** serve
     }
     for (; certcount > 2; certcount--) {        /* ignore all the certificates between the root and the signing CA */
       uint32 ignorelen;
-      SSL_CERT *ignorecert;
+      X509 *ignorecert;
 
       DEBUG_RDP5(("Ignored certs left: %d\n", certcount));
       in_uint32_le(s, ignorelen);
