@@ -17,7 +17,16 @@
    
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+   Foundation, Inc.
+  
+   Free Software Foundation
+   51 Franklin Street, Fifth Floor
+   Boston, MA 02110-1335
+   USA
+
+   Telephone: +1-617-542-5942
+   Fax: +1-617-542-2652
+   General email: info@fsf.org
 */
 
 /* taken direct from rfc2104 implementation and modified for suitable use
