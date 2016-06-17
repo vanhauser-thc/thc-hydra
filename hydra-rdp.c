@@ -910,8 +910,11 @@ SSL_RKEY *ssl_cert_to_rkey(X509 * cert, uint32 * key_len) {
 
      Kudos to Richard Levitte for the following (. intuitive .) 
      lines of code that resets the OID and let's us extract the key. */
-  //nid = OBJ_obj2nid(cert->cert_info->key->algor->algorithm);
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
   nid = X509_get_signature_nid(cert);
+#else
+  nid = OBJ_obj2nid(cert->cert_info->key->algor->algorithm);
+#endif
   if ((nid == NID_md5WithRSAEncryption) || (nid == NID_shaWithRSAEncryption)) {
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
     fprintf(stderr, "[ERROR] the current experimental openssl-1.1 support in hydra does not support RDP :( \n");
