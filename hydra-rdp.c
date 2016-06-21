@@ -917,8 +917,11 @@ SSL_RKEY *ssl_cert_to_rkey(X509 * cert, uint32 * key_len) {
 #endif
   if ((nid == NID_md5WithRSAEncryption) || (nid == NID_shaWithRSAEncryption)) {
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
-    fprintf(stderr, "[ERROR] the current experimental openssl-1.1 support in hydra does not support RDP :( \n");
-    hydra_child_exit(2);
+//    fprintf(stderr, "[ERROR] the current experimental openssl-1.1 support in hydra does not support RDP :( \n");
+//    hydra_child_exit(2);
+    DEBUG_RDP5(("Re-setting algorithm type to RSA in server certificate\n"));
+    ASN1_OBJECT_free(X509_get_X509_PUBKEY(xs)->algor->algorithm);
+    X509_get_X509_PUBKEY(xs)->algor->algorithm = OBJ_nid2obj(NID_rsaEncryption);
 #else 
     DEBUG_RDP5(("Re-setting algorithm type to RSA in server certificate\n"));
     ASN1_OBJECT_free(cert->cert_info->key->algor->algorithm);
