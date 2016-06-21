@@ -2748,6 +2748,8 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "[INFO] Reduced number of tasks to 1 (smb does not like parallel connections)\n");
         hydra_options.tasks = 1;
       }
+      if (hydra_options.login != NULL && (index(hydra_options.login, '\\') != NULL || index(hydra_options.login, '/') != NULL))
+        fprintf(stderr, "[WARNING] potential windows domain specification found in login. You must use the -m option to pass a domain.\n");
       i = 1;
     }
     if ((strcmp(hydra_options.service, "smb") == 0) || (strcmp(hydra_options.service, "smbnt") == 0)) {
