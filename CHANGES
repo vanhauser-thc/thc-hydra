@@ -2,7 +2,7 @@ Changelog for hydra
 -------------------
 
 Release 8.3-dev
-* ...
+* Support for upcoming OpenSSL 1.1 added. needs testing.
 
 
 Release 8.2
