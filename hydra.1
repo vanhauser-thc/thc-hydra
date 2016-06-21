@@ -5,8 +5,8 @@ hydra \- a very fast network logon cracker which support many different services
 .B hydra
  [[[\-l LOGIN|\-L FILE] [\-p PASS|\-P FILE|\-x OPT]] | [\-C FILE]] [\-e nsr]
  [\-u] [\-f] [\-F] [\-M FILE] [\-o FILE] [\-t TASKS] [\-w TIME] [\-W TIME]
- [\-s PORT] [\-S] [\-4/6] [\-vV] [\-d]
- server service [OPTIONAL_SERVICE_PARAMETER]
+ [\-m OPTIONS] [\-s PORT] [\-S] [\-4/6] [\-vV] [\-d]
+ server service [OPTIONS]
 .br
 .SH DESCRIPTION
 Hydra is a parallized login cracker which supports numerous protocols
@@ -89,6 +89,9 @@ write found login/password pairs to FILE instead of stdout
 .TP
 .B \-t TASKS
 run TASKS number of connects in parallel (default: 16)
+.TP
+.B \-m OPTIONS
+module specific options. See hydra -U <module> what options are available.
 .TP
 .B \-w TIME
 defines the max wait time in seconds for responses (default: 32)
