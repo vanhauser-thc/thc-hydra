@@ -154,13 +154,7 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *entTelnet;
   GtkWidget *label36;
   GtkWidget *frame16;
-  GtkWidget *table11;
-  GtkWidget *radioSNMPRead;
-  GSList *radioSNMPRead_group = NULL;
-  GtkWidget *radioSNMPWrite;
-  GtkWidget *radioSNMPVer2;
-  GSList *radioSNMPVer2_group = NULL;
-  GtkWidget *radioSNMPVer1;
+  GtkWidget *entSNMP;
   GtkWidget *label35;
   GtkWidget *label14;
   GtkWidget *vbox3;
@@ -920,38 +914,12 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(frame16);
   gtk_box_pack_start(GTK_BOX(vbox4), frame16, TRUE, TRUE, 0);
 
-  table11 = gtk_table_new(2, 2, FALSE);
-  gtk_widget_set_name(table11, "table11");
-  gtk_widget_show(table11);
-  gtk_container_add(GTK_CONTAINER(frame16), table11);
-
-  radioSNMPRead = gtk_radio_button_new_with_mnemonic(NULL, "Write Password");
-  gtk_widget_set_name(radioSNMPRead, "radioSNMPRead");
-  gtk_widget_show(radioSNMPRead);
-  gtk_table_attach(GTK_TABLE(table11), radioSNMPRead, 1, 2, 0, 1, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
-  gtk_radio_button_set_group(GTK_RADIO_BUTTON(radioSNMPRead), radioSNMPRead_group);
-  radioSNMPRead_group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(radioSNMPRead));
-
-  radioSNMPWrite = gtk_radio_button_new_with_mnemonic(NULL, "Read Password");
-  gtk_widget_set_name(radioSNMPWrite, "radioSNMPWrite");
-  gtk_widget_show(radioSNMPWrite);
-  gtk_table_attach(GTK_TABLE(table11), radioSNMPWrite, 1, 2, 1, 2, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
-  gtk_radio_button_set_group(GTK_RADIO_BUTTON(radioSNMPWrite), radioSNMPRead_group);
-  radioSNMPRead_group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(radioSNMPWrite));
-
-  radioSNMPVer2 = gtk_radio_button_new_with_mnemonic(NULL, "Version 2");
-  gtk_widget_set_name(radioSNMPVer2, "radioSNMPVer2");
-  gtk_widget_show(radioSNMPVer2);
-  gtk_table_attach(GTK_TABLE(table11), radioSNMPVer2, 0, 1, 1, 2, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
-  gtk_radio_button_set_group(GTK_RADIO_BUTTON(radioSNMPVer2), radioSNMPVer2_group);
-  radioSNMPVer2_group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(radioSNMPVer2));
-
-  radioSNMPVer1 = gtk_radio_button_new_with_mnemonic(NULL, "Version 1");
-  gtk_widget_set_name(radioSNMPVer1, "radioSNMPVer1");
-  gtk_widget_show(radioSNMPVer1);
-  gtk_table_attach(GTK_TABLE(table11), radioSNMPVer1, 0, 1, 0, 1, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
-  gtk_radio_button_set_group(GTK_RADIO_BUTTON(radioSNMPVer1), radioSNMPVer2_group);
-  radioSNMPVer2_group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(radioSNMPVer1));
+  entSNMP = gtk_entry_new();
+  gtk_widget_set_name(entSNMP, "entSNMP");
+  gtk_widget_show(entSNMP);
+  gtk_container_add(GTK_CONTAINER(frame16), entSNMP);
+  gtk_tooltips_set_tip(tooltips, entSNMP, "SNMP options", NULL);
+  gtk_entry_set_text(GTK_ENTRY(entSNMP), "3:SHA:AES:READ");
 
   label35 = gtk_label_new("SNMP");
   gtk_widget_set_name(label35, "label35");
@@ -1163,11 +1131,7 @@ GtkWidget *create_wndMain(void) {
   GLADE_HOOKUP_OBJECT(wndMain, entTelnet, "entTelnet");
   GLADE_HOOKUP_OBJECT(wndMain, label36, "label36");
   GLADE_HOOKUP_OBJECT(wndMain, frame16, "frame16");
-  GLADE_HOOKUP_OBJECT(wndMain, table11, "table11");
-  GLADE_HOOKUP_OBJECT(wndMain, radioSNMPRead, "radioSNMPRead");
-  GLADE_HOOKUP_OBJECT(wndMain, radioSNMPWrite, "radioSNMPWrite");
-  GLADE_HOOKUP_OBJECT(wndMain, radioSNMPVer2, "radioSNMPVer2");
-  GLADE_HOOKUP_OBJECT(wndMain, radioSNMPVer1, "radioSNMPVer1");
+  GLADE_HOOKUP_OBJECT(wndMain, entSNMP, "entSNMP");
   GLADE_HOOKUP_OBJECT(wndMain, label35, "label35");
   GLADE_HOOKUP_OBJECT(wndMain, label14, "label14");
   GLADE_HOOKUP_OBJECT(wndMain, vbox3, "vbox3");

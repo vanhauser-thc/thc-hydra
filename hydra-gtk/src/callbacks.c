@@ -34,7 +34,6 @@ char port[10];
 char tasks[10];
 char timeout[10];
 char smbparm[12];
-char snmpparm[4];
 char sapr3id[4];
 char passLoginNull[4];
 
@@ -309,23 +308,10 @@ int hydra_get_options(char *options[]) {
     options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
 
   } else if (!strcmp(tmp, "snmp")) {
-    memset(snmpparm, 0, 4);
-    widget = lookup_widget(GTK_WIDGET(wndMain), "radioSNMPVer1");
-    if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
-      snmpparm[0] = '1';
-    } else {
-      snmpparm[0] = '2';
-    }
-
-    widget = lookup_widget(GTK_WIDGET(wndMain), "radioSNMPWrite");
-    if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
-      snmpparm[0] = 'w';
-    } else {
-      snmpparm[0] = 'r';
-    }
-
+    widget = lookup_widget(GTK_WIDGET(wndMain), "entSNMP");
     options[i++] = "-m";
-    options[i++] = snmpparm;
+    options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+
   } else if (!strcmp(tmp, "telnet")) {
     widget = lookup_widget(GTK_WIDGET(wndMain), "entTelnet");
     if ((char *) gtk_entry_get_text((GtkEntry *) widget) != NULL) {
