@@ -605,6 +605,7 @@ void hydra_child_exit(int code) {
   do {
     sleepn(10);
   } while (read(intern_socket, buf, 1) <= 0);
+  close(intern_socket);
 //  sleep(2); // be sure that mommy receives our message
   exit(0);                      // might be killed before reaching this
 }

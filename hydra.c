@@ -1560,7 +1560,7 @@ void hydra_kill_head(int head_no, int killit, int fail) {
     printf("[DEBUG] head_no %d, kill %d, fail %d\n", head_no, killit, fail);
   if (head_no < 0)
     return;
-  if (hydra_heads[head_no]->active > 0) {
+  if (hydra_heads[head_no]->active > 0 || (hydra_heads[head_no]->sp[0] > 2 && hydra_heads[head_no]->sp[1] > 2)) {
     close(hydra_heads[head_no]->sp[0]);
     close(hydra_heads[head_no]->sp[1]);
   }
