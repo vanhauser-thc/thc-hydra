@@ -89,6 +89,12 @@ int hydra_get_options(char *options[]) {
     options[i++] = "-S";
   }
 
+  /* use old SSL? */
+  widget = lookup_widget(GTK_WIDGET(wndMain), "chkOldSSL");
+  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+    options[i++] = "-O";
+  }
+
   /* be verbose? */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkVerbose");
   if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {

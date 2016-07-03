@@ -60,6 +60,7 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *chkSSL;
   GtkWidget *chkServiceDetails;
   GtkWidget *chkCompleteHelp;
+  GtkWidget *chkOldSSL;
   GtkWidget *label29;
   GtkWidget *label1;
   GtkWidget *vbox2;
@@ -349,7 +350,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(frame12);
   gtk_box_pack_start(GTK_BOX(vbox5), frame12, TRUE, TRUE, 0);
 
-  table9 = gtk_table_new(3, 2, FALSE);
+  table9 = gtk_table_new(3, 3, FALSE);
   gtk_widget_set_name(table9, "table9");
   gtk_widget_show(table9);
   gtk_container_add(GTK_CONTAINER(frame12), table9);
@@ -357,31 +358,31 @@ GtkWidget *create_wndMain(void) {
   chkVerbose = gtk_check_button_new_with_mnemonic("Be Verbose");
   gtk_widget_set_name(chkVerbose, "chkVerbose");
   gtk_widget_show(chkVerbose);
-  gtk_table_attach(GTK_TABLE(table9), chkVerbose, 1, 2, 0, 1, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
+  gtk_table_attach(GTK_TABLE(table9), chkVerbose, 2, 3, 0, 1, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
   gtk_tooltips_set_tip(tooltips, chkVerbose, "be verbose", NULL);
 
   chkDebug = gtk_check_button_new_with_mnemonic("Debug");
   gtk_widget_set_name(chkDebug, "chkDebug");
   gtk_widget_show(chkDebug);
-  gtk_table_attach(GTK_TABLE(table9), chkDebug, 1, 2, 1, 2, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
+  gtk_table_attach(GTK_TABLE(table9), chkDebug, 2, 3, 1, 2, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
   gtk_tooltips_set_tip(tooltips, chkDebug, "Enable debug mode", NULL);
 
   chkAttempts = gtk_check_button_new_with_mnemonic("Show Attempts");
   gtk_widget_set_name(chkAttempts, "chkAttempts");
   gtk_widget_show(chkAttempts);
-  gtk_table_attach(GTK_TABLE(table9), chkAttempts, 0, 1, 1, 2, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
+  gtk_table_attach(GTK_TABLE(table9), chkAttempts, 0, 2, 1, 2, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
   gtk_tooltips_set_tip(tooltips, chkAttempts, "Show attempts", NULL);
 
   chkSSL = gtk_check_button_new_with_mnemonic("Use SSL");
   gtk_widget_set_name(chkSSL, "chkSSL");
   gtk_widget_show(chkSSL);
   gtk_table_attach(GTK_TABLE(table9), chkSSL, 0, 1, 0, 1, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkSSL, "Enable to use SSL (the target must have SSL enabled!", NULL);
+  gtk_tooltips_set_tip(tooltips, chkSSL, "Enable to use SSL (the target must have SSL enabled!)", NULL);
 
   chkServiceDetails = gtk_check_button_new_with_mnemonic ("Service Module Usage Details");
   gtk_widget_set_name (chkServiceDetails, "chkServiceDetails");
   gtk_widget_show (chkServiceDetails);
-  gtk_table_attach (GTK_TABLE (table9), chkServiceDetails, 1, 2, 2, 3,
+  gtk_table_attach (GTK_TABLE (table9), chkServiceDetails, 2, 3, 2, 3,
                     (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK),
                     (GtkAttachOptions) (GTK_EXPAND), 0, 0);
   gtk_tooltips_set_tip (tooltips, chkServiceDetails, "Service Module Usage Details", NULL);
@@ -389,10 +390,18 @@ GtkWidget *create_wndMain(void) {
   chkCompleteHelp = gtk_check_button_new_with_mnemonic ("COMPLETE HELP");
   gtk_widget_set_name (chkCompleteHelp, "chkCompleteHelp");
   gtk_widget_show (chkCompleteHelp);
-  gtk_table_attach (GTK_TABLE (table9), chkCompleteHelp, 0, 1, 2, 3,
+  gtk_table_attach (GTK_TABLE (table9), chkCompleteHelp, 0, 2, 2, 3,
                     (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK),
                     (GtkAttachOptions) (GTK_EXPAND), 0, 0);
   gtk_tooltips_set_tip (tooltips, chkCompleteHelp, "Complete Help", NULL);
+
+  chkOldSSL = gtk_check_button_new_with_mnemonic ("Use old SSL");
+  gtk_widget_set_name (chkOldSSL, "chkOldSSL");
+  gtk_widget_show (chkOldSSL);
+  gtk_table_attach (GTK_TABLE (table9), chkOldSSL, 1, 2, 0, 1,
+                    (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK),
+                    (GtkAttachOptions) (GTK_EXPAND), 0, 0);
+  gtk_tooltips_set_tip (tooltips, chkOldSSL, "Enable to use old SSL (the target must have SSL enabled!)", NULL);
 
   label29 = gtk_label_new("Output Options");
   gtk_widget_set_name(label29, "label29");
@@ -1043,6 +1052,7 @@ GtkWidget *create_wndMain(void) {
   GLADE_HOOKUP_OBJECT(wndMain, chkSSL, "chkSSL");
   GLADE_HOOKUP_OBJECT(wndMain, chkServiceDetails, "chkServiceDetails");
   GLADE_HOOKUP_OBJECT(wndMain, chkCompleteHelp, "chkCompleteHelp");
+  GLADE_HOOKUP_OBJECT(wndMain, chkOldSSL, "chkOldSSL");
   GLADE_HOOKUP_OBJECT(wndMain, label29, "label29");
   GLADE_HOOKUP_OBJECT(wndMain, label1, "label1");
   GLADE_HOOKUP_OBJECT(wndMain, vbox2, "vbox2");
