@@ -1052,6 +1052,7 @@ GtkWidget *create_wndMain(void) {
   GLADE_HOOKUP_OBJECT(wndMain, chkSSL, "chkSSL");
   GLADE_HOOKUP_OBJECT(wndMain, chkServiceDetails, "chkServiceDetails");
   GLADE_HOOKUP_OBJECT(wndMain, chkCompleteHelp, "chkCompleteHelp");
+  GLADE_HOOKUP_OBJECT(wndMain, chkOldSSL, "chkOldSSL");
   GLADE_HOOKUP_OBJECT(wndMain, label29, "label29");
   GLADE_HOOKUP_OBJECT(wndMain, label1, "label1");
   GLADE_HOOKUP_OBJECT(wndMain, vbox2, "vbox2");
