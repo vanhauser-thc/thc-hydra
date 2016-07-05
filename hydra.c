@@ -760,7 +760,7 @@ void hydra_restore_write(int print_msg) {
   fprintf(f, "%s\n", PROGRAM);
   fclose(f);
   if (debug)
-    printf("done\n");
+    printf("[DEBUG] done writing session file\n");
   if (print_msg)
     printf("The session file ./hydra.restore was written. Type \"hydra -R\" to resume session.\n");
   hydra_debug(0, "hydra_restore_write()");
@@ -3657,7 +3657,7 @@ int main(int argc, char *argv[]) {
     }
   }
   if (verbose)
-    printf("done\n");
+    printf("[VERBOSE] resolving done\n");
   if (hydra_brains.targets == 0)
     bail("No server to scan!");
 
@@ -3935,7 +3935,7 @@ int main(int argc, char *argv[]) {
             hydra_kill_head(i, 1, 3);
         if (debug) printf("DEBUG: %lu %lu\n", hydra_brains.todo_all, hydra_brains.sent);
 //        printf("ERROR: weird bug detected!\n");
-        bail("Weird bug detected where more tests were performed than possible. Please post your command line here: https://github.com/vanhauser-thc/thc-hydra/issues/113 or send it in an email to vh@thc.org");
+        bail("Weird bug detected where more tests were performed than possible. Please rerun with -d command line switch and post all output plus command line here: https://github.com/vanhauser-thc/thc-hydra/issues/113 or send it in an email to vh@thc.org");
       }
       printf("[STATUS] %.2f tries/min, %lu tries in %02lu:%02luh, %lu to do in %02lu:%02luh, %d active\n", (1.0 * hydra_brains.sent) / (((elapsed_status - starttime) * 1.0) / 60),     // tries/min 
              hydra_brains.sent, // tries 
