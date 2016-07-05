@@ -302,6 +302,7 @@ hydra_brain hydra_brains;
 char *sck = NULL;
 int prefer_ipv6 = 0, conwait = 0, loop_cnt = 0, fck = 0, options = 0, killed = 0;
 int child_head_no = -1, child_socket;
+int total_redo_count = 0;
 
 // moved for restore feature
 int process_restore = 0, dont_unlink;
@@ -653,7 +654,7 @@ void hydra_debug(int force, char *string) {
          hydra_options.try_null_password, hydra_options.try_password_same_as_login, hydra_options.try_password_reverse_login, hydra_options.exit_found,
          hydra_options.miscptr == NULL ? "(null)" : hydra_options.miscptr, hydra_options.service);
   printf("[DEBUG] Brains: active %d  targets %d  finished %d  todo_all %lu  todo %lu  sent %lu  found %lu  countlogin %lu  sizelogin %lu  countpass %lu  sizepass %lu\n",
-         hydra_brains.active, hydra_brains.targets, hydra_brains.finished, hydra_brains.todo_all, hydra_brains.todo, hydra_brains.sent, hydra_brains.found,
+         hydra_brains.active, hydra_brains.targets, hydra_brains.finished, hydra_brains.todo_all + total_redo_count, hydra_brains.todo, hydra_brains.sent, hydra_brains.found,
          (unsigned long int) hydra_brains.countlogin, (unsigned long int) hydra_brains.sizelogin, (unsigned long int) hydra_brains.countpass,
          (unsigned long int) hydra_brains.sizepass);
   for (i = 0; i < hydra_brains.targets; i++)
@@ -1633,6 +1634,7 @@ void hydra_increase_fail_count(int target_no, int head_no) {
         hydra_targets[target_no]->redo_login[hydra_targets[target_no]->redo] = hydra_heads[head_no]->current_login_ptr;
         hydra_targets[target_no]->redo_pass[hydra_targets[target_no]->redo] = hydra_heads[head_no]->current_pass_ptr;
         hydra_targets[target_no]->redo++;
+        total_redo_count++;
         if (debug)
           printf("[DEBUG] - will be retried at the end: ip %s - login %s - pass %s - child %d\n", hydra_targets[target_no]->target,
                  hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr, head_no);
@@ -1664,6 +1666,7 @@ void hydra_increase_fail_count(int target_no, int head_no) {
         hydra_targets[target_no]->redo_login[hydra_targets[target_no]->redo] = hydra_heads[head_no]->current_login_ptr;
         hydra_targets[target_no]->redo_pass[hydra_targets[target_no]->redo] = hydra_heads[head_no]->current_pass_ptr;
         hydra_targets[target_no]->redo++;
+        total_redo_count++;
         if (debug)
           printf("[DEBUG] - will be retried at the end: ip %s - login %s - pass %s - child %d\n", hydra_targets[target_no]->target,
                  hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr, head_no);
@@ -3901,7 +3904,7 @@ int main(int argc, char *argv[]) {
         hydra_increase_fail_count(hydra_heads[head_no]->target_no, head_no);
       }
     }
-    if (debug) printf("DEBUG: bug hunt: %lu %lu\n", hydra_brains.todo_all, hydra_brains.sent);
+    //if (debug) printf("DEBUG: bug hunt: %lu %lu\n", hydra_brains.todo_all, hydra_brains.sent);
 
     usleepn(USLEEP_LOOP);
     (void) wait3(NULL, WNOHANG, NULL);
@@ -3921,30 +3924,29 @@ int main(int argc, char *argv[]) {
         tmp_time = 1;
       if (status_print < 15 * 59)
         status_print = ((status_print + 1) * 2) - 1;
-      if (status_print > 299 && (hydra_brains.todo_all - hydra_brains.sent) / tmp_time < 1500)
+      if (status_print > 299 && ((hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / tmp_time < 1500)
         status_print = 299;
-      if (((hydra_brains.todo_all - hydra_brains.sent) / tmp_time) < 150)
+      if ((((hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / tmp_time) < 150)
         status_print = 59;
       k = 0;
       for (j = 0; j < hydra_options.max_use; j++)
         if (hydra_heads[j]->active >= 0)
           k++;
-      if (hydra_brains.todo_all < hydra_brains.sent) { //in case of overflow of unsigned "-1"
+      if ((hydra_brains.todo_all + total_redo_count) < hydra_brains.sent) { //in case of overflow of unsigned "-1"
         for (i = 0; i < hydra_options.max_use; i++)
           if (hydra_heads[i]->active > 0 && hydra_heads[i]->pid > 0)
             hydra_kill_head(i, 1, 3);
-        if (debug) printf("DEBUG: %lu %lu\n", hydra_brains.todo_all, hydra_brains.sent);
-//        printf("ERROR: weird bug detected!\n");
-        bail("Weird bug detected where more tests were performed than possible. Please rerun with -d command line switch and post all output plus command line here: https://github.com/vanhauser-thc/thc-hydra/issues/113 or send it in an email to vh@thc.org");
+        printf("[BUG] %lu + %lu < %lu\n", hydra_brains.todo_all, total_redo_count, hydra_brains.sent);
+        bail("[BUG] Weird bug detected where more tests were performed than possible. Please rerun with -d command line switch and post all output plus command line here: https://github.com/vanhauser-thc/thc-hydra/issues/113 or send it in an email to vh@thc.org");
       }
       printf("[STATUS] %.2f tries/min, %lu tries in %02lu:%02luh, %lu to do in %02lu:%02luh, %d active\n", (1.0 * hydra_brains.sent) / (((elapsed_status - starttime) * 1.0) / 60),     // tries/min 
              hydra_brains.sent, // tries 
              (long unsigned int) ((elapsed_status - starttime) / 3600), // hours 
              (long unsigned int) (((elapsed_status - starttime) % 3600) / 60),  // minutes 
-             hydra_brains.todo_all - hydra_brains.sent <= 0 ? 1 : hydra_brains.todo_all - hydra_brains.sent,    // left todo 
-             (long unsigned int) (((double) hydra_brains.todo_all - hydra_brains.sent) / ((double) hydra_brains.sent / (elapsed_status - starttime))
+             (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent <= 0 ? 1 : (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent,    // left todo 
+             (long unsigned int) (((double) (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / ((double) hydra_brains.sent / (elapsed_status - starttime))
              ) / 3600,          // hours 
-             (((long unsigned int) (((double) hydra_brains.todo_all - hydra_brains.sent) / ((double) hydra_brains.sent / (elapsed_status - starttime))
+             (((long unsigned int) (((double) (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / ((double) hydra_brains.sent / (elapsed_status - starttime))
                ) % 3600) / 60) + 1,     // min 
              k);
       hydra_debug(0, "STATUS");
