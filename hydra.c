@@ -1785,7 +1785,7 @@ int hydra_send_next_pair(int target_no, int head_no) {
     if (debug && (hydra_heads[head_no]->current_login_ptr != NULL || hydra_heads[head_no]->current_pass_ptr != NULL))
       printf("[COMPLETED] target %s - login \"%s\" - pass \"%s\" - child %d - %lu of %lu\n",
              hydra_targets[target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr, head_no,
-             hydra_targets[target_no]->sent, hydra_brains.todo);
+             hydra_targets[target_no]->sent, hydra_brains.todo + hydra_targets[target_no]->redo);
     hydra_heads[head_no]->redo = 0;
     if (hydra_targets[target_no]->redo_state > 0) {
       if (hydra_targets[target_no]->redo_state + 1 <= hydra_targets[target_no]->redo) {
@@ -3922,12 +3922,14 @@ int main(int argc, char *argv[]) {
       tmp_time = hydra_brains.sent / tmp_time;
       if (tmp_time < 1)
         tmp_time = 1;
-      if (status_print < 15 * 59)
-        status_print = ((status_print + 1) * 2) - 1;
-      if (status_print > 299 && ((hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / tmp_time < 1500)
-        status_print = 299;
-      if ((((hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / tmp_time) < 150)
-        status_print = 59;
+      if (debug == 0) {
+        if (status_print < 15 * 59)
+          status_print = ((status_print + 1) * 2) - 1;
+        if (status_print > 299 && ((hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / tmp_time < 1500)
+          status_print = 299;
+        if ((((hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / tmp_time) < 150)
+          status_print = 59;
+      }
       k = 0;
       for (j = 0; j < hydra_options.max_use; j++)
         if (hydra_heads[j]->active >= 0)
