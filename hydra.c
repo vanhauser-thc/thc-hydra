@@ -643,7 +643,7 @@ void module_usage() {
 }
 
 void hydra_debug(int force, char *string) {
-  int i;
+  int i, active = 0, inactive = 0;
 
   if (!debug && !force)
     return;
@@ -659,17 +659,25 @@ void hydra_debug(int force, char *string) {
          (unsigned long int) hydra_brains.sizepass);
   for (i = 0; i < hydra_brains.targets; i++)
     printf
-      ("[DEBUG] Target %d - target %s  ip %s  login_no %lu  pass_no %lu  sent %lu  pass_state %d  use_count %d  failed %d  done %d  fail_count %d  login_ptr %s  pass_ptr %s\n",
+      ("[DEBUG] Target %d - target %s  ip %s  login_no %lu  pass_no %lu  sent %lu  pass_state %d  redo_state %d (%d redos)  use_count %d  failed %d  done %d  fail_count %d  login_ptr %s  pass_ptr %s\n",
        i, hydra_targets[i]->target == NULL ? "(null)" : hydra_targets[i]->target, hydra_address2string(hydra_targets[i]->ip), hydra_targets[i]->login_no,
-       hydra_targets[i]->pass_no, hydra_targets[i]->sent, hydra_targets[i]->pass_state, hydra_targets[i]->use_count, hydra_targets[i]->failed, hydra_targets[i]->done,
+       hydra_targets[i]->pass_no, hydra_targets[i]->sent, hydra_targets[i]->pass_state, hydra_targets[i]->redo_state, hydra_targets[i]->redo, hydra_targets[i]->use_count, hydra_targets[i]->failed, hydra_targets[i]->done,
        hydra_targets[i]->fail_count, hydra_targets[i]->login_ptr == NULL ? "(null)" : hydra_targets[i]->login_ptr,
        hydra_targets[i]->pass_ptr == NULL ? "(null)" : hydra_targets[i]->pass_ptr);
-  if (hydra_heads != NULL)
+  if (hydra_heads != NULL) {
     for (i = 0; i < hydra_options.max_use; i++)
-      printf("[DEBUG] Task %d - pid %d  active %d  redo %d  current_login_ptr %s  current_pass_ptr %s\n",
+      if (hydra_heads[i]->active >= 0) {
+        printf("[DEBUG] Task %d - pid %d  active %d  redo %d  current_login_ptr %s  current_pass_ptr %s\n",
              i, (int) hydra_heads[i]->pid, hydra_heads[i]->active, hydra_heads[i]->redo,
              hydra_heads[i]->current_login_ptr == NULL ? "(null)" : hydra_heads[i]->current_login_ptr,
              hydra_heads[i]->current_pass_ptr == NULL ? "(null)" : hydra_heads[i]->current_pass_ptr);
+        if (hydra_heads[i]->active == 0)
+          inactive++;
+        else
+          active++;
+      }
+    printf("[DEBUG] Tasks %d inactive  %d active\n", inactive, active);
+  }
 }
 
 void bail(char *text) {
@@ -1767,7 +1775,7 @@ int hydra_send_next_pair(int target_no, int head_no) {
   if (debug)
     printf
       ("[DEBUG] send_next_pair_init target %d, head %d, redo %d, redo_state %d, pass_state %d. loop_mode %d, curlogin %s, curpass %s, tlogin %s, tpass %s, logincnt %lu/%lu, passcnt %lu/%lu, loop_cnt %d\n",
-       target_no, head_no, hydra_heads[head_no]->redo, hydra_targets[target_no]->redo_state, hydra_targets[target_no]->pass_state, hydra_options.loop_mode,
+       target_no, head_no, hydra_targets[target_no]->redo, hydra_targets[target_no]->redo_state, hydra_targets[target_no]->pass_state, hydra_options.loop_mode,
        hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr, hydra_targets[target_no]->login_ptr, hydra_targets[target_no]->pass_ptr,
        hydra_targets[target_no]->login_no, hydra_brains.countlogin, hydra_targets[target_no]->pass_no, hydra_brains.countpass, loop_cnt);
 
@@ -1788,7 +1796,7 @@ int hydra_send_next_pair(int target_no, int head_no) {
              hydra_targets[target_no]->sent, hydra_brains.todo + hydra_targets[target_no]->redo);
     hydra_heads[head_no]->redo = 0;
     if (hydra_targets[target_no]->redo_state > 0) {
-      if (hydra_targets[target_no]->redo_state + 1 <= hydra_targets[target_no]->redo) {
+      if (hydra_targets[target_no]->redo_state <= hydra_targets[target_no]->redo) {
         hydra_heads[head_no]->current_pass_ptr = hydra_targets[target_no]->redo_pass[hydra_targets[target_no]->redo_state - 1];
         hydra_heads[head_no]->current_login_ptr = hydra_targets[target_no]->redo_login[hydra_targets[target_no]->redo_state - 1];
         hydra_targets[target_no]->redo_state++;
@@ -2082,9 +2090,9 @@ int hydra_send_next_pair(int target_no, int head_no) {
       return 0;                 // not prevent disabling it, if its needed its already done in the above line
     }
     if (debug || hydra_options.showAttempt) {
-      printf("[%sATTEMPT] target %s - login \"%s\" - pass \"%s\" - %lu of %lu [child %d]\n",
+      printf("[%sATTEMPT] target %s - login \"%s\" - pass \"%s\" - %lu of %lu [child %d] (%d/%d)\n",
              hydra_targets[target_no]->redo_state ? "REDO-" : snp_is_redo ? "RE-" : "", hydra_targets[target_no]->target, hydra_heads[head_no]->current_login_ptr,
-             hydra_heads[head_no]->current_pass_ptr, hydra_targets[target_no]->sent, hydra_brains.todo + hydra_targets[target_no]->redo, head_no);
+             hydra_heads[head_no]->current_pass_ptr, hydra_targets[target_no]->sent, hydra_brains.todo + hydra_targets[target_no]->redo, head_no, hydra_targets[target_no]->redo_state ? hydra_targets[target_no]->redo_state - 1 : 0, hydra_targets[target_no]->redo);
     }
     loop_cnt = 0;
     return 0;
@@ -2317,7 +2325,7 @@ int main(int argc, char *argv[]) {
       hydra_options.restore = 1;
       break;
     case 'd':
-      hydra_options.debug = debug = 1;
+      hydra_options.debug = ++debug;
       ++verbose;
       break;
     case 'e':
@@ -3718,7 +3726,7 @@ int main(int argc, char *argv[]) {
     tmp_time = time(NULL);
 
     for (head_no = 0; head_no < hydra_options.max_use; head_no++) {
-      if (debug && hydra_heads[head_no]->active != -1)
+      if (debug > 1 && hydra_heads[head_no]->active != -1)
         printf("[DEBUG] head_no[%d] to target_no %d active %d\n", head_no, hydra_heads[head_no]->target_no, hydra_heads[head_no]->active);
       switch (hydra_heads[head_no]->active) {
       case -1:
