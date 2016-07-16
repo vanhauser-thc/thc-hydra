@@ -1801,7 +1801,17 @@ int hydra_send_next_pair(int target_no, int head_no) {
         hydra_heads[head_no]->current_login_ptr = hydra_targets[target_no]->redo_login[hydra_targets[target_no]->redo_state - 1];
         hydra_targets[target_no]->redo_state++;
         snpdone = 1;
-      }                         // no else, that way a later lost pair is still added and done
+      } else {
+        // if a pair does not complete after this point it is lost
+        if (hydra_targets[target_no]->done == 0) {
+          hydra_targets[target_no]->done = 1;
+          hydra_brains.finished++;
+          if (verbose)
+            printf("[STATUS] attack finished for %s (waiting for children to complete tests)\n", hydra_targets[target_no]->target);
+        }
+        loop_cnt = 0;
+        return -1;
+      }
     } else {                    // normale state, no redo
       if (hydra_targets[target_no]->done) {
         loop_cnt = 0;
@@ -2022,7 +2032,8 @@ int hydra_send_next_pair(int target_no, int head_no) {
       if (hydra_targets[target_no]->done == 0) {
         hydra_targets[target_no]->done = 1;
         hydra_brains.finished++;
-        printf("[STATUS] attack finished for %s (waiting for children to finish) ...\n", hydra_targets[target_no]->target);
+        if (verbose)
+          printf("[STATUS] attack finished for %s (waiting for children to complete tests)\n", hydra_targets[target_no]->target);
       }
     }
     if (hydra_brains.targets > hydra_brains.finished)
