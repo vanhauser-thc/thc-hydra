@@ -3343,6 +3343,8 @@ int main(int argc, char *argv[]) {
         tmpptr++;
       }
     } else if (index(hydra_options.server, '/') != NULL) {
+     if (cmdtarget == NULL)
+       bail("You seem to mix up \"service://target:port/options\" syntax with \"target service options\" syntax. Read the README on how to use hydra correctly!");
      if (strstr(cmdtarget, "://") != NULL) {
        tmpptr = index(hydra_options.server, '/');
        if (tmpptr != NULL)
