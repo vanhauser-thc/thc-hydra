@@ -1,7 +1,7 @@
 Changelog for hydra
 -------------------
 
-Release 8.3-dev
+Release 8.3
 * Support for upcoming OpenSSL 1.1 added. needs testing.
 * Fixed hydra redo bug (issue #113)
 * Updated xhydra for new hydra features and options
