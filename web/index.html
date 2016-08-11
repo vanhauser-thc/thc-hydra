@@ -16,8 +16,8 @@
  A very fast network logon cracker which support many different services.
  See feature sets and services coverage <a href="network_password_cracker_comparison.html">page</a> - incl. a speed comparison against ncrack and medusa<br>
 </h4><h3>
- Current Version: 8.2
- Last update 2016-06-16
+ Current Version: 8.3
+ Last update 2016-08-11
 </h3>
 </pre>
 </td>
@@ -33,29 +33,15 @@
         Read below for Linux compilation notes.
 </b>        
 
-        CHANGELOG for 8.2
+        CHANGELOG for 8.3
         ===================
         ! Development moved to a public github repository: https://github.com/vanhauser-thc/thc-hydra
         
-        * Added RTSP module, thanks to jjavi89 for supplying!
-        * Added patch for ssh that fixes hyra stopping to connect, thanks to ShantonRU for the patch
-        * Added new -O option to hydra to support SSL servers that do not suport TLS
-        * Added xhydra gtk patche by Petar Kaleychev to support modules that do not use usernames
-        * Added patch to redis for initial service checking by Petar Kaleychev - thanks a lot!
-        * Added support in hydra-http for http-post (content length 0)
-        * Fixed important bug in http-*://server/url command line processing
-        * Added SSL SNI support
-        * Fixed bug in HTTP Form redirection following - thanks for everyone who reported and especially to Hayden Young for setting up a test page for debugging
-        * Better library finding in ./configure for SVN + support for Darwin Homebrew (and further enhanced)
-        * Fixed http-form module crash that only occurs on *BSD/OSX systems. Thanks to zdk for reporting!
-        * Fixed for SSL connection to support TLSv1.2 etc.
-        * Support for different RSA keylengths, thanks to fann95 for the patch
-        * Fixed a bug where the cisco-enable module was not working with the password-only logon mode
-        * Fixed an out of memory bug in http-form
-        * Fixed imap PLAIN method
-        * Fixed -x option to bail if it would generate too many passwords (more than 4 billion)
-        * Added warning if HYDRA_PROXY_CONNECT environment is detected, that is an outdated setting
-        * Added --fhs switch to configure (for Linux distribution usage)
+        * Support for upcoming OpenSSL 1.1 added. needs testing.
+        * Fixed hydra redo bug (issue #113)
+        * Updated xhydra for new hydra features and options
+        * Some more command line error checking
+        * Ensured unneeded sockets are closed
 
 	You can also take a look at the full <a href="CHANGES">CHANGES</a> file
 
@@ -140,7 +126,7 @@
  [0x05] The Art of Downloading: Source and Binaries
  
 	1. PRODUCTION/RELEASE VERSION:
-	   The source code of state-of-the-art Hydra: <a href="http://www.thc.org/releases/hydra-8.2.tar.gz">hydra-8.2.tar.gz</a>
+	   The source code of state-of-the-art Hydra: <a href="http://www.thc.org/releases/hydra-8.3.tar.gz">hydra-8.3.tar.gz</a>
 	   (compiles on all UNIX based platforms - even MacOS X, Cygwin on Windows, ARM-Linux, Android, iPhone, Blackberry 10, etc.)
 
         2. DEVELOPMENT VERSION:
