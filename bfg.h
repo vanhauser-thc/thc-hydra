@@ -40,6 +40,7 @@ typedef struct {
   char *arg;                    /* argument received for bfg commandline option */
   char *crs;                    /* internal representation of charset */
   char *ptr;                    /* ptr to the last generated password */
+  unsigned int disable_symbols;
 } bf_option;
 
 extern bf_option bf_options;

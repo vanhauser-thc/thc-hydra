@@ -336,8 +336,10 @@ void help(int ext) {
   printf("  -l LOGIN or -L FILE  login with LOGIN name, or load several logins from FILE\n");
   printf("  -p PASS  or -P FILE  try password PASS, or load several passwords from FILE\n");
 #ifdef HAVE_MATH_H
-  if (ext)
+  if (ext) {
     printf("  -x MIN:MAX:CHARSET  password bruteforce generation, type \"-x -h\" to get help\n");
+    printf("  -y        disable use of symbols in bruteforce, see above\n");
+  }
 #endif
   if (ext)
     printf("  -e nsr    try \"n\" null password, \"s\" login as pass and/or \"r\" reversed login\n");
@@ -400,11 +402,13 @@ void help_bfg() {
          "     CHARSET is a specification of the characters to use in the generation\n"
          "             valid CHARSET values are: 'a' for lowercase letters,\n"
          "             'A' for uppercase letters, '1' for numbers, and for all others,\n"
-         "             just add their real representation.\n\n"
+         "             just add their real representation.\n"
+         "  -y         disable the use if the above letters as placeholders\n\n"
          "Examples:\n"
          "   -x 3:5:a  generate passwords from length 3 to 5 with all lowercase letters\n"
          "   -x 5:8:A1 generate passwords from length 5 to 8 with uppercase and numbers\n"
-         "   -x 1:3:/  generate passwords from length 1 to 3 containing only slashes\n" "   -x 5:5:/%%,.-  generate passwords with length 5 which consists only of /%%,.-\n");
+         "   -x 1:3:/  generate passwords from length 1 to 3 containing only slashes\n" "   -x 5:5:/%%,.-  generate passwords with length 5 which consists only of /%%,.-\n"
+         "   -x 3:5:aA1 -y generate passwords from length 3 to 5 with a, A and 1 only\n");
   printf("\nThe bruteforce mode was made by Jan Dlabal, http://houbysoft.com/bfg/\n");
   exit(-1);
 }
@@ -2306,13 +2310,14 @@ int main(int argc, char *argv[]) {
   hydra_brains.ofp = stdout;
   hydra_brains.targets = 1;
   hydra_options.waittime = waittime = WAITTIME;
+  bf_options.disable_symbols = 0;
 
   // command line processing
   if (argc > 1 && strncmp(argv[1], "-h", 2) == 0)
     help(1);
   if (argc < 2)
     help(0);
-  while ((i = getopt(argc, argv, "hq64Rde:vVl:fFg:L:p:OP:o:M:C:t:T:m:w:W:s:SUux:")) >= 0) {
+  while ((i = getopt(argc, argv, "hq64Rde:vVl:fFg:L:p:OP:o:M:C:t:T:m:w:W:s:SUux:y")) >= 0) {
     switch (i) {
     case 'h':
       help(1);
@@ -2447,6 +2452,9 @@ int main(int argc, char *argv[]) {
       hydra_options.loop_mode = 1;
       break;
 #endif
+    case 'y':
+      bf_options.disable_symbols = 1;
+      break;
     default:
       exit(-1);
     }
