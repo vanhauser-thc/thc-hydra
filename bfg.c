@@ -14,6 +14,31 @@ bf_option bf_options;
 
 extern int debug;
 
+static int add_single_char(char ch, char flags, int* crs_len) {
+  if ((ch >= '2' && ch <= '9') || ch == '0') {
+    if ((flags & BF_NUMS) > 0) {
+      printf("[ERROR] character %c defined in -x although the whole number range was already defined by '1', ignored\n", ch);
+      return 0;
+    }
+    printf("[WARNING] adding character %c for -x, note that '1' will add all numbers from 0-9\n", ch);
+  }
+  if (tolower((int) ch) >= 'b' && tolower((int) ch) <= 'z') {
+    if ((ch <= 'Z' && (flags & BF_UPPER) > 0) || (ch > 'Z' && (flags & BF_UPPER) > 0)) {
+      printf("[ERROR] character %c defined in -x although the whole letter range was already defined by '%c', ignored\n", ch, ch <= 'Z' ? 'A' : 'a');
+      return 0;
+    }
+    printf("[WARNING] adding character %c for -x, note that '%c' will add all %scase letters\n", ch, ch <= 'Z' ? 'A' : 'a', ch <= 'Z' ? "up" : "low");
+  }
+  (*crs_len)++;
+  if (BF_CHARSMAX - *crs_len < 1) {
+    free(bf_options.crs);
+    fprintf(stderr, "Error: charset specification exceeds %d characters.\n", BF_CHARSMAX);
+    return 1;
+  } else {
+    bf_options.crs[*crs_len - 1] = ch;
+    bf_options.crs[*crs_len] = '\0';
+  }
+}
 // return values : 0 on success, 1 on error
 //
 // note that we check for -x .:.:ab but not for -x .:.:ba
@@ -69,80 +94,64 @@ int bf_init(char *arg) {
   bf_options.crs[0] = 0;
 
   for (; tmp[i]; i++) {
-    switch (tmp[i]) {
-    case 'a':
-      crs_len += 26;
-      if (BF_CHARSMAX - crs_len < 1) {
-        free(bf_options.crs);
-        fprintf(stderr, "Error: charset specification exceeds %d characters.\n", BF_CHARSMAX);
+    if (bf_options.disable_symbols) {
+      if (add_single_char(tmp[i], flags, &crs_len) == -1)
         return 1;
-      } else if (flags & BF_LOWER) {
-        free(bf_options.crs);
-        fprintf(stderr, "Error: 'a' specified more than once in charset!\n");
-        return 1;
-      } else {
-        strcat(bf_options.crs, "abcdefghijklmnopqrstuvwxyz");
-        flags |= BF_LOWER;
-      }
-      break;
-
-    case 'A':
-      crs_len += 26;
-      if (BF_CHARSMAX - crs_len < 1) {
-        free(bf_options.crs);
-        fprintf(stderr, "Error: charset specification exceeds %d characters.\n", BF_CHARSMAX);
-        return 1;
-      } else if (flags & BF_UPPER) {
-        free(bf_options.crs);
-        fprintf(stderr, "Error: 'A' specified more than once in charset!\n");
-        return 1;
-      } else {
-        strcat(bf_options.crs, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
-        flags |= BF_UPPER;
-      }
-      break;
-
-    case '1':
-      crs_len += 10;
-      if (BF_CHARSMAX - crs_len < 1) {
-        free(bf_options.crs);
-        fprintf(stderr, "Error: charset specification exceeds %d characters.\n", BF_CHARSMAX);
-        return 1;
-      } else if (flags & BF_NUMS) {
-        free(bf_options.crs);
-        fprintf(stderr, "Error: '1' specified more than once in charset!\n");
-        return 1;
-      } else {
-        strcat(bf_options.crs, "0123456789");
-        flags |= BF_NUMS;
-      }
-      break;
-
-    default:
-      if ((tmp[i] >= '2' && tmp[i] <= '9') || tmp[i] == '0') {
-        if ((flags & BF_NUMS) > 0) {
-          printf("[ERROR] character %c defined in -x although the whole number range was already defined by '1', ignored\n", tmp[i]);
-          continue;
+    } else {
+      switch (tmp[i]) {
+      case 'a':
+        crs_len += 26;
+        if (BF_CHARSMAX - crs_len < 1) {
+          free(bf_options.crs);
+          fprintf(stderr, "Error: charset specification exceeds %d characters.\n", BF_CHARSMAX);
+          return 1;
+        } else if (flags & BF_LOWER) {
+          free(bf_options.crs);
+          fprintf(stderr, "Error: 'a' specified more than once in charset!\n");
+          return 1;
+        } else {
+          strcat(bf_options.crs, "abcdefghijklmnopqrstuvwxyz");
+          flags |= BF_LOWER;
         }
-        printf("[WARNING] adding character %c for -x, note that '1' will add all numbers from 0-9\n", tmp[i]);
-      }
-      if (tolower((int) tmp[i]) >= 'b' && tolower((int) tmp[i]) <= 'z') {
-        if ((tmp[i] <= 'Z' && (flags & BF_UPPER) > 0) || (tmp[i] > 'Z' && (flags & BF_UPPER) > 0)) {
-          printf("[ERROR] character %c defined in -x although the whole letter range was already defined by '%c', ignored\n", tmp[i], tmp[i] <= 'Z' ? 'A' : 'a');
-          continue;
+        break;
+
+      case 'A':
+        crs_len += 26;
+        if (BF_CHARSMAX - crs_len < 1) {
+          free(bf_options.crs);
+          fprintf(stderr, "Error: charset specification exceeds %d characters.\n", BF_CHARSMAX);
+          return 1;
+        } else if (flags & BF_UPPER) {
+          free(bf_options.crs);
+          fprintf(stderr, "Error: 'A' specified more than once in charset!\n");
+          return 1;
+        } else {
+          strcat(bf_options.crs, "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+          flags |= BF_UPPER;
         }
-        printf("[WARNING] adding character %c for -x, note that '%c' will add all %scase letters\n", tmp[i], tmp[i] <= 'Z' ? 'A' : 'a', tmp[i] <= 'Z' ? "up" : "low");
+        break;
+
+      case '1':
+        crs_len += 10;
+        if (BF_CHARSMAX - crs_len < 1) {
+          free(bf_options.crs);
+          fprintf(stderr, "Error: charset specification exceeds %d characters.\n", BF_CHARSMAX);
+          return 1;
+        } else if (flags & BF_NUMS) {
+          free(bf_options.crs);
+          fprintf(stderr, "Error: '1' specified more than once in charset!\n");
+          return 1;
+        } else {
+          strcat(bf_options.crs, "0123456789");
+          flags |= BF_NUMS;
+        }
+        break;
+
+      default:
+        if (add_single_char(tmp[i], flags, &crs_len) == -1)
+          return 1;
+        break;
       }
-      crs_len++;
-      if (BF_CHARSMAX - crs_len < 1) {
-        free(bf_options.crs);
-        fprintf(stderr, "Error: charset specification exceeds %d characters.\n", BF_CHARSMAX);
-        return 1;
-      } else {
-        bf_options.crs[crs_len - 1] = tmp[i];
-        bf_options.crs[crs_len] = '\0';
-      }
-      break;
     }
   }
 
