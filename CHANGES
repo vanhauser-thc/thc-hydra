@@ -2,7 +2,7 @@ Changelog for hydra
 -------------------
 
 Release 8.4-dev
-* your patch?
+* New command line option -y which disables -x 1aA interpretation, thanks to crondaemon for the patch
 
 
 Release 8.3

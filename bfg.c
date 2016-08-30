@@ -20,14 +20,14 @@ static int add_single_char(char ch, char flags, int* crs_len) {
       printf("[ERROR] character %c defined in -x although the whole number range was already defined by '1', ignored\n", ch);
       return 0;
     }
-    printf("[WARNING] adding character %c for -x, note that '1' will add all numbers from 0-9\n", ch);
+    //printf("[WARNING] adding character %c for -x, note that '1' will add all numbers from 0-9\n", ch);
   }
   if (tolower((int) ch) >= 'b' && tolower((int) ch) <= 'z') {
     if ((ch <= 'Z' && (flags & BF_UPPER) > 0) || (ch > 'Z' && (flags & BF_UPPER) > 0)) {
       printf("[ERROR] character %c defined in -x although the whole letter range was already defined by '%c', ignored\n", ch, ch <= 'Z' ? 'A' : 'a');
       return 0;
     }
-    printf("[WARNING] adding character %c for -x, note that '%c' will add all %scase letters\n", ch, ch <= 'Z' ? 'A' : 'a', ch <= 'Z' ? "up" : "low");
+    //printf("[WARNING] adding character %c for -x, note that '%c' will add all %scase letters\n", ch, ch <= 'Z' ? 'A' : 'a', ch <= 'Z' ? "up" : "low");
   }
   (*crs_len)++;
   if (BF_CHARSMAX - *crs_len < 1) {
