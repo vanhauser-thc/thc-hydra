@@ -76,7 +76,7 @@ void service_rsh(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
         hydra_set_srcport(1023);
         if (sock >= 0)
           sock = hydra_disconnect(sock);
-//        sleepn(275);
+//        usleepn(275);
         if ((options & OPTION_SSL) == 0) {
           if (port != 0)
             myport = port;

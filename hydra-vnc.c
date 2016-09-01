@@ -170,7 +170,7 @@ void service_vnc(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
         hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
         hydra_child_exit(1);
       }
-      sleepn(300);
+      usleepn(300);
       buf = hydra_receive_line(sock);
 
       if (buf == NULL || (strncmp(buf, "RFB", 3) != 0)) {       /* check the first line */

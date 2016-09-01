@@ -263,7 +263,7 @@ void service_http_proxy(char *ip, int sp, unsigned char options, char *miscptr, 
           free(http_proxy_buf);
         if (sock >= 0)
           sock = hydra_disconnect(sock);
-//        sleepn(275);
+//        usleepn(275);
         if ((options & OPTION_SSL) == 0) {
           if (port != 0)
             myport = port;

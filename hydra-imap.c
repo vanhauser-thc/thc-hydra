@@ -19,7 +19,7 @@ char *imap_read_server_capacity(int sock) {
     if (buf != NULL) {
       if (strstr(buf, "CAPABILITY") != NULL && buf[0] == '*') {
         resp = 1;
-        sleepn(300);
+        usleepn(300);
         /* we got the capability info then get the completed warning info from server */
         while (hydra_data_ready(sock)) {
           free(buf);
@@ -366,7 +366,7 @@ void service_imap(char *ip, int sp, unsigned char options, char *miscptr, FILE *
     case 1:                    /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
-//      sleepn(275);
+//      usleepn(275);
       if ((options & OPTION_SSL) == 0) {
         if (port != 0)
           myport = port;

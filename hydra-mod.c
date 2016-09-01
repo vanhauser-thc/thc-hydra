@@ -603,7 +603,7 @@ void hydra_child_exit(int code) {
     __fck = write(intern_socket, "E", 1);
   }
   do {
-    sleepn(10);
+    usleepn(10);
   } while (read(intern_socket, buf, 1) <= 0);
   close(intern_socket);
 //  sleep(2); // be sure that mommy receives our message

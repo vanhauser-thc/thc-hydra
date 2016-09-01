@@ -287,7 +287,7 @@ void service_oracle_listener(char *ip, int sp, unsigned char options, char *misc
     case 1:                    /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
-//      sleepn(300);
+//      usleepn(300);
       if ((options & OPTION_SSL) == 0) {
         if (port != 0)
           myport = port;

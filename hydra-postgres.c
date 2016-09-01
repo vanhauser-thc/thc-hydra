@@ -80,7 +80,7 @@ void service_postgres(char *ip, int sp, unsigned char options, char *miscptr, FI
     case 1:                    /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
-//                              sleepn(275);
+//                              usleepn(275);
       if ((options & OPTION_SSL) == 0) {
         if (port != 0)
           myport = port;

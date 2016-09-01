@@ -159,7 +159,7 @@ void service_pcnfs(char *ip, int sp, unsigned char options, char *miscptr, FILE 
       {
         if (sock >= 0)
           sock = hydra_disconnect(sock);
-//        sleepn(275);
+//        usleepn(275);
         if ((sock = hydra_connect_udp(ip, port)) < 0) {
           if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
           hydra_child_exit(1);

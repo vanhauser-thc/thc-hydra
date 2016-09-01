@@ -63,7 +63,7 @@ int send_nick(int s, char *ip, char *pass) {
 int irc_server_connect(char *ip, int sock, int port, unsigned char options, char *hostname) {
   if (sock >= 0)
     sock = hydra_disconnect(sock);
-//        sleepn(275);
+//        usleepn(275);
   if ((options & OPTION_SSL) == 0) {
     if (port != 0)
       myport = port;

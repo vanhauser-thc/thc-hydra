@@ -438,7 +438,7 @@ void service_pop3(char *ip, int sp, unsigned char options, char *miscptr, FILE *
 
       if (sock >= 0)
         sock = hydra_disconnect(sock);
-      //      sleepn(300);
+      //      usleepn(300);
       if ((options & OPTION_SSL) == 0) {
         sock = hydra_connect_tcp(ip, port);
       } else {
@@ -525,7 +525,7 @@ int service_pop3_init(char *ip, int sp, unsigned char options, char *miscptr, FI
 
   if (sock >= 0)
     sock = hydra_disconnect(sock);
-//      sleepn(300);
+//      usleepn(300);
   if ((options & OPTION_SSL) == 0) {
     if (port != 0)
       myport = port;

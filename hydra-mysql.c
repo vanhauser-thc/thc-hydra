@@ -322,7 +322,7 @@ void service_mysql(char *ip, int sp, unsigned char options, char *miscptr, FILE 
         hydra_mysql_send_com_quit(sock);
         sock = hydra_disconnect(sock);
       }
-//      sleepn(300);
+//      usleepn(300);
       if ((options & OPTION_SSL) == 0) {
         if (port != 0)
           myport = port;
