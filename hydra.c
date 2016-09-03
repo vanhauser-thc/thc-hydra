@@ -2584,6 +2584,11 @@ int main(int argc, char *argv[]) {
           help(0);
       }
     } else {
+      if (strstr(argv[optind], "://") != NULL) {
+        printf("[ERROR] Invalid target definition!\n");
+        printf("[ERROR] Either you use \"www.example.com module [optional-module-parameters]\" *or* you use the \"module://www.example.com/optional-module-parameters\" syntax!\n");
+        exit(-1);
+      }
       hydra_options.server = argv[optind];
       cmdlinetarget = argv[optind];
       hydra_options.service = argv[optind + 1];

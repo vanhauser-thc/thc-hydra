@@ -4,6 +4,7 @@ Changelog for hydra
 Release 8.4-dev
 * New command line option -y which disables -x 1aA interpretation, thanks to crondaemon for the patch
 * The protocols vnc, xmpp, telnet, imap, nntp and pcanywhere got accidentially long sleep commands due a patch in 8.2, fixed
+* Added special error message for clueless users :)
 
 
 Release 8.3
