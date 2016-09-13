@@ -577,7 +577,7 @@ int service_pop3_init(char *ip, int sp, unsigned char options, char *miscptr, FI
     for (i = 0; i < strlen(miscptr); i++)
       miscptr[i] = (char) toupper((int) miscptr[i]);
 
-    if (strstr(miscptr, "TLS") || strstr(miscptr, "SSL")) {
+    if (strstr(miscptr, "TLS") || strstr(miscptr, "SSL") || strstr(miscptr, "STARTTLS")) {
       p.disable_tls = 0;
     }
   }

@@ -312,7 +312,7 @@ void service_smtp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
         for (i = 0; i < strlen(miscptr); i++)
           miscptr[i] = (char) toupper((int) miscptr[i]);
 
-        if (strstr(miscptr, "TLS") || strstr(miscptr, "SSL")) {
+        if (strstr(miscptr, "TLS") || strstr(miscptr, "SSL") || strstr(miscptr, "STARTTLS")) {
           disable_tls = 0;
         }
       }

@@ -2599,6 +2599,13 @@ int main(int argc, char *argv[]) {
     if (getenv("HYDRA_PROXY_CONNECT"))
       fprintf(stderr, "[WARNING] The environment variable HYDRA_PROXY_CONNECT is not used! Use HYDRA_PROXY instead!\n");
 
+    // wrong option use patch
+    if (hydra_options.ssl && ( ((strcmp(hydra_options.service, "smtp") == 0 || strcmp(hydra_options.service, "smtp-enum") == 0) && hydra_options.port != 465) || \
+          (strcmp(hydra_options.service, "pop3") == 0 && hydra_options.port != 995) || \
+          (strcmp(hydra_options.service, "imap") == 0 && hydra_options.port != 993)
+        ))
+      fprintf(stderr, "[WARNING] you want to access SMTP/POP3/IMAP with SSL. Are you sure you want to use direct SSL (-S) instead of STARTTLS (-m TLS)?\n");
+
     if (strcmp(hydra_options.service, "http") == 0 || strcmp(hydra_options.service, "https") == 0) {
       fprintf(stderr, "[ERROR] There is no service \"%s\", most likely you mean one of the many web modules, e.g. http-get or http-form-post. Read it up!\n", hydra_options.service);
       exit(-1);
