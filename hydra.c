@@ -3858,6 +3858,7 @@ int main(int argc, char *argv[]) {
                 } else
                   fprintf(hydra_brains.ofp, "[%d][%s] host: %s   login: %s   password: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
                           hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr);
+                fflush(hydra_brains.ofp);
               }
               if (hydra_options.exit_found) {   // option set says quit target after on valid login/pass pair is found
                 if (hydra_targets[hydra_heads[head_no]->target_no]->done == 0) {
