@@ -438,10 +438,10 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
   return ret;
 }
 
-#ifdef LIBOPENSSL
+#ifdef LIBOPENSSL && !defined(LIBRESSL_VERSION_NUMBER)
 RSA *ssl_temp_rsa_cb(SSL * ssl, int export, int keylength) {
   int ok = 0;
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
   BIGNUM *n;
   n = BN_new();
   RSA_get0_key(rsa, &n, NULL, NULL);
@@ -451,7 +451,7 @@ RSA *ssl_temp_rsa_cb(SSL * ssl, int export, int keylength) {
     ok = 1;
 #endif
   if(ok == 0 && RSA_size(rsa)!=(keylength/8)){ // n is not zero
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
       BN_free(n);
 #endif
       RSA_free(rsa);
@@ -467,7 +467,8 @@ RSA *ssl_temp_rsa_cb(SSL * ssl, int export, int keylength) {
     rsa = RSA_generate_key(keylength, RSA_F4, NULL, NULL);
 #endif
   }
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
+
   BN_free(n);
 #endif
   return rsa;
