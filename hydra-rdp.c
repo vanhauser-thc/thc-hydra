@@ -910,13 +910,13 @@ SSL_RKEY *ssl_cert_to_rkey(X509 * cert, uint32 * key_len) {
 
      Kudos to Richard Levitte for the following (. intuitive .) 
      lines of code that resets the OID and let's us extract the key. */
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
   nid = X509_get_signature_nid(cert);
 #else
   nid = OBJ_obj2nid(cert->cert_info->key->algor->algorithm);
 #endif
   if ((nid == NID_md5WithRSAEncryption) || (nid == NID_shaWithRSAEncryption)) {
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
 //    fprintf(stderr, "[ERROR] the current experimental openssl-1.1 support in hydra does not support RDP :( \n");
 //    hydra_child_exit(2);
     X509_ALGOR *algor = X509_get0_tbs_sigalg(cert);
@@ -954,7 +954,7 @@ void ssl_rkey_free(SSL_RKEY * rkey) {
 int ssl_rkey_get_exp_mod(SSL_RKEY * rkey, uint8 * exponent, uint32 max_exp_len, uint8 * modulus, uint32 max_mod_len) {
   int len;
 
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
   BIGNUM *n, *e, *d;
 
   n = BN_new();
@@ -987,7 +987,7 @@ BOOL ssl_sig_ok(uint8 * exponent, uint32 exp_len, uint8 * modulus, uint32 mod_le
 
 
 void ssl_hmac_md5(const void *key, int key_len, const unsigned char *msg, int msg_len, unsigned char *md) {
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
   HMAC_CTX *ctx;
   ctx = HMAC_CTX_new();
   HMAC(EVP_md5(), key, key_len, msg, msg_len, md, NULL);
