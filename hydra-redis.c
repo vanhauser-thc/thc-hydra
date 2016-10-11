@@ -10,7 +10,15 @@ int start_redis(int s, char *ip, int port, unsigned char options, char *miscptr,
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
 
-  sprintf(buffer, "AUTH %.250s\r\n", pass);
+  char pass_num[50];
+  int pass_len = strlen(pass);
+  snprintf(pass_num, 50, "%d", pass_len);
+
+  memset(buffer, 0, sizeof(buffer));
+  sprintf(buffer, "*2\r\n$4\r\nAUTH\r\n$%.250s\r\n%.250s\r\n", pass_num, pass);
+
+  if (debug)
+    hydra_report(stderr, "[DEBUG] Auth:\n %s\n", buffer);
 
   if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
     return 1;
@@ -21,14 +29,24 @@ int start_redis(int s, char *ip, int port, unsigned char options, char *miscptr,
     hydra_completed_pair_found();
     free(buf);
     if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
-      return 3;
+      return 4;
     return 1;
   }
-  if (verbose > 1)
-    hydra_report(stderr, "[VERBOSE] Authentication failed for password %s\n", pass);
-  hydra_completed_pair();
-
-  free(buf);
+  if (buf[0] == '-') {
+    if (verbose > 1)
+      hydra_report(stderr, "[VERBOSE] Authentication failed for password %s\n", pass);
+    hydra_completed_pair();
+    free(buf);
+    if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
+      return 4;
+    return 2;
+  } else {
+    hydra_report(stderr, "[ERROR] Redis service shutdown.\n");
+    free(buf);
+    return 3;
+  }
+ 
++  /* not reached */
 
   return 1;
 }
@@ -72,6 +90,7 @@ void service_redis_core(char *ip, int sp, unsigned char options, char *miscptr, 
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       hydra_child_exit(2);
+      break;
     case 4:                    /* clean exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
@@ -95,7 +114,7 @@ void service_redis(char *ip, int sp, unsigned char options, char *miscptr, FILE 
 * You can use redis-cli to connect with Redis. After start of the redis-server in another terminal the following:
 *    % ./redis-cli
 *    redis> ping
-*    when the server do not require password, leads to:
+*    when the server does not require password, leads to:
 *    PONG
 *    when the server requires password, leads to:
 *    (error) NOAUTH Authentication required.
@@ -109,7 +128,7 @@ int service_redis_init(char *ip, int sp, unsigned char options, char *miscptr, F
   // performed once only.
   // return codes:
   // 0 - when the server is redis and it requires password
-  // 1 - when the server is not redis or when the server do not require password
+  // 1 - when the server is not redis or when the server does not require password
 
   int sock = -1;
   int myport = PORT_REDIS, mysslport = PORT_REDIS_SSL;
@@ -149,8 +168,8 @@ int service_redis_init(char *ip, int sp, unsigned char options, char *miscptr, F
   if (debug)
     printf("[DEBUG] buf = %s\n", buf);
   // authentication test
-  if (strstr(buf, "+PONG") != NULL) { // the server do not require password
-    hydra_report(stderr, "[!] The server do not require password.\n");
+  if (strstr(buf, "+PONG") != NULL) { // the server does not require password
+    hydra_report(stderr, "[!] The server does not require password.\n");
     free(buf);
     return 1;
   }
