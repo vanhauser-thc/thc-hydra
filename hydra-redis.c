@@ -32,6 +32,7 @@ int start_redis(int s, char *ip, int port, unsigned char options, char *miscptr,
       return 4;
     return 1;
   }
+
   if (buf[0] == '-') {
     if (verbose > 1)
       hydra_report(stderr, "[VERBOSE] Authentication failed for password %s\n", pass);
@@ -45,9 +46,8 @@ int start_redis(int s, char *ip, int port, unsigned char options, char *miscptr,
     free(buf);
     return 3;
   }
- 
-+  /* not reached */
 
+  /* not reached */
   return 1;
 }
 
