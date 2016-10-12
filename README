@@ -256,18 +256,21 @@ from little endian to big endian, or from solaris to aix)
 HOW TO SCAN/CRACK OVER A PROXY
 ------------------------------
 The environment variable HYDRA_PROXY_HTTP defines the web proxy (this works
-just for the http/www service!).
+just for the http services!).
 The following syntax is valid:
   HYDRA_PROXY_HTTP="http://123.45.67.89:8080/"
-For all other services, use the HYDRA_PROXY variable to scan/crack
-via by default a web proxy's CONNECT call. It uses the same syntax. eg:
-  HYDRA_PROXY=[http|socks4|socks5]://proxy_addr:proxy_port
-for example:
-  HYDRA_PROXY=http://proxy.anonymizer.com:8000
+  HYDRA_PROXY_HTTP="http://login:password@123.45.67.89:8080/"
+  HYDRA_PROXY_HTTP="proxylist.txt"
+The last example is a text file containing up to 64 proxies (in the same
+format definition as the other examples).
 
-If you require authentication for the proxy, use the HYDRA_PROXY_AUTH
-environment variable:
-  HYDRA_PROXY_AUTH="the_login:the_password"
+For all other services, use the HYDRA_PROXY variable to scan/crack.
+It uses the same syntax. eg:
+  HYDRA_PROXY=[connect|socks4|socks5]://[login:password@]proxy_addr:proxy_port
+for example:
+  HYDRA_PROXY=connect://proxy.anonymizer.com:8000
+  HYDRA_PROXY=socks4://auth:pw@127.0.0.1:1080
+  HYDRA_PROXY=socksproxylist.txt
 
 
 

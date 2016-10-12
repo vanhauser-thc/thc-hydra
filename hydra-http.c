@@ -28,15 +28,18 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
   if (http_buf == NULL && http_auth_mechanism == AUTH_DIGESTMD5)
     http_auth_mechanism = AUTH_BASIC;
 
+  if (use_proxy > 0 && proxy_count > 0)
+    selected_proxy = random() % proxy_count;
+
   switch (http_auth_mechanism) {
   case AUTH_BASIC:
     sprintf(buffer2, "%.50s:%.50s", login, pass);
     hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
 
     /* again: no snprintf to be portable. dont worry, buffer cant overflow */
-    if (use_proxy == 1 && proxy_authentication != NULL)
+    if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL)
       sprintf(buffer, "%s http://%s:%d%.250s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\nAuthorization: Basic %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\n%s\r\n",
-              type, webtarget, webport, miscptr, webtarget, buffer2, proxy_authentication, header);
+              type, webtarget, webport, miscptr, webtarget, buffer2, proxy_authentication[selected_proxy], header);
     else {
       if (use_proxy == 1)
         sprintf(buffer, "%s http://%s:%d%.250s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\nAuthorization: Basic %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\n%s\r\n",
@@ -81,10 +84,10 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
 
       /* to be portable, no snprintf, buffer is big enough so it cant overflow */
       //send the first..
-      if (use_proxy == 1 && proxy_authentication != NULL)
+      if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL)
         sprintf(buffer,
                 "%s http://%s:%d%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\nAuthorization: NTLM %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
-                type, webtarget, webport, miscptr, webtarget, buf1, proxy_authentication, header);
+                type, webtarget, webport, miscptr, webtarget, buf1, proxy_authentication[selected_proxy], header);
       else {
         if (use_proxy == 1)
           sprintf(buffer, "%s http://%s:%d%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\nAuthorization: NTLM %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
@@ -130,10 +133,10 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
       to64frombits(buf1, buf2, SmbLength((tSmbNtlmAuthResponse *) buf2));
 
       //create the auth response
-      if (use_proxy == 1 && proxy_authentication != NULL)
+      if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL)
         sprintf(buffer,
                 "%s http://%s:%d%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\nAuthorization: NTLM %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
-                type, webtarget, webport, miscptr, webtarget, buf1, proxy_authentication, header);
+                type, webtarget, webport, miscptr, webtarget, buf1, proxy_authentication[selected_proxy], header);
       else {
         if (use_proxy == 1)
           sprintf(buffer, "%s http://%s:%d%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\nAuthorization: NTLM %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",

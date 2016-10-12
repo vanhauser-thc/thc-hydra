@@ -86,7 +86,7 @@ void interrupt() {
 /* ----------------- internal functions ----------------- */
 
 int internal__hydra_connect(char *host, int port, int protocol, int type) {
-  int s, ret = -1, ipv6 = 0;
+  int s, ret = -1, ipv6 = 0, reset_selected = 0;
 
 #ifdef AF_INET6
   struct sockaddr_in6 target6;
@@ -96,11 +96,16 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
   struct sockaddr_in sin;
   char *buf, *tmpptr = NULL;
   int err = 0;
+  
+  if (proxy_count > 0 && use_proxy > 0 && selected_proxy == -1) {
+    reset_selected = 1;
+    selected_proxy = random() % proxy_count;
+  }    
 
 #ifdef AF_INET6
   memset(&target6, 0, sizeof(target6));
   memset(&sin6, 0, sizeof(sin6));
-  if ((host[0] == 16 && proxy_string_ip[0] != 4) || proxy_string_ip[0] == 16)
+  if ((host[0] == 16 && proxy_string_ip[selected_proxy][0] != 4) || proxy_string_ip[selected_proxy][0] == 16)
     ipv6 = 1;
 #endif
 
@@ -150,6 +155,8 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
             if (errno == EACCES && (getuid() > 0)) {
               fprintf(stderr, "[ERROR] You need to be root to test this service\n");
               close(s);
+              if (reset_selected)
+                selected_proxy = -1;
               return -1;
             }
           }
@@ -157,17 +164,18 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
           bind_ok = 1;
       }
     }
-    if (use_proxy > 0) {
-      if (proxy_string_ip[0] == 4) {
-        memcpy(&target.sin_addr.s_addr, &proxy_string_ip[1], 4);
+    if (use_proxy > 0 && proxy_count > 0) {
+      
+      if (proxy_string_ip[selected_proxy][0] == 4) {
+        memcpy(&target.sin_addr.s_addr, &proxy_string_ip[selected_proxy][1], 4);
         target.sin_family = AF_INET;
-        target.sin_port = htons(proxy_string_port);
+        target.sin_port = htons(proxy_string_port[selected_proxy]);
       }
 #ifdef AF_INET6
-      if (proxy_string_ip[0] == 16) {
-        memcpy(&target6.sin6_addr, &proxy_string_ip[1], 16);
+      if (proxy_string_ip[selected_proxy][0] == 16) {
+        memcpy(&target6.sin6_addr, &proxy_string_ip[selected_proxy][1], 16);
         target6.sin6_family = AF_INET6;
-        target6.sin6_port = htons(proxy_string_port);
+        target6.sin6_port = htons(proxy_string_port[selected_proxy]);
       }
 #endif
     } else {
@@ -230,6 +238,8 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
       extern_socket = -1;
       close(s);
       ret = -1;
+      if (reset_selected)
+        selected_proxy = -1;
       return ret;
     }
     ret = s;
@@ -242,6 +252,8 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
       if ((buf = malloc(4096)) == NULL) {
         fprintf(stderr, "[ERROR] could not malloc()\n");
         close(s);
+        if (reset_selected)
+          selected_proxy = -1;
         return -1;
       }
       memset(&target, 0, sizeof(target));
@@ -259,16 +271,16 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
       }
 #endif
 
-      if (hydra_strcasestr(proxy_string_type, "connect") || hydra_strcasestr(proxy_string_type, "http")) {
-        if (proxy_authentication == NULL)
+      if (hydra_strcasestr(proxy_string_type[selected_proxy], "connect") || hydra_strcasestr(proxy_string_type[selected_proxy], "http")) {
+        if (proxy_authentication[selected_proxy] == NULL)
           if (host[0] == 16)
             snprintf(buf, 4096, "CONNECT [%s]:%d HTTP/1.0\r\n\r\n", hydra_address2string(host), port);
           else
             snprintf(buf, 4096, "CONNECT %s:%d HTTP/1.0\r\n\r\n", hydra_address2string(host), port);
         else if (host[0] == 16)
-          snprintf(buf, 4096, "CONNECT [%s]:%d HTTP/1.0\r\nProxy-Authorization: Basic %s\r\n\r\n", hydra_address2string(host), port, proxy_authentication);
+          snprintf(buf, 4096, "CONNECT [%s]:%d HTTP/1.0\r\nProxy-Authorization: Basic %s\r\n\r\n", hydra_address2string(host), port, proxy_authentication[selected_proxy]);
         else
-          snprintf(buf, 4096, "CONNECT %s:%d HTTP/1.0\r\nProxy-Authorization: Basic %s\r\n\r\n", hydra_address2string(host), port, proxy_authentication);
+          snprintf(buf, 4096, "CONNECT %s:%d HTTP/1.0\r\nProxy-Authorization: Basic %s\r\n\r\n", hydra_address2string(host), port, proxy_authentication[selected_proxy]);
 
         send(s, buf, strlen(buf), 0);
         recv(s, buf, 4096, 0);
@@ -284,14 +296,14 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
         }
 //        free(buf);
       } else {
-        if (hydra_strcasestr(proxy_string_type, "socks5")) {
+        if (hydra_strcasestr(proxy_string_type[selected_proxy], "socks5")) {
 //          char buf[1024];
           size_t cnt, wlen;
 
           /* socks v5 support */
           buf[0] = SOCKS_V5;
           buf[1] = 1;
-          if (proxy_authentication == NULL)
+          if (proxy_authentication[selected_proxy] == NULL)
             buf[2] = SOCKS_NOAUTH;
           else
             buf[2] = SOCKS_PASSAUTH;
@@ -312,9 +324,9 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
             /* SOCKS_DOMAIN not supported here, do we need it ? */
             if (err != 1) {
               /* send user/pass */
-              if (proxy_authentication != NULL) {
+              if (proxy_authentication[selected_proxy] != NULL) {
                 //format was checked previously
-                char *login = strtok(proxy_authentication, ":");
+                char *login = strtok(proxy_authentication[selected_proxy], ":");
                 char *pass = strtok(NULL, ":");
 
                 snprintf(buf, sizeof(buf), "\x01%c%s%c%s", (char) strlen(login), login, (char) strlen(pass), pass);
@@ -383,7 +395,7 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
             }
           }
         } else {
-          if (hydra_strcasestr(proxy_string_type, "socks4")) {
+          if (hydra_strcasestr(proxy_string_type[selected_proxy], "socks4")) {
             if (ipv6) {
               hydra_report(stderr, "[ERROR] SOCKS4 proxy does not support IPv6\n");
               err = 1;
@@ -419,7 +431,7 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
               }
             }
           } else {
-            hydra_report(stderr, "[ERROR] Unknown proxy type: %s, valid type are \"connect\", \"socks4\" or \"socks5\"\n", proxy_string_type);
+            hydra_report(stderr, "[ERROR] Unknown proxy type: %s, valid type are \"connect\", \"socks4\" or \"socks5\"\n", proxy_string_type[selected_proxy]);
             err = 1;
           }
         }
@@ -429,12 +441,18 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
     if (err) {
       close(s);
       extern_socket = -1;
+      if (reset_selected)
+        selected_proxy = -1;
       ret = -1;
       return ret;
     }
     fail = 0;
+    if (reset_selected)
+      selected_proxy = -1;
     return ret;
   }
+  if (reset_selected)
+    selected_proxy = -1;
   return ret;
 }
 

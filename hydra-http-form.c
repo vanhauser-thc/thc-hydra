@@ -570,6 +570,9 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
   memset(header, 0, sizeof(header));
   cookie[0] = 0;                // reset cookies from potential previous attempt
 
+  if (use_proxy > 0 && proxy_count > 0)
+    selected_proxy = random() % proxy_count;
+
   // Take the next login/pass pair
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -587,7 +590,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
   hdrrep(&ptr_head, "^PASS^", cpass);
 
   /* again: no snprintf to be portable. dont worry, buffer cant overflow */
-  if (use_proxy == 1 && proxy_authentication != NULL) {
+  if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL) {
     if (getcookie) {
       memset(proxy_string, 0, sizeof(proxy_string));
       snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s:%d%.600s", webtarget, webport, cookieurl);
@@ -829,7 +832,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         hdrrepv(&ptr_head, "Content-Length", "0");
 
       //re-use the code above to check for proxy use
-      if (use_proxy == 1 && proxy_authentication != NULL) {
+      if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL) {
         // proxy with authentication
         hdrrepv(&ptr_head, "Host", str2);
         memset(proxy_string, 0, sizeof(proxy_string));
@@ -996,6 +999,9 @@ int service_http_form_init(char *ip, int sp, unsigned char options, char *miscpt
 ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
   ptr_header_node ptr_head = NULL;
   char *ptr, *ptr2, *proxy_string;
+  
+  if (use_proxy > 0 && proxy_count > 0)
+    selected_proxy = random() % proxy_count;
 
   if (webtarget != NULL && (webtarget = strstr(miscptr, "://")) != NULL) {
     webtarget += strlen("://");
@@ -1166,14 +1172,14 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
   }
 
   /* again: no snprintf to be portable. dont worry, buffer cant overflow */
-  if (use_proxy == 1 && proxy_authentication != NULL) {
+  if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL) {
     // proxy with authentication
     add_header(&ptr_head, "Host", webtarget, HEADER_TYPE_DEFAULT);
     add_header(&ptr_head, "User-Agent", "Mozilla 5.0 (Hydra Proxy Auth)", HEADER_TYPE_DEFAULT);
-    proxy_string = (char *) malloc(strlen(proxy_authentication) + 6);
+    proxy_string = (char *) malloc(strlen(proxy_authentication[selected_proxy]) + 6);
     if (proxy_string) {
       strcpy(proxy_string, "Basic ");
-      strncat(proxy_string, proxy_authentication, strlen(proxy_authentication) - 6);
+      strncat(proxy_string, proxy_authentication[selected_proxy], strlen(proxy_authentication[selected_proxy]) - 6);
       add_header(&ptr_head, "Proxy-Authorization", proxy_string, HEADER_TYPE_DEFAULT);
     } else {
       hydra_report(stderr, "Out of memory for \"Proxy-Authorization\" header.");

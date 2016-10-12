@@ -140,6 +140,8 @@
 #define INET_ADDRSTRLEN 16
 #endif
 
+#define MAX_PROXY_COUNT 64
+
 #ifndef _WIN32
 
 int sleepn(time_t seconds);

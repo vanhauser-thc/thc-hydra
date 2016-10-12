@@ -285,10 +285,12 @@ extern int waittime;
 extern int port;
 extern int found;
 extern int use_proxy;
-extern int proxy_string_port;
-extern char proxy_string_ip[36];
-extern char proxy_string_type[10];
-extern char *proxy_authentication;
+extern int proxy_count;
+extern int selected_proxy;
+extern int proxy_string_port[MAX_PROXY_COUNT];
+extern char proxy_string_ip[MAX_PROXY_COUNT][36];
+extern char proxy_string_type[MAX_PROXY_COUNT][10];
+extern char *proxy_authentication[MAX_PROXY_COUNT];
 extern char *cmdlinetarget;
 extern char *fe80;
 
@@ -378,10 +380,11 @@ void help(int ext) {
     printf("These services were not compiled in: %s.\n", unsupported);
   }
   if (ext) {
-    printf("\nUse HYDRA_PROXY_HTTP or HYDRA_PROXY - and if needed HYDRA_PROXY_AUTH - environment for a proxy setup.\n");
-    printf("E.g.:  %% export HYDRA_PROXY=socks5://127.0.0.1:9150 (or socks4:// or connect://)\n");
-    printf("       %% export HYDRA_PROXY_HTTP=http://proxy:8080\n");
-    printf("       %% export HYDRA_PROXY_AUTH=user:pass\n");
+    printf("\nUse HYDRA_PROXY_HTTP or HYDRA_PROXY environment variables for a proxy setup.\n");
+    printf("E.g. %% export HYDRA_PROXY=socks5://l:p@127.0.0.1:9150 (or: socks4:// connect://)\n");
+    printf("     %% export HYDRA_PROXY=connect_and_socks_proxylist.txt  (up to 64 entries)\n");
+    printf("     %% export HYDRA_PROXY_HTTP=http://login:pass@proxy:8080\n");
+    printf("     %% export HYDRA_PROXY_HTTP=proxylist.txt  (up to 64 entries)\n");
   }
 
   printf("\nExample%s:%s  hydra -l user -P passlist.txt ftp://192.168.0.1\n", ext == 0 ? "" : "s", ext == 0 ? "" : "\n");
@@ -594,7 +597,7 @@ void module_usage() {
              " \"/login.php:user=^USER^&pass=^PASS^:incorrect\"\n"
              " \"/login.php:user=^USER^&pass=^PASS^&colon=colon\\:escape:S=authlog=.*success\"\n"
              " \"/login.php:user=^USER^&pass=^PASS^&mid=123:authlog=.*failed\"\n"
-             " \"/:user=^USER&pass=^PASS^:failed:H=Authorization\\: Basic dT1w:H=Cookie\\: sessid=aaaa:h=X-User\\: ^USER^\"\n"
+             " \"/:user=^USER&pass=^PASS^:failed:H=Authorization\\: Basic dT1w:H=Cookie\\: sessid=aaaa:h=X-User\\: ^USER^:H=User-Agent\\: wget\"\n"
              " \"/exchweb/bin/auth/owaauth.dll:destination=http%%3A%%2F%%2F<target>%%2Fexchange&flags=0&username=<domain>%%5C^USER^&password=^PASS^&SubmitCreds=x&trusted=0:reason=:C=/exchweb\"\n",
              hydra_options.service);
       find = 1;
@@ -2192,9 +2195,133 @@ int hydra_select_target() {
   return target_no;
 }
 
+void process_proxy_line(int type, char *string) {
+  char *type_string = string, *target_string, *port_string, *auth_string = NULL, *device_string = NULL, *sep;
+  int port;
+  struct addrinfo hints, *res, *p;
+  struct sockaddr_in6 *ipv6 = NULL;
+  struct sockaddr_in *ipv4 = NULL;
+  
+  if (string == NULL || string[0] == 0 || string[0] == '#')
+    return;
+  while (*string == ' ' || *string == '\t')
+    string++;
+  if (*string == '#' || *string == ';' || strlen(string) < 5)
+    return;
+  if (string[strlen(string) - 1] == '\n')
+    string[strlen(string) - 1] = 0;
+  if (string[strlen(string) - 1] == '\r')
+    string[strlen(string) - 1] = 0;
+  if (proxy_count > MAX_PROXY_COUNT) {
+    fprintf(stderr, "[WARNING] maximum amount of proxies loaded, ignoring this entry: %s\n", string);
+    return;
+  }
+  if (debug)
+    printf("[DEBUG] proxy line: %s\n", string);
+  if ((sep = strstr(string, "://")) == NULL) {
+    fprintf(stderr, "[WARNING] invalid proxy definition: %s (ignored)\n", string);
+    return;
+  }
+  *sep = 0;
+  target_string = sep + 3;
+  if ((sep = index(target_string, '@')) != NULL) {
+    auth_string = target_string;
+    *sep = 0;
+    target_string = sep + 1;
+    if (index(auth_string, ':') == NULL) {
+      fprintf(stderr, "[WARNING] %s has an invalid authentication definition %s, must be in the format login:pass, entry ignored\n", target_string, auth_string);
+      return;
+    }
+  }
+  if ((sep = index(target_string, ':')) != NULL) {
+    *sep = 0;
+    port_string = sep + 1;
+    if ((sep = index(port_string, '%')) != NULL) {
+      *sep = 0;
+      device_string = sep + 1;
+    }
+    if ((sep = index(port_string, '/')) != NULL)
+      *sep = 0;
+    port = atoi(port_string);
+    if (port < 1 || port > 65535) {
+      fprintf(stderr, "[WARNING] %s has an invalid port definition %d, entry ignored\n", target_string, port);
+      return;
+    }
+  } else {
+    fprintf(stderr, "[WARNING] %s has not port definition which is required, entry ignored\n", target_string);
+    return;
+  }
+
+  if (use_proxy == 1 && strcmp(type_string, "http") != 0) {
+    fprintf(stderr, "[WARNING] %s:// is an invalid type, must be http:// if you use HYDRA_PROXY_HTTP, entry ignored\n", type_string);
+    return;
+  }
+  if (use_proxy == 2 && strcmp(type_string, "connect") != 0 && strcmp(type_string, "socks4") != 0 && strcmp(type_string, "socks5") != 0) {
+    fprintf(stderr, "[WARNING] %s:// is an invalid type, must be connect://, socks4:// or socks5:// if you use HYDRA_PROXY, entry ignored\n", type_string);
+    return;
+  }
+  
+  memset(&hints, 0, sizeof hints);
+  if (getaddrinfo(target_string, NULL, &hints, &res) != 0) {
+    fprintf(stderr, "[ERROR] could not resolve proxy target %s, entry ignored\n", target_string);
+    return;
+  }
+
+  for (p = res; p != NULL; p = p->ai_next) {
+#ifdef AF_INET6
+    if (p->ai_family == AF_INET6) {
+      if (ipv6 == NULL || memcmp((char *) &ipv6->sin6_addr, fe80, 2) == 0)
+        ipv6 = (struct sockaddr_in6 *) p->ai_addr;
+    } else
+#endif
+    if (p->ai_family == AF_INET) {
+      if (ipv4 == NULL)
+        ipv4 = (struct sockaddr_in *) p->ai_addr;
+    }
+  }
+  freeaddrinfo(res);
+
+  // now fill the stuff
+#ifdef AF_INET6
+  if (ipv6 != NULL && (ipv4 == NULL || prefer_ipv6)) {
+    if (memcmp(proxy_string_ip[proxy_count] + 1, fe80, 2) == 0 && device_string == NULL) {
+      fprintf(stderr, "[WARNING] The proxy address %s is a link local address, link local addresses require the interface being defined like this: fe80::1%%eth0, entry ignored\n", target_string);
+      return;
+    }
+    proxy_string_ip[proxy_count][0] = 16;
+    memcpy(proxy_string_ip[proxy_count] + 1, (char *) &ipv6->sin6_addr, 16);
+    if (device_string != NULL && strlen(device_string) <= 16)
+      strcpy(proxy_string_ip[proxy_count] + 17, device_string);
+  } else
+#endif
+  if (ipv4 != NULL) {
+    proxy_string_ip[proxy_count][0] = 4;
+    memcpy(proxy_string_ip[proxy_count] + 1, (char *) &ipv4->sin_addr, 4);
+  } else {
+    fprintf(stderr, "[WARNING] Could not resolve proxy address: %s, entry ignored\n", target_string);
+    return;
+  }
+  if (auth_string != NULL) {
+    if ((proxy_authentication[proxy_count] = malloc(strlen(auth_string) * 2 + 8)) == NULL) {
+      perror("malloc");
+      return;
+    }
+    strcpy(proxy_authentication[proxy_count], auth_string);
+    if (strncmp(type_string, "socks", 5) != 0) // so it is web
+      hydra_tobase64((unsigned char *) proxy_authentication[proxy_count], strlen(proxy_authentication[proxy_count]), strlen(auth_string) * 2 + 8);
+  } else
+    proxy_authentication[proxy_count] = NULL;
+  strcpy(proxy_string_type[proxy_count], type_string);
+  proxy_string_port[proxy_count] = port;
+  
+  if (debug)
+    printf("[DEBUG] count %d type %s target %s port %d auth %s\n", proxy_count, proxy_string_type[proxy_count], target_string, proxy_string_port[proxy_count], proxy_authentication[proxy_count]);
+  proxy_count++;
+}
+
 int main(int argc, char *argv[]) {
   char *proxy_string = NULL, *device = NULL, *memcheck, *cmdtarget = NULL;
-  FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL;
+  FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL, *proxyfp;
   size_t countinfile = 1, sizeinfile = 0;
   unsigned long int math2;
   int i = 0, j = 0, k, error = 0, modusage = 0;
@@ -2297,10 +2424,12 @@ int main(int argc, char *argv[]) {
   hydra_options.verbose = verbose = 0;
   found = 0;
   use_proxy = 0;
-  proxy_string_ip[0] = 0;
-  proxy_string_port = 0;
-  strcpy(proxy_string_type, "connect");
-  proxy_authentication = cmdlinetarget = NULL;
+  proxy_count = 0;
+  selected_proxy = -1;
+  proxy_string_ip[0][0] = 0;
+  proxy_string_port[0] = 0;
+  strcpy(proxy_string_type[0], "connect");
+  proxy_authentication[0] = cmdlinetarget = NULL;
   hydra_options.login = NULL;
   hydra_options.loginfile = NULL;
   hydra_options.pass = NULL;
@@ -3452,6 +3581,7 @@ int main(int argc, char *argv[]) {
     }
   }                             // END OF restore == 0
 
+  // PROXY PROCESSING
   if (getenv("HYDRA_PROXY") && use_proxy == 0) {
     printf("[INFO] Using Connect Proxy: %s\n", getenv("HYDRA_PROXY"));
     use_proxy = 2;
@@ -3460,83 +3590,22 @@ int main(int argc, char *argv[]) {
     proxy_string = getenv("HYDRA_PROXY_HTTP");
   if (use_proxy == 2)
     proxy_string = getenv("HYDRA_PROXY");
-  if (proxy_string != NULL && proxy_string[0] != 0) {
-    if (strstr(proxy_string, "//") != NULL) {
-      char *dslash = strstr(proxy_string, "://");
-
-      if (dslash) {
-        proxy_string[dslash - proxy_string] = 0;
-        strncpy(proxy_string_type, proxy_string, sizeof(proxy_string_type) - 1);
-        proxy_string_type[sizeof(proxy_string_type) - 1] = 0;
-      }
-
-      proxy_string = dslash;
-      proxy_string += 3;
-    }
-    if (proxy_string[strlen(proxy_string) - 1] == '/')
-      proxy_string[strlen(proxy_string) - 1] = 0;
-    if ((tmpptr = index(proxy_string, ':')) == NULL)
-      use_proxy = 0;
-    else {
-      *tmpptr = 0;
-      tmpptr++;
-      memset(&hints, 0, sizeof hints);
-      if ((device = index(proxy_string, '%')) != NULL)
-        *device++ = 0;
-      if (getaddrinfo(proxy_string, NULL, &hints, &res) != 0) {
-        fprintf(stderr, "[ERROR] could not resolve proxy address: %s\n", proxy_string);
-        exit(-1);
-      } else {
-        for (p = res; p != NULL; p = p->ai_next) {
-#ifdef AF_INET6
-          if (p->ai_family == AF_INET6) {
-            if (ipv6 == NULL)
-              ipv6 = (struct sockaddr_in6 *) p->ai_addr;
-          } else
-#endif
-          if (p->ai_family == AF_INET) {
-            if (ipv4 == NULL)
-              ipv4 = (struct sockaddr_in *) p->ai_addr;
-          }
-        }
-        freeaddrinfo(res);
-#ifdef AF_INET6
-        if (ipv6 != NULL && (ipv4 == NULL || prefer_ipv6)) {
-          proxy_string_ip[0] = 16;
-          memcpy(proxy_string_ip + 1, (char *) &ipv6->sin6_addr, 16);
-          if (device != NULL && strlen(device) <= 16)
-            strcpy(proxy_string_ip + 17, device);
-          if (memcmp(proxy_string_ip + 1, fe80, 2) == 0) {
-            if (device == NULL) {
-              fprintf(stderr, "[ERROR] The proxy address is a link local address, link local addresses require the interface being defined like this: fe80::1%%eth0\n");
-              exit(-1);
-            }
-          }
-        } else
-#endif
-        if (ipv4 != NULL) {
-          proxy_string_ip[0] = 4;
-          memcpy(proxy_string_ip + 1, (char *) &ipv4->sin_addr, 4);
-        } else {
-          fprintf(stderr, "[ERROR] Could not resolve proxy address: %s\n", proxy_string);
-          exit(-1);
-        }
-      }
-      proxy_string_port = atoi(tmpptr);
-    }
-    if (use_proxy == 0)
-      fprintf(stderr, "[WARNING] invalid proxy definition. Syntax: \"HYDRA_PROXY=[connect|socks[4|5]]://1.2.3.4:3128/\".\n");
-  } else
-    use_proxy = 0;
-  if (use_proxy > 0 && (tmpptr = getenv("HYDRA_PROXY_AUTH")) != NULL && tmpptr[0] != 0) {
-    if (index(tmpptr, ':') == NULL) {
-      fprintf(stderr, "[WARNING] invalid proxy authentication. Syntax: \"login:password\". Ignoring ...\n");
+  if (use_proxy && getenv("HYDRA_PROXY_AUTH") != NULL)
+    fprintf(stderr, "[WARNING] environment variable HYDRA_PROXY_AUTH is deprecated, use authentication in the HYDRA_PROXY definitions, e.g. type://auth@target:port\n");
+  if (use_proxy && proxy_string != NULL) {
+    if (strstr(proxy_string, "://") != NULL) {
+      process_proxy_line(use_proxy, proxy_string);
     } else {
-      proxy_authentication = malloc(strlen(tmpptr) * 2 + 50);
-      strcpy(proxy_authentication, tmpptr);
-      if (hydra_strcasestr(proxy_string_type, "socks") == NULL)
-        hydra_tobase64((unsigned char *) proxy_authentication, strlen(proxy_authentication), strlen(tmpptr) * 2 + 8);
+      if ((proxyfp = fopen(proxy_string, "r")) == NULL) {
+        fprintf(stderr, "[ERROR] proxy definition %s is neither of the kind type://auth@target:port nor a file containing proxy entries!\n", proxy_string);
+        exit(-1);
+      }
+      while (fgets(buf, sizeof(buf), proxyfp) != NULL)
+        process_proxy_line(use_proxy, buf);
+      fclose(proxyfp);
     }
+    if (proxy_count == 0)
+      bail("proxy defined but not valid, exiting");
   }
 
   if (hydra_options.restore == 0) {
