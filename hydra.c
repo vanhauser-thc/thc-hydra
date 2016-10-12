@@ -1254,7 +1254,7 @@ void hydra_service_init(int target_no) {
   if (strcmp(hydra_options.service, "rtsp") == 0)
     x = service_rtsp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
   if (strcmp(hydra_options.service, "rpcap") == 0)
-    x = service_rtsp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+    x = service_rpcap_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
   // ADD NEW SERVICES HERE
 
 
@@ -1458,7 +1458,7 @@ int hydra_spawn_head(int head_no, int target_no) {
       if (strcmp(hydra_options.service, "rtsp") == 0)
         service_rtsp(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
       if (strcmp(hydra_options.service, "rpcap") == 0)
-        service_rtsp(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
+        service_rpcap(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
       // ADD NEW SERVICES HERE
 
 
