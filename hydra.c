@@ -55,6 +55,7 @@ extern void service_redis(char *ip, int sp, unsigned char options, char *miscptr
 extern void service_http_proxy_urlenum(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern void service_s7_300(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern void service_rtsp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern void service_rpcap(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 
 // ADD NEW SERVICES HERE
 
@@ -143,13 +144,14 @@ extern int service_vnc_init(char *ip, int sp, unsigned char options, char *miscp
 extern int service_xmpp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern int service_s7_300_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern int service_rtsp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern int service_rpcap_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 
 // ADD NEW SERVICES HERE
 
 
 // ADD NEW SERVICES HERE
 char *SERVICES =
-  "asterisk afp cisco cisco-enable cvs firebird ftp ftps http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres rdp redis rexec rlogin rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
+  "asterisk afp cisco cisco-enable cvs firebird ftp ftps http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
 
 #define MAXBUF       520
 #define MAXLINESIZE  ( ( MAXBUF / 2 ) - 4 )
@@ -1251,6 +1253,8 @@ void hydra_service_init(int target_no) {
     x = service_s7_300_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
   if (strcmp(hydra_options.service, "rtsp") == 0)
     x = service_rtsp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  if (strcmp(hydra_options.service, "rpcap") == 0)
+    x = service_rpcap_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
   // ADD NEW SERVICES HERE
 
 
@@ -1453,6 +1457,8 @@ int hydra_spawn_head(int head_no, int target_no) {
         service_s7_300(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
       if (strcmp(hydra_options.service, "rtsp") == 0)
         service_rtsp(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
+      if (strcmp(hydra_options.service, "rpcap") == 0)
+        service_rpcap(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
       // ADD NEW SERVICES HERE
 
 
@@ -1551,6 +1557,7 @@ int hydra_lookup_port(char *service) {
     {"asterisk", PORT_ASTERISK, PORT_ASTERISK_SSL},
     {"s7-300", PORT_S7_300, PORT_S7_300_SSL},
     {"rtsp", PORT_RTSP, PORT_RTSP_SSL},
+    {"rpcap", PORT_RPCAP, PORT_RPCAP_SSL},
     // ADD NEW SERVICES HERE - add new port numbers to hydra.h
     {"", PORT_NOPORT, PORT_NOPORT}
   };
@@ -3078,6 +3085,8 @@ int main(int argc, char *argv[]) {
         bail("-m option is required to specify the DN\n");
     }
     if (strcmp(hydra_options.service, "rtsp") == 0)
+      i = 1;
+    if (strcmp(hydra_options.service, "rpcap") == 0)
       i = 1;
     if (strcmp(hydra_options.service, "s7-300") == 0) {
       if (hydra_options.tasks > 8) {

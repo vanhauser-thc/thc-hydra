@@ -132,6 +132,8 @@
 #define PORT_REDIS_SSL   6379
 #define PORT_RTSP      554
 #define PORT_RTSP_SSL  554
+#define PORT_RPCAP       2002
+#define PORT_RPCAP_SSL   2002
 
 #define False 0
 #define True  1
