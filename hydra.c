@@ -1557,7 +1557,7 @@ int hydra_lookup_port(char *service) {
     {"asterisk", PORT_ASTERISK, PORT_ASTERISK_SSL},
     {"s7-300", PORT_S7_300, PORT_S7_300_SSL},
     {"rtsp", PORT_RTSP, PORT_RTSP_SSL},
-    {"rpcap", PORT_RTSP, PORT_RTSP_SSL},
+    {"rpcap", PORT_RPCAP, PORT_RPCAP_SSL},
     // ADD NEW SERVICES HERE - add new port numbers to hydra.h
     {"", PORT_NOPORT, PORT_NOPORT}
   };
