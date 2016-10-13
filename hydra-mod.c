@@ -231,7 +231,7 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
       if (debug)
         printf("DEBUG_CONNECT_UNREACHABLE\n");
 
-/* we wont quit here, thats up to the module to decide what to do 
+/* we wont quit here, thats up to the module to decide what to do
  *              fprintf(stderr, "Process %d: Can not connect [unreachable], process exiting\n", (int)getpid());
  *              hydra_child_exit(1);
  */
@@ -456,7 +456,7 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
   return ret;
 }
 
-#ifdef LIBOPENSSL && !defined(LIBRESSL_VERSION_NUMBER)
+#if defined LIBOPENSSL && !defined(LIBRESSL_VERSION_NUMBER)
 RSA *ssl_temp_rsa_cb(SSL * ssl, int export, int keylength) {
   int ok = 0;
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
