@@ -5,7 +5,7 @@ OPTS=-I. -O3
 # -Wall -g -pedantic
 LIBS=-lm
 BINDIR = /bin
-MANDIR ?= /man/man1
+MANDIR ?= /man/man1/
 DATADIR ?= /etc
 DESTDIR ?=
 

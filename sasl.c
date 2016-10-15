@@ -1,5 +1,7 @@
 #include "sasl.h"
 
+extern int selected_proxy;
+
 /*
 print_hex is used for debug
 it displays the string buf hexa values of size len
@@ -526,10 +528,10 @@ indicates authentication with integrity protection and encryption.
         if (strstr(type, "rtsp") != NULL) {
           snprintf(result, 500, "username=\"%s\", realm=\"%s\", nonce=\"%s\", uri=\"%s://%s:%i\", response=\"%s\"\r\n", preplogin, realm, nonce, type, webtarget, port, buffer);
         } else {
-          if (use_proxy == 1 && proxy_authentication != NULL)
+          if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL)
             snprintf(result, 500,
                      "%s http://%s:%d%s HTTP/1.0\r\nHost: %s\r\nAuthorization: Digest username=\"%s\", realm=\"%s\", response=\"%s\", nonce=\"%s\", cnonce=\"hydra\", nc=00000001, algorithm=%s, qop=auth, uri=\"%s\"\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
-                     type, webtarget, webport, miscptr, webtarget, preplogin, realm, buffer, nonce, algo, miscptr, proxy_authentication, header);
+                     type, webtarget, webport, miscptr, webtarget, preplogin, realm, buffer, nonce, algo, miscptr, proxy_authentication[selected_proxy], header);
           else {
             if (use_proxy == 1)
               snprintf(result, 500,
