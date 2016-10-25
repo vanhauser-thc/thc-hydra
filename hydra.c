@@ -4054,6 +4054,7 @@ int main(int argc, char *argv[]) {
       for (j = 0; j < hydra_options.max_use; j++)
         if (hydra_heads[j]->active >= 0)
           k++;
+/*	I think we don't need this anymore
       if ((hydra_brains.todo_all + total_redo_count) < hydra_brains.sent) { //in case of overflow of unsigned "-1"
         for (i = 0; i < hydra_options.max_use; i++)
           if (hydra_heads[i]->active > 0 && hydra_heads[i]->pid > 0)
@@ -4061,6 +4062,7 @@ int main(int argc, char *argv[]) {
         printf("[BUG] %lu + %d < %lu\n", hydra_brains.todo_all, total_redo_count, hydra_brains.sent);
         bail("[BUG] Weird bug detected where more tests were performed than possible. Please rerun with -d command line switch and post all output plus command line here: https://github.com/vanhauser-thc/thc-hydra/issues/113 or send it in an email to vh@thc.org");
       }
+*/
       printf("[STATUS] %.2f tries/min, %lu tries in %02lu:%02luh, %lu to do in %02lu:%02luh, %d active\n", (1.0 * hydra_brains.sent) / (((elapsed_status - starttime) * 1.0) / 60),     // tries/min
              hydra_brains.sent, // tries
              (long unsigned int) ((elapsed_status - starttime) / 3600), // hours
