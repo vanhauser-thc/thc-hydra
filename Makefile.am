@@ -18,7 +18,7 @@ SRC = hydra-vnc.c hydra-pcnfs.c hydra-rexec.c hydra-nntp.c hydra-socks5.c \
       hydra-oracle-listener.c hydra-svn.c hydra-pcanywhere.c hydra-sip.c \
       hydra-oracle.c hydra-vmauthd.c hydra-asterisk.c hydra-firebird.c hydra-afp.c hydra-ncp.c \
       hydra-oracle-sid.c hydra-http-proxy.c hydra-http-form.c hydra-irc.c \
-      hydra-rdp.c hydra-s7-300.c hydra-redis.c \
+      hydra-rdp.c hydra-s7-300.c hydra-redis.c hydra-adam6500.c \
       crc32.c d3des.c bfg.c ntlm.c sasl.c hmacmd5.c hydra-mod.c hydra-rtsp.c hydra-time.c hydra-rpcap.c
 OBJ = hydra-vnc.o hydra-pcnfs.o hydra-rexec.o hydra-nntp.o hydra-socks5.o \
       hydra-telnet.o hydra-cisco.o hydra-http.o hydra-ftp.o hydra-imap.o \
@@ -29,7 +29,7 @@ OBJ = hydra-vnc.o hydra-pcnfs.o hydra-rexec.o hydra-nntp.o hydra-socks5.o \
       hydra-oracle-listener.o hydra-svn.o hydra-pcanywhere.o hydra-sip.o \
       hydra-oracle-sid.o hydra-oracle.o hydra-vmauthd.o hydra-asterisk.o hydra-firebird.o hydra-afp.o hydra-ncp.o \
       hydra-http-proxy.o hydra-http-form.o hydra-irc.o hydra-redis.o \
-      hydra-rdp.o hydra-s7-300.c \
+      hydra-rdp.o hydra-s7-300.c hydra-adam6500.o \
       crc32.o d3des.o bfg.o ntlm.o sasl.o hmacmd5.o hydra-mod.o hydra-rtsp.o hydra-time.o hydra-rpcap.o
 BINS = hydra pw-inspector
 

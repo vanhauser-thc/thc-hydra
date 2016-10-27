@@ -5,6 +5,7 @@ Release 8.4-dev
 * Proxy support re-implemented:
   - HYDRA_PROXY[_HTTP] environment can be a text file with up to 64 entries
   - HYDRA_PROXY_AUTH was deprecated, set login/password in HTTP_PROXY[_HTTP]
+* New protocol: adam6500 - this one is work in progress, please test and report
 * New protocol: rpcap! thanks to Petar Kaleychev <petar.kaleychev@gmail.com>
 * New command line option -y which disables -x 1aA interpretation, thanks to crondaemon for the patch
 * The protocols vnc, xmpp, telnet, imap, nntp and pcanywhere got accidentially long sleep commands due a patch in 8.2, fixed

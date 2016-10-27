@@ -94,6 +94,8 @@
 #define PORT_ORACLE_SSL 1521
 #define PORT_PCANYWHERE 5631
 #define PORT_PCANYWHERE_SSL 5631
+#define PORT_ADAM6500       502
+#define PORT_ADAM6500_SSL   502
 #define PORT_SAPR3      -1
 #define PORT_SAPR3_SSL  -1
 #define PORT_SSH        22

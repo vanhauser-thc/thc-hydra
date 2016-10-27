@@ -26,6 +26,7 @@ extern void service_ldap2(char *ip, int sp, unsigned char options, char *miscptr
 extern void service_ldap3(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern void service_ldap3_cram_md5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern void service_ldap3_digest_md5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern void service_adam6500(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern void service_cisco(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern void service_cisco_enable(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern void service_vnc(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
@@ -111,6 +112,7 @@ extern void service_oracle(char *ip, int sp, unsigned char options, char *miscpt
 extern int service_oracle_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 #endif
 
+extern int service_adam6500_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern int service_cisco_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern int service_cisco_enable_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern int service_cvs_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
@@ -151,7 +153,7 @@ extern int service_rpcap_init(char *ip, int sp, unsigned char options, char *mis
 
 // ADD NEW SERVICES HERE
 char *SERVICES =
-  "asterisk afp cisco cisco-enable cvs firebird ftp ftps http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
+  "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp ftps http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
 
 #define MAXBUF       520
 #define MAXLINESIZE  ( ( MAXBUF / 2 ) - 4 )
@@ -355,7 +357,9 @@ void help(int ext) {
     printf("  -o FILE   write found login/password pairs to FILE instead of stdout\n");
   if (ext)
     printf("  -f / -F   exit when a login/pass pair is found (-M: -f per host, -F global)\n");
-  printf("  -t TASKS  run TASKS number of connects in parallel (per host, default: %d)\n", TASKS);
+  printf("  -t TASKS  run TASKS number of connects in parallel per target (default: %d)\n", TASKS);
+  if (ext)
+    printf("  -T TASKS  run TASKS connects in parallel overall (for -M, default: %d)\n", MAXTASKS);
   if (ext)
     printf("  -w / -W TIME  waittime for responses (%d) / between connects per thread (%d)\n", WAITTIME, conwait);
   if (ext)
@@ -1147,6 +1151,8 @@ void hydra_service_init(int target_no) {
     x = service_cisco_enable_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
   if (strcmp(hydra_options.service, "cvs") == 0)
     x = service_cvs_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  if (strcmp(hydra_options.service, "adam6500") == 0)
+    x = service_adam6500_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
   if (strcmp(hydra_options.service, "cisco") == 0)
     x = service_cisco_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
 #ifdef LIBFIREBIRD
@@ -1359,6 +1365,8 @@ int hydra_spawn_head(int head_no, int target_no) {
         service_http_proxy(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
       if (strcmp(hydra_options.service, "http-proxy-urlenum") == 0)
         service_http_proxy_urlenum(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
+      if (strcmp(hydra_options.service, "adam6500") == 0)
+        service_adam6500(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
       if (strcmp(hydra_options.service, "cisco") == 0)
         service_cisco(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
       if (strcmp(hydra_options.service, "cisco-enable") == 0)
@@ -1537,6 +1545,7 @@ int hydra_lookup_port(char *service) {
     {"ssh", PORT_SSH, PORT_SSH_SSL},
     {"sshkey", PORT_SSH, PORT_SSH_SSL},
     {"telnet", PORT_TELNET, PORT_TELNET_SSL},
+    {"adam6500", PORT_ADAM6500, PORT_ADAM6500_SSL},
     {"cisco", PORT_TELNET, PORT_TELNET_SSL},
     {"cisco-enable", PORT_TELNET, PORT_TELNET_SSL},
     {"vnc", PORT_VNC, PORT_VNC_SSL},
@@ -2969,6 +2978,13 @@ int main(int argc, char *argv[]) {
       if (hydra_options.tasks > 4)
         fprintf(stderr, "[WARNING] you should set the number of parallel task to 4 for cisco services.\n");
     }
+    if (strcmp(hydra_options.service, "adam6500") == 0) {
+      i = 2;
+      fprintf(stderr, "[WARNING] the module adam6500 is work in progress! please submit a pcap of a successful login as well as false positives to vh@thc.org\n");
+      if (hydra_options.tasks > 1)
+        fprintf(stderr, "[WARNING] reset the number of parallel task to 1 for adam6500 modbus authentication\n");
+      hydra_options.tasks = 1;
+    }
     if (strncmp(hydra_options.service, "snmpv", 5) == 0) {
       hydra_options.service[4] = hydra_options.service[5];
       hydra_options.service[5] = 0;
@@ -3272,7 +3288,7 @@ int main(int argc, char *argv[]) {
       if (hydra_options.colonfile != NULL
           || ((hydra_options.login != NULL || hydra_options.loginfile != NULL) && (hydra_options.pass != NULL || hydra_options.passfile != NULL || hydra_options.bfg > 0)))
         bail
-          ("The redis, cisco, oracle-listener, s7-300, snmp and vnc modules are only using the -p or -P option, not login (-l, -L) or colon file (-C).\nUse the telnet module for cisco using \"Username:\" authentication.\n");
+          ("The redis, adam6500, cisco, oracle-listener, s7-300, snmp and vnc modules are only using the -p or -P option, not login (-l, -L) or colon file (-C).\nUse the telnet module for cisco using \"Username:\" authentication.\n");
       if ((hydra_options.login != NULL || hydra_options.loginfile != NULL) && (hydra_options.pass == NULL || hydra_options.passfile == NULL)) {
         hydra_options.pass = hydra_options.login;
         hydra_options.passfile = hydra_options.loginfile;
