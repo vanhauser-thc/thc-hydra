@@ -3682,10 +3682,12 @@ int main(int argc, char *argv[]) {
   //  hydra_options.max_use = hydra_brains.targets * hydra_options.tasks;
   //  if (hydra_options.max_use > MAXTASKS)
   //    hydra_options.max_use = MAXTASKS;
-  math2 = (hydra_brains.todo / hydra_options.tasks);
-  if (hydra_brains.todo % hydra_options.tasks)
+  if (hydra_options.max_use > hydra_options.tasks * hydra_brains.targets)
+    hydra_options.max_use = hydra_options.tasks * hydra_brains.targets;
+  math2 = (hydra_brains.todo * hydra_brains.targets) / hydra_options.max_use;
+  if ((hydra_brains.todo * hydra_brains.targets) % hydra_options.max_use)
     math2++;
-  math2 = (math2 * hydra_brains.targets) / hydra_options.max_use;
+
   // set options (bits!)
   options = 0;
   if (hydra_options.ssl)
