@@ -327,12 +327,14 @@ void help(int ext) {
 #ifdef HAVE_MATH_H
          " [-x MIN:MAX:CHARSET]"
 #endif
-         " [-SOuvVd46] "
+         " [-ISOuvVd46] "
          //"[server service [OPT]]|"
          "[service://server[:PORT][/OPT]]\n");
   printf("\nOptions:\n");
   if (ext)
     printf("  -R        restore a previous aborted/crashed session\n");
+  if (ext)
+    printf("  -I        ignore an existing restore file (dont wait 10 seconds)\n");
 #ifdef LIBOPENSSL
   if (ext)
     printf("  -S        perform an SSL connect\n");
@@ -2340,7 +2342,7 @@ int main(int argc, char *argv[]) {
   FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL, *proxyfp;
   size_t countinfile = 1, sizeinfile = 0;
   unsigned long int math2;
-  int i = 0, j = 0, k, error = 0, modusage = 0;
+  int i = 0, j = 0, k, error = 0, modusage = 0, ignore_restore = 0;
   int head_no = 0, target_no = 0, exit_condition = 0, readres;
   time_t starttime, elapsed_status, elapsed_restore, status_print = 59, tmp_time;
   char *tmpptr, *tmpptr2;
@@ -2462,7 +2464,7 @@ int main(int argc, char *argv[]) {
     help(1);
   if (argc < 2)
     help(0);
-  while ((i = getopt(argc, argv, "hq64Rde:vVl:fFg:L:p:OP:o:M:C:t:T:m:w:W:s:SUux:y")) >= 0) {
+  while ((i = getopt(argc, argv, "hIq64Rde:vVl:fFg:L:p:OP:o:M:C:t:T:m:w:W:s:SUux:y")) >= 0) {
     switch (i) {
     case 'h':
       help(1);
@@ -2484,6 +2486,9 @@ int main(int argc, char *argv[]) {
       break;
     case 'R':
       hydra_options.restore = 1;
+      break;
+    case 'I':
+      ignore_restore = 1; // this is not to be saved in hydra_options!
       break;
     case 'd':
       hydra_options.debug = ++debug;
@@ -3457,8 +3462,9 @@ int main(int argc, char *argv[]) {
     }
     free(memcheck);
     if ((rfp = fopen(RESTOREFILE, "r")) != NULL) {
-      fprintf(stderr, "[WARNING] Restorefile (%s) from a previous session found, to prevent overwriting, you have 10 seconds to abort...\n", RESTOREFILE);
-      sleep(10);
+      fprintf(stderr, "[WARNING] Restorefile (%s) from a previous session found, to prevent overwriting, %s\n", ignore_restore == 1 ? "ignored ..." : "you have 10 seconds to abort...", RESTOREFILE);
+      if (ignore_restore != 1)
+        sleep(10);
       fclose(rfp);
     }
 
