@@ -22,6 +22,8 @@ int start_ftp(int s, char *ip, int port, unsigned char options, char *miscptr, F
     return 1;
   /* special hack to identify 530 user unknown msg. suggested by Jean-Baptiste.BEAUFRETON@turbomeca.fr */
   if (buf[0] == '5' && buf[1] == '3' && buf[2] == '0') {
+    if (verbose)
+      printf("[INFO] user %s does not exist, skipping\n", login);
     hydra_completed_pair_skip();
     if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
       return 4;

@@ -1,4 +1,3 @@
-
 /*
 
 david: code is based on SNORT spo_database.c
@@ -95,9 +94,15 @@ int start_oracle(int s, char *ip, int port, unsigned char options, char *miscptr
     }
     if (strstr((const char *) o_errormsg, "ORA-12514") != NULL) {
       hydra_report(stderr, "[ERROR] ORACLE SID is not valid, you should try to enumerate them.\n");
+      hydra_completed_pair();
+      return 3;
     }
     if (strstr((const char *) o_errormsg, "ORA-28000") != NULL) {
-      hydra_report(stderr, "[ERROR] ORACLE account %s is locked.\n", login);
+      hydra_report(stderr, "[INFO] ORACLE account %s is locked.\n", login);
+      hydra_completed_pair_skip();
+      if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
+        return 3;
+      return 2;
     }
 
     if (o_error) {
@@ -110,8 +115,9 @@ int start_oracle(int s, char *ip, int port, unsigned char options, char *miscptr
     //set these parameters to not generate the file
     //LOG_DIRECTORY_CLIENT = /dev/null
     //LOG_FILE_CLIENT = /dev/null
-    unlink("sqlnet.log");
 
+    if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
+      return 3;
     return 2;
   } else {
     OCILogoff(o_servicecontext, o_error);
@@ -164,6 +170,7 @@ void service_oracle(char *ip, int sp, unsigned char options, char *miscptr, FILE
     case 3:                    /* clean exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
+      unlink("sqlnet.log");
       hydra_child_exit(0);
       return;
     default:

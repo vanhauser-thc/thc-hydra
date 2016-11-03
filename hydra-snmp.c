@@ -454,8 +454,8 @@ int start_snmp(int s, char *ip, int port, unsigned char options, char *miscptr, 
           return 3;
         return 1;
       } else if ((buf[off + 15] & 5) == 4 && hydra_memsearch(buf, i, snmpv3_nouser, sizeof(snmpv3_nouser)) >= 0) {      // user does not exist
-        if (debug)
-          printf("[DEBUG] server reply indicates login %s does not\n", login);
+        if (verbose)
+          printf("[INFO] user %s does not exist, skipping\n", login);
         hydra_completed_pair_skip();
         if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
           return 3;

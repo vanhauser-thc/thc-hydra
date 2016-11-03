@@ -397,6 +397,8 @@ int start_pop3(int s, char *ip, int port, unsigned char options, char *miscptr, 
   }
   /* special AS/400 hack */
   if (strstr(buf, "CPF2204") != NULL || strstr(buf, "CPF22E3") != NULL || strstr(buf, "CPF22E4") != NULL || strstr(buf, "CPF22E5") != NULL) {
+    if (verbose)
+      printf("[INFO] user %s does not exist, skipping\n", login);
     hydra_completed_pair_skip();
     free(buf);
     if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)

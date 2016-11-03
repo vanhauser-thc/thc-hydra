@@ -69,7 +69,7 @@ int start_cvs(int s, char *ip, int port, unsigned char options, char *miscptr, F
       }
     } else if (strstr(buf, "no such user") || strstr(buf, "E PAM start error: Critical error - immediate abort\n")) {
       if (verbose) {
-        hydra_report(stderr, "[VERBOSE] User %s does not exist\n", login);
+        hydra_report(stderr, "[INFO] User %s does not exist, skipping\n", login);
       }
       hydra_completed_pair_skip();
       free(buf);
