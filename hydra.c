@@ -3702,6 +3702,8 @@ int main(int argc, char *argv[]) {
            (unsigned long int) hydra_brains.countlogin, (unsigned long int) hydra_brains.countpass, math2, math2 == 1 ? "y" : "ies");
 
   printf("[DATA] attacking service %s on port %d%s\n", hydra_options.service, port, hydra_options.ssl == 1 ? " with SSL" : "");
+  if (hydra_options.miscptr != NULL && hydra_options.miscptr[0] != 0)
+    printf("[DATA] with additional data %s\n", hydra_options.miscptr);
 
   if (hydra_options.outfile_ptr != NULL) {
     if ((hydra_brains.ofp = fopen(hydra_options.outfile_ptr, "a+")) == NULL) {
