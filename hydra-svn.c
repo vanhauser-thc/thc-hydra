@@ -11,6 +11,8 @@
 #include <svn_pools.h>
 #include <svn_config.h>
 #include <svn_fs.h>
+#include <svn_path.h>
+
 #endif
 
 #include "hydra-mod.h"
@@ -52,6 +54,7 @@ int start_svn(int s, char *ip, int port, unsigned char options, char *miscptr, F
   int ipv6 = 0;
   char URL[1024];
   char URLBRANCH[256];
+  const char *canonical;
   apr_pool_t *pool;
   svn_error_t *err;
   svn_opt_revision_t revision;
@@ -79,7 +82,8 @@ int start_svn(int s, char *ip, int port, unsigned char options, char *miscptr, F
     return 4;
   }
 
-  if ((err = svn_client_create_context(&ctx, pool))) {
+  //if ((err = svn_client_create_context(&ctx, pool))) {
+  if ((err = svn_client_create_context2(&ctx, NULL, pool))) {
     svn_handle_error2(err, stderr, FALSE, "hydra: ");
     return 4;
   }
@@ -104,17 +108,19 @@ int start_svn(int s, char *ip, int port, unsigned char options, char *miscptr, F
   else
     snprintf(URL, sizeof(URL), "svn://%s:%d/%s", hydra_address2string(ip), port, URLBRANCH);
   dirents = SVN_DIRENT_KIND;
-  err = svn_client_list2(URL, &revision, &revision, svn_depth_unknown, dirents, FALSE, print_dirdummy, NULL, ctx, pool);
+  canonical = svn_uri_canonicalize(URL, pool);
+  //err = svn_client_list2(canonical, &revision, &revision, svn_depth_unknown, dirents, FALSE, print_dirdummy, NULL, ctx, pool);
+  err = svn_client_list3(canonical, &revision, &revision, svn_depth_unknown, dirents, FALSE, FALSE, (svn_client_list_func2_t) print_dirdummy, NULL, ctx, pool);
 
   svn_pool_clear(pool);
   svn_pool_destroy(pool);
 
   if (err) {
-    if (verbose)
+    if (debug || (verbose && (err->apr_err != 170001 && err->apr_err != 170013)))
       hydra_report(stderr, "[ERROR] Access refused (error code %d) , message: %s\n", err->apr_err, err->message);
     //Username not found 170001 ": Username not found"
     //Password incorrect 170001 ": Password incorrect"
-    if (err->apr_err != 170001) {
+    if (err->apr_err != 170001 && err->apr_err != 170013) {
       return 4;                 //error
     } else {
       if (strstr(err->message, "Username not found")) {
