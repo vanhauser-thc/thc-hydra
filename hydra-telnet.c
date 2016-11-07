@@ -36,7 +36,7 @@ int start_telnet(int s, char *ip, int port, unsigned char options, char *miscptr
     if ((buf = hydra_receive_line(s)) == NULL)
       return 1;
 
-    if (index(buf, '/') != NULL || index(buf, '>') != NULL || index(buf, '%') != NULL || index(buf, '$') != NULL || index(buf, '#') != NULL || index(buf, '%') != NULL) {
+    if (index(buf, '/') != NULL || index(buf, '>') != NULL || index(buf, '%') != NULL || index(buf, '$') != NULL || index(buf, '#') != NULL) {
       hydra_report_found_host(port, ip, "telnet", fp);
       hydra_completed_pair_found();
       free(buf);
@@ -76,10 +76,10 @@ int start_telnet(int s, char *ip, int port, unsigned char options, char *miscptr
 
   /*win7 answering with do terminal type = 0xfd 0x18 */
   while ((buf = hydra_receive_line(s)) != NULL && make_to_lower(buf) && (strstr(buf, "login:") == NULL || strstr(buf, "last login:") != NULL) && strstr(buf, "sername:") == NULL) {
-    if ((miscptr != NULL && strstr(buf, miscptr) != NULL)
-        || (miscptr == NULL
-            && (index(buf, '/') != NULL || index(buf, '>') != NULL || index(buf, '%') != NULL || index(buf, '$') != NULL || index(buf, '#') != NULL
-                || (strstr(buf, " failed") == NULL && index(buf, '%') != NULL) || ((buf[1] == '\xfd') && (buf[2] == '\x18'))))) {
+    if ((miscptr != NULL && strstr(buf, miscptr) != NULL) || (miscptr == NULL &&
+          strstr(buf, "invalid") == NULL && strstr(buf, "failed") == NULL && strstr(buf, "bad ") == NULL &&
+          (index(buf, '/') != NULL || index(buf, '>') != NULL || index(buf, '$') != NULL || index(buf, '#') != NULL ||
+          index(buf, '%') != NULL || ((buf[1] == '\xfd') && (buf[2] == '\x18'))))) {
       hydra_report_found_host(port, ip, "telnet", fp);
       hydra_completed_pair_found();
       free(buf);
@@ -89,6 +89,7 @@ int start_telnet(int s, char *ip, int port, unsigned char options, char *miscptr
     }
     free(buf);
   }
+
   hydra_completed_pair();
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     return 3;
