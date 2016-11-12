@@ -92,14 +92,22 @@ char *message2buffer(struct rmessage *msg) {
 
   switch(msg->type) {
     case 0x1b: //Challenge request
-      data = calloc (10, sizeof(unsigned char)); //TODO: check return
+      data = calloc (10, sizeof(unsigned char));
+      if(data == NULL) {
+        hydra_report(stderr, "calloc failure\n");
+        hydra_child_exit(0);
+      }
       memcpy(data, &msg->magic, sizeof(char));
       *((int *)(data+1)) = htonl(msg->length);
       *((int *)(data+5)) = htonl(msg->checksum);
       memcpy((data+9), &msg->type, sizeof(char));
       break;
     case 0x09:
-      data = calloc (42, sizeof(unsigned char)); //TODO: check return
+      data = calloc (42, sizeof(unsigned char));
+      if(data == NULL) {
+        hydra_report(stderr, "calloc failure\n");
+        hydra_child_exit(0);
+      }
       memcpy(data, &msg->magic, sizeof(char));
       *((int *)(data+1)) = htonl(msg->length);
       *((int *)(data+5)) = htonl(msg->checksum);
@@ -117,7 +125,10 @@ char *message2buffer(struct rmessage *msg) {
 struct rmessage *buffer2message(char *buffer) {
   struct rmessage *msg;
   msg = calloc(1, sizeof(struct rmessage));
-  //TODO: check return
+  if(msg == NULL) {
+    hydra_report(stderr, "calloc failure\n");
+    hydra_child_exit(0);
+  }
 
   //Start parsing...
   msg->magic = buffer[0];
