@@ -204,7 +204,7 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
   MD5_Final(rawkey, &md5c); 
   //Copy raw md5 data into ASCIIZ string
   for(index = 0; index < 16; index++) {
-    count = sprintf((pkey+index*2), "%02x", rawkey[index]);
+    sprintf((pkey+index*2), "%02x", rawkey[index]);
   }
 
   /* Typical conversation goes as follows...
