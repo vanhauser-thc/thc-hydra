@@ -57,6 +57,7 @@ extern void service_http_proxy_urlenum(char *ip, int sp, unsigned char options, 
 extern void service_s7_300(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern void service_rtsp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern void service_rpcap(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 
 // ADD NEW SERVICES HERE
 
@@ -147,13 +148,14 @@ extern int service_xmpp_init(char *ip, int sp, unsigned char options, char *misc
 extern int service_s7_300_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern int service_rtsp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern int service_rpcap_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern int service_radmin2_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 
 // ADD NEW SERVICES HERE
 
 
 // ADD NEW SERVICES HERE
 char *SERVICES =
-  "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp ftps http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
+  "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp ftps http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres radmin2 rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
 
 #define MAXBUF       520
 #define MAXLINESIZE  ( ( MAXBUF / 2 ) - 4 )
@@ -1263,6 +1265,8 @@ void hydra_service_init(int target_no) {
     x = service_rtsp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
   if (strcmp(hydra_options.service, "rpcap") == 0)
     x = service_rpcap_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  if (strcmp(hydra_options.service, "radmin2") == 0)
+    x = service_radmin2_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
   // ADD NEW SERVICES HERE
 
 
@@ -1469,6 +1473,8 @@ int hydra_spawn_head(int head_no, int target_no) {
         service_rtsp(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
       if (strcmp(hydra_options.service, "rpcap") == 0)
         service_rpcap(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
+      if (strcmp(hydra_options.service, "radmin2") == 0)
+        service_radmin2(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
       // ADD NEW SERVICES HERE
 
 
@@ -1569,6 +1575,7 @@ int hydra_lookup_port(char *service) {
     {"s7-300", PORT_S7_300, PORT_S7_300_SSL},
     {"rtsp", PORT_RTSP, PORT_RTSP_SSL},
     {"rpcap", PORT_RPCAP, PORT_RPCAP_SSL},
+    {"radmin2", PORT_RADMIN2, PORT_RADMIN2},
     // ADD NEW SERVICES HERE - add new port numbers to hydra.h
     {"", PORT_NOPORT, PORT_NOPORT}
   };
@@ -3267,6 +3274,8 @@ int main(int argc, char *argv[]) {
       //  hydra_options.conwait = conwait = 1;
       i = 1;
     }
+    if (strcmp(hydra_options.service, "radmin2") == 0)
+      i = 1;
     // ADD NEW SERVICES HERE
 
 
