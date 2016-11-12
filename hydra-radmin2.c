@@ -82,8 +82,8 @@ void challenge_response(struct rmessage *msg, unsigned char *solution) {
 * Function: Allocates a buffer for transmission and fills the buffer with message data such that it is ready to transmit.
 */
 //TODO: conver to a sendMessage() function?
-unsigned char *message2buffer(struct rmessage *msg) {
-  unsigned char *data;
+char *message2buffer(struct rmessage *msg) {
+  char *data;
   if(msg == NULL) {
     hydra_report(stderr, "rmessage is null\n");
     hydra_child_exit(0);
@@ -117,7 +117,6 @@ unsigned char *message2buffer(struct rmessage *msg) {
 struct rmessage *buffer2message(char *buffer) {
   struct rmessage *msg;
   msg = calloc(1, sizeof(struct rmessage));
-  unsigned int sum = 0;
   //TODO: check return
 
   //Start parsing...
@@ -161,20 +160,20 @@ struct rmessage *buffer2message(char *buffer) {
 
 
 int start_radmin2(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+  return 0;
 }
 
 void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   int sock = -1;
   int index;
-  int count;
   int bytecount;
-  unsigned char *request;
+  char *request;
   struct rmessage *msg;
   int myport = PORT_RADMIN2;
   char buffer[42];
-  unsigned char password[101];
+  char password[101];
   unsigned char rawkey[16];
-  unsigned char pkey[33];
+  char pkey[33];
   char *IV = "FEDCBA9876543210A39D4A18F85B4A52";
   unsigned char encrypted[32];
 
