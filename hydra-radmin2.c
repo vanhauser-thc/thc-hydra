@@ -13,41 +13,31 @@ extern int cipherInit(cipherInstance *cipher, BYTE mode,CONST char *IV);
 extern int blockEncrypt(cipherInstance *cipher, keyInstance *key,CONST BYTE *input, int inputLen, BYTE *outBuffer);
 extern int blockDecrypt(cipherInstance *cipher, keyInstance *key,CONST BYTE *input, int inputLen, BYTE *outBuffer);
 
+//RAdmin 2.x
 
 struct rmessage{
-  char magic; //No touching!
+  char magic; //Indicates version, probably?
   unsigned int length; //Total message size of data.
   unsigned int checksum; //Checksum from type to end of data.
   char type; //Command type, table below.
   unsigned char data[32]; //data to be sent.
 };
 
-void print_message(struct rmessage *msg) {
-  return;
-  int dlen = 0;
-  hydra_report(stderr,
-    "m:\t%02x\n"
-    "l:\t%08x\n"
-    "c:\t%08x\n"
-    "t:\t%02x\n", 
-    msg->magic,
-    msg->length,
-    msg->checksum,
-    msg->type);
-
-    hydra_report(stderr, "d:\t");
-    for(dlen = 0; dlen < msg->length - 1; dlen++) { //-1 because of type.
-      hydra_report(stderr, "%02x", msg->data[dlen]);
-    }
-    hydra_report(stderr, "\n");
-}
-
+/*
+* Usage:    sum = checksum(message);
+* Function: Returns a 4 byte little endian sum of the messages typecode+data. This data is zero padded for alignment.
+* Example message (big endian):
+* [01][00000021][0f43d461] sum([1b6e779a f37189bb c1b22982 c80d1f4d 66678ff9 4b10f0ce eabff6e8 f4fb8338 3b] + zeropad(3)])
+* Sum: is 0f43d461 (big endian)
+*/
 unsigned int checksum(struct rmessage *msg) {
   int blen;
   unsigned char *stream;
   unsigned int sum;
   blen = msg->length; //Get the real length.
   blen += (4 - (blen % 4));
+
+  //Allocate a worksapce.
   stream = calloc(blen, sizeof(unsigned char));
   memcpy(stream, &msg->type, sizeof(unsigned char));
   memcpy(stream+1, msg->data, blen-1);
@@ -58,28 +48,40 @@ unsigned int checksum(struct rmessage *msg) {
   }
   sum += *(unsigned int *)stream;
 
+  //Free the workspace.
+  free(stream);
+
   return sum;
 }
 
-
+/*
+* Usage:    challenge_request(message);
+* Function: Modifies message to reflect a request for a challenge. Updates the checksum as appropriate.
+*/
 void challenge_request(struct rmessage *msg)  {
   msg->magic = 0x01;
   msg->length = 0x01;
   msg->type = 0x1b;
   msg->checksum = checksum(msg);
-  print_message(msg);
 }
 
+/*
+* Usage:    challenge_request(message);
+* Function: Modifies message to reflect a response to a challenge. Updates the checksum as appropriate.
+*/
 void challenge_response(struct rmessage *msg, unsigned char *solution) {
   msg->magic = 0x01;
   msg->length = 0x21;
   msg->type = 0x09;
   memcpy(msg->data, solution, 0x20);
   msg->checksum = checksum(msg);
-  print_message(msg);
 }
 
-
+/*
+* Usage:    buffer = message2buffer(message); send(buffer, message->length + 10); free(buffer)
+* Function: Allocates a buffer for transmission and fills the buffer with message data such that it is ready to transmit.
+*/
+//TODO: conver to a sendMessage() function?
 unsigned char *message2buffer(struct rmessage *msg) {
   unsigned char *data;
   if(msg == NULL) {
@@ -223,8 +225,10 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
   // 1) request challenge (working)
   msg = calloc(1, sizeof(struct rmessage));
   challenge_request(msg);
-  hydra_send(sock, message2buffer(msg), 10, 0);
-  free(msg); //We're done with challenge request messagee.
+  request = message2buffer(msg);
+  hydra_send(sock, request, 10, 0);
+  free(msg); 
+  free(request);
 
   //2) receive response (working)
   index = 0;
@@ -280,8 +284,10 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
   //3.d) send half sum
   challenge_response(msg, encrypted);
   request = message2buffer(msg);
-
   hydra_send(sock, request, 42, 0);
+  free(msg);
+  free(request);
+
   //4) receive auth success/failure
   index = 0;
   while(index < 10) { //We're always expecting back a 42 byte buffer from a challenge request.
