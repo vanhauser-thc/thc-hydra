@@ -490,8 +490,9 @@ RSA *ssl_temp_rsa_cb(SSL * ssl, int export, int keylength) {
 #endif
   return rsa;
 }
+#endif
 
-
+#if defined(LIBOPENSSL)
 int internal__hydra_connect_to_ssl(int socket, char *hostname) {
   int err;
 
