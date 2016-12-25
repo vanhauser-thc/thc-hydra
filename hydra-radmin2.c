@@ -2,16 +2,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <openssl/md5.h>
+#include <gcrypt.h>
 
 extern char *HYDRA_EXIT;
-
-
-//Twofish references
-#include "twofish/aes.h"
-extern int makeKey(keyInstance *key, BYTE direction, int keyLen,CONST char *keyMaterial);
-extern int cipherInit(cipherInstance *cipher, BYTE mode,CONST char *IV);
-extern int blockEncrypt(cipherInstance *cipher, keyInstance *key,CONST BYTE *input, int inputLen, BYTE *outBuffer);
-extern int blockDecrypt(cipherInstance *cipher, keyInstance *key,CONST BYTE *input, int inputLen, BYTE *outBuffer);
 
 //RAdmin 2.x
 
@@ -185,17 +178,19 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
   char password[101];
   unsigned char rawkey[16];
   char pkey[33];
-  char *IV = "FEDCBA9876543210A39D4A18F85B4A52";
+  char *IV = "\xFE\xDC\xBA\x98\x76\x54\x32\x10\xA3\x9D\x4A\x18\xF8\x5B\x4A\x52";
   unsigned char encrypted[32];
+  gcry_error_t err;
+  gcry_cipher_hd_t cipher;
 
   //Initialization nonsense.
   MD5_CTX md5c;
-  keyInstance key;
-  cipherInstance cipher;
 
   if(port != 0) {
     myport = port;
   }
+
+  gcry_check_version(NULL);
 
   memset(buffer, 0x00, sizeof(buffer));
   memset(pkey, 0x00, 33); 
@@ -263,28 +258,48 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
     }
 
     //3) Send challenge solution.
-
     //3.a) generate a new message from the buffer
     msg = buffer2message(buffer);
 
     //3.b) encrypt data received using pkey & known IV
-    index = makeKey(&key, DIR_ENCRYPT, 128, pkey);
-    if(index != TRUE) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, make key error (%08x)\n", (int)getpid(), index);
+    err= gcry_cipher_open(&cipher, GCRY_CIPHER_TWOFISH128, GCRY_CIPHER_MODE_CBC, 0);
+    if(err) {
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_open error (%08x)\n", (int)getpid(), index);
       hydra_child_exit(1);
     }
+    err = gcry_cipher_setkey(cipher, pkey, 128);
+    if(err) {
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_setkey error (%08x)\n", (int)getpid(), index);
+      hydra_child_exit(1);
+    }
+    err = gcry_cipher_setiv(cipher, IV, 128);
+    if(err) {
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_setiv error (%08x)\n", (int)getpid(), index);
+      hydra_child_exit(1);
+    } 
+    err = gcry_cipher_encrypt(cipher, encrypted, 32, msg->data, 32);
+    if(err) {
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_encrypt error (%08x)\n", (int)getpid(), index);
+      hydra_child_exit(1);
+    }
+    gcry_cipher_close(cipher);
+//    index = makeKey(&key, DIR_ENCRYPT, 128, pkey);
+//    if(index != TRUE) {
+//      hydra_report(stderr, "Error: Child with pid %d terminating, make key error (%08x)\n", (int)getpid(), index);
+//      hydra_child_exit(1);
+//    }
 
-    index = cipherInit(&cipher, MODE_CBC, IV);
-    if(index != TRUE) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, cipher init error(%08x)\n", (int)getpid(), index);
-      hydra_child_exit(1);
-    }
+//    index = cipherInit(&cipher, MODE_CBC, IV);
+//    if(index != TRUE) {
+//      hydra_report(stderr, "Error: Child with pid %d terminating, cipher init error(%08x)\n", (int)getpid(), index);
+//      hydra_child_exit(1);
+//    }
 
-    index = blockEncrypt(&cipher, &key, msg->data, 32 * 8, encrypted);
-    if(index <= 0) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, encrypt error(%08x)\n", (int)getpid(), index);
-      hydra_child_exit(1);
-    }
+//    index = blockEncrypt(&cipher, &key, msg->data, 32 * 8, encrypted);
+//    if(index <= 0) {
+//      hydra_report(stderr, "Error: Child with pid %d terminating, encrypt error(%08x)\n", (int)getpid(), index);
+//      hydra_child_exit(1);
+//    }
 
     //3.c) half sum - this is the solution to the challenge.
     for(index=0; index < 16; index++) {
