@@ -248,7 +248,7 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
     memset(encrypted, 0x00, sizeof(encrypted)); 
     hydra_get_next_pair();
     strncpy(password, hydra_get_next_password(), sizeof(password)-1);
-    hydra_report(stderr, "Trying: %s\n", password);
+
     //MD5 the password to generate the password key, this is used with twofish below.
     err = gcry_md_open(&md, GCRY_MD_MD5, 0);
     if(err) {
