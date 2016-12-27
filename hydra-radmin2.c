@@ -264,25 +264,27 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
     //3.b) encrypt data received using pkey & known IV
     err= gcry_cipher_open(&cipher, GCRY_CIPHER_TWOFISH128, GCRY_CIPHER_MODE_CBC, 0);
     if(err) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_open error (%08x)\n", (int)getpid(), index);
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_open error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
       hydra_child_exit(1);
     }
-    err = gcry_cipher_setkey(cipher, pkey, 128);
+    err = gcry_cipher_setkey(cipher, pkey, 16);
     if(err) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_setkey error (%08x)\n", (int)getpid(), index);
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_setkey error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
       hydra_child_exit(1);
     }
-    err = gcry_cipher_setiv(cipher, IV, 128);
+    err = gcry_cipher_setiv(cipher, IV, 16);
     if(err) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_setiv error (%08x)\n", (int)getpid(), index);
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_setiv error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
       hydra_child_exit(1);
     } 
     err = gcry_cipher_encrypt(cipher, encrypted, 32, msg->data, 32);
     if(err) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_encrypt error (%08x)\n", (int)getpid(), index);
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_encrypt error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
       hydra_child_exit(1);
     }
     gcry_cipher_close(cipher);
+    hydra_report(stderr, "Trying another one...\n");
+
 //    index = makeKey(&key, DIR_ENCRYPT, 128, pkey);
 //    if(index != TRUE) {
 //      hydra_report(stderr, "Error: Child with pid %d terminating, make key error (%08x)\n", (int)getpid(), index);
