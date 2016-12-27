@@ -1,7 +1,6 @@
 #include "hydra-mod.h"
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <openssl/md5.h>
 #include <gcrypt.h>
 
 extern char *HYDRA_EXIT;
@@ -177,14 +176,11 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
   char buffer[42];
   char password[101];
   unsigned char rawkey[16];
-  char pkey[33];
-  char *IV = "\xFE\xDC\xBA\x98\x76\x54\x32\x10\xA3\x9D\x4A\x18\xF8\x5B\x4A\x52";
+  unsigned char *IV = "\xFE\xDC\xBA\x98\x76\x54\x32\x10\xA3\x9D\x4A\x18\xF8\x5B\x4A\x52";
   unsigned char encrypted[32];
   gcry_error_t err;
   gcry_cipher_hd_t cipher;
-
-  //Initialization nonsense.
-  MD5_CTX md5c;
+  gcry_md_hd_t md;
 
   if(port != 0) {
     myport = port;
@@ -193,7 +189,6 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
   gcry_check_version(NULL);
 
   memset(buffer, 0x00, sizeof(buffer));
-  memset(pkey, 0x00, 33); 
   memset(encrypted, 0x00, 32); 
   memset(password, 0x00, 100); 
 
@@ -206,13 +201,19 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
   while(1) {
     // Get a password to work with. 
     strncpy(password, hydra_get_next_password(), 101);
-    MD5_Init(&md5c);
-    MD5_Update(&md5c, password, 100);
-    MD5_Final(rawkey, &md5c); 
-    //Copy raw md5 data into ASCIIZ string
-    for(index = 0; index < 16; index++) {
-      sprintf((pkey+index*2), "%02x", rawkey[index]);
+
+    err = gcry_md_open(&md, GCRY_MD_MD5, 0);
+    if(err) {
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_md_open error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
+      hydra_child_exit(1);
     }
+    gcry_md_write(md, password, 100);
+    if(gcry_md_read(md, 0) == NULL) {
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_md_read error (%08x)\n", (int)getpid(), index);
+      hydra_child_exit(1);
+    }
+    memcpy(rawkey, gcry_md_read(md, 0), 16);
+    gcry_md_close(md);
 
     /* Typical conversation goes as follows...
      0) connect to server
@@ -267,22 +268,27 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
       hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_open error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
       hydra_child_exit(1);
     }
-    err = gcry_cipher_setkey(cipher, pkey, 16);
-    if(err) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_setkey error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
-      hydra_child_exit(1);
-    }
+
     err = gcry_cipher_setiv(cipher, IV, 16);
     if(err) {
       hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_setiv error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
       hydra_child_exit(1);
-    } 
+    }
+
+    err = gcry_cipher_setkey(cipher, rawkey, 16);
+    if(err) {
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_setkey error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
+      hydra_child_exit(1);
+    }
+
     err = gcry_cipher_encrypt(cipher, encrypted, 32, msg->data, 32);
     if(err) {
       hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_encrypt error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
       hydra_child_exit(1);
     }
+
     gcry_cipher_close(cipher);
+
     hydra_report(stderr, "Trying another one...\n");
 
 //    index = makeKey(&key, DIR_ENCRYPT, 128, pkey);
