@@ -189,8 +189,6 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
   gcry_check_version(NULL);
 
   memset(buffer, 0x00, sizeof(buffer));
-  memset(encrypted, 0x00, 32); 
-  memset(password, 0x00, 100); 
 
   //Phone the mother ship
   hydra_register_socket(sp);
@@ -199,21 +197,6 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
   }
 
   while(1) {
-    // Get a password to work with. 
-    strncpy(password, hydra_get_next_password(), 101);
-
-    err = gcry_md_open(&md, GCRY_MD_MD5, 0);
-    if(err) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_md_open error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
-      hydra_child_exit(1);
-    }
-    gcry_md_write(md, password, 100);
-    if(gcry_md_read(md, 0) == NULL) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_md_read error (%08x)\n", (int)getpid(), index);
-      hydra_child_exit(1);
-    }
-    memcpy(rawkey, gcry_md_read(md, 0), 16);
-    gcry_md_close(md);
 
     /* Typical conversation goes as follows...
      0) connect to server
@@ -259,6 +242,28 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
     }
 
     //3) Send challenge solution.
+
+    // Get a password to work with. 
+    memset(password, 0x00, sizeof(password)); 
+    memset(encrypted, 0x00, sizeof(encrypted)); 
+    hydra_get_next_pair();
+    strncpy(password, hydra_get_next_password(), sizeof(password)-1);
+    hydra_report(stderr, "Trying: %s\n", password);
+    //MD5 the password to generate the password key, this is used with twofish below.
+    err = gcry_md_open(&md, GCRY_MD_MD5, 0);
+    if(err) {
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_md_open error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
+      hydra_child_exit(1);
+    }
+    gcry_md_reset(md);
+    gcry_md_write(md, password, 100);
+    if(gcry_md_read(md, 0) == NULL) {
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_md_read error (%08x)\n", (int)getpid(), index);
+      hydra_child_exit(1);
+    }
+    memcpy(rawkey, gcry_md_read(md, 0), 16);
+    gcry_md_close(md);
+
     //3.a) generate a new message from the buffer
     msg = buffer2message(buffer);
 
@@ -335,7 +340,6 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
         hydra_report(stderr, "Error: Child with pid %d terminating, protocol error\n", (int)getpid());
         hydra_child_exit(2);
     }
-
   }
 }
 
