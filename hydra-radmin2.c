@@ -289,26 +289,6 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
 
     gcry_cipher_close(cipher);
 
-    hydra_report(stderr, "Trying another one...\n");
-
-//    index = makeKey(&key, DIR_ENCRYPT, 128, pkey);
-//    if(index != TRUE) {
-//      hydra_report(stderr, "Error: Child with pid %d terminating, make key error (%08x)\n", (int)getpid(), index);
-//      hydra_child_exit(1);
-//    }
-
-//    index = cipherInit(&cipher, MODE_CBC, IV);
-//    if(index != TRUE) {
-//      hydra_report(stderr, "Error: Child with pid %d terminating, cipher init error(%08x)\n", (int)getpid(), index);
-//      hydra_child_exit(1);
-//    }
-
-//    index = blockEncrypt(&cipher, &key, msg->data, 32 * 8, encrypted);
-//    if(index <= 0) {
-//      hydra_report(stderr, "Error: Child with pid %d terminating, encrypt error(%08x)\n", (int)getpid(), index);
-//      hydra_child_exit(1);
-//    }
-
     //3.c) half sum - this is the solution to the challenge.
     for(index=0; index < 16; index++) {
       *(encrypted+index) += *(encrypted+index+16);
