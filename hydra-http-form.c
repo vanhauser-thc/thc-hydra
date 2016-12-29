@@ -114,6 +114,27 @@ ptr_header_node header_exists(ptr_header_node * ptr_head, char *header_name, cha
   return found_header;
 }
 
+#if defined(__sun)
+/* Written by Kaveh R. Ghazi <ghazi@caip.rutgers.edu> */
+char *
+strndup (const char *s, size_t n)
+{
+  char *result;
+  size_t len = strlen (s);
+
+  if (n < len)
+    len = n;
+
+  result = (char *) malloc (len + 1);
+  if (!result)
+    return 0;
+
+  memcpy (result, s, len);
+  result[len] = '\0';
+  return(result);
+}
+#endif
+
 int append_cookie(char *name, char *value, ptr_cookie_node *last_cookie)
 {
 	ptr_cookie_node new_ptr = (ptr_cookie_node) malloc(sizeof(t_cookie_node));
