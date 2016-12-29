@@ -1220,6 +1220,10 @@ if [ "X" != "X$DEBUG" ]; then
    echo DEBUG: STRIP=$STRIP
 fi
 
+if [ "$SYSS" = "SunOS" ]; then
+   XLIBS="$XLIBS -lrt"
+fi
+
 echo "Writing Makefile.in ..."
 if [ "X" != "X$FHS" ]; then
   echo "MANDIR = /share/man/man1" >> Makefile.in
@@ -1263,7 +1267,7 @@ if [ "x$WINDRES" = "x" ]; then
   echo HYDRA_LOGO= >> Makefile
   echo PWI_LOGO= >> Makefile
 fi
-if [ "$GCCSEC" = "yes" ]; then
+if [ "$GCCSEC" = "yes" ] && [ "$SYSS" != "SunOS" ]; then
   echo "SEC=$GCCSECOPT" >> Makefile
 else
   echo "SEC=" >> Makefile
