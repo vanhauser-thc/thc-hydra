@@ -12,6 +12,7 @@ Release 8.4-dev
    -I : ignore an existing hydra.restore file (dont wait for 10 seconds)
 * Upgraded hydra-svn to work with the current libsvn version
 * Fixed dpl4hydra to be able to update from the web again
+* Fixed crash when -U was used without any service (thanks to thecarterb for reporting)
 * Updated default password lists
 * The protocols vnc, xmpp, telnet, imap, nntp and pcanywhere got accidentially long sleep commands due a patch in 8.2, fixed
 * Added special error message for clueless users :)

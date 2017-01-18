@@ -2725,16 +2725,20 @@ int main(int argc, char *argv[]) {
         if (debug)
           printf("[DEBUG] opt:%d argc:%d mod:%s tgt:%s port:%u misc:%s\n", optind, argc, hydra_options.service, hydra_options.server, hydra_options.port, hydra_options.miscptr);
       } else {
-        hydra_options.server = NULL;
+       hydra_options.server = NULL;
         hydra_options.service = NULL;
 
-        if (modusage)
+        if (modusage) {
           hydra_options.service = targetdef;
-        else
+        } else
           help(0);
       }
     } else {
-      if (strstr(argv[optind], "://") != NULL) {
+      if (modusage && argv[optind] == NULL) {
+        printf("[ERROR] you must supply a service name after the -U help switch\n");
+        exit(-1);
+      }
+      if (argv[optind] == NULL || strstr(argv[optind], "://") != NULL) {
         printf("[ERROR] Invalid target definition!\n");
         printf("[ERROR] Either you use \"www.example.com module [optional-module-parameters]\" *or* you use the \"module://www.example.com/optional-module-parameters\" syntax!\n");
         exit(-1);
@@ -2801,8 +2805,13 @@ int main(int argc, char *argv[]) {
     if (strcmp(hydra_options.service, "https-form-post") == 0)
       strcpy(hydra_options.service, "https-post-form");
 
-    if (modusage == 1)
+    if (modusage == 1) {
+      if (hydra_options.service == NULL) {
+        printf("[ERROR] you must supply a service name after the -U help switch\n");
+        exit(-1);
+      }
       module_usage();
+    }
 
     i = 0;
     if (strcmp(hydra_options.service, "telnet") == 0) {
