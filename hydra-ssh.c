@@ -151,6 +151,10 @@ void service_ssh(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
 #endif
 #endif
 
+//
+// dirty workaround here: miscptr is the ptr to the logins, and the first one is used
+// to test if password authentication is enabled!!
+//
 int service_ssh_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
@@ -171,7 +175,10 @@ int service_ssh_init(char *ip, int sp, unsigned char options, char *miscptr, FIL
     printf("[INFO] Testing if password authentication is supported by ssh://%s:%d\n", hydra_address2string(ip), port);
   ssh_options_set(session, SSH_OPTIONS_PORT, &port);
   ssh_options_set(session, SSH_OPTIONS_HOST, hydra_address2string(ip));
-  ssh_options_set(session, SSH_OPTIONS_USER, "root");
+  if (miscptr == NULL)
+    ssh_options_set(session, SSH_OPTIONS_USER, "hydra");
+  else
+    ssh_options_set(session, SSH_OPTIONS_USER, miscptr);
   ssh_options_set(session, SSH_OPTIONS_COMPRESSION_C_S, "none");
   ssh_options_set(session, SSH_OPTIONS_COMPRESSION_S_C, "none");
   if (ssh_connect(session) != 0) {

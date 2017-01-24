@@ -1238,8 +1238,9 @@ void hydra_service_init(int target_no) {
   if (strcmp(hydra_options.service, "socks5") == 0)
     x = service_socks5_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
 #ifdef LIBSSH
+  // dirty workaround here:
   if (strcmp(hydra_options.service, "ssh") == 0)
-    x = service_ssh_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+    x = service_ssh_init(hydra_targets[target_no]->ip, -1, options, login_ptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
   if (strcmp(hydra_options.service, "sshkey") == 0)
     x = service_sshkey_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
 #endif
@@ -3274,6 +3275,7 @@ int main(int argc, char *argv[]) {
       //}
       //if (conwait == 0)
       //  hydra_options.conwait = conwait = 1;
+      printf("[WARNING] the rdp module is currently reported to be unreliable, most likely against new Windows version. Please test, report - and if possible, fix.\n");
       i = 1;
     }
     // ADD NEW SERVICES HERE

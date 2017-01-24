@@ -2,6 +2,7 @@ Changelog for hydra
 -------------------
 
 Release 8.4-dev
+! Reports came in that the rdp module is not working reliable sometimes, most likely against new Windows versions. please test, report and if possible send a fix
 * Proxy support re-implemented:
   - HYDRA_PROXY[_HTTP] environment can be a text file with up to 64 entries
   - HYDRA_PROXY_AUTH was deprecated, set login/password in HTTP_PROXY[_HTTP]
@@ -10,7 +11,8 @@ Release 8.4-dev
 * New command line options:
    -y : disables -x 1aA interpretation, thanks to crondaemon for the patch
    -I : ignore an existing hydra.restore file (dont wait for 10 seconds)
-* Upgraded hydra-svn to work with the current libsvn version
+* hydra-svn: works now with the current libsvn version
+* hydra-ssh: initial check for password auth support now uses login supplied
 * Fixed dpl4hydra to be able to update from the web again
 * Fixed crash when -U was used without any service (thanks to thecarterb for reporting)
 * Updated default password lists
