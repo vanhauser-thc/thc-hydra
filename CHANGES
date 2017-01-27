@@ -1,7 +1,7 @@
 Changelog for hydra
 -------------------
 
-Release 8.4-dev
+Release 8.4
 ! Reports came in that the rdp module is not working reliable sometimes, most likely against new Windows versions. please test, report and if possible send a fix
 * Proxy support re-implemented:
   - HYDRA_PROXY[_HTTP] environment can be a text file with up to 64 entries
