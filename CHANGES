@@ -7,7 +7,7 @@ Release 8.4-dev
   - HYDRA_PROXY[_HTTP] environment can be a text file with up to 64 entries
   - HYDRA_PROXY_AUTH was deprecated, set login/password in HTTP_PROXY[_HTTP]
 * New protocol: adam6500 - this one is work in progress, please test and report
-* New protocol: rpcap! thanks to Petar Kaleychev <petar.kaleychev@gmail.com>
+* New protocol: rpcap - thanks to Petar Kaleychev <petar.kaleychev@gmail.com>
 * New command line options:
    -y : disables -x 1aA interpretation, thanks to crondaemon for the patch
    -I : ignore an existing hydra.restore file (dont wait for 10 seconds)
@@ -29,7 +29,7 @@ Release 8.3
 
 Release 8.2
 * Added RTSP module, thanks to jjavi89 for supplying!
-* Added patch for ssh that fixes hyra stopping to connect, thanks to ShantonRU for the patch
+* Added patch for ssh that fixes hydra stopping to connect, thanks to ShantonRU for the patch
 * Added new -O option to hydra to support SSL servers that do not suport TLS
 * Added xhydra gtk patche by Petar Kaleychev to support modules that do not use usernames
 * Added patch to redis for initial service checking by Petar Kaleychev - thanks a lot!
