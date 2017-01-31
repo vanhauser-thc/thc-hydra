@@ -966,14 +966,6 @@ fi
 
 echo "Checking for Android specialities ..."
 TMPC=comptest$$
-RINDEX=" not"
-echo '#include <stdio.h>' > $TMPC.c
-echo '#include <strings.h>' >> $TMPC.c
-echo "int main() { char *x = rindex(\"test\", 'e'); if (x == NULL) return 0; else return 1; }" >> $TMPC.c
-gcc -o $TMPC $TMPC.c > /dev/null 2>&1
-test -x $TMPC && RINDEX=""
-rm -f $TMPC $TMPC.c
-echo "                                  ... rindex()$RINDEX found"
 if [ -n "$CRYPTO_PATH" ]; then
   RSA=" not"
   echo '#include <stdio.h>' > $TMPC.c
@@ -1059,9 +1051,6 @@ if [ -n "$SVN_PATH" ]; then
 fi
 if [ -n "$SSH_PATH" ]; then
     XDEFINES="$XDEFINES -DLIBSSH"
-fi
-if [ -n "$RINDEX" ]; then
-    XDEFINES="$XDEFINES -DNO_RINDEX"
 fi
 if [ -n "$RSA" ]; then
     XDEFINES="$XDEFINES -DNO_RSA_LEGACY"

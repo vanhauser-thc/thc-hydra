@@ -2,7 +2,7 @@ LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
 LOCAL_CFLAGS:= -O3 -DLIBOPENSSL -DLIBIDN -DHAVE_PR29_H -DHAVE_PCRE \
-               -DLIBNCP -DLIBPOSTGRES -DLIBSVN -DLIBSSH -DNO_RINDEX \
+               -DLIBNCP -DLIBPOSTGRES -DLIBSVN -DLIBSSH \
                -DHAVE_MATH_H -DOPENSSL_NO_DEPRECATED -DNO_RSA_LEGACY \
                -fdata-sections -ffunction-sections          
 
