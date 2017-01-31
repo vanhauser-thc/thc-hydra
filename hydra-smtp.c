@@ -21,10 +21,10 @@ char *smtp_read_server_capacity(int sock) {
           buf[strlen(buf) - 1] = 0;
         if (buf[strlen(buf) - 1] == '\r')
           buf[strlen(buf) - 1] = 0;
-#ifdef NO_RINDEX
-        if ((ptr = strrchr(buf, '\n')) != NULL) {
-#else
+#ifdef NO_STRRCHR
         if ((ptr = rindex(buf, '\n')) != NULL) {
+#else
+        if ((ptr = strrchr(buf, '\n')) != NULL) {
 #endif
           ptr++;
           if (isdigit((int) *ptr) && *(ptr + 3) == ' ')

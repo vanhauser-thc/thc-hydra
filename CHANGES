@@ -1,6 +1,11 @@
 Changelog for hydra
 -------------------
 
+Release 8.5-dev
+* ./configure now honors the CC enviroment variable if present
+* Favor strrchr() over rindex()
+
+
 Release 8.4
 ! Reports came in that the rdp module is not working reliable sometimes, most likely against new Windows versions. please test, report and if possible send a fix
 * Proxy support re-implemented:
