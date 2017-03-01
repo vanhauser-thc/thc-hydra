@@ -255,6 +255,7 @@ typedef struct {
   int exit_found;
   int max_use;
   int cidr;
+  int outfile_format;            // 0 = plain text, 1 = JSONv1, [future --> ]  2 = JSONv2, 3=XMLv1, 4=...
   char *login;
   char *loginfile;
   char *pass;
@@ -357,6 +358,8 @@ void help(int ext) {
   printf("  -M FILE   list of servers to attack, one entry per line, ':' to specify port\n");
   if (ext)
     printf("  -o FILE   write found login/password pairs to FILE instead of stdout\n");
+  if (ext)
+    printf("  -b FORMAT broker -o FILEs in (text[default], json, jsonv1) format\n");
   if (ext)
     printf("  -f / -F   exit when a login/pass pair is found (-M: -f per host, -F global)\n");
   printf("  -t TASKS  run TASKS number of connects in parallel per target (default: %d)\n", TASKS);
@@ -2340,6 +2343,7 @@ void process_proxy_line(int type, char *string) {
 
 int main(int argc, char *argv[]) {
   char *proxy_string = NULL, *device = NULL, *memcheck, *cmdtarget = NULL;
+  char *outfile_format_tmp;
   FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL, *proxyfp;
   size_t countinfile = 1, sizeinfile = 0;
   unsigned long int math2;
@@ -2455,6 +2459,7 @@ int main(int argc, char *argv[]) {
   hydra_options.passfile = NULL;
   hydra_options.tasks = TASKS;
   hydra_options.max_use = MAXTASKS;
+  hydra_options.outfile_format = 0;
   hydra_brains.ofp = stdout;
   hydra_brains.targets = 1;
   hydra_options.waittime = waittime = WAITTIME;
@@ -2465,7 +2470,7 @@ int main(int argc, char *argv[]) {
     help(1);
   if (argc < 2)
     help(0);
-  while ((i = getopt(argc, argv, "hIq64Rde:vVl:fFg:L:p:OP:o:M:C:t:T:m:w:W:s:SUux:y")) >= 0) {
+  while ((i = getopt(argc, argv, "hIq64Rde:vVl:fFg:L:p:OP:o:b:M:C:t:T:m:w:W:s:SUux:y")) >= 0) {
     switch (i) {
     case 'h':
       help(1);
@@ -2546,6 +2551,20 @@ int main(int argc, char *argv[]) {
       break;
     case 'o':
       hydra_options.outfile_ptr = optarg;
+      //      colored_output = 0;
+      break;
+    case 'b':
+      outfile_format_tmp = optarg;
+      if (0==strcasecmp(outfile_format_tmp,"text"))
+          hydra_options.outfile_format = 0;
+      else if (0==strcasecmp(outfile_format_tmp,"json")) // latest json formatting.
+          hydra_options.outfile_format = 1;
+      else if (0==strcasecmp(outfile_format_tmp,"jsonv1"))
+          hydra_options.outfile_format = 1;
+      else {
+        fprintf(stderr, "[ERROR] Output file format must be (text, json, jsonv1)\n");
+        exit(-1);
+      }
       //      colored_output = 0;
       break;
     case 'M':
@@ -3721,11 +3740,26 @@ int main(int argc, char *argv[]) {
       perror("[ERROR] Error creating outputfile");
       exit(-1);
     }
-    fprintf(hydra_brains.ofp, "# %s %s run at %s on %s %s (%s", PROGRAM, VERSION, hydra_build_time(),
+    if (hydra_options.outfile_format == 1) {  // JSONv1
+      fprintf(hydra_brains.ofp, "{ \"generator\": {\n"
+              "\t\"software\": \"%s\", \"version\": \"%s\", \"built\": \"%s\",\n"
+              "\t\"server\": \"%s\", \"service\": \"%s\", \"jsonoutputversion\": 1.0,\n"
+              "\t\"commandline\": \"%s",
+            PROGRAM, VERSION, hydra_build_time(),
             hydra_options.server == NULL ? hydra_options.infile_ptr : hydra_options.server, hydra_options.service, prg);
-    for (i = 1; i < argc; i++)
-      fprintf(hydra_brains.ofp, " %s", argv[i]);
-    fprintf(hydra_brains.ofp, ")\n");
+      for (i = 1; i < argc; i++) {
+        char *t = hydra_string_replace(argv[i],"\"","\\\"");
+        fprintf(hydra_brains.ofp, " %s", t);
+        free(t);
+      }
+      fprintf(hydra_brains.ofp, "\"\n\t},\n\"results\": [");
+    } else { // else default is plain text aka == 0
+      fprintf(hydra_brains.ofp, "# %s %s run at %s on %s %s (%s", PROGRAM, VERSION, hydra_build_time(),
+            hydra_options.server == NULL ? hydra_options.infile_ptr : hydra_options.server, hydra_options.service, prg);
+      for (i = 1; i < argc; i++)
+        fprintf(hydra_brains.ofp, " %s", argv[i]);
+      fprintf(hydra_brains.ofp, ")\n");
+    }
   }
   // we have to flush all writeable buffered file pointers before forking
   // set appropriate signals for mother
@@ -3959,7 +3993,17 @@ int main(int argc, char *argv[]) {
                   printf("[%d][%s] host: %s   login: %s   password: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
                          hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr);
               }
-              if (hydra_options.outfile_ptr != NULL && hydra_brains.ofp != NULL) {
+              if (hydra_options.outfile_format == 1 /* JSONv1 */ && hydra_options.outfile_ptr != NULL && hydra_brains.ofp != NULL) {
+                  fprintf(hydra_brains.ofp, "%s\n\t{\"port\": %d, \"service\": \"%s\", \"host\": \"%s\", \"login\": \"%s\", \"password\": \"%s\"}",
+                          hydra_brains.found != 0 ? "" : ",",  // add comma if not first finding
+                          hydra_targets[hydra_heads[head_no]->target_no]->port,
+                          hydra_options.service,
+                          hydra_targets[hydra_heads[head_no]->target_no]->target !=NULL ?  hydra_targets[hydra_heads[head_no]->target_no]->target : "",
+                          hydra_heads[head_no]->current_login_ptr !=NULL ?  hydra_string_replace(hydra_heads[head_no]->current_login_ptr,"\"","\\\"") : "",
+                          hydra_heads[head_no]->current_pass_ptr != NULL ?  hydra_string_replace(hydra_heads[head_no]->current_pass_ptr,"\"","\\\"") : ""
+                  );
+                fflush(hydra_brains.ofp);
+              } else if (hydra_options.outfile_ptr != NULL && hydra_brains.ofp != NULL) {  // else output format == 0 aka text
                 if (hydra_heads[head_no]->current_login_ptr == NULL || strlen(hydra_heads[head_no]->current_login_ptr) == 0) {
                   if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0)
                     fprintf(hydra_brains.ofp, "[%d][%s] host: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
@@ -4162,22 +4206,53 @@ int main(int argc, char *argv[]) {
       hydra_restore_write(1);
     }
   }
+  #define STRMAX (10*1024)
+  char json_error[STRMAX+2], tmp_str[STRMAX+2];
+  memset(json_error, 0, STRMAX+2);
+  memset(tmp_str, 0, STRMAX+2);
   if (error) {
-    fprintf(stderr, "[ERROR] %d target%s disabled because of too many errors\n", error, error == 1 ? " was" : "s were");
+    snprintf(tmp_str, STRMAX, "[ERROR] %d target%s disabled because of too many errors", error, error == 1 ? " was" : "s were");
+    fprintf(stderr, "%s\n", tmp_str);
+    strncat(json_error,"\"",STRMAX);
+    strncat(json_error,tmp_str,STRMAX);
+    strncat(json_error,"\"",STRMAX);
     error = 1;
   }
   if (k) {
-    fprintf(stderr, "[ERROR] %d target%s did not resolve or could not be connected\n", k, k == 1 ? "" : "s");
+    snprintf(tmp_str, STRMAX, "[ERROR] %d target%s did not resolve or could not be connected", k, k == 1 ? "" : "s");
+    fprintf(stderr, "%s\n", tmp_str);
+    if (*json_error) {
+      strncat(json_error,", ", STRMAX);
+    }
+    strncat(json_error,"\"",STRMAX);
+    strncat(json_error,tmp_str,STRMAX);
+    strncat(json_error,"\"",STRMAX);
+    error = 1;
+    if (*json_error) {
+      strncat(json_error,", ", STRMAX);
+    }
     error = 1;
   }
   if (j) {
-    fprintf(stderr, "[ERROR] %d target%s did not complete\n", j, j == 1 ? "" : "s");
+    snprintf(tmp_str, STRMAX, "[ERROR] %d target%s did not complete", j, j == 1 ? "" : "s");
+    fprintf(stderr, "%s\n", tmp_str);
+    if (*json_error) {
+      strncat(json_error,", ", STRMAX);
+    }
+    strncat(json_error,"\"",STRMAX);
+    strncat(json_error,tmp_str,STRMAX);
+    strncat(json_error,"\"",STRMAX);
     error = 1;
   }
   // yeah we did it
   printf("%s (%s) finished at %s\n", PROGRAM, RESOURCE, hydra_build_time());
-  if (hydra_brains.ofp != NULL && hydra_brains.ofp != stdout)
+  if (hydra_brains.ofp != NULL && hydra_brains.ofp != stdout) {
+    if (hydra_options.outfile_format == 1 /* JSONv1 */ ) {
+      fprintf(hydra_brains.ofp, "\n\t],\n\"status\": \"%s\",\n\"errormessages\": [ %s ],\n\"quantityfound\": %lu   }\n",
+              (error ? "errors" : "success"), json_error, hydra_brains.found);
+    } 
     fclose(hydra_brains.ofp);
+  }
 
   fflush(NULL);
   if (error || j || exit_condition < 0)
