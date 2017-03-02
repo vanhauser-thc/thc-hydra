@@ -2,8 +2,11 @@ Changelog for hydra
 -------------------
 
 Release 8.5-dev
+* New command line option:
+   -b : format option for -o output file (json only so far, happy for patches supporting others :) ) - thanks to veggiespam for the patch
 * ./configure now honors the CC enviroment variable if present
 * Favor strrchr() over rindex()
+* Updated man page with missing command line options
 
 
 Release 8.4
