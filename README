@@ -28,7 +28,7 @@ either support more than one protocol to attack or support parallized
 connects.
 
 It was tested to compile cleanly on Linux, Windows/Cygwin, Solaris,
-FreeBSD/OpenBSD, QNX (Blackberry 10) and OSX.
+FreeBSD/OpenBSD, QNX (Blackberry 10) and MacOS.
 
 Currently this tool supports the following protocols:
  Asterisk, AFP, Cisco AAA, Cisco auth, Cisco enable, CVS, Firebird, FTP,
@@ -91,9 +91,9 @@ and compile them manually.
 SUPPORTED PLATFORMS
 -------------------
 All UNIX platforms (linux, *bsd, solaris, etc.)
-Mac OS/X
+MacOS
 Windows with Cygwin (both IPv4 and IPv6)
-Mobile systems based on Linux, Mac OS/X or QNX (e.g. Android, iPhone, Blackberry 10, Zaurus, iPaq)
+Mobile systems based on Linux, MacOS or QNX (e.g. Android, iPhone, Blackberry 10, Zaurus, iPaq)
 
 
 
@@ -286,6 +286,75 @@ ADDITIONAL HINTS
   with the hydra package to reduce the password list:
     cat dictionary.txt | pw-inspector -m 6 -c 2 -n > passlist.txt
 
+
+RESULTS OUTPUT
+--------------
+
+The results are output to stdio along with the other information.  Via the -o
+command line option, the results can also be written to a file.  Using -b,
+the format of the output can be specified.  Currently, these are supported:
+* `text` - plain text format
+* `jsonv1` - JSON data using version 1.x of the schema (defined below).
+* `json` - JSON data using the latest version of the schema, currently there
+           is only version 1.
+
+If using JSON output, the results file may not be valid JSON if there are
+serious errors in booting Hydra.
+
+
+### JSON Schema
+Here is an example of the JSON output.  Notes on some of the fields:
+
+* `errormessages` - an array of zero or more strings that are normally printed
+   to stderr at the end of the Hydra's run.  The text is very free form.
+* `success` - indication if Hydra ran correctly without error (**NOT** if
+   passwords were detected).  This parameter is either the JSON value `true`
+   or `false` depending on completion.  
+* `quantityfound` - How many username+password combinations discovered.
+* `jsonoutputversion` - Version of the schema, 1.00, 1.01, 1.11, 2.00,
+   2.03, etc.  Hydra will make second tuple of the version to always be two
+   digits to make it easier for downstream processors (as opposed to v1.1 vs
+   v1.10).  The minor-level versions are additive, so 1.02 will contain more
+   fields than version 1.00 and will be backward compatible.  Version 2.x will
+   break something from version 1.x output.  
+
+Version 1.00 example:
+```
+{
+    "errormessages": [
+        "[ERROR] Error Message of Something",
+        "[ERROR] Another Message",
+        "These are very free form"
+    ],
+    "generator": {
+        "built": "2017-03-01 14:44:22",
+        "commandline": "hydra -b jsonv1 -o results.json ... ...",
+        "jsonoutputversion": "1.00",
+        "server": "127.0.0.1",
+        "service": "http-post-form",
+        "software": "Hydra",
+        "version": "v8.5-dev"
+    },
+    "quantityfound": 2,
+    "results": [
+        {
+            "host": "127.0.0.1",
+            "login": "bill@example.com",
+            "password": "bill",
+            "port": 9999,
+            "service": "http-post-form"
+        },
+        {
+            "host": "127.0.0.1",
+            "login": "joe@example.com",
+            "password": "joe",
+            "port": 9999,
+            "service": "http-post-form"
+        }
+    ],
+    "success": false
+}
+```
 
 
 SPEED
