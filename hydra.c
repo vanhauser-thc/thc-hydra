@@ -359,7 +359,7 @@ void help(int ext) {
   if (ext)
     printf("  -o FILE   write found login/password pairs to FILE instead of stdout\n");
   if (ext)
-    printf("  -b FORMAT broker -o FILEs in (text[default], json, jsonv1) format\n");
+    printf("  -b FORMAT specify the format for the -o FILE: text(default), json, jsonv1\n");
   if (ext)
     printf("  -f / -F   exit when a login/pass pair is found (-M: -f per host, -F global)\n");
   printf("  -t TASKS  run TASKS number of connects in parallel per target (default: %d)\n", TASKS);
@@ -2664,6 +2664,9 @@ int main(int argc, char *argv[]) {
     bail("You can only use -L OR -l, not both\n");
   if (hydra_options.pass != NULL && hydra_options.passfile != NULL)
     bail("You can only use -P OR -p, not both\n");
+  if (hydra_options.outfile_format != 0 && hydra_options.outfile_ptr == NULL)
+    fprintf(stderr, "[WARNING] output file format specified (-b) - but no output file (-o)\n");
+    
   if (hydra_options.restore) {
     hydra_restore_read();
     // stuff we have to copy from the non-restore part
