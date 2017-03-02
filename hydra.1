@@ -3,10 +3,10 @@
 hydra \- a very fast network logon cracker which support many different services
 .SH SYNOPSIS
 .B hydra
- [[[\-l LOGIN|\-L FILE] [\-p PASS|\-P FILE|\-x OPT \-y]] | [\-C FILE]] [\-e nsr]
- [\-u] [\-f|\-F] [\-M FILE] [\-o FILE] [\-b FORMAT] [\-t TASKS] [\-T TASKS]
- [\-w TIME] [\-W TIME] [\-m OPTIONS] [\-s PORT] [\-S] [\-4|6] [\-O] [\-I]
- [\-vV] [\-d]
+ [[[\-l LOGIN|\-L FILE] [\-p PASS|\-P FILE|\-x OPT \-y]] | [\-C FILE]]
+ [\-e nsr] [\-u] [\-f|\-F] [\-M FILE] [\-o FILE] [\-b FORMAT]
+ [\-t TASKS] [\-T TASKS] [\-w TIME] [\-W TIME] [\-m OPTIONS] [\-s PORT]
+ [\-S] [\-O] [\-4|6] [\-I] [\-vV] [\-d]
  server service [OPTIONS]
 .br
 .SH DESCRIPTION
@@ -20,15 +20,19 @@ system.
 
 Currently this tool supports:
  adam6500 afp asterisk cisco cisco-enable cvs firebird ftp ftps
- http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum
- icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql(v4) mysql5
- ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres
- rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum
- snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp
+ http[s]-{head|get|post} http[s]-{get|post}-form http-proxy
+ http-proxy-urlenum icq imap[s] irc ldap2[s]
+ ldap3[-{cram|digest}md5][s] mssql mysql(v4) mysql5 ncp nntp
+ oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s]
+ postgres rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip
+ smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s]
+ vmauthd vnc xmpp
 
- For most protocols, SSL mode is available (e.g. https-get, ftp-ssl, etc.)
+ For most protocols SSL is supported (e.g. https-get, ftp-ssl, etc.).
  If not all necessary libraries are found during compile time, your
- available services will be less. Type "hydra" to see what is available.
+ available services will be less.
+ Type "hydra" to see what is available.
+
 .SH Options
 .TP
 .B target
