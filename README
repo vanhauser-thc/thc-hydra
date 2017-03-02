@@ -293,10 +293,10 @@ RESULTS OUTPUT
 The results are output to stdio along with the other information.  Via the -o
 command line option, the results can also be written to a file.  Using -b,
 the format of the output can be specified.  Currently, these are supported:
-* `text` - plain text format
+* `text`   - plain text format
 * `jsonv1` - JSON data using version 1.x of the schema (defined below).
-* `json` - JSON data using the latest version of the schema, currently there
-           is only version 1.
+* `json`   - JSON data using the latest version of the schema, currently there
+             is only version 1.
 
 If using JSON output, the results file may not be valid JSON if there are
 serious errors in booting Hydra.
