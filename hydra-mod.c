@@ -695,21 +695,21 @@ void hydra_report_debug(FILE * st, char *format, ...) {
   char bufOut[33000];
   char temp[6];
   unsigned char cTemp;
-  int i = 0;
+  int i = 0, len;
 
   if (format == NULL) {
     fprintf(stderr, "[ERROR] no msg passed.\n");
   } else {
     va_start(ap, format);
     memset(bufOut, 0, sizeof(bufOut));
-    memset(buf, 0, 512);
-    vsnprintf(buf, sizeof(buf), format, ap);
+    memset(buf, 0, sizeof(buf));
+    len = vsnprintf(buf, sizeof(buf), format, ap);
 
     // Convert any chars less than 32d or greater than 126d to hex
-    for (i = 0; i < sizeof(buf); i++) {
+    for (i = 0; i < len; i++) {
       memset(temp, 0, 6);
       cTemp = (unsigned char) buf[i];
-      if ((cTemp < 32 && cTemp > 0) || cTemp > 126) {
+      if ((cTemp < 32 && cTemp >= 0) || cTemp > 126) {
         sprintf(temp, "[%02X]", cTemp);
       } else
         sprintf(temp, "%c", cTemp);

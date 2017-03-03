@@ -3746,7 +3746,7 @@ int main(int argc, char *argv[]) {
     if (hydra_options.outfile_format == 1) {  // JSONv1
       fprintf(hydra_brains.ofp, "{ \"generator\": {\n"
               "\t\"software\": \"%s\", \"version\": \"%s\", \"built\": \"%s\",\n"
-              "\t\"server\": \"%s\", \"service\": \"%s\", \"jsonoutputversion\": 1.0,\n"
+              "\t\"server\": \"%s\", \"service\": \"%s\", \"jsonoutputversion\": \"1.00\",\n"
               "\t\"commandline\": \"%s",
             PROGRAM, VERSION, hydra_build_time(),
             hydra_options.server == NULL ? hydra_options.infile_ptr : hydra_options.server, hydra_options.service, prg);
@@ -3998,7 +3998,7 @@ int main(int argc, char *argv[]) {
               }
               if (hydra_options.outfile_format == 1 /* JSONv1 */ && hydra_options.outfile_ptr != NULL && hydra_brains.ofp != NULL) {
                   fprintf(hydra_brains.ofp, "%s\n\t{\"port\": %d, \"service\": \"%s\", \"host\": \"%s\", \"login\": \"%s\", \"password\": \"%s\"}",
-                          hydra_brains.found != 0 ? "" : ",",  // add comma if not first finding
+                          hydra_brains.found == 1 ? "" : ",",  // prefix a comma if not first finding
                           hydra_targets[hydra_heads[head_no]->target_no]->port,
                           hydra_options.service,
                           hydra_targets[hydra_heads[head_no]->target_no]->target !=NULL ?  hydra_targets[hydra_heads[head_no]->target_no]->target : "",
@@ -4251,8 +4251,8 @@ int main(int argc, char *argv[]) {
   printf("%s (%s) finished at %s\n", PROGRAM, RESOURCE, hydra_build_time());
   if (hydra_brains.ofp != NULL && hydra_brains.ofp != stdout) {
     if (hydra_options.outfile_format == 1 /* JSONv1 */ ) {
-      fprintf(hydra_brains.ofp, "\n\t],\n\"status\": \"%s\",\n\"errormessages\": [ %s ],\n\"quantityfound\": %lu   }\n",
-              (error ? "errors" : "success"), json_error, hydra_brains.found);
+      fprintf(hydra_brains.ofp, "\n\t],\n\"success\": %s,\n\"errormessages\": [ %s ],\n\"quantityfound\": %lu   }\n",
+              (error ? "false" : "true"), json_error, hydra_brains.found);
     } 
     fclose(hydra_brains.ofp);
   }
