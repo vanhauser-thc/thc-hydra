@@ -4151,7 +4151,7 @@ int main(int argc, char *argv[]) {
              hydra_brains.sent, // tries
              (long unsigned int) ((elapsed_status - starttime) / 3600), // hours
              (long unsigned int) (((elapsed_status - starttime) % 3600) / 60),  // minutes
-             (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent <= 0 ? 1 : (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent,    // left todo
+             (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent,    // left todo
              (long unsigned int) (((double) (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / ((double) hydra_brains.sent / (elapsed_status - starttime))
              ) / 3600,          // hours
              (((long unsigned int) (((double) (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / ((double) hydra_brains.sent / (elapsed_status - starttime))
