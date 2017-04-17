@@ -3512,7 +3512,7 @@ int main(int argc, char *argv[]) {
         exit(-1);
       }
       // if (countinfile > 60) fprintf(stderr, "[WARNING] the -M option is not working correctly at the moment for target lists > 60!\n");
-      hydra_targets = malloc(sizeof(hydra_targets) * (countservers + 2) + 8);
+      hydra_targets = malloc(sizeof(hydra_target*) * (countservers + 2) + 8);
       if (hydra_targets == NULL)
         bail("Could not allocate enough memory for target data");
       sizeinfile = size_of_data;
@@ -3600,7 +3600,7 @@ int main(int argc, char *argv[]) {
       four_from = (addr4 & l);
       l = 1 << (32 - k);
       hydra_brains.targets = countservers = l;
-      hydra_targets = malloc(sizeof(hydra_targets) * (l + 2) + 8);
+      hydra_targets = malloc(sizeof(hydra_target*) * (l + 2) + 8);
       if (hydra_targets == NULL)
         bail("Could not allocate enough memory for target data");
       i = 0;
@@ -3864,7 +3864,7 @@ int main(int argc, char *argv[]) {
 #endif
 
   if (hydra_options.restore == 0) {
-    hydra_heads = malloc(sizeof(hydra_heads) * hydra_options.max_use);
+    hydra_heads = malloc(sizeof(hydra_head*) * hydra_options.max_use);
     target_no = 0;
     for (i = 0; i < hydra_options.max_use; i++) {
       hydra_heads[i] = malloc(sizeof(hydra_head));
