@@ -660,42 +660,65 @@ void module_usage() {
   exit(0);
 }
 
+#define STR_NULL(s) ((s) == NULL ? "(null)" : (s))
+
 void hydra_debug(int force, char *string) {
-  int i, active = 0, inactive = 0;
+  int active = 0;
+  int inactive = 0;
+  int i;
 
   if (!debug && !force)
     return;
 
   printf("[DEBUG] Code: %s   Time: %lu\n", string, (unsigned long int) time(NULL));
   printf("[DEBUG] Options: mode %d  ssl %d  restore %d  showAttempt %d  tasks %d  max_use %d tnp %d  tpsal %d  tprl %d  exit_found %d  miscptr %s  service %s\n",
-         hydra_options.mode, hydra_options.ssl, hydra_options.restore, hydra_options.showAttempt, hydra_options.tasks, hydra_options.max_use,
-         hydra_options.try_null_password, hydra_options.try_password_same_as_login, hydra_options.try_password_reverse_login, hydra_options.exit_found,
-         hydra_options.miscptr == NULL ? "(null)" : hydra_options.miscptr, hydra_options.service);
+         hydra_options.mode,        hydra_options.ssl,   hydra_options.restore,
+         hydra_options.showAttempt, hydra_options.tasks, hydra_options.max_use,
+         hydra_options.try_null_password,          hydra_options.try_password_same_as_login,
+         hydra_options.try_password_reverse_login, hydra_options.exit_found,
+         STR_NULL(hydra_options.miscptr),          hydra_options.service);
+
   printf("[DEBUG] Brains: active %d  targets %d  finished %d  todo_all %lu  todo %lu  sent %lu  found %lu  countlogin %lu  sizelogin %lu  countpass %lu  sizepass %lu\n",
-         hydra_brains.active, hydra_brains.targets, hydra_brains.finished, hydra_brains.todo_all + total_redo_count, hydra_brains.todo, hydra_brains.sent, hydra_brains.found,
-         (unsigned long int) hydra_brains.countlogin, (unsigned long int) hydra_brains.sizelogin, (unsigned long int) hydra_brains.countpass,
+         hydra_brains.active, hydra_brains.targets, hydra_brains.finished,
+         hydra_brains.todo_all + total_redo_count,  hydra_brains.todo,
+         hydra_brains.sent, hydra_brains.found,
+         (unsigned long int) hydra_brains.countlogin,
+         (unsigned long int) hydra_brains.sizelogin,
+         (unsigned long int) hydra_brains.countpass,
          (unsigned long int) hydra_brains.sizepass);
-  for (i = 0; i < hydra_brains.targets; i++)
+
+  for (i = 0; i < hydra_brains.targets; i++) {
+    hydra_target* target = hydra_targets[i];
     printf
       ("[DEBUG] Target %d - target %s  ip %s  login_no %lu  pass_no %lu  sent %lu  pass_state %d  redo_state %d (%d redos)  use_count %d  failed %d  done %d  fail_count %d  login_ptr %s  pass_ptr %s\n",
-       i, hydra_targets[i]->target == NULL ? "(null)" : hydra_targets[i]->target, hydra_address2string(hydra_targets[i]->ip), hydra_targets[i]->login_no,
-       hydra_targets[i]->pass_no, hydra_targets[i]->sent, hydra_targets[i]->pass_state, hydra_targets[i]->redo_state, hydra_targets[i]->redo, hydra_targets[i]->use_count, hydra_targets[i]->failed, hydra_targets[i]->done,
-       hydra_targets[i]->fail_count, hydra_targets[i]->login_ptr == NULL ? "(null)" : hydra_targets[i]->login_ptr,
-       hydra_targets[i]->pass_ptr == NULL ? "(null)" : hydra_targets[i]->pass_ptr);
-  if (hydra_heads != NULL) {
-    for (i = 0; i < hydra_options.max_use; i++)
-      if (hydra_heads[i]->active >= 0) {
-        printf("[DEBUG] Task %d - pid %d  active %d  redo %d  current_login_ptr %s  current_pass_ptr %s\n",
-             i, (int) hydra_heads[i]->pid, hydra_heads[i]->active, hydra_heads[i]->redo,
-             hydra_heads[i]->current_login_ptr == NULL ? "(null)" : hydra_heads[i]->current_login_ptr,
-             hydra_heads[i]->current_pass_ptr == NULL ? "(null)" : hydra_heads[i]->current_pass_ptr);
-        if (hydra_heads[i]->active == 0)
-          inactive++;
-        else
-          active++;
-      }
-    printf("[DEBUG] Tasks %d inactive  %d active\n", inactive, active);
+       i, STR_NULL(target->target), hydra_address2string(target->ip),
+       target->login_no,   target->pass_no,    target->sent,
+       target->pass_state, target->redo_state, target->redo,
+       target->use_count,  target->failed,     target->done,
+       target->fail_count,
+       STR_NULL(target->login_ptr),
+       STR_NULL(target->pass_ptr));
   }
+
+  if (hydra_heads == NULL) {
+    return
+  }
+
+  for (i = 0; i < hydra_options.max_use; i++) {
+    if (hydra_heads[i]->active >= 0) {
+      printf("[DEBUG] Task %d - pid %d  active %d  redo %d  current_login_ptr %s  current_pass_ptr %s\n",
+           i, (int) hydra_heads[i]->pid,
+           hydra_heads[i]->active,
+           hydra_heads[i]->redo,
+           STR_NULL(hydra_heads[i]->current_login_ptr),
+           STR_NULL(hydra_heads[i]->current_pass_ptr));
+      if (hydra_heads[i]->active == 0)
+        inactive++;
+      else
+        active++;
+    }
+  }
+  printf("[DEBUG] Tasks %d inactive  %d active\n", inactive, active);
 }
 
 void bail(char *text) {
