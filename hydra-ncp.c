@@ -65,7 +65,7 @@ int start_ncp(int s, char *ip, int port, unsigned char options, char *miscptr, F
       }
       memset(context, 0, sizeof(context));
       strncpy(context, login, strlen(login));
-      strncpy(context + strlen(login), miscptr, sizeof(miscptr) + 1);
+      strncpy(context + strlen(login), miscptr, sizeof(char) + 1);
       login = context;
     }
   }
