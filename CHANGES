@@ -5,7 +5,9 @@ Release 8.5-dev
 * New command line option:
    -b : format option for -o output file (json only so far, happy for patches supporting others :) ) - thanks to veggiespam for the patch
 * ./configure now honors the CC enviroment variable if present
+* fixed a bug in the NCP module
 * Favor strrchr() over rindex()
+* Added refactoring patch by diadlo
 * Updated man page with missing command line options
 
 
