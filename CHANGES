@@ -1,6 +1,10 @@
 Changelog for hydra
 -------------------
 
+Release 8.6-dev
+* ...
+
+
 Release 8.5
 * New command line option:
    -b : format option for -o output file (json only so far, happy for patches supporting others :) ) - thanks to veggiespam for the patch

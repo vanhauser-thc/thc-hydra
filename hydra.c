@@ -171,7 +171,7 @@ char *SERVICES =
 #define RESTOREFILE "./hydra.restore"
 
 #define PROGRAM   "Hydra"
-#define VERSION   "v8.5"
+#define VERSION   "v8.6-dev"
 #define AUTHOR    "van Hauser/THC"
 #define EMAIL     "<vh@thc.org>"
 #define RESOURCE  "http://www.thc.org/thc-hydra"
