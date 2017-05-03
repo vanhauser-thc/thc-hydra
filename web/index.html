@@ -16,8 +16,8 @@
  A very fast network logon cracker which support many different services.
  See feature sets and services coverage <a href="network_password_cracker_comparison.html">page</a> - incl. a speed comparison against ncrack and medusa<br>
 </h4><h3>
- Current Version: 8.4
- Last update 2017-01-27
+ Current Version: 8.5
+ Last update 2017-05-03
 </h3>
 </pre>
 </td>
@@ -27,32 +27,27 @@
 
  [0x00] News and Changelog
 
-<b>        Check out the feature sets and services coverage <a href="network_password_cracker_comparison.html">page</a> - including a speed comparison against ncrack and medusa (yes, we win :-) )
-        Development just moved to a public github repository: <a href="https://github.com/vanhauser-thc/thc-hydra">https://github.com/vanhauser-thc/thc-hydra</a>
+<b>
+        Check out the feature sets and services coverage <a href="network_password_cracker_comparison.html">page</a> - including a speed comparison against ncrack and medusa (yes, we win :-) )
+        Development code is available at a public github repository: <a href="https://github.com/vanhauser-thc/thc-hydra">https://github.com/vanhauser-thc/thc-hydra</a>
         There is a new section below for online tutorials.
         Read below for Linux compilation notes.
 </b>        
 
-        CHANGELOG for 8.4
+        CHANGELOG for 8.5
         ===================
         ! Development moved to a public github repository: https://github.com/vanhauser-thc/thc-hydra
         
         ! Reports came in that the rdp module is not working reliable sometimes, most likely against new Windows versions. please test, report and if possible send a fix
-        * Proxy support re-implemented:
-          - HYDRA_PROXY[_HTTP] environment can be a text file with up to 64 entries
-          - HYDRA_PROXY_AUTH was deprecated, set login/password in HTTP_PROXY[_HTTP]
-        * New protocol: adam6500 - this one is work in progress, please test and report
-        * New protocol: rpcap - thanks to Petar Kaleychev <petar.kaleychev@gmail.com>
-        * New command line options:
-          -y : disables -x 1aA interpretation, thanks to crondaemon for the patch
-          -I : ignore an existing hydra.restore file (dont wait for 10 seconds)
-        * hydra-svn: works now with the current libsvn version
-        * hydra-ssh: initial check for password auth support now uses login supplied
-        * Fixed dpl4hydra to be able to update from the web again
-        * Fixed crash when -U was used without any service (thanks to thecarterb for reporting)
-        * Updated default password lists
-        * The protocols vnc, xmpp, telnet, imap, nntp and pcanywhere got accidentially long sleep commands due a patch in 8.2, fixed
-        * Added special error message for clueless users :)
+        * New command line option:
+          -b : format option for -o output file (json only so far, happy for patches supporting others :) ) - thanks to veggiespam for the patch
+        * ./configure now honors the CC enviroment variable if present
+        * Fix for the restore file crash on some x64 platforms (finally! thanks to lukas227!)
+        * Changed the format of the restore file to detect cross platform copies
+        * Fixed a bug in the NCP module
+        * Favor strrchr() over rindex()
+        * Added refactoring patch by diadlo
+        * Updated man page with missing command line options
 
 	You can also take a look at the full <a href="CHANGES">CHANGES</a> file
 
