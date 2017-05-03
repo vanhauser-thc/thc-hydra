@@ -171,7 +171,7 @@ char *SERVICES =
 #define RESTOREFILE "./hydra.restore"
 
 #define PROGRAM   "Hydra"
-#define VERSION   "v8.5-dev"
+#define VERSION   "v8.5"
 #define AUTHOR    "van Hauser/THC"
 #define EMAIL     "<vh@thc.org>"
 #define RESOURCE  "http://www.thc.org/thc-hydra"
@@ -726,7 +726,7 @@ void bail(char *text) {
 void hydra_restore_write(int print_msg) {
   FILE *f;
   hydra_brain brain;
-  char mynull[4] = { 0, 0, 0, 0 };
+  char mynull[4] = { 0, 0, 0, 0 }, buf[4];
   int i = 0, j = 0;
   hydra_head hh;
 
@@ -750,6 +750,11 @@ void hydra_restore_write(int print_msg) {
     printf("[DEBUG] Writing restore file... ");
 
   fprintf(f, "%s\n", PROGRAM);
+  buf[0] = VERSION[1];
+  buf[1] = VERSION[3];
+  buf[2] = sizeof(int) % 256;
+  buf[3] = sizeof(hydra_target*) % 256;
+  fwrite(buf, 1, 4, f);
   memcpy(&brain, &hydra_brains, sizeof(hydra_brain));
   brain.targets = i;
   brain.ofp = NULL;
@@ -815,7 +820,7 @@ void hydra_restore_write(int print_msg) {
 
 void hydra_restore_read() {
   FILE *f;
-  char mynull[4];
+  char mynull[4], buf[4];
   int i, j, orig_debug = debug;
   char out[1024];
 
@@ -834,6 +839,22 @@ void hydra_restore_read() {
     fprintf(stderr, "[ERROR] invalid restore file (begin)\n");
     exit(-1);
   }
+
+  if ((fck = (int) fread(buf, 1, 4, f)) != 4) {
+    fprintf(stderr, "[ERROR] invalid restore file (platform)\n");
+    exit(-1);
+  }
+  if (buf[0] == 0 || buf[1] == 0) {
+    fprintf(stderr, "[ERROR] restore file is prior hydra version v8.5!\n");
+    exit(-1);
+  }
+  if (buf[0] != VERSION[1] || buf[1] != VERSION[3])
+    fprintf(stderr, "[WARNING] restore file was created by version %c.%c, this is version %s\n", buf[0], buf[2], VERSION);
+  if (buf[2] != sizeof(int) % 256 || buf[3] != sizeof(hydra_head*) % 256) {
+    fprintf(stderr, "[ERROR] restore file was created on a different, incompatible processor platform!\n");
+    exit(-1);
+  }
+
   fck = (int) fread(&bf_options, sizeof(bf_options), 1, f);
   fck = (int) fread(mynull, sizeof(mynull), 1, f);
   if (debug)

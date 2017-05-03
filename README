@@ -333,7 +333,7 @@ Version 1.00 example:
         "server": "127.0.0.1",
         "service": "http-post-form",
         "software": "Hydra",
-        "version": "v8.5-dev"
+        "version": "v8.5"
     },
     "quantityfound": 2,
     "results": [

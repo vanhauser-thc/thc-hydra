@@ -1,11 +1,13 @@
 Changelog for hydra
 -------------------
 
-Release 8.5-dev
+Release 8.5
 * New command line option:
    -b : format option for -o output file (json only so far, happy for patches supporting others :) ) - thanks to veggiespam for the patch
 * ./configure now honors the CC enviroment variable if present
-* fixed a bug in the NCP module
+* Fix for the restore file crash on some x64 platforms (finally! thanks to lukas227!)
+* Changed the format of the restore file to detect cross platform copies
+* Fixed a bug in the NCP module
 * Favor strrchr() over rindex()
 * Added refactoring patch by diadlo
 * Updated man page with missing command line options
