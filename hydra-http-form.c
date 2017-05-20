@@ -84,7 +84,7 @@ char cookie[4096] = "", cmiscptr[1024];
 extern char *webtarget;
 extern char *slash;
 int webport, freemischttpform = 0;
-char bufferurl[1024], cookieurl[1024] = "", userheader[1024] = "", *url, *variables, *optional1;
+char bufferurl[6096+24], cookieurl[6096+24] = "", userheader[6096+24] = "", *url, *variables, *optional1;
 
 #define MAX_REDIRECT 				8
 #define MAX_CONTENT_LENGTH	20
@@ -678,8 +678,8 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int) strlen(upd3variables));
         if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
           hdrrepv(&ptr_head, "Content-Length", content_length);
-        else
-          add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
+	else
+	  add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
         if (!header_exists(&ptr_head, "Content-Type", HEADER_TYPE_DEFAULT))
           add_header(&ptr_head, "Content-Type", "application/x-www-form-urlencoded", HEADER_TYPE_DEFAULT);
         cookie_header = stringify_cookies(ptr_cookie);
@@ -1056,7 +1056,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
   else
     webport = PORT_HTTP_SSL;
 
-  sprintf(bufferurl, "%.1000s", miscptr);
+  sprintf(bufferurl, "%.6096s", miscptr);
   url = bufferurl;
   ptr = url;
   while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
@@ -1162,14 +1162,15 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     case 'H':
       // add a new header, or replace an existing one's value
 			ptr = optional1 + 2;
-      while (*ptr != 0 && *ptr != ':')
-      	ptr++;
-			if (*(ptr - 1) == '\\')
-				*(ptr - 1) = 0;
-			if (*ptr != 0){
-				*ptr = 0;
-				ptr += 2;
-			}
+      while (*ptr != 0 && *ptr != ':') ptr++;
+
+      if (*(ptr - 1) == '\\')
+	*(ptr - 1) = 0;
+
+      if (*ptr != 0) {
+	*ptr = 0;
+        ptr += 2;
+      }
       ptr2 = ptr;
       while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
         ptr2++;
