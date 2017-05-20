@@ -3249,7 +3249,7 @@ int main(int argc, char *argv[]) {
 
     if (strcmp(hydra_options.service, "http-get-form") == 0 || strcmp(hydra_options.service, "http-post-form") == 0 || strcmp(hydra_options.service, "https-get-form") == 0
         || strcmp(hydra_options.service, "https-post-form") == 0) {
-      char bufferurl[1024], *url, *variables, *cond, *optional1;
+      char bufferurl[6096+24], *url, *variables, *cond, *optional1; //6096 comes from issue 192 on github. Extra 24 bytes for null padding. 
 
       if (strncmp(hydra_options.service, "http-", 5) == 0) {
         i = 1;
@@ -3284,7 +3284,7 @@ int main(int argc, char *argv[]) {
       if (strstr(hydra_options.miscptr, "\\:") != NULL) {
         fprintf(stderr, "[INFORMATION] escape sequence \\: detected in module option, no parameter verification is performed.\n");
       } else {
-        sprintf(bufferurl, "%.1000s", hydra_options.miscptr);
+        sprintf(bufferurl, "%.6096s", hydra_options.miscptr);
         url = strtok(bufferurl, ":");
         variables = strtok(NULL, ":");
         cond = strtok(NULL, ":");
