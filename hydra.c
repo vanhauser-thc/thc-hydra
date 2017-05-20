@@ -3284,7 +3284,7 @@ int main(int argc, char *argv[]) {
       if (strstr(hydra_options.miscptr, "\\:") != NULL) {
         fprintf(stderr, "[INFORMATION] escape sequence \\: detected in module option, no parameter verification is performed.\n");
       } else {
-        sprintf(bufferurl, "%.6096s", hydra_options.miscptr);
+        sprintf(bufferurl, "%.6000s", hydra_options.miscptr);
         url = strtok(bufferurl, ":");
         variables = strtok(NULL, ":");
         cond = strtok(NULL, ":");

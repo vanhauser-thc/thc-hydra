@@ -1043,8 +1043,8 @@ char *hydra_strrep(char *string, char *oldpiece, char *newpiece) {
   char *c, oldstring[6096], newstring[6096]; //updated due to issue 192 on github.
   static char finalstring[6096];
 
-  if(strlen(string) > 6096) {
-    hydra_report(stderr, "[ERROR] Supplied URL or POST data too large. Max limit is 6096 characters.\n");
+  if(strlen(string) > 6000) {
+    hydra_report(stderr, "[ERROR] Supplied URL or POST data too large. Max limit is 6000 characters.\n");
     exit(-1);
   }
 
