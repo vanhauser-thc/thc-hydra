@@ -1280,11 +1280,14 @@ static const struct {
 void hydra_service_init(int target_no) {
   int x = 99;
   int i = 0;
+  hydra_target* t = hydra_targets[target_no];
+  char* miscptr = hydra_options.miscptr;
+  FILE* ofp = hydra_brains.ofp;
 
   for (i = 0; i < sizeof(services) / sizeof(services[0]); i++) {
       if (strcmp(hydra_options.service, services[i].name) == 0) {
           if (services[i].init) {
-              x = services[i].init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+              x = services[i].init(t->ip, -1, options, miscptr, ofp, t->port, t->target);
               break;
           }
       }
@@ -1294,18 +1297,20 @@ void hydra_service_init(int target_no) {
   // dirty workaround here:
 #ifdef LIBSSH
   if (strcmp(hydra_options.service, "ssh") == 0)
-    x = service_ssh_init(hydra_targets[target_no]->ip, -1, options, login_ptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+    x = service_ssh_init(t->ip, -1, options, login_ptr, ofp, t->port, t->target);
 #endif
 
-  if (x != 0 && x != 99) {
-    if (x > 0 && x < 4)
-      hydra_targets[target_no]->done = x;
-    else
-      hydra_targets[target_no]->done = 2;
-    hydra_brains.finished++;
-    if (hydra_brains.targets == 1)
-      exit(-1);
+  if (x == 0 || x == 99) {
+      return;
   }
+
+  if (x > 0 && x < 4)
+    hydra_targets[target_no]->done = x;
+  else
+    hydra_targets[target_no]->done = 2;
+  hydra_brains.finished++;
+  if (hydra_brains.targets == 1)
+    exit(-1);
 }
 
 
