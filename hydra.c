@@ -1187,23 +1187,26 @@ char *hydra_build_time() {
 typedef void (*service_t)(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 typedef int (*service_init_t)(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 
+#define SERVICE2(name, func) { name, service_##func##_init, service_##func }
+#define SERVICE(name) { #name, service_##name##_init, service_##name }
+
 static const struct {
   const char* name;
   service_init_t init;
   service_t exec;
 } services[] = {
-  { "adam6500", service_adam6500_init, service_adam6500 },
+  SERVICE(adam6500),
 #ifdef LIBAFP
-  { "afp", service_afp_init, service_afp },
+  SERVICE(afp),
 #endif
-  { "asterisk", service_asterisk_init, service_asterisk },
-  { "cisco", service_cisco_init, service_cisco },
-  { "cisco-enable", service_cisco_enable_init, service_cisco_enable },
-  { "cvs", service_cvs_init, service_cvs },
+  SERVICE(asterisk),
+  SERVICE(cisco),
+  SERVICE2("cisco-enable", cisco_enable),
+  SERVICE(cvs),
 #ifdef LIBFIREBIRD
-  { "firebird", service_firebird_init, service_firebird },
+  SERVICE(firebird),
 #endif
-  { "ftp", service_ftp_init, service_ftp },
+  SERVICE(ftp),
   { "ftps", service_ftp_init, service_ftps },
   { "http-get", service_http_init, service_http_get },
   { "http-get-form", service_http_form_init, service_http_get_form },
@@ -1211,69 +1214,69 @@ static const struct {
   { "http-form", service_http_form_init, NULL },
   { "http-post", NULL, service_http_post },
   { "http-post-form", service_http_form_init, service_http_post_form },
-  { "http-proxy", service_http_proxy_init, service_http_proxy },
-  { "http-proxy-urlenum", service_http_proxy_urlenum_init, service_http_proxy_urlenum },
-  { "icq", service_icq_init, service_icq },
-  { "imap", service_imap_init, service_imap },
-  { "irc", service_irc_init, service_irc },
+  SERVICE2("http-proxy", http_proxy),
+  SERVICE2("http-proxy-urlenum", http_proxy_urlenum),
+  SERVICE(icq),
+  SERVICE(imap),
+  SERVICE(irc),
   { "ldap2", service_ldap_init, service_ldap2 },
   { "ldap3", service_ldap_init, service_ldap3 },
   { "ldap3-crammd5", service_ldap_init, service_ldap3_cram_md5 },
   { "ldap3-digestmd5", service_ldap_init, service_ldap3_digest_md5 },
-  { "mssql", service_mssql_init, service_mssql },
+  SERVICE(mssql),
 #ifdef HAVE_MATH_H
-  { "mysql", service_mysql_init, service_mysql },
+  SERVICE(mysql),
 #endif
 #ifdef LIBNCP
-  { "ncp", service_ncp_init, service_ncp },
+  SERVICE(ncp),
 #endif
-  { "nntp", service_nntp_init, service_nntp },
+  SERVICE(nntp),
 #ifdef LIBORACLE
-  { "oracle", service_oracle_init, service_oracle },
+  SERVICE(oracle),
 #endif
 #ifdef LIBOPENSSL
-  { "oracle-listener", service_oracle_listener_init, service_oracle_listener },
-  { "oracle-sid", service_oracle_sid_init, service_oracle_sid },
+  SERVICE2("oracle-listener", oracle_listener),
+  SERVICE2("oracle-sid", oracle_sid),
 #endif
-  { "pcanywhere", service_pcanywhere_init, service_pcanywhere },
-  { "pcnfs", service_pcnfs_init, service_pcnfs },
-  { "pop3", service_pop3_init, service_pop3 },
+  SERVICE(pcanywhere),
+  SERVICE(pcnfs),
+  SERVICE(pop3),
 #ifdef LIBPOSTGRES
-  { "postgres", service_postgres_init, service_postgres },
+  SERVICE(postgres),
 #endif
-  { "redis", service_redis_init, service_redis },
-  { "rexec", service_rexec_init, service_rexec },
+  SERVICE(redis),
+  SERVICE(rexec),
 #ifdef LIBOPENSSL
-  { "rdp", service_rdp_init, service_rdp },
+  SERVICE(rdp),
 #endif
-  { "rlogin", service_rlogin_init, service_rlogin },
-  { "rsh", service_rsh_init, service_rsh },
-  { "rtsp", service_rtsp_init, service_rtsp },
-  { "rpcap", service_rpcap_init, service_rpcap },
-  { "s7-300", service_s7_300_init, service_s7_300 },
+  SERVICE(rlogin),
+  SERVICE(rsh),
+  SERVICE(rtsp),
+  SERVICE(rpcap),
+  SERVICE2("s7-300", s7_300),
 #ifdef LIBSAPR3
-  { "sapr3", service_sapr3_init, service_sapr3 },
+  SERVICE(sapr3),
 #endif
 #ifdef LIBOPENSSL
-  { "sip", service_sip_init, service_sip },
-  { "smbnt", service_smb_init, service_smb },
-  { "smb", service_smb_init, service_smb },
+  SERVICE(sip),
+  SERVICE2("smbnt", smb),
+  SERVICE(smb),
 #endif
-  { "smtp", service_smtp_init, service_smtp },
-  { "smtp-enum", service_smtp_enum_init, service_smtp_enum },
-  { "snmp", service_snmp_init, service_snmp },
-  { "socks5", service_socks5_init, service_socks5 },
+  SERVICE(smtp),
+  SERVICE2("smtp-enum", smtp_enum),
+  SERVICE(snmp),
+  SERVICE(socks5),
 #ifdef LIBSSH
   { "ssh", NULL, service_ssh },
-  { "sshkey", service_sshkey_init, service_sshkey },
+  SERVICE(sshkey),
 #endif
 #ifdef LIBSVN
-  { "svn", service_svn_init, service_svn },
+  SERVICE(svn),
 #endif
-  { "teamspeak", service_teamspeak_init, service_teamspeak },
-  { "telnet", service_telnet_init, service_telnet },
-  { "vmauthd", service_vmauthd_init, service_vmauthd },
-  { "vnc", service_vnc_init, service_vnc },
+  SERVICE(teamspeak),
+  SERVICE(telnet),
+  SERVICE(vmauthd),
+  SERVICE(vnc),
   { "xmpp", service_xmpp_init, NULL }
 };
 
