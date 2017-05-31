@@ -1184,132 +1184,118 @@ char *hydra_build_time() {
   return (char *) &datetime;
 }
 
-void hydra_service_init(int target_no) {
-  int x = 99;
+typedef void (*service_t)(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+typedef int (*service_init_t)(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 
+static const struct {
+  const char* name;
+  service_init_t init;
+  service_t exec;
+} services[] = {
+  { "adam6500", service_adam6500_init, service_adam6500 },
 #ifdef LIBAFP
-  if (strcmp(hydra_options.service, "afp") == 0)
-    x = service_afp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  { "afp", service_afp_init, service_afp },
 #endif
-  if (strcmp(hydra_options.service, "asterisk") == 0)
-    x = service_asterisk_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "cisco-enable") == 0)
-    x = service_cisco_enable_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "cvs") == 0)
-    x = service_cvs_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "adam6500") == 0)
-    x = service_adam6500_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "cisco") == 0)
-    x = service_cisco_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  { "asterisk", service_asterisk_init, service_asterisk },
+  { "cisco", service_cisco_init, service_cisco },
+  { "cisco-enable", service_cisco_enable_init, service_cisco_enable },
+  { "cvs", service_cvs_init, service_cvs },
 #ifdef LIBFIREBIRD
-  if (strcmp(hydra_options.service, "firebird") == 0)
-    x = service_firebird_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  { "firebird", service_firebird_init, service_firebird },
 #endif
-  if (strcmp(hydra_options.service, "ftp") == 0 || strcmp(hydra_options.service, "ftps") == 0)
-    x = service_ftp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "redis") == 0 || strcmp(hydra_options.service, "redis") == 0)
-    x = service_redis_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "http-get") == 0 || strcmp(hydra_options.service, "http-head") == 0)
-    x = service_http_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "http-form") == 0 || strcmp(hydra_options.service, "http-get-form") == 0 || strcmp(hydra_options.service, "http-post-form") == 0)
-    x = service_http_form_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "http-proxy") == 0)
-    x = service_http_proxy_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "http-proxy-urlenum") == 0)
-    x = service_http_proxy_urlenum_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "icq") == 0)
-    x = service_icq_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "imap") == 0)
-    x = service_imap_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "irc") == 0)
-    x = service_irc_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strncmp(hydra_options.service, "ldap", 4) == 0)
-    x = service_ldap_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-#ifdef LIBOPENSSL
-  if (strcmp(hydra_options.service, "sip") == 0)
-    x = service_sip_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "smb") == 0 || strcmp(hydra_options.service, "smbnt") == 0)
-    x = service_smb_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "oracle-listener") == 0)
-    x = service_oracle_listener_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "oracle-sid") == 0)
-    x = service_oracle_sid_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "rdp") == 0)
-    x = service_rdp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-#endif
-  if (strcmp(hydra_options.service, "mssql") == 0)
-    x = service_mssql_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  { "ftp", service_ftp_init, service_ftp },
+  { "ftps", service_ftp_init, service_ftps },
+  { "http-get", service_http_init, service_http_get },
+  { "http-get-form", service_http_form_init, service_http_get_form },
+  { "http-head", service_http_init, service_http_head },
+  { "http-form", service_http_form_init, NULL },
+  { "http-post", NULL, service_http_post },
+  { "http-post-form", service_http_form_init, service_http_post_form },
+  { "http-proxy", service_http_proxy_init, service_http_proxy },
+  { "http-proxy-urlenum", service_http_proxy_urlenum_init, service_http_proxy_urlenum },
+  { "icq", service_icq_init, service_icq },
+  { "imap", service_imap_init, service_imap },
+  { "irc", service_irc_init, service_irc },
+  { "ldap2", service_ldap_init, service_ldap2 },
+  { "ldap3", service_ldap_init, service_ldap3 },
+  { "ldap3-crammd5", service_ldap_init, service_ldap3_cram_md5 },
+  { "ldap3-digestmd5", service_ldap_init, service_ldap3_digest_md5 },
+  { "mssql", service_mssql_init, service_mssql },
 #ifdef HAVE_MATH_H
-  if (strcmp(hydra_options.service, "mysql") == 0)
-    x = service_mysql_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  { "mysql", service_mysql_init, service_mysql },
 #endif
 #ifdef LIBNCP
-  if (strcmp(hydra_options.service, "ncp") == 0)
-    x = service_ncp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  { "ncp", service_ncp_init, service_ncp },
 #endif
-  if (strcmp(hydra_options.service, "nntp") == 0)
-    x = service_nntp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  { "nntp", service_nntp_init, service_nntp },
 #ifdef LIBORACLE
-  if (strcmp(hydra_options.service, "oracle") == 0)
-    x = service_oracle_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  { "oracle", service_oracle_init, service_oracle },
 #endif
-  if (strcmp(hydra_options.service, "pcanywhere") == 0)
-    x = service_pcanywhere_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "pcnfs") == 0)
-    x = service_pcnfs_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "pop3") == 0)
-    x = service_pop3_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+#ifdef LIBOPENSSL
+  { "oracle-listener", service_oracle_listener_init, service_oracle_listener },
+  { "oracle-sid", service_oracle_sid_init, service_oracle_sid },
+#endif
+  { "pcanywhere", service_pcanywhere_init, service_pcanywhere },
+  { "pcnfs", service_pcnfs_init, service_pcnfs },
+  { "pop3", service_pop3_init, service_pop3 },
 #ifdef LIBPOSTGRES
-  if (strcmp(hydra_options.service, "postgres") == 0)
-    x = service_postgres_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  { "postgres", service_postgres_init, service_postgres },
 #endif
-  if (strcmp(hydra_options.service, "rexec") == 0)
-    x = service_rexec_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "rlogin") == 0)
-    x = service_rlogin_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "rsh") == 0)
-    x = service_rsh_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  { "redis", service_redis_init, service_redis },
+  { "rexec", service_rexec_init, service_rexec },
+#ifdef LIBOPENSSL
+  { "rdp", service_rdp_init, service_rdp },
+#endif
+  { "rlogin", service_rlogin_init, service_rlogin },
+  { "rsh", service_rsh_init, service_rsh },
+  { "rtsp", service_rtsp_init, service_rtsp },
+  { "rpcap", service_rpcap_init, service_rpcap },
+  { "s7-300", service_s7_300_init, service_s7_300 },
 #ifdef LIBSAPR3
-  if (strcmp(hydra_options.service, "sapr3") == 0)
-    x = service_sapr3_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  { "sapr3", service_sapr3_init, service_sapr3 },
 #endif
-  if (strcmp(hydra_options.service, "smtp") == 0)
-    x = service_smtp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "smtp-enum") == 0)
-    x = service_smtp_enum_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "snmp") == 0)
-    x = service_snmp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "socks5") == 0)
-    x = service_socks5_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+#ifdef LIBOPENSSL
+  { "sip", service_sip_init, service_sip },
+  { "smbnt", service_smb_init, service_smb },
+  { "smb", service_smb_init, service_smb },
+#endif
+  { "smtp", service_smtp_init, service_smtp },
+  { "smtp-enum", service_smtp_enum_init, service_smtp_enum },
+  { "snmp", service_snmp_init, service_snmp },
+  { "socks5", service_socks5_init, service_socks5 },
 #ifdef LIBSSH
-  // dirty workaround here:
-  if (strcmp(hydra_options.service, "ssh") == 0)
-    x = service_ssh_init(hydra_targets[target_no]->ip, -1, options, login_ptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "sshkey") == 0)
-    x = service_sshkey_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  { "ssh", NULL, service_ssh },
+  { "sshkey", service_sshkey_init, service_sshkey },
 #endif
 #ifdef LIBSVN
-  if (strcmp(hydra_options.service, "svn") == 0)
-    x = service_svn_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  { "svn", service_svn_init, service_svn },
 #endif
-  if (strcmp(hydra_options.service, "teamspeak") == 0)
-    x = service_teamspeak_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "telnet") == 0)
-    x = service_telnet_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "vmauthd") == 0)
-    x = service_vmauthd_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "vnc") == 0)
-    x = service_vnc_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "xmpp") == 0)
-    x = service_xmpp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "s7-300") == 0)
-    x = service_s7_300_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "rtsp") == 0)
-    x = service_rtsp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
-  if (strcmp(hydra_options.service, "rpcap") == 0)
-    x = service_rpcap_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+  { "teamspeak", service_teamspeak_init, service_teamspeak },
+  { "telnet", service_telnet_init, service_telnet },
+  { "vmauthd", service_vmauthd_init, service_vmauthd },
+  { "vnc", service_vnc_init, service_vnc },
+  { "xmpp", service_xmpp_init, NULL }
+};
+
+void hydra_service_init(int target_no) {
+  int x = 99;
+  int i = 0;
+
+  for (i = 0; i < sizeof(services) / sizeof(services[0]); i++) {
+      if (strcmp(hydra_options.service, services[i].name) == 0) {
+          if (services[i].init) {
+              x = services[i].init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+              break;
+          }
+      }
+  }
   // ADD NEW SERVICES HERE
 
+  // dirty workaround here:
+#ifdef LIBSSH
+  if (strcmp(hydra_options.service, "ssh") == 0)
+    x = service_ssh_init(hydra_targets[target_no]->ip, -1, options, login_ptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+#endif
 
   if (x != 0 && x != 99) {
     if (x > 0 && x < 4)
