@@ -257,6 +257,13 @@ typedef enum {
   MODE_COLON_FILE = 64
 } hydra_mode_t;
 
+typedef enum {
+  FORMAT_PLAIN_TEXT,
+  FORMAT_JSONV1,
+  FORMAT_JSONV2,
+  FORMAT_XMLV1
+} output_format_t;
+
 typedef struct {
   hydra_mode_t mode;
   int loop_mode;                // valid modes: 0 = password, 1 = user
@@ -272,7 +279,7 @@ typedef struct {
   int exit_found;
   int max_use;
   int cidr;
-  int outfile_format;            // 0 = plain text, 1 = JSONv1, [future --> ]  2 = JSONv2, 3=XMLv1, 4=...
+  output_format_t outfile_format;
   char *login;
   char *loginfile;
   char *pass;
@@ -2521,7 +2528,7 @@ int main(int argc, char *argv[]) {
   hydra_options.passfile = NULL;
   hydra_options.tasks = TASKS;
   hydra_options.max_use = MAXTASKS;
-  hydra_options.outfile_format = 0;
+  hydra_options.outfile_format = FORMAT_PLAIN_TEXT;
   hydra_brains.ofp = stdout;
   hydra_brains.targets = 1;
   hydra_options.waittime = waittime = WAITTIME;
@@ -2618,11 +2625,11 @@ int main(int argc, char *argv[]) {
     case 'b':
       outfile_format_tmp = optarg;
       if (0==strcasecmp(outfile_format_tmp,"text"))
-          hydra_options.outfile_format = 0;
+          hydra_options.outfile_format = FORMAT_PLAIN_TEXT;
       else if (0==strcasecmp(outfile_format_tmp,"json")) // latest json formatting.
-          hydra_options.outfile_format = 1;
+          hydra_options.outfile_format = FORMAT_JSONV1;
       else if (0==strcasecmp(outfile_format_tmp,"jsonv1"))
-          hydra_options.outfile_format = 1;
+          hydra_options.outfile_format = FORMAT_JSONV1;
       else {
         fprintf(stderr, "[ERROR] Output file format must be (text, json, jsonv1)\n");
         exit(-1);
@@ -2726,7 +2733,7 @@ int main(int argc, char *argv[]) {
     bail("You can only use -L OR -l, not both\n");
   if (hydra_options.pass != NULL && hydra_options.passfile != NULL)
     bail("You can only use -P OR -p, not both\n");
-  if (hydra_options.outfile_format != 0 && hydra_options.outfile_ptr == NULL)
+  if (hydra_options.outfile_format != FORMAT_PLAIN_TEXT && hydra_options.outfile_ptr == NULL)
     fprintf(stderr, "[WARNING] output file format specified (-b) - but no output file (-o)\n");
     
   if (hydra_options.restore) {
@@ -3805,7 +3812,7 @@ int main(int argc, char *argv[]) {
       perror("[ERROR] Error creating outputfile");
       exit(-1);
     }
-    if (hydra_options.outfile_format == 1) {  // JSONv1
+    if (hydra_options.outfile_format == FORMAT_JSONV1) {
       fprintf(hydra_brains.ofp, "{ \"generator\": {\n"
               "\t\"software\": \"%s\", \"version\": \"%s\", \"built\": \"%s\",\n"
               "\t\"server\": \"%s\", \"service\": \"%s\", \"jsonoutputversion\": \"1.00\",\n"
@@ -4058,7 +4065,7 @@ int main(int argc, char *argv[]) {
                   printf("[%d][%s] host: %s   login: %s   password: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
                          hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr);
               }
-              if (hydra_options.outfile_format == 1 /* JSONv1 */ && hydra_options.outfile_ptr != NULL && hydra_brains.ofp != NULL) {
+              if (hydra_options.outfile_format == FORMAT_JSONV1 && hydra_options.outfile_ptr != NULL && hydra_brains.ofp != NULL) {
                   fprintf(hydra_brains.ofp, "%s\n\t{\"port\": %d, \"service\": \"%s\", \"host\": \"%s\", \"login\": \"%s\", \"password\": \"%s\"}",
                           hydra_brains.found == 1 ? "" : ",",  // prefix a comma if not first finding
                           hydra_targets[hydra_heads[head_no]->target_no]->port,
@@ -4312,7 +4319,7 @@ int main(int argc, char *argv[]) {
   // yeah we did it
   printf("%s (%s) finished at %s\n", PROGRAM, RESOURCE, hydra_build_time());
   if (hydra_brains.ofp != NULL && hydra_brains.ofp != stdout) {
-    if (hydra_options.outfile_format == 1 /* JSONv1 */ ) {
+    if (hydra_options.outfile_format == FORMAT_JSONV1) {
       fprintf(hydra_brains.ofp, "\n\t],\n\"success\": %s,\n\"errormessages\": [ %s ],\n\"quantityfound\": %lu   }\n",
               (error ? "false" : "true"), json_error, hydra_brains.found);
     } 
