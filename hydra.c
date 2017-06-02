@@ -247,8 +247,18 @@ typedef struct {
   FILE *ofp;
 } hydra_brain;
 
+typedef enum {
+  MODE_PASSWORD_LIST = 1,
+  MODE_LOGIN_LIST = 2,
+  MODE_PASSWORD_BRUTE = 4,
+  MODE_PASSWORD_REVERSE = 8,
+  MODE_PASSWORD_NULL = 16,
+  MODE_PASSWORD_SAME = 32,
+  MODE_COLON_FILE = 64
+} hydra_mode_t;
+
 typedef struct {
-  int mode;                     // valid modes: 0 = -l -p, 1 = -l -P, 2 = -L -p, 3 = -L -P, 4 = -l -x, 6 = -L -x, +8 if -e r, +16 if -e n, +32 if -e s, 64 = -C | bit 128 undefined
+  hydra_mode_t mode;
   int loop_mode;                // valid modes: 0 = password, 1 = user
   int ssl;
   int restore;
@@ -329,6 +339,10 @@ char snpbuf[MAXBUF];
 int snpdone, snp_is_redo, snpbuflen, snpi, snpj, snpdont;
 
 #include "performance.h"
+
+int inline check_flag(int value, int flag) {
+  return (value & flag) == flag;
+}
 
 void help(int ext) {
   printf("Syntax: hydra [[[-l LOGIN|-L FILE] [-p PASS|-P FILE]] | [-C FILE]] [-e nsr]" " [-o FILE] [-t TASKS] [-M FILE [-T TASKS]] [-w TIME] [-W TIME] [-f] [-s PORT]"
@@ -934,7 +948,7 @@ void hydra_restore_read() {
   fck = (int) fread(login_ptr, hydra_brains.sizelogin, 1, f);
   if (debug)
     printf("[DEBUG] reading restore file: Step 9 complete\n");
-  if ((hydra_options.mode & 64) != 64) {        // NOT colonfile mode
+  if (!check_flag(hydra_options.mode, MODE_COLON_FILE)) {        // NOT colonfile mode
     pass_ptr = malloc(hydra_brains.sizepass);
     fck = (int) fread(pass_ptr, hydra_brains.sizepass, 1, f);
   } else {                      // colonfile mode
@@ -1939,7 +1953,7 @@ int hydra_send_next_pair(int target_no, int head_no) {
           }
           // now we handle the -C -l/-L -p/-P data
           if (hydra_targets[target_no]->pass_state == 3 && snpdone == 0) {
-            if ((hydra_options.mode & 64) == 64) {      // colon mode
+            if (check_flag(hydra_options.mode, MODE_COLON_FILE)) {      // colon mode
               hydra_heads[head_no]->current_login_ptr = hydra_targets[target_no]->login_ptr;
               hydra_heads[head_no]->current_pass_ptr = hydra_targets[target_no]->pass_ptr;
               hydra_targets[target_no]->login_no++;
@@ -2008,17 +2022,17 @@ int hydra_send_next_pair(int target_no, int head_no) {
         if (hydra_targets[target_no]->pass_no < hydra_brains.countpass) {
           hydra_heads[head_no]->current_login_ptr = hydra_targets[target_no]->login_ptr;
           if (hydra_targets[target_no]->pass_state == 0) {
-            if ((hydra_options.mode & 4) == 4)
+            if (check_flag(hydra_options.mode, MODE_PASSWORD_BRUTE))
               hydra_heads[head_no]->current_pass_ptr = strdup(hydra_heads[head_no]->current_login_ptr);
             else
               hydra_heads[head_no]->current_pass_ptr = hydra_heads[head_no]->current_login_ptr;
           } else if (hydra_targets[target_no]->pass_state == 1) {
-            if ((hydra_options.mode & 4) == 4)
+            if (check_flag(hydra_options.mode, MODE_PASSWORD_BRUTE))
               hydra_heads[head_no]->current_pass_ptr = strdup(empty_login);
             else
               hydra_heads[head_no]->current_pass_ptr = empty_login;
           } else if (hydra_targets[target_no]->pass_state == 2) {
-            if ((hydra_options.mode & 4) == 4)
+            if (check_flag(hydra_options.mode, MODE_PASSWORD_BRUTE))
               hydra_heads[head_no]->current_pass_ptr = strdup(hydra_reverse_login(head_no, hydra_heads[head_no]->current_login_ptr));
             else
               hydra_heads[head_no]->current_pass_ptr = hydra_reverse_login(head_no, hydra_heads[head_no]->current_login_ptr);
@@ -2048,7 +2062,7 @@ int hydra_send_next_pair(int target_no, int head_no) {
               if (snpdont) {
                 hydra_targets[target_no]->pass_ptr = pass_ptr;
               } else {
-                if ((hydra_options.mode & 4) == 4) {    // bfg mode
+                if (check_flag(hydra_options.mode, MODE_PASSWORD_BRUTE)) {
 #ifndef HAVE_MATH_H
                   sleep(1);
 #else
@@ -2129,7 +2143,7 @@ int hydra_send_next_pair(int target_no, int head_no) {
         if (debug)
           printf("[DEBUG] double found for %s == %s, skipping\n", hydra_heads[head_no]->current_login_ptr, hydra_targets[target_no]->skiplogin[snpi - 1]);
         // only if -l/L -p/P with -u and if loginptr was not justed increased
-        if ((hydra_options.mode & 64) != 64 && hydra_options.loop_mode == 0 && hydra_targets[target_no]->pass_no > 0) { // -l -P (not! -u)
+        if (!check_flag(hydra_options.mode, MODE_COLON_FILE) && hydra_options.loop_mode == 0 && hydra_targets[target_no]->pass_no > 0) { // -l -P (not! -u)
           // increase login_ptr to next
           hydra_targets[target_no]->login_no++;
           if (hydra_targets[target_no]->login_no < hydra_brains.countlogin) {
@@ -2204,7 +2218,7 @@ void hydra_skip_user(int target_no, char *username) {
     strcpy(hydra_targets[target_no]->skiplogin[hydra_targets[target_no]->skipcnt], username);
     hydra_targets[target_no]->skipcnt++;
   }
-  if (hydra_options.loop_mode == 0 && (hydra_options.mode & 64) != 64) {
+  if (hydra_options.loop_mode == 0 && !check_flag(hydra_options.mode, MODE_COLON_FILE)) {
     if (memcmp(username, hydra_targets[target_no]->login_ptr, strlen(username)) == 0) {
       if (debug)
         printf("[DEBUG] skipping username %s\n", username);
@@ -2554,15 +2568,15 @@ int main(int argc, char *argv[]) {
         switch (optarg[i]) {
         case 'r':
           hydra_options.try_password_reverse_login = 1;
-          hydra_options.mode = hydra_options.mode | 8;
+          hydra_options.mode = hydra_options.mode | MODE_PASSWORD_REVERSE;
           break;
         case 'n':
           hydra_options.try_null_password = 1;
-          hydra_options.mode = hydra_options.mode | 16;
+          hydra_options.mode = hydra_options.mode | MODE_PASSWORD_NULL;
           break;
         case 's':
           hydra_options.try_password_same_as_login = 1;
-          hydra_options.mode = hydra_options.mode | 32;
+          hydra_options.mode = hydra_options.mode | MODE_PASSWORD_SAME;
           break;
         default:
           fprintf(stderr, "[ERROR] unknown mode %c for option -e, only supporting \"n\", \"s\" and \"r\"\n", optarg[i]);
@@ -2582,14 +2596,14 @@ int main(int argc, char *argv[]) {
       break;
     case 'L':
       hydra_options.loginfile = optarg;
-      hydra_options.mode = hydra_options.mode | 2;
+      hydra_options.mode = hydra_options.mode | MODE_LOGIN_LIST;
       break;
     case 'p':
       hydra_options.pass = optarg;
       break;
     case 'P':
       hydra_options.passfile = optarg;
-      hydra_options.mode = hydra_options.mode | 1;
+      hydra_options.mode = hydra_options.mode | MODE_PASSWORD_LIST;
       break;
     case 'f':
       hydra_options.exit_found = 1;
@@ -2620,7 +2634,7 @@ int main(int argc, char *argv[]) {
       break;
     case 'C':
       hydra_options.colonfile = optarg;
-      hydra_options.mode = 64;
+      hydra_options.mode = MODE_COLON_FILE;
       break;
     case 'm':
       hydra_options.miscptr = optarg;
@@ -2666,7 +2680,7 @@ int main(int argc, char *argv[]) {
         help_bfg();
       bf_options.arg = optarg;
       hydra_options.bfg = 1;
-      hydra_options.mode = hydra_options.mode | 4;
+      hydra_options.mode = hydra_options.mode | MODE_PASSWORD_BRUTE;
       hydra_options.loop_mode = 1;
       break;
 #endif
