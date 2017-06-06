@@ -1762,6 +1762,14 @@ void hydra_increase_fail_count(int target_no, int head_no) {
   }
 }
 
+void swap_chars(char* a, char* b)
+{
+    unsigned char keep;
+    keep = *a;
+    *a = *b;
+    *b = keep;
+}
+
 char *hydra_reverse_login(int head_no, char *login) {
   int i, j;
   char *start, *pos;
@@ -1784,25 +1792,17 @@ char *hydra_reverse_login(int head_no, char *login) {
   while(start < --pos) {
     switch( (*pos & 0xF0) >> 4 ) {
     case 0xF: /* U+010000-U+10FFFF: four bytes. */
-      keep = *pos;
-      *pos = *(pos-3);
-      *(pos-3) = keep;
-      keep = *(pos-1);
-      *(pos-1) = *(pos-2);
-      *(pos-2) = keep;
+      swap(pos, pos - 3);
+      swap(pos - 1, pos - 2);
       pos -= 3;
       break;
     case 0xE: /* U+000800-U+00FFFF: three bytes. */
-      keep = *pos;
-      *pos = *(pos-2);
-      *(pos-2) = keep;
+      swap(pos, pos - 2);
       pos -= 2;
       break;
     case 0xC: /* fall-through */
     case 0xD: /* U+000080-U+0007FF: two bytes. */
-      keep = *pos;
-      *pos = *(pos-1);
-      *(pos-1) = keep;
+      swap(pos, pos - 1);
       pos--;
       break;
     }
