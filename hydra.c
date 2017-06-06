@@ -351,88 +351,78 @@ int inline check_flag(int value, int flag) {
   return (value & flag) == flag;
 }
 
-void help(int ext) {
-  printf("Syntax: hydra [[[-l LOGIN|-L FILE] [-p PASS|-P FILE]] | [-C FILE]] [-e nsr]" " [-o FILE] [-t TASKS] [-M FILE [-T TASKS]] [-w TIME] [-W TIME] [-f] [-s PORT]"
-#ifdef HAVE_MATH_H
-         " [-x MIN:MAX:CHARSET]"
-#endif
-         " [-ISOuvVd46] "
-         //"[server service [OPT]]|"
-         "[service://server[:PORT][/OPT]]\n");
-  printf("\nOptions:\n");
-  if (ext)
-    printf("  -R        restore a previous aborted/crashed session\n");
-  if (ext)
-    printf("  -I        ignore an existing restore file (dont wait 10 seconds)\n");
-#ifdef LIBOPENSSL
-  if (ext)
-    printf("  -S        perform an SSL connect\n");
-#endif
-  if (ext)
-    printf("  -s PORT   if the service is on a different default port, define it here\n");
-  printf("  -l LOGIN or -L FILE  login with LOGIN name, or load several logins from FILE\n");
-  printf("  -p PASS  or -P FILE  try password PASS, or load several passwords from FILE\n");
-#ifdef HAVE_MATH_H
-  if (ext) {
-    printf("  -x MIN:MAX:CHARSET  password bruteforce generation, type \"-x -h\" to get help\n");
-    printf("  -y        disable use of symbols in bruteforce, see above\n");
-  }
-#endif
-  if (ext)
-    printf("  -e nsr    try \"n\" null password, \"s\" login as pass and/or \"r\" reversed login\n");
-  if (ext)
-    printf("  -u        loop around users, not passwords (effective! implied with -x)\n");
-  printf("  -C FILE   colon separated \"login:pass\" format, instead of -L/-P options\n");
-  printf("  -M FILE   list of servers to attack, one entry per line, ':' to specify port\n");
-  if (ext)
-    printf("  -o FILE   write found login/password pairs to FILE instead of stdout\n");
-  if (ext)
-    printf("  -b FORMAT specify the format for the -o FILE: text(default), json, jsonv1\n");
-  if (ext)
-    printf("  -f / -F   exit when a login/pass pair is found (-M: -f per host, -F global)\n");
-  printf("  -t TASKS  run TASKS number of connects in parallel per target (default: %d)\n", TASKS);
-  if (ext)
-    printf("  -T TASKS  run TASKS connects in parallel overall (for -M, default: %d)\n", MAXTASKS);
-  if (ext)
-    printf("  -w / -W TIME  waittime for responses (%d) / between connects per thread (%d)\n", WAITTIME, conwait);
-  if (ext)
-    printf("  -4 / -6   use IPv4 (default) / IPv6 addresses (put always in [] also in -M)\n");
-  if (ext)
-    printf("  -v / -V / -d  verbose mode / show login+pass for each attempt / debug mode \n");
-  if (ext)
-    printf("  -O        use old SSL v2 and v3\n");
-  if (ext)
-    printf("  -q        do not print messages about connection errors\n");
-  printf("  -U        service module usage details\n");
-  if (ext == 0)
-    printf("  -h        more command line options (COMPLETE HELP)\n");
-  printf("  server    the target: DNS, IP or 192.168.0.0/24 (this OR the -M option)\n");
-  printf("  service   the service to crack (see below for supported protocols)\n");
-  printf("  OPT       some service modules support additional input (-U for module help)\n");
+#define PRINT_NORMAL(ext, text, ...) printf(text, ##__VA_ARGS__)
+#define PRINT_EXTEND(ext, text, ...) do { \
+    if (ext) \
+      printf(text, ##__VA_ARGS__); \
+  } while(0)
 
-  printf("\nSupported services: %s\n", SERVICES);
-  printf("\n%s is a tool to guess/crack valid login/password pairs. Licensed under AGPL\nv3.0. The newest version is always available at %s\n", PROGRAM, RESOURCE);
-  printf("Don't use in military or secret service organizations, or for illegal purposes.\n");
+void help(int ext) {
+  PRINT_NORMAL(ext, "Syntax: hydra [[[-l LOGIN|-L FILE] [-p PASS|-P FILE]] | [-C FILE]] [-e nsr]"
+                    " [-o FILE] [-t TASKS] [-M FILE [-T TASKS]] [-w TIME] [-W TIME] [-f] [-s PORT]"
+#ifdef HAVE_MATH_H
+                    " [-x MIN:MAX:CHARSET]"
+#endif
+                    " [-ISOuvVd46] "
+                    //"[server service [OPT]]|"
+                    "[service://server[:PORT][/OPT]]\n");
+  PRINT_NORMAL(ext, "\nOptions:\n");
+  PRINT_EXTEND(ext, "  -R        restore a previous aborted/crashed session\n"
+                    "  -I        ignore an existing restore file (dont wait 10 seconds)\n"
+#ifdef LIBOPENSSL
+                    "  -S        perform an SSL connect\n"
+#endif
+                    "  -s PORT   if the service is on a different default port, define it here\n");
+  PRINT_NORMAL(ext, "  -l LOGIN or -L FILE  login with LOGIN name, or load several logins from FILE\n"
+                    "  -p PASS  or -P FILE  try password PASS, or load several passwords from FILE\n");
+  PRINT_EXTEND(ext,
+#ifdef HAVE_MATH_H
+                    "  -x MIN:MAX:CHARSET  password bruteforce generation, type \"-x -h\" to get help\n"
+                    "  -y        disable use of symbols in bruteforce, see above\n"
+#endif
+                    "  -e nsr    try \"n\" null password, \"s\" login as pass and/or \"r\" reversed login\n"
+                    "  -u        loop around users, not passwords (effective! implied with -x)\n");
+  PRINT_NORMAL(ext, "  -C FILE   colon separated \"login:pass\" format, instead of -L/-P options\n"
+                    "  -M FILE   list of servers to attack, one entry per line, ':' to specify port\n");
+  PRINT_EXTEND(ext, "  -o FILE   write found login/password pairs to FILE instead of stdout\n"
+                    "  -b FORMAT specify the format for the -o FILE: text(default), json, jsonv1\n"
+                    "  -f / -F   exit when a login/pass pair is found (-M: -f per host, -F global)\n");
+  PRINT_NORMAL(ext, "  -t TASKS  run TASKS number of connects in parallel per target (default: %d)\n", TASKS);
+  PRINT_EXTEND(ext, "  -T TASKS  run TASKS connects in parallel overall (for -M, default: %d)\n"
+                    "  -w / -W TIME  waittime for responses (%d) / between connects per thread (%d)\n"
+                    "  -4 / -6   use IPv4 (default) / IPv6 addresses (put always in [] also in -M)\n"
+                    "  -v / -V / -d  verbose mode / show login+pass for each attempt / debug mode \n"
+                    "  -O        use old SSL v2 and v3\n"
+                    "  -q        do not print messages about connection errors\n",
+               MAXTASKS, WAITTIME, conwait
+               );
+  PRINT_NORMAL(ext, "  -U        service module usage details\n"
+                    "  -h        more command line options (COMPLETE HELP)\n"
+                    "  server    the target: DNS, IP or 192.168.0.0/24 (this OR the -M option)\n"
+                    "  service   the service to crack (see below for supported protocols)\n"
+                    "  OPT       some service modules support additional input (-U for module help)\n");
+  PRINT_NORMAL(ext, "\nSupported services: %s\n"
+                    "\n%s is a tool to guess/crack valid login/password pairs. Licensed under AGPL\n"
+                    "v3.0. The newest version is always available at %s\n"
+                    "Don't use in military or secret service organizations, or for illegal purposes.\n",
+               SERVICES, PROGRAM, RESOURCE
+               );
+
   if (ext && strlen(unsupported) > 0) {
     if (unsupported[strlen(unsupported) - 1] == ' ')
       unsupported[strlen(unsupported) - 1] = 0;
     printf("These services were not compiled in: %s.\n", unsupported);
   }
-  if (ext) {
-    printf("\nUse HYDRA_PROXY_HTTP or HYDRA_PROXY environment variables for a proxy setup.\n");
-    printf("E.g. %% export HYDRA_PROXY=socks5://l:p@127.0.0.1:9150 (or: socks4:// connect://)\n");
-    printf("     %% export HYDRA_PROXY=connect_and_socks_proxylist.txt  (up to 64 entries)\n");
-    printf("     %% export HYDRA_PROXY_HTTP=http://login:pass@proxy:8080\n");
-    printf("     %% export HYDRA_PROXY_HTTP=proxylist.txt  (up to 64 entries)\n");
-  }
-
-  printf("\nExample%s:%s  hydra -l user -P passlist.txt ftp://192.168.0.1\n", ext == 0 ? "" : "s", ext == 0 ? "" : "\n");
-  if (ext) {
-    printf("  hydra -L userlist.txt -p defaultpw imap://192.168.0.1/PLAIN\n");
-    printf("  hydra -C defaults.txt -6 pop3s://[2001:db8::1]:143/TLS:DIGEST-MD5\n");
-    printf("  hydra -l admin -p password ftp://[192.168.0.0/24]/\n");
-    printf("  hydra -L logins.txt -P pws.txt -M targets.txt ssh\n");
-  }
+  PRINT_EXTEND(ext, "\nUse HYDRA_PROXY_HTTP or HYDRA_PROXY environment variables for a proxy setup.\n"
+                    "E.g. %% export HYDRA_PROXY=socks5://l:p@127.0.0.1:9150 (or: socks4:// connect://)\n"
+                    "     %% export HYDRA_PROXY=connect_and_socks_proxylist.txt  (up to 64 entries)\n"
+                    "     %% export HYDRA_PROXY_HTTP=http://login:pass@proxy:8080\n"
+                    "     %% export HYDRA_PROXY_HTTP=proxylist.txt  (up to 64 entries)\n");
+  PRINT_NORMAL(ext, "\nExample%s:%s  hydra -l user -P passlist.txt ftp://192.168.0.1\n", ext == 0 ? "" : "s", ext == 0 ? "" : "\n");
+  PRINT_EXTEND(ext, "  hydra -L userlist.txt -p defaultpw imap://192.168.0.1/PLAIN\n"
+                    "  hydra -C defaults.txt -6 pop3s://[2001:db8::1]:143/TLS:DIGEST-MD5\n"
+                    "  hydra -l admin -p password ftp://[192.168.0.0/24]/\n"
+                    "  hydra -L logins.txt -P pws.txt -M targets.txt ssh\n");
   exit(-1);
 }
 
@@ -449,9 +439,10 @@ void help_bfg() {
          "Examples:\n"
          "   -x 3:5:a  generate passwords from length 3 to 5 with all lowercase letters\n"
          "   -x 5:8:A1 generate passwords from length 5 to 8 with uppercase and numbers\n"
-         "   -x 1:3:/  generate passwords from length 1 to 3 containing only slashes\n" "   -x 5:5:/%%,.-  generate passwords with length 5 which consists only of /%%,.-\n"
-         "   -x 3:5:aA1 -y generate passwords from length 3 to 5 with a, A and 1 only\n");
-  printf("\nThe bruteforce mode was made by Jan Dlabal, http://houbysoft.com/bfg/\n");
+         "   -x 1:3:/  generate passwords from length 1 to 3 containing only slashes\n"
+         "   -x 5:5:/%%,.-  generate passwords with length 5 which consists only of /%%,.-\n"
+         "   -x 3:5:aA1 -y generate passwords from length 3 to 5 with a, A and 1 only\n"
+         "\nThe bruteforce mode was made by Jan Dlabal, http://houbysoft.com/bfg/\n");
   exit(-1);
 }
 
