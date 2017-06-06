@@ -187,6 +187,31 @@ extern int old_ssl;
 
 void hydra_kill_head(int head_no, int killit, int fail);
 
+// some enum definitions
+typedef enum {
+  STATE_ACTIVE = 0,
+  STATE_FINISHED = 1,
+  STATE_ERROR = 2,
+  STATE_UNRESOLVED = 3
+} target_state_t;
+
+typedef enum {
+  MODE_PASSWORD_LIST = 1,
+  MODE_LOGIN_LIST = 2,
+  MODE_PASSWORD_BRUTE = 4,
+  MODE_PASSWORD_REVERSE = 8,
+  MODE_PASSWORD_NULL = 16,
+  MODE_PASSWORD_SAME = 32,
+  MODE_COLON_FILE = 64
+} hydra_mode_t;
+
+typedef enum {
+  FORMAT_PLAIN_TEXT,
+  FORMAT_JSONV1,
+  FORMAT_JSONV2,
+  FORMAT_XMLV1
+} output_format_t;
+
 // some structure definitions
 typedef struct {
   pid_t pid;
@@ -210,7 +235,7 @@ typedef struct {
   unsigned long int sent;
   int pass_state;
   int use_count;
-  int done;                     // 0 if active, 1 if finished scanning, 2 if error (for RESTOREFILE), 3 could not be resolved
+  target_state_t done;
   int fail_count;
   int redo_state;
   int redo;
@@ -241,7 +266,7 @@ typedef struct {
 } hydra_brain;
 
 typedef struct {
-  int mode;                     // valid modes: 0 = -l -p, 1 = -l -P, 2 = -L -p, 3 = -L -P, 4 = -l -x, 6 = -L -x, +8 if -e r, +16 if -e n, +32 if -e s, 64 = -C | bit 128 undefined
+  hydra_mode_t mode;
   int loop_mode;                // valid modes: 0 = password, 1 = user
   int ssl;
   int restore;
@@ -255,7 +280,7 @@ typedef struct {
   int exit_found;
   int max_use;
   int cidr;
-  int outfile_format;            // 0 = plain text, 1 = JSONv1, [future --> ]  2 = JSONv2, 3=XMLv1, 4=...
+  output_format_t outfile_format;
   char *login;
   char *loginfile;
   char *pass;
@@ -280,7 +305,6 @@ typedef struct {
 
 // external vars
 extern char HYDRA_EXIT[5];
-
 #if !defined(ANDROID) && !defined(__BIONIC__)
 extern int errno;
 #endif
@@ -323,88 +347,83 @@ int snpdone, snp_is_redo, snpbuflen, snpi, snpj, snpdont;
 
 #include "performance.h"
 
-void help(int ext) {
-  printf("Syntax: hydra [[[-l LOGIN|-L FILE] [-p PASS|-P FILE]] | [-C FILE]] [-e nsr]" " [-o FILE] [-t TASKS] [-M FILE [-T TASKS]] [-w TIME] [-W TIME] [-f] [-s PORT]"
-#ifdef HAVE_MATH_H
-         " [-x MIN:MAX:CHARSET]"
-#endif
-         " [-ISOuvVd46] "
-         //"[server service [OPT]]|"
-         "[service://server[:PORT][/OPT]]\n");
-  printf("\nOptions:\n");
-  if (ext)
-    printf("  -R        restore a previous aborted/crashed session\n");
-  if (ext)
-    printf("  -I        ignore an existing restore file (dont wait 10 seconds)\n");
-#ifdef LIBOPENSSL
-  if (ext)
-    printf("  -S        perform an SSL connect\n");
-#endif
-  if (ext)
-    printf("  -s PORT   if the service is on a different default port, define it here\n");
-  printf("  -l LOGIN or -L FILE  login with LOGIN name, or load several logins from FILE\n");
-  printf("  -p PASS  or -P FILE  try password PASS, or load several passwords from FILE\n");
-#ifdef HAVE_MATH_H
-  if (ext) {
-    printf("  -x MIN:MAX:CHARSET  password bruteforce generation, type \"-x -h\" to get help\n");
-    printf("  -y        disable use of symbols in bruteforce, see above\n");
-  }
-#endif
-  if (ext)
-    printf("  -e nsr    try \"n\" null password, \"s\" login as pass and/or \"r\" reversed login\n");
-  if (ext)
-    printf("  -u        loop around users, not passwords (effective! implied with -x)\n");
-  printf("  -C FILE   colon separated \"login:pass\" format, instead of -L/-P options\n");
-  printf("  -M FILE   list of servers to attack, one entry per line, ':' to specify port\n");
-  if (ext)
-    printf("  -o FILE   write found login/password pairs to FILE instead of stdout\n");
-  if (ext)
-    printf("  -b FORMAT specify the format for the -o FILE: text(default), json, jsonv1\n");
-  if (ext)
-    printf("  -f / -F   exit when a login/pass pair is found (-M: -f per host, -F global)\n");
-  printf("  -t TASKS  run TASKS number of connects in parallel per target (default: %d)\n", TASKS);
-  if (ext)
-    printf("  -T TASKS  run TASKS connects in parallel overall (for -M, default: %d)\n", MAXTASKS);
-  if (ext)
-    printf("  -w / -W TIME  waittime for responses (%d) / between connects per thread (%d)\n", WAITTIME, conwait);
-  if (ext)
-    printf("  -4 / -6   use IPv4 (default) / IPv6 addresses (put always in [] also in -M)\n");
-  if (ext)
-    printf("  -v / -V / -d  verbose mode / show login+pass for each attempt / debug mode \n");
-  if (ext)
-    printf("  -O        use old SSL v2 and v3\n");
-  if (ext)
-    printf("  -q        do not print messages about connection errors\n");
-  printf("  -U        service module usage details\n");
-  if (ext == 0)
-    printf("  -h        more command line options (COMPLETE HELP)\n");
-  printf("  server    the target: DNS, IP or 192.168.0.0/24 (this OR the -M option)\n");
-  printf("  service   the service to crack (see below for supported protocols)\n");
-  printf("  OPT       some service modules support additional input (-U for module help)\n");
+#define PRINT_NORMAL(ext, text, ...) printf(text, ##__VA_ARGS__)
+#define PRINT_EXTEND(ext, text, ...) do { \
+    if (ext) \
+      printf(text, ##__VA_ARGS__); \
+  } while(0)
 
-  printf("\nSupported services: %s\n", SERVICES);
-  printf("\n%s is a tool to guess/crack valid login/password pairs. Licensed under AGPL\nv3.0. The newest version is always available at %s\n", PROGRAM, RESOURCE);
-  printf("Don't use in military or secret service organizations, or for illegal purposes.\n");
+
+int inline check_flag(int value, int flag) {
+  return (value & flag) == flag;
+}
+
+void help(int ext) {
+  PRINT_NORMAL(ext, "Syntax: hydra [[[-l LOGIN|-L FILE] [-p PASS|-P FILE]] | [-C FILE]] [-e nsr]"
+                    " [-o FILE] [-t TASKS] [-M FILE [-T TASKS]] [-w TIME] [-W TIME] [-f] [-s PORT]"
+#ifdef HAVE_MATH_H
+                    " [-x MIN:MAX:CHARSET]"
+#endif
+                    " [-ISOuvVd46] "
+                    //"[server service [OPT]]|"
+                    "[service://server[:PORT][/OPT]]\n");
+  PRINT_NORMAL(ext, "\nOptions:\n");
+  PRINT_EXTEND(ext, "  -R        restore a previous aborted/crashed session\n"
+                    "  -I        ignore an existing restore file (dont wait 10 seconds)\n"
+#ifdef LIBOPENSSL
+                    "  -S        perform an SSL connect\n"
+#endif
+                    "  -s PORT   if the service is on a different default port, define it here\n");
+  PRINT_NORMAL(ext, "  -l LOGIN or -L FILE  login with LOGIN name, or load several logins from FILE\n"
+                    "  -p PASS  or -P FILE  try password PASS, or load several passwords from FILE\n");
+  PRINT_EXTEND(ext,
+#ifdef HAVE_MATH_H
+                    "  -x MIN:MAX:CHARSET  password bruteforce generation, type \"-x -h\" to get help\n"
+                    "  -y        disable use of symbols in bruteforce, see above\n"
+#endif
+                    "  -e nsr    try \"n\" null password, \"s\" login as pass and/or \"r\" reversed login\n"
+                    "  -u        loop around users, not passwords (effective! implied with -x)\n");
+  PRINT_NORMAL(ext, "  -C FILE   colon separated \"login:pass\" format, instead of -L/-P options\n"
+                    "  -M FILE   list of servers to attack, one entry per line, ':' to specify port\n");
+  PRINT_EXTEND(ext, "  -o FILE   write found login/password pairs to FILE instead of stdout\n"
+                    "  -b FORMAT specify the format for the -o FILE: text(default), json, jsonv1\n"
+                    "  -f / -F   exit when a login/pass pair is found (-M: -f per host, -F global)\n");
+  PRINT_NORMAL(ext, "  -t TASKS  run TASKS number of connects in parallel per target (default: %d)\n", TASKS);
+  PRINT_EXTEND(ext, "  -T TASKS  run TASKS connects in parallel overall (for -M, default: %d)\n"
+                    "  -w / -W TIME  waittime for responses (%d) / between connects per thread (%d)\n"
+                    "  -4 / -6   use IPv4 (default) / IPv6 addresses (put always in [] also in -M)\n"
+                    "  -v / -V / -d  verbose mode / show login+pass for each attempt / debug mode \n"
+                    "  -O        use old SSL v2 and v3\n"
+                    "  -q        do not print messages about connection errors\n",
+               MAXTASKS, WAITTIME, conwait
+               );
+  PRINT_NORMAL(ext, "  -U        service module usage details\n"
+                    "  -h        more command line options (COMPLETE HELP)\n"
+                    "  server    the target: DNS, IP or 192.168.0.0/24 (this OR the -M option)\n"
+                    "  service   the service to crack (see below for supported protocols)\n"
+                    "  OPT       some service modules support additional input (-U for module help)\n");
+  PRINT_NORMAL(ext, "\nSupported services: %s\n"
+                    "\n%s is a tool to guess/crack valid login/password pairs. Licensed under AGPL\n"
+                    "v3.0. The newest version is always available at %s\n"
+                    "Don't use in military or secret service organizations, or for illegal purposes.\n",
+               SERVICES, PROGRAM, RESOURCE
+               );
+
   if (ext && strlen(unsupported) > 0) {
     if (unsupported[strlen(unsupported) - 1] == ' ')
       unsupported[strlen(unsupported) - 1] = 0;
     printf("These services were not compiled in: %s.\n", unsupported);
   }
-  if (ext) {
-    printf("\nUse HYDRA_PROXY_HTTP or HYDRA_PROXY environment variables for a proxy setup.\n");
-    printf("E.g. %% export HYDRA_PROXY=socks5://l:p@127.0.0.1:9150 (or: socks4:// connect://)\n");
-    printf("     %% export HYDRA_PROXY=connect_and_socks_proxylist.txt  (up to 64 entries)\n");
-    printf("     %% export HYDRA_PROXY_HTTP=http://login:pass@proxy:8080\n");
-    printf("     %% export HYDRA_PROXY_HTTP=proxylist.txt  (up to 64 entries)\n");
-  }
-
-  printf("\nExample%s:%s  hydra -l user -P passlist.txt ftp://192.168.0.1\n", ext == 0 ? "" : "s", ext == 0 ? "" : "\n");
-  if (ext) {
-    printf("  hydra -L userlist.txt -p defaultpw imap://192.168.0.1/PLAIN\n");
-    printf("  hydra -C defaults.txt -6 pop3s://[2001:db8::1]:143/TLS:DIGEST-MD5\n");
-    printf("  hydra -l admin -p password ftp://[192.168.0.0/24]/\n");
-    printf("  hydra -L logins.txt -P pws.txt -M targets.txt ssh\n");
-  }
+  PRINT_EXTEND(ext, "\nUse HYDRA_PROXY_HTTP or HYDRA_PROXY environment variables for a proxy setup.\n"
+                    "E.g. %% export HYDRA_PROXY=socks5://l:p@127.0.0.1:9150 (or: socks4:// connect://)\n"
+                    "     %% export HYDRA_PROXY=connect_and_socks_proxylist.txt  (up to 64 entries)\n"
+                    "     %% export HYDRA_PROXY_HTTP=http://login:pass@proxy:8080\n"
+                    "     %% export HYDRA_PROXY_HTTP=proxylist.txt  (up to 64 entries)\n");
+  PRINT_NORMAL(ext, "\nExample%s:%s  hydra -l user -P passlist.txt ftp://192.168.0.1\n", ext == 0 ? "" : "s", ext == 0 ? "" : "\n");
+  PRINT_EXTEND(ext, "  hydra -L userlist.txt -p defaultpw imap://192.168.0.1/PLAIN\n"
+                    "  hydra -C defaults.txt -6 pop3s://[2001:db8::1]:143/TLS:DIGEST-MD5\n"
+                    "  hydra -l admin -p password ftp://[192.168.0.0/24]/\n"
+                    "  hydra -L logins.txt -P pws.txt -M targets.txt ssh\n");
   exit(-1);
 }
 
@@ -421,9 +440,10 @@ void help_bfg() {
          "Examples:\n"
          "   -x 3:5:a  generate passwords from length 3 to 5 with all lowercase letters\n"
          "   -x 5:8:A1 generate passwords from length 5 to 8 with uppercase and numbers\n"
-         "   -x 1:3:/  generate passwords from length 1 to 3 containing only slashes\n" "   -x 5:5:/%%,.-  generate passwords with length 5 which consists only of /%%,.-\n"
-         "   -x 3:5:aA1 -y generate passwords from length 3 to 5 with a, A and 1 only\n");
-  printf("\nThe bruteforce mode was made by Jan Dlabal, http://houbysoft.com/bfg/\n");
+         "   -x 1:3:/  generate passwords from length 1 to 3 containing only slashes\n"
+         "   -x 5:5:/%%,.-  generate passwords with length 5 which consists only of /%%,.-\n"
+         "   -x 3:5:aA1 -y generate passwords from length 3 to 5 with a, A and 1 only\n"
+         "\nThe bruteforce mode was made by Jan Dlabal, http://houbysoft.com/bfg/\n");
   exit(-1);
 }
 
@@ -734,7 +754,7 @@ void hydra_restore_write(int print_msg) {
     return;
 
   for (i = 0; i < hydra_brains.targets; i++)
-    if (hydra_targets[j]->done != 1 && hydra_targets[j]->done != 3)
+    if (hydra_targets[j]->done != STATE_FINISHED && hydra_targets[j]->done != STATE_UNRESOLVED)
       j++;
   if (j == 0) {
     process_restore = 0;
@@ -776,7 +796,7 @@ void hydra_restore_write(int print_msg) {
   if (hydra_options.colonfile == NULL || hydra_options.colonfile == empty_login)
     fck = fwrite(pass_ptr, hydra_brains.sizepass, 1, f);
   for (j = 0; j < hydra_brains.targets; j++)
-    if (hydra_targets[j]->done != 1) {
+    if (hydra_targets[j]->done != STATE_FINISHED) {
       fck = fwrite(hydra_targets[j], sizeof(hydra_target), 1, f);
       fprintf(f, "%s\n%d\n%d\n", hydra_targets[j]->target == NULL ? "" : hydra_targets[j]->target, (int) (hydra_targets[j]->login_ptr - login_ptr),
               (int) (hydra_targets[j]->pass_ptr - pass_ptr));
@@ -927,7 +947,7 @@ void hydra_restore_read() {
   fck = (int) fread(login_ptr, hydra_brains.sizelogin, 1, f);
   if (debug)
     printf("[DEBUG] reading restore file: Step 9 complete\n");
-  if ((hydra_options.mode & 64) != 64) {        // NOT colonfile mode
+  if (!check_flag(hydra_options.mode, MODE_COLON_FILE)) {        // NOT colonfile mode
     pass_ptr = malloc(hydra_brains.sizepass);
     fck = (int) fread(pass_ptr, hydra_brains.sizepass, 1, f);
   } else {                      // colonfile mode
@@ -1282,12 +1302,12 @@ static const struct {
 
 void hydra_service_init(int target_no) {
   int x = 99;
-  int i = 0;
+  int i;
   hydra_target* t = hydra_targets[target_no];
   char* miscptr = hydra_options.miscptr;
   FILE* ofp = hydra_brains.ofp;
 
-  for (i = 0; i < sizeof(services) / sizeof(services[0]); i++) {
+  for (i = 0; x == 99 && i < sizeof(services) / sizeof(services[0]); i++) {
       if (strcmp(hydra_options.service, services[i].name) == 0) {
           if (services[i].init) {
               x = services[i].init(t->ip, -1, options, miscptr, ofp, t->port, t->target);
@@ -1295,7 +1315,6 @@ void hydra_service_init(int target_no) {
           }
       }
   }
-  // ADD NEW SERVICES HERE
 
   // dirty workaround here:
 #ifdef LIBSSH
@@ -1303,19 +1322,16 @@ void hydra_service_init(int target_no) {
     x = service_ssh_init(t->ip, -1, options, login_ptr, ofp, t->port, t->target);
 #endif
 
-  if (x == 0 || x == 99) {
-      return;
+  if (x != 0 && x != 99) {
+    if (x > 0 && x < 4)
+      hydra_targets[target_no]->done = x;
+    else
+      hydra_targets[target_no]->done = STATE_ERROR;
+    hydra_brains.finished++;
+    if (hydra_brains.targets == 1)
+      exit(-1);
   }
-
-  if (x > 0 && x < 4)
-    hydra_targets[target_no]->done = x;
-  else
-    hydra_targets[target_no]->done = 2;
-  hydra_brains.finished++;
-  if (hydra_brains.targets == 1)
-    exit(-1);
 }
-
 
 int hydra_spawn_head(int head_no, int target_no) {
   int i;
@@ -1572,7 +1588,7 @@ void hydra_increase_fail_count(int target_no, int head_no) {
         k++;
     if (k <= 1) {
       // we need to put this in a list, otherwise we fail one login+pw test
-      if (hydra_targets[target_no]->done == 0
+      if (hydra_targets[target_no]->done == STATE_ACTIVE
           && hydra_targets[target_no]->redo <= hydra_options.max_use * 2
           && ((hydra_heads[head_no]->current_login_ptr != empty_login && hydra_heads[head_no]->current_pass_ptr != empty_login)
               || (hydra_heads[head_no]->current_login_ptr != NULL && hydra_heads[head_no]->current_pass_ptr != NULL))) {
@@ -1587,11 +1603,11 @@ void hydra_increase_fail_count(int target_no, int head_no) {
         hydra_heads[head_no]->current_pass_ptr = empty_login;
       }
       if (hydra_targets[target_no]->fail_count >= MAXFAIL + hydra_options.tasks * hydra_targets[target_no]->ok) {
-        if (hydra_targets[target_no]->done == 0 && hydra_options.max_use == hydra_targets[target_no]->failed) {
+        if (hydra_targets[target_no]->done == STATE_ACTIVE && hydra_options.max_use == hydra_targets[target_no]->failed) {
           if (hydra_targets[target_no]->ok == 1)
-            hydra_targets[target_no]->done = 2; // mark target as done by errors
+            hydra_targets[target_no]->done = STATE_ERROR; // mark target as done by errors
           else
-            hydra_targets[target_no]->done = 3; // mark target as done by unable to connect
+            hydra_targets[target_no]->done = STATE_UNRESOLVED; // mark target as done by unable to connect
           hydra_brains.finished++;
           fprintf(stderr, "[ERROR] Too many connect errors to target, disabling %s://%s%s%s:%d\n", hydra_options.service, hydra_targets[target_no]->ip[0] == 16
                   && index(hydra_targets[target_no]->target, ':') != NULL ? "[" : "", hydra_targets[target_no]->target, hydra_targets[target_no]->ip[0] == 16
@@ -1604,7 +1620,7 @@ void hydra_increase_fail_count(int target_no, int head_no) {
       }                         // we keep the last one alive as long as it make sense
     } else {
       // we need to put this in a list, otherwise we fail one login+pw test
-      if (hydra_targets[target_no]->done == 0
+      if (hydra_targets[target_no]->done == STATE_ACTIVE
           && hydra_targets[target_no]->redo <= hydra_options.max_use * 2
           && ((hydra_heads[head_no]->current_login_ptr != empty_login && hydra_heads[head_no]->current_pass_ptr != empty_login)
               || (hydra_heads[head_no]->current_login_ptr != NULL && hydra_heads[head_no]->current_pass_ptr != NULL))) {
@@ -1699,8 +1715,8 @@ int hydra_send_next_pair(int target_no, int head_no) {
     snpdone = 1;
   } else {
     if (hydra_targets[target_no]->sent >= hydra_brains.todo + hydra_targets[target_no]->redo) {
-      if (hydra_targets[target_no]->done == 0) {
-        hydra_targets[target_no]->done = 1;
+      if (hydra_targets[target_no]->done == STATE_ACTIVE) {
+        hydra_targets[target_no]->done = STATE_FINISHED;
         hydra_brains.finished++;
         if (verbose)
           printf("[STATUS] attack finished for %s (waiting for children to complete tests)\n", hydra_targets[target_no]->target);
@@ -1740,8 +1756,8 @@ int hydra_send_next_pair(int target_no, int head_no) {
         snpdone = 1;
       } else {
         // if a pair does not complete after this point it is lost
-        if (hydra_targets[target_no]->done == 0) {
-          hydra_targets[target_no]->done = 1;
+        if (hydra_targets[target_no]->done == STATE_ACTIVE) {
+          hydra_targets[target_no]->done = STATE_FINISHED;
           hydra_brains.finished++;
           if (verbose)
             printf("[STATUS] attack finished for %s (waiting for children to complete tests)\n", hydra_targets[target_no]->target);
@@ -1750,7 +1766,7 @@ int hydra_send_next_pair(int target_no, int head_no) {
         return -1;
       }
     } else {                    // normale state, no redo
-      if (hydra_targets[target_no]->done) {
+      if (hydra_targets[target_no]->done != STATE_ACTIVE) {
         loop_cnt = 0;
         return -1;              // head will be disabled by main while()
       }
@@ -1799,7 +1815,7 @@ int hydra_send_next_pair(int target_no, int head_no) {
           }
           // now we handle the -C -l/-L -p/-P data
           if (hydra_targets[target_no]->pass_state == 3 && snpdone == 0) {
-            if ((hydra_options.mode & 64) == 64) {      // colon mode
+            if (check_flag(hydra_options.mode, MODE_COLON_FILE)) {      // colon mode
               hydra_heads[head_no]->current_login_ptr = hydra_targets[target_no]->login_ptr;
               hydra_heads[head_no]->current_pass_ptr = hydra_targets[target_no]->pass_ptr;
               hydra_targets[target_no]->login_no++;
@@ -1868,17 +1884,17 @@ int hydra_send_next_pair(int target_no, int head_no) {
         if (hydra_targets[target_no]->pass_no < hydra_brains.countpass) {
           hydra_heads[head_no]->current_login_ptr = hydra_targets[target_no]->login_ptr;
           if (hydra_targets[target_no]->pass_state == 0) {
-            if ((hydra_options.mode & 4) == 4)
+            if (check_flag(hydra_options.mode, MODE_PASSWORD_BRUTE))
               hydra_heads[head_no]->current_pass_ptr = strdup(hydra_heads[head_no]->current_login_ptr);
             else
               hydra_heads[head_no]->current_pass_ptr = hydra_heads[head_no]->current_login_ptr;
           } else if (hydra_targets[target_no]->pass_state == 1) {
-            if ((hydra_options.mode & 4) == 4)
+            if (check_flag(hydra_options.mode, MODE_PASSWORD_BRUTE))
               hydra_heads[head_no]->current_pass_ptr = strdup(empty_login);
             else
               hydra_heads[head_no]->current_pass_ptr = empty_login;
           } else if (hydra_targets[target_no]->pass_state == 2) {
-            if ((hydra_options.mode & 4) == 4)
+            if (check_flag(hydra_options.mode, MODE_PASSWORD_BRUTE))
               hydra_heads[head_no]->current_pass_ptr = strdup(hydra_reverse_login(head_no, hydra_heads[head_no]->current_login_ptr));
             else
               hydra_heads[head_no]->current_pass_ptr = hydra_reverse_login(head_no, hydra_heads[head_no]->current_login_ptr);
@@ -1908,7 +1924,7 @@ int hydra_send_next_pair(int target_no, int head_no) {
               if (snpdont) {
                 hydra_targets[target_no]->pass_ptr = pass_ptr;
               } else {
-                if ((hydra_options.mode & 4) == 4) {    // bfg mode
+                if (check_flag(hydra_options.mode, MODE_PASSWORD_BRUTE)) {
 #ifndef HAVE_MATH_H
                   sleep(1);
 #else
@@ -1966,8 +1982,8 @@ int hydra_send_next_pair(int target_no, int head_no) {
   if (!snpdone || hydra_targets[target_no]->skipcnt >= hydra_brains.countlogin) {
     fck = write(hydra_heads[head_no]->sp[0], HYDRA_EXIT, sizeof(HYDRA_EXIT));
     if (hydra_targets[target_no]->use_count <= 1) {
-      if (hydra_targets[target_no]->done == 0) {
-        hydra_targets[target_no]->done = 1;
+      if (hydra_targets[target_no]->done == STATE_ACTIVE) {
+        hydra_targets[target_no]->done = STATE_FINISHED;
         hydra_brains.finished++;
         if (verbose)
           printf("[STATUS] attack finished for %s (waiting for children to complete tests)\n", hydra_targets[target_no]->target);
@@ -1989,7 +2005,7 @@ int hydra_send_next_pair(int target_no, int head_no) {
         if (debug)
           printf("[DEBUG] double found for %s == %s, skipping\n", hydra_heads[head_no]->current_login_ptr, hydra_targets[target_no]->skiplogin[snpi - 1]);
         // only if -l/L -p/P with -u and if loginptr was not justed increased
-        if ((hydra_options.mode & 64) != 64 && hydra_options.loop_mode == 0 && hydra_targets[target_no]->pass_no > 0) { // -l -P (not! -u)
+        if (!check_flag(hydra_options.mode, MODE_COLON_FILE) && hydra_options.loop_mode == 0 && hydra_targets[target_no]->pass_no > 0) { // -l -P (not! -u)
           // increase login_ptr to next
           hydra_targets[target_no]->login_no++;
           if (hydra_targets[target_no]->login_no < hydra_brains.countlogin) {
@@ -2064,7 +2080,7 @@ void hydra_skip_user(int target_no, char *username) {
     strcpy(hydra_targets[target_no]->skiplogin[hydra_targets[target_no]->skipcnt], username);
     hydra_targets[target_no]->skipcnt++;
   }
-  if (hydra_options.loop_mode == 0 && (hydra_options.mode & 64) != 64) {
+  if (hydra_options.loop_mode == 0 && !check_flag(hydra_options.mode, MODE_COLON_FILE)) {
     if (memcmp(username, hydra_targets[target_no]->login_ptr, strlen(username)) == 0) {
       if (debug)
         printf("[DEBUG] skipping username %s\n", username);
@@ -2117,7 +2133,7 @@ int hydra_select_target() {
   int target_no = -1, i, j = -1000;
 
   for (i = 0; i < hydra_brains.targets; i++)
-    if (hydra_targets[i]->use_count < hydra_options.tasks && hydra_targets[i]->done == 0)
+    if (hydra_targets[i]->use_count < hydra_options.tasks && hydra_targets[i]->done == STATE_ACTIVE)
       if (j < hydra_options.tasks - hydra_targets[i]->failed - hydra_targets[i]->use_count) {
         target_no = i;
         j = hydra_options.tasks - hydra_targets[i]->failed - hydra_targets[i]->use_count;
@@ -2367,7 +2383,7 @@ int main(int argc, char *argv[]) {
   hydra_options.passfile = NULL;
   hydra_options.tasks = TASKS;
   hydra_options.max_use = MAXTASKS;
-  hydra_options.outfile_format = 0;
+  hydra_options.outfile_format = FORMAT_PLAIN_TEXT;
   hydra_brains.ofp = stdout;
   hydra_brains.targets = 1;
   hydra_options.waittime = waittime = WAITTIME;
@@ -2414,15 +2430,15 @@ int main(int argc, char *argv[]) {
         switch (optarg[i]) {
         case 'r':
           hydra_options.try_password_reverse_login = 1;
-          hydra_options.mode = hydra_options.mode | 8;
+          hydra_options.mode = hydra_options.mode | MODE_PASSWORD_REVERSE;
           break;
         case 'n':
           hydra_options.try_null_password = 1;
-          hydra_options.mode = hydra_options.mode | 16;
+          hydra_options.mode = hydra_options.mode | MODE_PASSWORD_NULL;
           break;
         case 's':
           hydra_options.try_password_same_as_login = 1;
-          hydra_options.mode = hydra_options.mode | 32;
+          hydra_options.mode = hydra_options.mode | MODE_PASSWORD_SAME;
           break;
         default:
           fprintf(stderr, "[ERROR] unknown mode %c for option -e, only supporting \"n\", \"s\" and \"r\"\n", optarg[i]);
@@ -2442,14 +2458,14 @@ int main(int argc, char *argv[]) {
       break;
     case 'L':
       hydra_options.loginfile = optarg;
-      hydra_options.mode = hydra_options.mode | 2;
+      hydra_options.mode = hydra_options.mode | MODE_LOGIN_LIST;
       break;
     case 'p':
       hydra_options.pass = optarg;
       break;
     case 'P':
       hydra_options.passfile = optarg;
-      hydra_options.mode = hydra_options.mode | 1;
+      hydra_options.mode = hydra_options.mode | MODE_PASSWORD_LIST;
       break;
     case 'f':
       hydra_options.exit_found = 1;
@@ -2464,11 +2480,11 @@ int main(int argc, char *argv[]) {
     case 'b':
       outfile_format_tmp = optarg;
       if (0==strcasecmp(outfile_format_tmp,"text"))
-          hydra_options.outfile_format = 0;
+          hydra_options.outfile_format = FORMAT_PLAIN_TEXT;
       else if (0==strcasecmp(outfile_format_tmp,"json")) // latest json formatting.
-          hydra_options.outfile_format = 1;
+          hydra_options.outfile_format = FORMAT_JSONV1;
       else if (0==strcasecmp(outfile_format_tmp,"jsonv1"))
-          hydra_options.outfile_format = 1;
+          hydra_options.outfile_format = FORMAT_JSONV1;
       else {
         fprintf(stderr, "[ERROR] Output file format must be (text, json, jsonv1)\n");
         exit(-1);
@@ -2480,7 +2496,7 @@ int main(int argc, char *argv[]) {
       break;
     case 'C':
       hydra_options.colonfile = optarg;
-      hydra_options.mode = 64;
+      hydra_options.mode = MODE_COLON_FILE;
       break;
     case 'm':
       hydra_options.miscptr = optarg;
@@ -2526,7 +2542,7 @@ int main(int argc, char *argv[]) {
         help_bfg();
       bf_options.arg = optarg;
       hydra_options.bfg = 1;
-      hydra_options.mode = hydra_options.mode | 4;
+      hydra_options.mode = hydra_options.mode | MODE_PASSWORD_BRUTE;
       hydra_options.loop_mode = 1;
       break;
 #endif
@@ -2572,7 +2588,7 @@ int main(int argc, char *argv[]) {
     bail("You can only use -L OR -l, not both\n");
   if (hydra_options.pass != NULL && hydra_options.passfile != NULL)
     bail("You can only use -P OR -p, not both\n");
-  if (hydra_options.outfile_format != 0 && hydra_options.outfile_ptr == NULL)
+  if (hydra_options.outfile_format != FORMAT_PLAIN_TEXT && hydra_options.outfile_ptr == NULL)
     fprintf(stderr, "[WARNING] output file format specified (-b) - but no output file (-o)\n");
     
   if (hydra_options.restore) {
@@ -3651,7 +3667,7 @@ int main(int argc, char *argv[]) {
       perror("[ERROR] Error creating outputfile");
       exit(-1);
     }
-    if (hydra_options.outfile_format == 1) {  // JSONv1
+    if (hydra_options.outfile_format == FORMAT_JSONV1) {
       fprintf(hydra_brains.ofp, "{ \"generator\": {\n"
               "\t\"software\": \"%s\", \"version\": \"%s\", \"built\": \"%s\",\n"
               "\t\"server\": \"%s\", \"service\": \"%s\", \"jsonoutputversion\": \"1.00\",\n"
@@ -3707,7 +3723,7 @@ int main(int argc, char *argv[]) {
           printf("[failed for %s] ", hydra_targets[i]->target);
         else
           fprintf(stderr, "[ERROR] could not resolve address: %s\n", hydra_targets[i]->target);
-        hydra_targets[i]->done = 3;
+        hydra_targets[i]->done = STATE_UNRESOLVED;
         hydra_brains.finished++;
       }
     } else {
@@ -3729,7 +3745,7 @@ int main(int argc, char *argv[]) {
         if ((strcmp(hydra_options.service, "socks5") == 0) || (strcmp(hydra_options.service, "sip") == 0)) {
           fprintf(stderr, "[ERROR] Target %s resolves to an IPv6 address, however module %s does not support this. Maybe try \"-4\" option. Sending in patches helps.\n",
                   hydra_targets[i]->target, hydra_options.service);
-          hydra_targets[i]->done = 3;
+          hydra_targets[i]->done = STATE_UNRESOLVED;
           hydra_brains.finished++;
         } else {
           hydra_targets[i]->ip[0] = 16;
@@ -3754,7 +3770,7 @@ int main(int argc, char *argv[]) {
           printf("[failed for %s] ", hydra_targets[i]->target);
         else
           fprintf(stderr, "[ERROR] Could not resolve proxy address: %s\n", hydra_targets[i]->target);
-        hydra_targets[i]->done = 3;
+        hydra_targets[i]->done = STATE_UNRESOLVED;
         hydra_brains.finished++;
       }
       freeaddrinfo(res);
@@ -3904,7 +3920,7 @@ int main(int argc, char *argv[]) {
                   printf("[%d][%s] host: %s   login: %s   password: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
                          hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr);
               }
-              if (hydra_options.outfile_format == 1 /* JSONv1 */ && hydra_options.outfile_ptr != NULL && hydra_brains.ofp != NULL) {
+              if (hydra_options.outfile_format == FORMAT_JSONV1 && hydra_options.outfile_ptr != NULL && hydra_brains.ofp != NULL) {
                   fprintf(hydra_brains.ofp, "%s\n\t{\"port\": %d, \"service\": \"%s\", \"host\": \"%s\", \"login\": \"%s\", \"password\": \"%s\"}",
                           hydra_brains.found == 1 ? "" : ",",  // prefix a comma if not first finding
                           hydra_targets[hydra_heads[head_no]->target_no]->port,
@@ -3931,15 +3947,15 @@ int main(int argc, char *argv[]) {
                 fflush(hydra_brains.ofp);
               }
               if (hydra_options.exit_found) {   // option set says quit target after on valid login/pass pair is found
-                if (hydra_targets[hydra_heads[head_no]->target_no]->done == 0) {
-                  hydra_targets[hydra_heads[head_no]->target_no]->done = 1;     // mark target as done
+                if (hydra_targets[hydra_heads[head_no]->target_no]->done == STATE_ACTIVE) {
+                  hydra_targets[hydra_heads[head_no]->target_no]->done = STATE_FINISHED;     // mark target as done
                   hydra_brains.finished++;
                   printf("[STATUS] attack finished for %s (valid pair found)\n", hydra_targets[hydra_heads[head_no]->target_no]->target);
                 }
                 if (hydra_options.exit_found == 2) {
                   for (j = 0; j < hydra_brains.targets; j++)
-                    if (hydra_targets[j]->done == 0) {
-                      hydra_targets[j]->done = 1;
+                    if (hydra_targets[j]->done == STATE_ACTIVE) {
+                      hydra_targets[j]->done = STATE_FINISHED;
                       hydra_brains.finished++;
                     }
                 }
@@ -4077,18 +4093,18 @@ int main(int argc, char *argv[]) {
   j = k = error = 0;
   for (i = 0; i < hydra_brains.targets; i++)
     switch (hydra_targets[i]->done) {
-    case 3:
+    case STATE_UNRESOLVED:
       k++;
       break;
-    case 2:
+    case STATE_ERROR:
       if (hydra_targets[i]->ok == 0)
         k++;
       else
         error++;
       break;
-    case 1:
+    case STATE_FINISHED:
       break;
-    case 0:
+    case STATE_ACTIVE:
       if (hydra_targets[i]->ok == 0)
         k++;
       else
@@ -4158,7 +4174,7 @@ int main(int argc, char *argv[]) {
   // yeah we did it
   printf("%s (%s) finished at %s\n", PROGRAM, RESOURCE, hydra_build_time());
   if (hydra_brains.ofp != NULL && hydra_brains.ofp != stdout) {
-    if (hydra_options.outfile_format == 1 /* JSONv1 */ ) {
+    if (hydra_options.outfile_format == FORMAT_JSONV1) {
       fprintf(hydra_brains.ofp, "\n\t],\n\"success\": %s,\n\"errormessages\": [ %s ],\n\"quantityfound\": %lu   }\n",
               (error ? "false" : "true"), json_error, hydra_brains.found);
     } 
