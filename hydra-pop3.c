@@ -525,9 +525,6 @@ int service_pop3_init(char *ip, int sp, unsigned char options, char *miscptr, FI
   p.disable_tls = 1;
   memcpy(p.ip, ip, 36);
 
-  if (sock >= 0)
-    sock = hydra_disconnect(sock);
-//      usleepn(300);
   if ((options & OPTION_SSL) == 0) {
     if (port != 0)
       myport = port;
