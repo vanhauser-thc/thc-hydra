@@ -338,8 +338,7 @@ void service_xmpp(char *target, char *ip, int sp, unsigned char options, char *m
       do {
         if ((buf = hydra_receive_line(sock)) == NULL) {
           /* no auth method identified */
-          hydra_report(stderr, "[ERROR] no authentication methods can be identified %s\n", buf);
-          free(buf);
+          hydra_report(stderr, "[ERROR] no authentication methods can be identified\n");
           hydra_child_exit(1);
         }
 
