@@ -135,8 +135,6 @@ int service_redis_init(char *ip, int sp, unsigned char options, char *miscptr, F
   char buffer[] = "*1\r\n$4\r\nping\r\n";
 
   hydra_register_socket(sp);
-  if (sock >= 0)
-    sock = hydra_disconnect(sock);
   if ((options & OPTION_SSL) == 0) {
     if (port != 0)
       myport = port;

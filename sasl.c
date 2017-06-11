@@ -308,7 +308,7 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
       currentpos = 0;
     }
     pbuffer++;
-  } while ((pbuffer[0] != '\0') && (pbuffer[0] > 31) && (ind < array_size));
+  } while ((pbuffer[0] > 31) && (ind < array_size));
 //save the latest one
   if (ind < array_size) {
     array[ind] = malloc(currentpos + 1);
