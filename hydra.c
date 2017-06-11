@@ -1944,7 +1944,7 @@ int hydra_send_next_pair(int target_no, int head_no) {
 
             hydra_targets[target_no]->login_no = 0;
             hydra_targets[target_no]->login_ptr = login_ptr;
-          } else if (hydra_targets[target_no]->login_no < hydra_brains.countlogin) {
+          } else {
             hydra_targets[target_no]->login_ptr++;
             while (*hydra_targets[target_no]->login_ptr != 0)
               hydra_targets[target_no]->login_ptr++;
