@@ -1562,26 +1562,22 @@ void hydra_kill_head(int head_no, int killit, int fail) {
 }
 
 void hydra_increase_fail_count(int target_no, int head_no) {
-  int i, k;
+  int i, k, ok, success, tasks, a, b, maxfail;
 
   if (target_no < 0)
     return;
 
+  ok = hydra_targets[target_no]->ok;
+  tasks = hydra_options.tasks;
+  success = tasks - hydra_targets[target_no]->failed;
+  a = tasks <= 4 && ok ? 6 - tasks : 1;
+  b = success < 5 && ok ? 6 - success : 1;
+  maxfail = MAXFAIL + a + b + (ok ? 2 : -2);
+
   hydra_targets[target_no]->fail_count++;
   if (debug)
-    printf("[DEBUG] hydra_increase_fail_count: %d >= %d => disable\n", hydra_targets[target_no]->fail_count,
-           MAXFAIL + (hydra_options.tasks <= 4 && hydra_targets[target_no]->ok ? 6 - hydra_options.tasks : 1) + (hydra_options.tasks - hydra_targets[target_no]->failed < 5
-                                                                                                                 && hydra_targets[target_no]->ok ? 6 - (hydra_options.tasks -
-                                                                                                                                                        hydra_targets
-                                                                                                                                                        [target_no]->failed) : 1)
-           + (hydra_targets[target_no]->ok ? 2 : -2));
-  if (hydra_targets[target_no]->fail_count >=
-      MAXFAIL + (hydra_options.tasks <= 4 && hydra_targets[target_no]->ok ? 6 - hydra_options.tasks : 1) + (hydra_options.tasks - hydra_targets[target_no]->failed < 5
-                                                                                                            && hydra_targets[target_no]->ok ? 6 - (hydra_options.tasks -
-                                                                                                                                                   hydra_targets
-                                                                                                                                                   [target_no]->failed) : 1) +
-      (hydra_targets[target_no]->ok ? 2 : -2)
-    ) {
+    printf("[DEBUG] hydra_increase_fail_count: %d >= %d => disable\n", hydra_targets[target_no]->fail_count, maxfail);
+  if (hydra_targets[target_no]->fail_count >= maxfail) {
     k = 0;
     for (i = 0; i < hydra_options.max_use; i++)
       if (hydra_heads[i]->active >= 0 && hydra_heads[i]->target_no == target_no)
