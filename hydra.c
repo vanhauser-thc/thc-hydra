@@ -3173,7 +3173,7 @@ int main(int argc, char *argv[]) {
         cond = strtok(NULL, ":");
         optional1 = strtok(NULL, "\n");
         if ((variables == NULL) || (strstr(variables, "^USER^") == NULL && strstr(variables, "^PASS^") == NULL)) {
-          fprintf(stderr, "[ERROR] the variables argument needs at least the strings ^USER^ or ^PASS^: %s\n", variables);
+          fprintf(stderr, "[ERROR] the variables argument needs at least the strings ^USER^ or ^PASS^: %s\n", STR_NULL(variables));
           exit(-1);
         }
         if ((url == NULL) || (cond == NULL)) {

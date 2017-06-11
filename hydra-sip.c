@@ -32,7 +32,11 @@ void empty_register(char *buf, char *host, char *lhost, int port, int lport, cha
            "REGISTER sip:%s SIP/2.0\r\n"
            "Via: SIP/2.0/UDP %s:%i\r\n"
            "From: <sip:%s@%s>\r\n"
-           "To: <sip:%s@%s>\r\n" "Call-ID: 1337@%s\r\n" "CSeq: %i REGISTER\r\n" "Content-Length: 0\r\n\r\n", host, lhost, lport, user, host, user, host, host, cseq);
+           "To: <sip:%s@%s>\r\n"
+           "Call-ID: 1337@%s\r\n"
+           "CSeq: %i REGISTER\r\n"
+           "Content-Length: 0\r\n\r\n",
+           host, lhost, lport, user, host, user, host, host, cseq);
 }
 
 int get_sip_code(char *buf) {
@@ -50,7 +54,7 @@ int start_sip(int s, char *ip, char *lip, int port, int lport, unsigned char opt
   char buf[SIP_MAX_BUF];
 
   if (strlen(login = hydra_get_next_login()) == 0)
-    login = NULL;
+    return 3;
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = NULL;
 
