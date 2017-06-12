@@ -1562,17 +1562,19 @@ void hydra_kill_head(int head_no, int killit, int fail) {
 }
 
 void hydra_increase_fail_count(int target_no, int head_no) {
-  int i, k, ok, success, tasks, a, b, maxfail;
+  int i, k, ok, maxfail = 0;
 
   if (target_no < 0)
     return;
 
   ok = hydra_targets[target_no]->ok;
-  tasks = hydra_options.tasks;
-  success = tasks - hydra_targets[target_no]->failed;
-  a = tasks < 5 && ok ? 6 - tasks : 1;
-  b = success < 5 && ok ? 6 - success : 1;
-  maxfail = MAXFAIL + a + b + (ok ? 2 : -2);
+  if (ok) {
+      const int tasks = hydra_options.tasks;
+      const int success = tasks - hydra_targets[target_no]->failed;
+      const int t = tasks < 5 && ok ? 6 - tasks : 1;
+      const int s = success < 5 && ok ? 6 - success : 1;
+      maxfail = MAXFAIL + t + s + (ok ? 2 : -2);
+  }
 
   hydra_targets[target_no]->fail_count++;
   if (debug)
