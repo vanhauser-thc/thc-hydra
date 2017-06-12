@@ -1567,13 +1567,12 @@ void hydra_increase_fail_count(int target_no, int head_no) {
   if (target_no < 0)
     return;
 
-  ok = hydra_targets[target_no]->ok;
-  if (ok) {
+  if (hydra_targets[target_no]->ok) {
       const int tasks = hydra_options.tasks;
       const int success = tasks - hydra_targets[target_no]->failed;
-      const int t = tasks < 5 && ok ? 6 - tasks : 1;
-      const int s = success < 5 && ok ? 6 - success : 1;
-      maxfail = MAXFAIL + t + s + (ok ? 2 : -2);
+      const int t = tasks < 5 ? 6 - tasks : 1;
+      const int s = success < 5 ? 6 - success : 1;
+      maxfail = MAXFAIL + t + s + 2;
   }
 
   hydra_targets[target_no]->fail_count++;
