@@ -1570,7 +1570,7 @@ void hydra_increase_fail_count(int target_no, int head_no) {
   ok = hydra_targets[target_no]->ok;
   tasks = hydra_options.tasks;
   success = tasks - hydra_targets[target_no]->failed;
-  a = tasks <= 4 && ok ? 6 - tasks : 1;
+  a = tasks < 5 && ok ? 6 - tasks : 1;
   b = success < 5 && ok ? 6 - success : 1;
   maxfail = MAXFAIL + a + b + (ok ? 2 : -2);
 
