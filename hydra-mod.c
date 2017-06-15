@@ -514,10 +514,9 @@ int internal__hydra_connect_to_ssl(int socket, char *hostname) {
         return -1;
       }
     } else {
-//    if ((sslContext = SSL_CTX_new(SSLv23_client_method())) == NULL) {
 #ifndef TLSv1_2_client_method
   #if OPENSSL_VERSION_NUMBER < 0x10100000L
-    #define TLSv1_2_client_method TLSv1_client_method
+    #define TLSv1_2_client_method TLSv1_2_client_method
   #else
     #define TLSv1_2_client_method TLS_client_method
   #endif
