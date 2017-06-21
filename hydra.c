@@ -448,8 +448,6 @@ void help_bfg() {
 }
 
 void module_usage() {
-  int find = 0;
-
   if (!hydra_options.service) {
     printf("The Module %s does not need or support optional parameters\n", hydra_options.service);
     exit(0);
@@ -458,100 +456,100 @@ void module_usage() {
   printf("\nHelp for module %s:\n============================================================================\n", hydra_options.service);
   if ((strcmp(hydra_options.service, "oracle") == 0) || (strcmp(hydra_options.service, "ora") == 0)) {
     printf("Module oracle / ora is optionally taking the ORACLE SID, default is \"ORCL\"\n\n");
-    find = 1;
+    return;
   }
   if ((strcmp(hydra_options.service, "oracle-listener") == 0) || (strcmp(hydra_options.service, "tns") == 0)) {
     printf("Module oracle-listener / tns is optionally taking the mode the password is stored as, could be PLAIN (default) or CLEAR\n\n");
-    find = 1;
+    return;
   }
   if (strcmp(hydra_options.service, "cvs") == 0) {
     printf("Module cvs is optionally taking the repository name to attack, default is \"/root\"\n\n");
-    find = 1;
+    return;
   }
   if (strcmp(hydra_options.service, "xmpp") == 0) {
     printf("Module xmpp is optionally taking one authentication type of:\n"
            "  LOGIN (default), PLAIN, CRAM-MD5, DIGEST-MD5, SCRAM-SHA1\n\n"
            "Note, the target passed should be a fdqn as the value is used in the Jabber init request, example: hermes.jabber.org\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "pop3") == 0)) {
+  if (strcmp(hydra_options.service, "pop3") == 0) {
     printf("Module pop3 is optionally taking one authentication type of:\n"
            "  CLEAR (default), LOGIN, PLAIN, CRAM-MD5, CRAM-SHA1,\n"
            "  CRAM-SHA256, DIGEST-MD5, NTLM.\n" "Additionally TLS encryption via STLS can be enforced with the TLS option.\n\n" "Example: pop3://target/TLS:PLAIN\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "rdp") == 0)) {
+  if (strcmp(hydra_options.service, "rdp") == 0) {
     printf("Module rdp is optionally taking the windows domain name.\n" "For example:\nhydra rdp://192.168.0.1/firstdomainname -l john -p doe\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "s7-300") == 0)) {
+  if (strcmp(hydra_options.service, "s7-300") == 0) {
     printf("Module S7-300 is for a special Siemens PLC. It either requires only a password or no authentication, so just use the -p or -P option.\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "nntp") == 0)) {
+  if (strcmp(hydra_options.service, "nntp") == 0) {
     printf("Module nntp is optionally taking one authentication type of:\n" "  USER (default), LOGIN, PLAIN, CRAM-MD5, DIGEST-MD5, NTLM\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "imap") == 0)) {
+  if (strcmp(hydra_options.service, "imap") == 0) {
     printf("Module imap is optionally taking one authentication type of:\n"
            "  CLEAR or APOP (default), LOGIN, PLAIN, CRAM-MD5, CRAM-SHA1,\n"
            "  CRAM-SHA256, DIGEST-MD5, NTLM\n" "Additionally TLS encryption via STARTTLS can be enforced with the TLS option.\n\n" "Example: imap://target/TLS:PLAIN\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "smtp-enum")) == 0) {
+  if (strcmp(hydra_options.service, "smtp-enum") == 0) {
     printf("Module smtp-enum is optionally taking one SMTP command of:\n\n"
            "VRFY (default), EXPN, RCPT (which will connect using \"root\" account)\n"
            "login parameter is used as username and password parameter as the domain name\n"
            "For example to test if john@localhost exists on 192.168.0.1:\n" "hydra smtp-enum://192.168.0.1/vrfy -l john -p localhost\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "smtp")) == 0) {
+  if (strcmp(hydra_options.service, "smtp") == 0) {
     printf("Module smtp is optionally taking one authentication type of:\n"
            "  LOGIN (default), PLAIN, CRAM-MD5, DIGEST-MD5, NTLM\n\n"
            "Additionally TLS encryption via STARTTLS can be enforced with the TLS option.\n\n" "Example: smtp://target/TLS:PLAIN\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "svn") == 0)) {
+  if (strcmp(hydra_options.service, "svn") == 0) {
     printf("Module svn is optionally taking the repository name to attack, default is \"trunk\"\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "ncp") == 0)) {
+  if (strcmp(hydra_options.service, "ncp") == 0) {
     printf("Module ncp is optionally taking the full context, for example \".O=cx\"\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "firebird") == 0)) {
+  if (strcmp(hydra_options.service, "firebird") == 0) {
     printf("Module firebird is optionally taking the database path to attack,\n" "default is \"C:\\Program Files\\Firebird\\Firebird_1_5\\security.fdb\"\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "mysql") == 0)) {
+  if (strcmp(hydra_options.service, "mysql") == 0) {
     printf("Module mysql is optionally taking the database to attack, default is \"mysql\"\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "irc") == 0)) {
+  if (strcmp(hydra_options.service, "irc") == 0) {
     printf("Module irc is optionally taking the general server password, if the server is requiring one\n" "and none is passed the password from -p/-P will be used\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "postgres") == 0)) {
+  if (strcmp(hydra_options.service, "postgres") == 0) {
     printf("Module postgres is optionally taking the database to attack, default is \"template1\"\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "telnet") == 0)) {
+  if (strcmp(hydra_options.service, "telnet") == 0) {
     printf("Module telnet is optionally taking the string which is displayed after\n"
            "a successful login (case insensitive), use if the default in the telnet\n" "module produces too many false positives\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "sapr3") == 0)) {
+  if (strcmp(hydra_options.service, "sapr3") == 0) {
     printf("Module sapr3 requires the client id, a number between 0 and 99\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "sshkey") == 0)) {
+  if (strcmp(hydra_options.service, "sshkey") == 0) {
     printf("Module sshkey does not provide additional options, although the semantic for\n"
            "options -p and -P is changed:\n"
            "  -p expects a path to an unencrypted private key in PEM format.\n"
            "  -P expects a filename containing a list of path to some unencrypted\n" "     private keys in PEM format.\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "cisco-enable") == 0)) {
+  if (strcmp(hydra_options.service, "cisco-enable") == 0) {
     printf("Module cisco-enable is optionally taking the logon password for the cisco device\n"
            "Note: if AAA authentication is used, use the -l option for the username\n"
            "and the optional parameter for the password of the user.\n"
@@ -559,16 +557,16 @@ void module_usage() {
            "  hydra -P pass.txt target cisco-enable  (direct console access)\n"
            "  hydra -P pass.txt -m cisco target cisco-enable  (Logon password cisco)\n"
            "  hydra -l foo -m bar -P pass.txt target cisco-enable  (AAA Login foo, password bar)\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "cisco") == 0)) {
+  if (strcmp(hydra_options.service, "cisco") == 0) {
     printf("Module cisco is optionally taking the keyword ENTER, it then sends an initial\n" "ENTER when connecting to the service.\n");
-    find = 1;
+    return;
   }
-  if (!find && ((strcmp(hydra_options.service, "ldap2") == 0)
-                || (strcmp(hydra_options.service, "ldap3") == 0)
-                || (strcmp(hydra_options.service, "ldap3-crammd5") == 0)
-                || (strcmp(hydra_options.service, "ldap3-digestmd5") == 0))
+  if ((strcmp(hydra_options.service, "ldap2") == 0)
+      || (strcmp(hydra_options.service, "ldap3") == 0)
+      || (strcmp(hydra_options.service, "ldap3-crammd5") == 0)
+      || (strcmp(hydra_options.service, "ldap3-digestmd5") == 0)
     ) {
     printf("Module %s is optionally taking the DN (depending of the auth method choosed\n"
            "Note: you can also specify the DN as login when Simple auth method is used).\n"
@@ -578,9 +576,9 @@ void module_usage() {
            "So don't forget to set empty string as user/pass to test all modes.\n"
            "Hint: to authenticate to a windows active directy ldap, this is usually\n"
            " cn=^USER^,cn=users,dc=foo,dc=bar,dc=com for domain foo.bar.com\n\n", hydra_options.service);
-    find = 1;
+    return;
   }
-  if (!find && ((strcmp(hydra_options.service, "smb") == 0) || (strcmp(hydra_options.service, "smbnt") == 0))) {
+  if ((strcmp(hydra_options.service, "smb") == 0) || (strcmp(hydra_options.service, "smbnt") == 0)) {
     printf("Module smb default value is set to test both local and domain account, using a simple password with NTLM dialect.\n"
            "Note: you can set the group type using LOCAL or DOMAIN keyword\n"
            "      or other_domain:{value} to specify a trusted domain.\n"
@@ -591,15 +589,15 @@ void module_usage() {
            "      hydra smb://microsoft.com  -l admin -p tooeasy -m \"local lmv2\"\n"
            "      hydra smb://microsoft.com  -l admin -p D5731CFC6C2A069C21FD0D49CAEBC9EA:2126EE7712D37E265FD63F2C84D2B13D::: -m \"local hash\"\n"
            "      hydra smb://microsoft.com  -l admin -p tooeasy -m \"other_domain:SECONDDOMAIN\"\n\n");
-    find = 1;
+    return;
   }
-  if (!find && ((strcmp(hydra_options.service, "http-get-form") == 0)
-                || (strcmp(hydra_options.service, "https-get-form") == 0)
-                || (strcmp(hydra_options.service, "http-post-form") == 0)
-                || (strcmp(hydra_options.service, "https-post-form") == 0)
-                || (strncmp(hydra_options.service, "http-form", 9) == 0)
-                || (strncmp(hydra_options.service, "https-form", 10) == 0)
-      )
+  if ((strcmp(hydra_options.service, "http-get-form") == 0)
+      || (strcmp(hydra_options.service, "https-get-form") == 0)
+      || (strcmp(hydra_options.service, "http-post-form") == 0)
+      || (strcmp(hydra_options.service, "https-post-form") == 0)
+      || (strncmp(hydra_options.service, "http-form", 9) == 0)
+      || (strncmp(hydra_options.service, "https-form", 10) == 0)
+      
     ) {
     printf("Module %s requires the page and the parameters for the web form.\n\n"
            "By default this module is configured to follow a maximum of 5 redirections in\n"
@@ -635,21 +633,21 @@ void module_usage() {
            " \"/:user=^USER&pass=^PASS^:failed:H=Authorization\\: Basic dT1w:H=Cookie\\: sessid=aaaa:h=X-User\\: ^USER^:H=User-Agent\\: wget\"\n"
            " \"/exchweb/bin/auth/owaauth.dll:destination=http%%3A%%2F%%2F<target>%%2Fexchange&flags=0&username=<domain>%%5C^USER^&password=^PASS^&SubmitCreds=x&trusted=0:reason=:C=/exchweb\"\n",
            hydra_options.service);
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "http-proxy") == 0)) {
+  if (strcmp(hydra_options.service, "http-proxy") == 0) {
     printf("Module http-proxy is optionally taking the page to authenticate at.\n"
            "Default is http://www.microsoft.com/)\n" "Basic, DIGEST-MD5 and NTLM are supported and negotiated automatically.\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strcmp(hydra_options.service, "http-proxy-urlenum") == 0)) {
+  if (strcmp(hydra_options.service, "http-proxy-urlenum") == 0) {
     printf("Module http-proxy-urlenum only uses the -L option, not -x or -p/-P option.\n"
            "The -L loginfile must contain the URL list to try through the proxy.\n"
            "The proxy credentials cann be put as the optional parameter, e.g.\n"
            "   hydra -L urllist.txt -s 3128 target.com http-proxy-urlenum user:pass\n" "   hydra -L urllist.txt http-proxy-urlenum://target.com:3128/user:pass\n\n");
-    find = 1;
+    return;
   }
-  if (!find && (strncmp(hydra_options.service, "snmp", 4) == 0)) {
+  if (strncmp(hydra_options.service, "snmp", 4) == 0) {
     printf("Module snmp is optionally taking the following parameters:\n");
     printf("   READ  perform read requests (default)\n");
     printf("   WRITE perform write requests\n");
@@ -667,20 +665,19 @@ void module_usage() {
     printf("To combine the options, use colons (\":\"), e.g.:\n");
     printf("   hydra -L user.txt -P pass.txt -m 3:SHA:AES:READ target.com snmp\n");
     printf("   hydra -P pass.txt -m 2 target.com snmp\n");
-    find = 1;
+    return;
   }
-  if (!find && ((strcmp(hydra_options.service, "http-get") == 0)
-                || (strcmp(hydra_options.service, "https-get") == 0)
-                || (strcmp(hydra_options.service, "http-post") == 0)
-                || (strcmp(hydra_options.service, "https-post") == 0))
+  if ((strcmp(hydra_options.service, "http-get") == 0)
+      || (strcmp(hydra_options.service, "https-get") == 0)
+      || (strcmp(hydra_options.service, "http-post") == 0)
+      || (strcmp(hydra_options.service, "https-post") == 0)
     ) {
     printf("Module %s requires the page to authenticate.\n"
            "For example:  \"/secret\" or \"http://bla.com/foo/bar\" or \"https://test.com:8080/members\"\n\n", hydra_options.service);
-    find = 1;
+    return;
   }
 
-  if (!find)                    // this is also printed if the module does not exist at all
-    printf("The Module %s does not need or support optional parameters\n", hydra_options.service);
+  printf("The Module %s does not need or support optional parameters\n", hydra_options.service);
   exit(0);
 }
 
