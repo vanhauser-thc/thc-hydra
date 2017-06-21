@@ -655,142 +655,20 @@ void usage_http(const char* service) {
 }
 
 void module_usage() {
+  int i;
   if (!hydra_options.service) {
     printf("The Module %s does not need or support optional parameters\n", hydra_options.service);
     exit(0);
   }
 
   printf("\nHelp for module %s:\n============================================================================\n", hydra_options.service);
-  if ((strcmp(hydra_options.service, "oracle") == 0) || (strcmp(hydra_options.service, "ora") == 0)) {
-    usage_oracle(hydra_options.service);
-    return;
-  }
-  if ((strcmp(hydra_options.service, "oracle-listener") == 0) || (strcmp(hydra_options.service, "tns") == 0)) {
-    usage_oracle_listener(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "cvs") == 0) {
-    usage_cvs(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "xmpp") == 0) {
-    usage_xmpp(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "pop3") == 0) {
-    usage_pop3(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "rdp") == 0) {
-    usage_rdp(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "s7-300") == 0) {
-    usage_s7_300(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "nntp") == 0) {
-    usage_nntp(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "imap") == 0) {
-    usage_imap(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "smtp-enum") == 0) {
-    usage_smtp_enum(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "smtp") == 0) {
-    usage_smtp(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "svn") == 0) {
-    usage_svn(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "ncp") == 0) {
-    usage_ncp(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "firebird") == 0) {
-    usage_firebird(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "mysql") == 0) {
-    usage_mysql(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "irc") == 0) {
-    usage_irc(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "postgres") == 0) {
-    usage_postgres(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "telnet") == 0) {
-    usage_telnet(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "sapr3") == 0) {
-    usage_sapr3(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "sshkey") == 0) {
-    usage_sshkey(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "cisco-enable") == 0) {
-    usage_cisco_enable(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "cisco") == 0) {
-    usage_cisco(hydra_options.service);
-    return;
-  }
-  if ((strcmp(hydra_options.service, "ldap2") == 0)
-      || (strcmp(hydra_options.service, "ldap3") == 0)
-      || (strcmp(hydra_options.service, "ldap3-crammd5") == 0)
-      || (strcmp(hydra_options.service, "ldap3-digestmd5") == 0)
-    ) {
-    usage_ldap(hydra_options.service);
-    return;
-  }
-  if ((strcmp(hydra_options.service, "smb") == 0) || (strcmp(hydra_options.service, "smbnt") == 0)) {
-    usage_smb(hydra_options.service);
-    return;
-  }
-  if ((strcmp(hydra_options.service, "http-get-form") == 0)
-      || (strcmp(hydra_options.service, "https-get-form") == 0)
-      || (strcmp(hydra_options.service, "http-post-form") == 0)
-      || (strcmp(hydra_options.service, "https-post-form") == 0)
-      || (strncmp(hydra_options.service, "http-form", 9) == 0)
-      || (strncmp(hydra_options.service, "https-form", 10) == 0)
-      
-    ) {
-    usage_http_form(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "http-proxy") == 0) {
-    usage_http_proxy(hydra_options.service);
-    return;
-  }
-  if (strcmp(hydra_options.service, "http-proxy-urlenum") == 0) {
-    usage_http_proxy_urlenum(hydra_options.service);
-    return;
-  }
-  if (strncmp(hydra_options.service, "snmp", 4) == 0) {
-    usage_snmp(hydra_options.service);
-    return;
-  }
-  if ((strcmp(hydra_options.service, "http-get") == 0)
-      || (strcmp(hydra_options.service, "https-get") == 0)
-      || (strcmp(hydra_options.service, "http-post") == 0)
-      || (strcmp(hydra_options.service, "https-post") == 0)
-    ) {
-    usage_http(hydra_options.service);
-    return;
+  for (i = 0; i < sizeof(services) / sizeof(services[0]); i++) {
+      if (strcmp(hydra_options.service, services[i].name) == 0) {
+          if (services[i].usage) {
+              services[i].usage(hydra_options.service);
+              exit(0);
+          }
+      }
   }
 
   printf("The Module %s does not need or support optional parameters\n", hydra_options.service);
@@ -1323,98 +1201,101 @@ char *hydra_build_time() {
 
 typedef void (*service_t)(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 typedef int (*service_init_t)(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+typedef void (*service_usage_t)(const char* service);
 
-#define SERVICE2(name, func) { name, service_##func##_init, service_##func }
-#define SERVICE(name) { #name, service_##name##_init, service_##name }
+#define SERVICE2(name, func) { name, service_##func##_init, service_##func, NULL }
+#define SERVICE(name) { #name, service_##name##_init, service_##name, NULL }
+#define SERVICE3(name, func) { name, service_##func##_init, service_##func, usage_##func }
 
 static const struct {
   const char* name;
   service_init_t init;
   service_t exec;
+  service_usage_t usage;
 } services[] = {
   SERVICE(adam6500),
 #ifdef LIBAFP
   SERVICE(afp),
 #endif
   SERVICE(asterisk),
-  SERVICE(cisco),
-  SERVICE2("cisco-enable", cisco_enable),
-  SERVICE(cvs),
+  SERVICE3("cisco", cisco),
+  SERVICE3("cisco-enable", cisco_enable),
+  SERVICE3("cvs", cvs),
 #ifdef LIBFIREBIRD
-  SERVICE(firebird),
+  SERVICE3("firebird", firebird),
 #endif
   SERVICE(ftp),
   { "ftps", service_ftp_init, service_ftps },
-  { "http-get", service_http_init, service_http_get },
-  { "http-get-form", service_http_form_init, service_http_get_form },
-  { "http-head", service_http_init, service_http_head },
-  { "http-form", service_http_form_init, NULL },
-  { "http-post", NULL, service_http_post },
-  { "http-post-form", service_http_form_init, service_http_post_form },
-  SERVICE2("http-proxy", http_proxy),
-  SERVICE2("http-proxy-urlenum", http_proxy_urlenum),
+  { "http-get", service_http_init, service_http_get, usage_http },
+  { "http-get-form", service_http_form_init, service_http_get_form, usage_http_form },
+  { "http-head", service_http_init, service_http_head, NULL },
+  { "http-form", service_http_form_init, NULL, usage_http_form },
+  { "http-post", NULL, service_http_post, usage_http },
+  { "http-post-form", service_http_form_init, service_http_post_form, usage_http_form },
+  SERVICE3("http-proxy", http_proxy),
+  SERVICE3("http-proxy-urlenum", http_proxy_urlenum),
   SERVICE(icq),
-  SERVICE(imap),
-  SERVICE(irc),
-  { "ldap2", service_ldap_init, service_ldap2 },
-  { "ldap3", service_ldap_init, service_ldap3 },
-  { "ldap3-crammd5", service_ldap_init, service_ldap3_cram_md5 },
-  { "ldap3-digestmd5", service_ldap_init, service_ldap3_digest_md5 },
+  SERVICE3("imap", imap),
+  SERVICE3("irc", irc),
+  { "ldap2", service_ldap_init, service_ldap2, usage_ldap },
+  { "ldap3", service_ldap_init, service_ldap3, usage_ldap },
+  { "ldap3-crammd5", service_ldap_init, service_ldap3_cram_md5, usage_ldap },
+  { "ldap3-digestmd5", service_ldap_init, service_ldap3_digest_md5, usage_ldap },
   SERVICE(mssql),
 #ifdef HAVE_MATH_H
-  SERVICE(mysql),
+  SERVICE3("mysql", mysql),
 #endif
 #ifdef LIBNCP
-  SERVICE(ncp),
+  SERVICE3("ncp", ncp),
 #endif
-  SERVICE(nntp),
+  SERVICE3("nntp", nntp),
 #ifdef LIBORACLE
-  SERVICE(oracle),
+  SERVICE3("oracle", oracle),
 #endif
 #ifdef LIBOPENSSL
-  SERVICE2("oracle-listener", oracle_listener),
+  SERVICE3("oracle-listener", oracle_listener),
   SERVICE2("oracle-sid", oracle_sid),
 #endif
   SERVICE(pcanywhere),
   SERVICE(pcnfs),
-  SERVICE(pop3),
+  SERVICE3("pop3", pop3),
 #ifdef LIBPOSTGRES
-  SERVICE(postgres),
+  SERVICE3("postgres", postgres),
 #endif
   SERVICE(redis),
   SERVICE(rexec),
 #ifdef LIBOPENSSL
-  SERVICE(rdp),
+  SERVICE3("rdp", rdp),
 #endif
   SERVICE(rlogin),
   SERVICE(rsh),
   SERVICE(rtsp),
   SERVICE(rpcap),
-  SERVICE2("s7-300", s7_300),
+  SERVICE3("s7-300", s7_300),
 #ifdef LIBSAPR3
-  SERVICE(sapr3),
+  SERVICE3("sarp3", sapr3),
 #endif
 #ifdef LIBOPENSSL
   SERVICE(sip),
-  SERVICE2("smbnt", smb),
-  SERVICE(smb),
+  SERVICE3("smbnt", smb),
+  SERVICE3("smb", smb),
 #endif
-  SERVICE(smtp),
-  SERVICE2("smtp-enum", smtp_enum),
-  SERVICE(snmp),
+  SERVICE3("smtp", smtp),
+  SERVICE3("smtp-enum", smtp_enum),
+  SERVICE3("snmp", snmp),
   SERVICE(socks5),
 #ifdef LIBSSH
   { "ssh", NULL, service_ssh },
-  SERVICE(sshkey),
+  SERVICE3("sshkey", sshkey),
 #endif
 #ifdef LIBSVN
-  SERVICE(svn),
+  SERVICE3("svn", svn),
 #endif
   SERVICE(teamspeak),
-  SERVICE(telnet),
+  SERVICE3("telnet", telnet),
   SERVICE(vmauthd),
   SERVICE(vnc),
-  { "xmpp", service_xmpp_init, NULL }
+  { "xmpp", service_xmpp_init, NULL, usage_xmpp }
 };
 
 void hydra_service_init(int target_no) {
