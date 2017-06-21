@@ -15,6 +15,37 @@
 #include <term.h>
 #endif
 
+void usage_oracle(const char* service);
+void usage_oracle_listener(const char* service);
+void usage_cvs(const char* service);
+void usage_xmpp(const char* service);
+void usage_pop3(const char* service);
+void usage_rdp(const char* service);
+void usage_s7_300(const char* service);
+void usage_nntp(const char* service);
+void usage_imap(const char* service);
+void usage_smtp_enum(const char* service);
+void usage_smtp(const char* service);
+void usage_svn(const char* service);
+void usage_ncp(const char* service);
+void usage_firebird(const char* service);
+void usage_mysql(const char* service);
+void usage_irc(const char* service);
+void usage_postgres(const char* service);
+void usage_telnet(const char* service);
+void usage_sapr3(const char* service);
+void usage_sshkey(const char* service);
+void usage_cisco_enable(const char* service);
+void usage_cisco(const char* service);
+void usage_ldap(const char* service);
+void usage_smb(const char* service);
+void usage_http_form(const char* service);
+void usage_http_proxy(const char* service);
+void usage_http_proxy_urlenum(const char* service);
+void usage_snmp(const char* service);
+void usage_http(const char* service);
+
+
 extern void service_asterisk(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern void service_telnet(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern void service_ftp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
@@ -346,6 +377,106 @@ char snpbuf[MAXBUF];
 int snpdone, snp_is_redo, snpbuflen, snpi, snpj, snpdont;
 
 #include "performance.h"
+
+typedef void (*service_t)(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+typedef int (*service_init_t)(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+typedef void (*service_usage_t)(const char* service);
+
+#define SERVICE2(name, func) { name, service_##func##_init, service_##func, NULL }
+#define SERVICE(name) { #name, service_##name##_init, service_##name, NULL }
+#define SERVICE3(name, func) { name, service_##func##_init, service_##func, usage_##func }
+
+static const struct {
+  const char* name;
+  service_init_t init;
+  service_t exec;
+  service_usage_t usage;
+} services[] = {
+  SERVICE(adam6500),
+#ifdef LIBAFP
+  SERVICE(afp),
+#endif
+  SERVICE(asterisk),
+  SERVICE3("cisco", cisco),
+  SERVICE3("cisco-enable", cisco_enable),
+  SERVICE3("cvs", cvs),
+#ifdef LIBFIREBIRD
+  SERVICE3("firebird", firebird),
+#endif
+  SERVICE(ftp),
+  { "ftps", service_ftp_init, service_ftps },
+  { "http-get", service_http_init, service_http_get, usage_http },
+  { "http-get-form", service_http_form_init, service_http_get_form, usage_http_form },
+  { "http-head", service_http_init, service_http_head, NULL },
+  { "http-form", service_http_form_init, NULL, usage_http_form },
+  { "http-post", NULL, service_http_post, usage_http },
+  { "http-post-form", service_http_form_init, service_http_post_form, usage_http_form },
+  SERVICE3("http-proxy", http_proxy),
+  SERVICE3("http-proxy-urlenum", http_proxy_urlenum),
+  SERVICE(icq),
+  SERVICE3("imap", imap),
+  SERVICE3("irc", irc),
+  { "ldap2", service_ldap_init, service_ldap2, usage_ldap },
+  { "ldap3", service_ldap_init, service_ldap3, usage_ldap },
+  { "ldap3-crammd5", service_ldap_init, service_ldap3_cram_md5, usage_ldap },
+  { "ldap3-digestmd5", service_ldap_init, service_ldap3_digest_md5, usage_ldap },
+  SERVICE(mssql),
+#ifdef HAVE_MATH_H
+  SERVICE3("mysql", mysql),
+#endif
+#ifdef LIBNCP
+  SERVICE3("ncp", ncp),
+#endif
+  SERVICE3("nntp", nntp),
+#ifdef LIBORACLE
+  SERVICE3("oracle", oracle),
+#endif
+#ifdef LIBOPENSSL
+  SERVICE3("oracle-listener", oracle_listener),
+  SERVICE2("oracle-sid", oracle_sid),
+#endif
+  SERVICE(pcanywhere),
+  SERVICE(pcnfs),
+  SERVICE3("pop3", pop3),
+#ifdef LIBPOSTGRES
+  SERVICE3("postgres", postgres),
+#endif
+  SERVICE(redis),
+  SERVICE(rexec),
+#ifdef LIBOPENSSL
+  SERVICE3("rdp", rdp),
+#endif
+  SERVICE(rlogin),
+  SERVICE(rsh),
+  SERVICE(rtsp),
+  SERVICE(rpcap),
+  SERVICE3("s7-300", s7_300),
+#ifdef LIBSAPR3
+  SERVICE3("sarp3", sapr3),
+#endif
+#ifdef LIBOPENSSL
+  SERVICE(sip),
+  SERVICE3("smbnt", smb),
+  SERVICE3("smb", smb),
+#endif
+  SERVICE3("smtp", smtp),
+  SERVICE3("smtp-enum", smtp_enum),
+  SERVICE3("snmp", snmp),
+  SERVICE(socks5),
+#ifdef LIBSSH
+  { "ssh", NULL, service_ssh },
+  SERVICE3("sshkey", sshkey),
+#endif
+#ifdef LIBSVN
+  SERVICE3("svn", svn),
+#endif
+  SERVICE(teamspeak),
+  SERVICE3("telnet", telnet),
+  SERVICE(vmauthd),
+  SERVICE(vnc),
+  { "xmpp", service_xmpp_init, NULL, usage_xmpp }
+};
+
 
 #define PRINT_NORMAL(ext, text, ...) printf(text, ##__VA_ARGS__)
 #define PRINT_EXTEND(ext, text, ...) do { \
@@ -1198,105 +1329,6 @@ char *hydra_build_time() {
   strftime(datetime, sizeof(datetime), "%Y-%m-%d %H:%M:%S", the_time);
   return (char *) &datetime;
 }
-
-typedef void (*service_t)(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-typedef int (*service_init_t)(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-typedef void (*service_usage_t)(const char* service);
-
-#define SERVICE2(name, func) { name, service_##func##_init, service_##func, NULL }
-#define SERVICE(name) { #name, service_##name##_init, service_##name, NULL }
-#define SERVICE3(name, func) { name, service_##func##_init, service_##func, usage_##func }
-
-static const struct {
-  const char* name;
-  service_init_t init;
-  service_t exec;
-  service_usage_t usage;
-} services[] = {
-  SERVICE(adam6500),
-#ifdef LIBAFP
-  SERVICE(afp),
-#endif
-  SERVICE(asterisk),
-  SERVICE3("cisco", cisco),
-  SERVICE3("cisco-enable", cisco_enable),
-  SERVICE3("cvs", cvs),
-#ifdef LIBFIREBIRD
-  SERVICE3("firebird", firebird),
-#endif
-  SERVICE(ftp),
-  { "ftps", service_ftp_init, service_ftps },
-  { "http-get", service_http_init, service_http_get, usage_http },
-  { "http-get-form", service_http_form_init, service_http_get_form, usage_http_form },
-  { "http-head", service_http_init, service_http_head, NULL },
-  { "http-form", service_http_form_init, NULL, usage_http_form },
-  { "http-post", NULL, service_http_post, usage_http },
-  { "http-post-form", service_http_form_init, service_http_post_form, usage_http_form },
-  SERVICE3("http-proxy", http_proxy),
-  SERVICE3("http-proxy-urlenum", http_proxy_urlenum),
-  SERVICE(icq),
-  SERVICE3("imap", imap),
-  SERVICE3("irc", irc),
-  { "ldap2", service_ldap_init, service_ldap2, usage_ldap },
-  { "ldap3", service_ldap_init, service_ldap3, usage_ldap },
-  { "ldap3-crammd5", service_ldap_init, service_ldap3_cram_md5, usage_ldap },
-  { "ldap3-digestmd5", service_ldap_init, service_ldap3_digest_md5, usage_ldap },
-  SERVICE(mssql),
-#ifdef HAVE_MATH_H
-  SERVICE3("mysql", mysql),
-#endif
-#ifdef LIBNCP
-  SERVICE3("ncp", ncp),
-#endif
-  SERVICE3("nntp", nntp),
-#ifdef LIBORACLE
-  SERVICE3("oracle", oracle),
-#endif
-#ifdef LIBOPENSSL
-  SERVICE3("oracle-listener", oracle_listener),
-  SERVICE2("oracle-sid", oracle_sid),
-#endif
-  SERVICE(pcanywhere),
-  SERVICE(pcnfs),
-  SERVICE3("pop3", pop3),
-#ifdef LIBPOSTGRES
-  SERVICE3("postgres", postgres),
-#endif
-  SERVICE(redis),
-  SERVICE(rexec),
-#ifdef LIBOPENSSL
-  SERVICE3("rdp", rdp),
-#endif
-  SERVICE(rlogin),
-  SERVICE(rsh),
-  SERVICE(rtsp),
-  SERVICE(rpcap),
-  SERVICE3("s7-300", s7_300),
-#ifdef LIBSAPR3
-  SERVICE3("sarp3", sapr3),
-#endif
-#ifdef LIBOPENSSL
-  SERVICE(sip),
-  SERVICE3("smbnt", smb),
-  SERVICE3("smb", smb),
-#endif
-  SERVICE3("smtp", smtp),
-  SERVICE3("smtp-enum", smtp_enum),
-  SERVICE3("snmp", snmp),
-  SERVICE(socks5),
-#ifdef LIBSSH
-  { "ssh", NULL, service_ssh },
-  SERVICE3("sshkey", sshkey),
-#endif
-#ifdef LIBSVN
-  SERVICE3("svn", svn),
-#endif
-  SERVICE(teamspeak),
-  SERVICE3("telnet", telnet),
-  SERVICE(vmauthd),
-  SERVICE(vnc),
-  { "xmpp", service_xmpp_init, NULL, usage_xmpp }
-};
 
 void hydra_service_init(int target_no) {
   int x = 99;
