@@ -9,28 +9,42 @@ MANDIR ?= /man/man1/
 DATADIR ?= /etc
 DESTDIR ?=
 
-SRC = hydra-vnc.c hydra-pcnfs.c hydra-rexec.c hydra-nntp.c hydra-socks5.c \
-      hydra-telnet.c hydra-cisco.c hydra-http.c hydra-ftp.c hydra-imap.c \
-      hydra-pop3.c hydra-smb.c hydra-icq.c hydra-cisco-enable.c hydra-ldap.c \
-      hydra-mysql.c hydra-mssql.c hydra-xmpp.c hydra-http-proxy-urlenum.c \
-      hydra-snmp.c hydra-cvs.c hydra-smtp.c hydra-smtp-enum.c hydra-sapr3.c hydra-ssh.c \
-      hydra-sshkey.c hydra-teamspeak.c hydra-postgres.c hydra-rsh.c hydra-rlogin.c \
-      hydra-oracle-listener.c hydra-svn.c hydra-pcanywhere.c hydra-sip.c \
-      hydra-oracle.c hydra-vmauthd.c hydra-asterisk.c hydra-firebird.c hydra-afp.c hydra-ncp.c \
-      hydra-oracle-sid.c hydra-http-proxy.c hydra-http-form.c hydra-irc.c \
-      hydra-rdp.c hydra-s7-300.c hydra-redis.c hydra-adam6500.c \
-      crc32.c d3des.c bfg.c ntlm.c sasl.c hmacmd5.c hydra-mod.c hydra-rtsp.c hydra-time.c hydra-rpcap.c
-OBJ = hydra-vnc.o hydra-pcnfs.o hydra-rexec.o hydra-nntp.o hydra-socks5.o \
-      hydra-telnet.o hydra-cisco.o hydra-http.o hydra-ftp.o hydra-imap.o \
-      hydra-pop3.o hydra-smb.o hydra-icq.o hydra-cisco-enable.o hydra-ldap.o \
-      hydra-mysql.o hydra-mssql.o hydra-xmpp.o hydra-http-proxy-urlenum.o \
-      hydra-snmp.o hydra-cvs.o hydra-smtp.o hydra-smtp-enum.o hydra-sapr3.o hydra-ssh.o \
-      hydra-sshkey.o hydra-teamspeak.o hydra-postgres.o hydra-rsh.o hydra-rlogin.o \
-      hydra-oracle-listener.o hydra-svn.o hydra-pcanywhere.o hydra-sip.o \
-      hydra-oracle-sid.o hydra-oracle.o hydra-vmauthd.o hydra-asterisk.o hydra-firebird.o hydra-afp.o hydra-ncp.o \
-      hydra-http-proxy.o hydra-http-form.o hydra-irc.o hydra-redis.o \
-      hydra-rdp.o hydra-s7-300.c hydra-adam6500.o \
-      crc32.o d3des.o bfg.o ntlm.o sasl.o hmacmd5.o hydra-mod.o hydra-rtsp.o hydra-time.o hydra-rpcap.o
+SRC = services/hydra-vnc.c services/hydra-pcnfs.c services/hydra-rexec.c \
+      services/hydra-nntp.c services/hydra-socks5.c services/hydra-telnet.c \
+      services/hydra-cisco.c services/hydra-http.c services/hydra-ftp.c \
+      services/hydra-imap.c services/hydra-pop3.c services/hydra-smb.c \
+      services/hydra-icq.c services/hydra-cisco-enable.c services/hydra-ldap.c \
+      services/hydra-mysql.c services/hydra-mssql.c services/hydra-xmpp.c \
+      services/hydra-http-proxy-urlenum.c services/hydra-snmp.c \
+      services/hydra-cvs.c services/hydra-smtp.c services/hydra-smtp-enum.c \
+      services/hydra-sapr3.c services/hydra-ssh.c services/hydra-sshkey.c \
+      services/hydra-teamspeak.c services/hydra-postgres.c services/hydra-rsh.c \
+      services/hydra-rlogin.c services/hydra-oracle-listener.c services/hydra-svn.c \
+      services/hydra-pcanywhere.c services/hydra-sip.c services/hydra-oracle.c \
+      services/hydra-vmauthd.c services/hydra-asterisk.c services/hydra-firebird.c \
+      services/hydra-afp.c services/hydra-ncp.c services/hydra-oracle-sid.c \
+      services/hydra-http-proxy.c services/hydra-http-form.c services/hydra-irc.c \
+      services/hydra-rdp.c services/hydra-s7-300.c services/hydra-redis.c \
+      services/hydra-adam6500.c services/hydra-rtsp.c services/hydra-rpcap.c \
+      crc32.c d3des.c bfg.c ntlm.c sasl.c hmacmd5.c hydra-mod.c hydra-time.c
+OBJ = services/hydra-vnc.o services/hydra-pcnfs.o services/hydra-rexec.o \
+      services/hydra-nntp.o services/hydra-socks5.o services/hydra-telnet.o \
+      services/hydra-cisco.o services/hydra-http.o services/hydra-ftp.o \
+      services/hydra-imap.o services/hydra-pop3.o services/hydra-smb.o \
+      services/hydra-icq.o services/hydra-cisco-enable.o services/hydra-ldap.o \
+      services/hydra-mysql.o services/hydra-mssql.o services/hydra-xmpp.o \
+      services/hydra-http-proxy-urlenum.o services/hydra-snmp.o \
+      services/hydra-cvs.o services/hydra-smtp.o services/hydra-smtp-enum.o \
+      services/hydra-sapr3.o services/hydra-ssh.o services/hydra-sshkey.o \
+      services/hydra-teamspeak.o services/hydra-postgres.o services/hydra-rsh.o \
+      services/hydra-rlogin.o services/hydra-oracle-listener.o services/hydra-svn.o \
+      services/hydra-pcanywhere.o services/hydra-sip.o services/hydra-oracle-sid.o \
+      services/hydra-oracle.o services/hydra-vmauthd.o services/hydra-asterisk.o \
+      services/hydra-firebird.o services/hydra-afp.o services/hydra-ncp.o \
+      services/hydra-http-proxy.o services/hydra-http-form.o services/hydra-irc.o \
+      services/hydra-redis.o services/hydra-rdp.o services/hydra-s7-300.c \
+      services/hydra-adam6500.o services/hydra-rtsp.o services/hydra-rpcap.o \
+      crc32.o d3des.o bfg.o ntlm.o sasl.o hmacmd5.o hydra-mod.o hydra-time.o
 BINS = hydra pw-inspector
 
 EXTRA_DIST = README README.arm README.palm CHANGES TODO INSTALL LICENSE \
@@ -53,7 +67,7 @@ pw-inspector: pw-inspector.c
 	-$(CC) $(OPTS) $(SEC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o pw-inspector $(PWI_LOGO) pw-inspector.c
 
 .c.o:	
-	$(CC) $(OPTS) $(SEC) $(CFLAGS) $(CPPFLAGS) -c $< $(XDEFINES) $(XIPATHS)
+	$(CC) $(OPTS) $(SEC) $(CFLAGS) $(CPPFLAGS) -c $< $(XDEFINES) $(XIPATHS) -o $@
 
 strip:	all
 	strip $(BINS)

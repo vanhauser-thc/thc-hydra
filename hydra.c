@@ -15,169 +15,77 @@
 #include <term.h>
 #endif
 
-void usage_oracle(const char* service);
-void usage_oracle_listener(const char* service);
-void usage_cvs(const char* service);
-void usage_xmpp(const char* service);
-void usage_pop3(const char* service);
-void usage_rdp(const char* service);
-void usage_s7_300(const char* service);
-void usage_nntp(const char* service);
-void usage_imap(const char* service);
-void usage_smtp_enum(const char* service);
-void usage_smtp(const char* service);
-void usage_svn(const char* service);
-void usage_ncp(const char* service);
-void usage_firebird(const char* service);
-void usage_mysql(const char* service);
-void usage_irc(const char* service);
-void usage_postgres(const char* service);
-void usage_telnet(const char* service);
-void usage_sapr3(const char* service);
-void usage_sshkey(const char* service);
-void usage_cisco_enable(const char* service);
-void usage_cisco(const char* service);
-void usage_ldap(const char* service);
-void usage_smb(const char* service);
-void usage_http_form(const char* service);
-void usage_http_proxy(const char* service);
-void usage_http_proxy_urlenum(const char* service);
-void usage_snmp(const char* service);
-void usage_http(const char* service);
-
-
-extern void service_asterisk(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_telnet(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_ftp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_ftps(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_pop3(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_vmauthd(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_imap(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_ldap2(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_ldap3(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_ldap3_cram_md5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_ldap3_digest_md5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_adam6500(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_cisco(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_cisco_enable(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_vnc(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_socks5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_rexec(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_rlogin(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_rsh(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_nntp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_http_head(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_http_get(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_http_post(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_http_get_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_http_post_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_icq(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_pcnfs(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_mssql(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_cvs(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_snmp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_smtp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_smtp_enum(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_teamspeak(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_pcanywhere(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_http_proxy(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_xmpp(char *target, char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_irc(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_redis(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_http_proxy_urlenum(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_s7_300(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_rtsp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_rpcap(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-
-// ADD NEW SERVICES HERE
-
+#include "services/hydra-asterisk.h"
+#include "services/hydra-telnet.h"
+#include "services/hydra-ftp.h"
+#include "services/hydra-pop3.h"
+#include "services/hydra-vmauthd.h"
+#include "services/hydra-imap.h"
+#include "services/hydra-ldap.h"
+#include "services/hydra-adam6500.h"
+#include "services/hydra-cisco.h"
+#include "services/hydra-cisco-enable.h"
+#include "services/hydra-vnc.h"
+#include "services/hydra-socks5.h"
+#include "services/hydra-rexec.h"
+#include "services/hydra-rlogin.h"
+#include "services/hydra-rsh.h"
+#include "services/hydra-nntp.h"
+#include "services/hydra-http.h"
+#include "services/hydra-http-form.h"
+#include "services/hydra-icq.h"
+#include "services/hydra-pcnfs.h"
+#include "services/hydra-mssql.h"
+#include "services/hydra-cvs.h"
+#include "services/hydra-snmp.h"
+#include "services/hydra-smtp.h"
+#include "services/hydra-smtp-enum.h"
+#include "services/hydra-teamspeak.h"
+#include "services/hydra-pcanywhere.h"
+#include "services/hydra-http-proxy.h"
+#include "services/hydra-xmpp.h"
+#include "services/hydra-irc.h"
+#include "services/hydra-redis.h"
+#include "services/hydra-http-proxy-urlenum.h"
+#include "services/hydra-s7-300.h"
+#include "services/hydra-rtsp.h"
+#include "services/hydra-rpcap.h"
 
 #ifdef HAVE_MATH_H
-extern void service_mysql(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_mysql_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+#include "services/hydra-mysql.h"
 #endif
 #ifdef LIBPOSTGRES
-extern void service_postgres(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_postgres_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+#include "services/hydra-postgres.h"
 #endif
 #ifdef LIBOPENSSL
-extern void service_smb(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_smb_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_oracle_listener(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_oracle_listener_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_oracle_sid(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_oracle_sid_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_sip(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_sip_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_rdp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_rdp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+#include "services/hydra-smb.h"
+#include "services/hydra-oracle-listener.h"
+#include "services/hydra-oracle-sid.h"
+#include "services/hydra-sip.h"
+#include "services/hydra-rdp.h"
 #endif
 #ifdef LIBSAPR3
-extern void service_sapr3(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_sapr3_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+#include "services/hydra-sapr3.h"
 #endif
 #ifdef LIBFIREBIRD
-extern void service_firebird(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_firebird_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+#include "services/hydra-firebird.h"
 #endif
 #ifdef LIBAFP
-extern void service_afp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_afp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+#include "services/hydra-afp.h"
 #endif
 #ifdef LIBNCP
-extern void service_ncp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_ncp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+#include "services/hydra-ncp.h"
 #endif
 #ifdef LIBSSH
-extern void service_ssh(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_ssh_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_sshkey(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_sshkey_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+#include "services/hydra-ssh.h"
+#include "services/hydra-sshkey.h"
 #endif
 #ifdef LIBSVN
-extern void service_svn(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_svn_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+#include "services/hydra-svn.h"
 #endif
 #ifdef LIBORACLE
-extern void service_oracle(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_oracle_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+#include "services/hydra-oracle.h"
 #endif
-
-extern int service_adam6500_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_cisco_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_cisco_enable_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_cvs_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_smtp_enum_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_http_form_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_ftp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_http_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_icq_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_imap_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_irc_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_ldap_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_mssql_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_nntp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_pcanywhere_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_pcnfs_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_pop3_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_http_proxy_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_asterisk_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_redis_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_rexec_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_rlogin_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_rsh_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_smtp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_snmp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_socks5_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_teamspeak_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_telnet_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_http_proxy_urlenum_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_vmauthd_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_vnc_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_xmpp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_s7_300_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_rtsp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_rpcap_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 
 // ADD NEW SERVICES HERE
 
@@ -382,99 +290,95 @@ typedef void (*service_t)(char *ip, int sp, unsigned char options, char *miscptr
 typedef int (*service_init_t)(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 typedef void (*service_usage_t)(const char* service);
 
-#define SERVICE2(name, func) { name, service_##func##_init, service_##func, NULL }
-#define SERVICE(name) { #name, service_##name##_init, service_##name, NULL }
-#define SERVICE3(name, func) { name, service_##func##_init, service_##func, usage_##func }
-
 static const struct {
   const char* name;
   service_init_t init;
   service_t exec;
   service_usage_t usage;
 } services[] = {
-  SERVICE(adam6500),
+  SERVICE_ADAM6500,
 #ifdef LIBAFP
-  SERVICE(afp),
+  SERVICE_AFP,
 #endif
-  SERVICE(asterisk),
-  SERVICE3("cisco", cisco),
-  SERVICE3("cisco-enable", cisco_enable),
-  SERVICE3("cvs", cvs),
+  SERVICE_ASTERISK,
+  SERVICE_CISCO_ENABLE,
+  SERVICE_CISCO,
+  SERVICE_CVS,
 #ifdef LIBFIREBIRD
-  SERVICE3("firebird", firebird),
+  SERVICE_FIREBIRD,
 #endif
-  SERVICE(ftp),
-  { "ftps", service_ftp_init, service_ftps },
-  { "http-get", service_http_init, service_http_get, usage_http },
-  { "http-get-form", service_http_form_init, service_http_get_form, usage_http_form },
-  { "http-head", service_http_init, service_http_head, NULL },
-  { "http-form", service_http_form_init, NULL, usage_http_form },
-  { "http-post", NULL, service_http_post, usage_http },
-  { "http-post-form", service_http_form_init, service_http_post_form, usage_http_form },
-  SERVICE3("http-proxy", http_proxy),
-  SERVICE3("http-proxy-urlenum", http_proxy_urlenum),
-  SERVICE(icq),
-  SERVICE3("imap", imap),
-  SERVICE3("irc", irc),
-  { "ldap2", service_ldap_init, service_ldap2, usage_ldap },
-  { "ldap3", service_ldap_init, service_ldap3, usage_ldap },
-  { "ldap3-crammd5", service_ldap_init, service_ldap3_cram_md5, usage_ldap },
-  { "ldap3-digestmd5", service_ldap_init, service_ldap3_digest_md5, usage_ldap },
-  SERVICE(mssql),
+  SERVICE_FTP,
+  SERVICE_FTPS,
+  SERVICE_HTTP_FORM,
+  SERVICE_HTTP_GET,
+  SERVICE_HTTP_GET_FORM,
+  SERVICE_HTTP_HEAD,
+  SERVICE_HTTP_POST,
+  SERVICE_HTTP_POST_FORM,
+  SERVICE_HTTP_PROXY_URLENUM,
+  SERVICE_HTTP_PROXY,
+  SERVICE_ICQ,
+  SERVICE_IMAP,
+  SERVICE_IRC,
+  SERVICE_LDAP2,
+  SERVICE_LDAP3,
+  SERVICE_LDAP3_CRAM_MD5,
+  SERVICE_LDAP3_DIGEST_MD5,
+  SERVICE_MSSQL,
 #ifdef HAVE_MATH_H
-  SERVICE3("mysql", mysql),
+  SERVICE_MYSQL,
 #endif
 #ifdef LIBNCP
-  SERVICE3("ncp", ncp),
+  SERVICE_NCP,
 #endif
-  SERVICE3("nntp", nntp),
+  SERVICE_NNTP,
 #ifdef LIBORACLE
-  SERVICE3("oracle", oracle),
+  SERVICE_ORACLE,
 #endif
 #ifdef LIBOPENSSL
-  SERVICE3("oracle-listener", oracle_listener),
-  SERVICE2("oracle-sid", oracle_sid),
+  SERVICE_ORACLE_LISTENER,
+  SERVICE_ORACLE_SID,
 #endif
-  SERVICE(pcanywhere),
-  SERVICE(pcnfs),
-  SERVICE3("pop3", pop3),
+  SERVICE_PCANYWHERE,
+  SERVICE_PCNFS,
+  SERVICE_POP3,
 #ifdef LIBPOSTGRES
-  SERVICE3("postgres", postgres),
+  SERVICE_POSTGRES,
 #endif
-  SERVICE(redis),
-  SERVICE(rexec),
 #ifdef LIBOPENSSL
-  SERVICE3("rdp", rdp),
+  SERVICE_RDP,
 #endif
-  SERVICE(rlogin),
-  SERVICE(rsh),
-  SERVICE(rtsp),
-  SERVICE(rpcap),
-  SERVICE3("s7-300", s7_300),
+  SERVICE_REDIS,
+  SERVICE_REXEC,
+  SERVICE_RLOGIN,
+  SERVICE_RPCAP,
+  SERVICE_RSH,
+  SERVICE_RTSP,
+  SERVICE_S7_300,
 #ifdef LIBSAPR3
-  SERVICE3("sarp3", sapr3),
+  SERVICE_SAPR3,
 #endif
 #ifdef LIBOPENSSL
-  SERVICE(sip),
-  SERVICE3("smbnt", smb),
-  SERVICE3("smb", smb),
+  SERVICE_SIP,
+  SERVICE_SMB,
+  SERVICE_SMBNT,
 #endif
-  SERVICE3("smtp", smtp),
-  SERVICE3("smtp-enum", smtp_enum),
-  SERVICE3("snmp", snmp),
-  SERVICE(socks5),
+  SERVICE_SMTP,
+  SERVICE_SMTP_ENUM,
+  SERVICE_SNMP,
+  SERVICE_SOCKS5,
 #ifdef LIBSSH
-  { "ssh", NULL, service_ssh },
-  SERVICE3("sshkey", sshkey),
+  SERVICE_SSH,
+  SERVICE_SSHKEY,
 #endif
 #ifdef LIBSVN
-  SERVICE3("svn", svn),
+  SERVICE_SVN,
 #endif
-  SERVICE(teamspeak),
-  SERVICE3("telnet", telnet),
-  SERVICE(vmauthd),
-  SERVICE(vnc),
-  { "xmpp", service_xmpp_init, NULL, usage_xmpp }
+  SERVICE_TEAMSPEAK,
+  SERVICE_TELNET,
+  SERVICE_VMAUTHD,
+  SERVICE_VNC,
+  SERVICE_XMPP
 };
 
 
@@ -576,213 +480,6 @@ void help_bfg() {
          "   -x 3:5:aA1 -y generate passwords from length 3 to 5 with a, A and 1 only\n"
          "\nThe bruteforce mode was made by Jan Dlabal, http://houbysoft.com/bfg/\n");
   exit(-1);
-}
-
-void usage_oracle(const char* service) {
-  printf("Module oracle / ora is optionally taking the ORACLE SID, default is \"ORCL\"\n\n");
-}
-
-void usage_oracle_listener(const char* service) {
-  printf("Module oracle-listener / tns is optionally taking the mode the password is stored as, could be PLAIN (default) or CLEAR\n\n");
-}
-
-void usage_cvs(const char* service) {
-  printf("Module cvs is optionally taking the repository name to attack, default is \"/root\"\n\n");
-}
-
-void usage_xmpp(const char* service) {
-  printf("Module xmpp is optionally taking one authentication type of:\n"
-         "  LOGIN (default), PLAIN, CRAM-MD5, DIGEST-MD5, SCRAM-SHA1\n\n"
-         "Note, the target passed should be a fdqn as the value is used in the Jabber init request, example: hermes.jabber.org\n\n");
-}
-
-void usage_pop3(const char* service) {
-  printf("Module pop3 is optionally taking one authentication type of:\n"
-         "  CLEAR (default), LOGIN, PLAIN, CRAM-MD5, CRAM-SHA1,\n"
-         "  CRAM-SHA256, DIGEST-MD5, NTLM.\n" "Additionally TLS encryption via STLS can be enforced with the TLS option.\n\n" "Example: pop3://target/TLS:PLAIN\n");
-}
-
-void usage_rdp(const char* service) {
-  printf("Module rdp is optionally taking the windows domain name.\n" "For example:\nhydra rdp://192.168.0.1/firstdomainname -l john -p doe\n\n");
-}
-
-void usage_s7_300(const char* service) {
-  printf("Module S7-300 is for a special Siemens PLC. It either requires only a password or no authentication, so just use the -p or -P option.\n\n");
-}
-
-void usage_nntp(const char* service) {
-  printf("Module nntp is optionally taking one authentication type of:\n" "  USER (default), LOGIN, PLAIN, CRAM-MD5, DIGEST-MD5, NTLM\n\n");
-}
-
-void usage_imap(const char* service) {
-  printf("Module imap is optionally taking one authentication type of:\n"
-         "  CLEAR or APOP (default), LOGIN, PLAIN, CRAM-MD5, CRAM-SHA1,\n"
-         "  CRAM-SHA256, DIGEST-MD5, NTLM\n" "Additionally TLS encryption via STARTTLS can be enforced with the TLS option.\n\n" "Example: imap://target/TLS:PLAIN\n");
-}
-
-void usage_smtp_enum(const char* service) {
-  printf("Module smtp-enum is optionally taking one SMTP command of:\n\n"
-         "VRFY (default), EXPN, RCPT (which will connect using \"root\" account)\n"
-         "login parameter is used as username and password parameter as the domain name\n"
-         "For example to test if john@localhost exists on 192.168.0.1:\n" "hydra smtp-enum://192.168.0.1/vrfy -l john -p localhost\n\n");
-}
-
-void usage_smtp(const char* service) {
-  printf("Module smtp is optionally taking one authentication type of:\n"
-         "  LOGIN (default), PLAIN, CRAM-MD5, DIGEST-MD5, NTLM\n\n"
-         "Additionally TLS encryption via STARTTLS can be enforced with the TLS option.\n\n" "Example: smtp://target/TLS:PLAIN\n");
-}
-
-void usage_svn(const char* service) {
-  printf("Module svn is optionally taking the repository name to attack, default is \"trunk\"\n\n");
-}
-
-void usage_ncp(const char* service) {
-  printf("Module ncp is optionally taking the full context, for example \".O=cx\"\n\n");
-}
-
-void usage_firebird(const char* service) {
-  printf("Module firebird is optionally taking the database path to attack,\n" "default is \"C:\\Program Files\\Firebird\\Firebird_1_5\\security.fdb\"\n\n");
-}
-
-void usage_mysql(const char* service) {
-  printf("Module mysql is optionally taking the database to attack, default is \"mysql\"\n\n");
-}
-
-void usage_irc(const char* service) {
-  printf("Module irc is optionally taking the general server password, if the server is requiring one\n" "and none is passed the password from -p/-P will be used\n\n");
-}
-
-void usage_postgres(const char* service) {
-  printf("Module postgres is optionally taking the database to attack, default is \"template1\"\n\n");
-}
-
-void usage_telnet(const char* service) {
-  printf("Module telnet is optionally taking the string which is displayed after\n"
-         "a successful login (case insensitive), use if the default in the telnet\n" "module produces too many false positives\n\n");
-}
-
-void usage_sapr3(const char* service) {
-  printf("Module sapr3 requires the client id, a number between 0 and 99\n\n");
-}
-
-void usage_sshkey(const char* service) {
-  printf("Module sshkey does not provide additional options, although the semantic for\n"
-         "options -p and -P is changed:\n"
-         "  -p expects a path to an unencrypted private key in PEM format.\n"
-         "  -P expects a filename containing a list of path to some unencrypted\n" "     private keys in PEM format.\n\n");
-}
-
-void usage_cisco_enable(const char* service) {
-  printf("Module cisco-enable is optionally taking the logon password for the cisco device\n"
-         "Note: if AAA authentication is used, use the -l option for the username\n"
-         "and the optional parameter for the password of the user.\n"
-         "Examples:\n"
-         "  hydra -P pass.txt target cisco-enable  (direct console access)\n"
-         "  hydra -P pass.txt -m cisco target cisco-enable  (Logon password cisco)\n"
-         "  hydra -l foo -m bar -P pass.txt target cisco-enable  (AAA Login foo, password bar)\n");
-}
-
-void usage_cisco(const char* service) {
-  printf("Module cisco is optionally taking the keyword ENTER, it then sends an initial\n" "ENTER when connecting to the service.\n");
-}
-
-void usage_ldap(const char* service) {
-  printf("Module %s is optionally taking the DN (depending of the auth method choosed\n"
-         "Note: you can also specify the DN as login when Simple auth method is used).\n"
-         "The keyword \"^USER^\" is replaced with the login.\n"
-         "Special notes for Simple method has 3 operation modes: anonymous, (no user no pass),\n"
-         "unauthenticated (user but no pass), user/pass authenticated (user and pass).\n"
-         "So don't forget to set empty string as user/pass to test all modes.\n"
-         "Hint: to authenticate to a windows active directy ldap, this is usually\n"
-         " cn=^USER^,cn=users,dc=foo,dc=bar,dc=com for domain foo.bar.com\n\n", service);
-}
-
-void usage_smb(const char* service) {
-  printf("Module smb default value is set to test both local and domain account, using a simple password with NTLM dialect.\n"
-         "Note: you can set the group type using LOCAL or DOMAIN keyword\n"
-         "      or other_domain:{value} to specify a trusted domain.\n"
-         "      you can set the password type using HASH or MACHINE keyword\n"
-         "      (to use the Machine's NetBIOS name as the password).\n"
-         "      you can set the dialect using NTLMV2, NTLM, LMV2, LM keyword.\n"
-         "Example: \n"
-         "      hydra smb://microsoft.com  -l admin -p tooeasy -m \"local lmv2\"\n"
-         "      hydra smb://microsoft.com  -l admin -p D5731CFC6C2A069C21FD0D49CAEBC9EA:2126EE7712D37E265FD63F2C84D2B13D::: -m \"local hash\"\n"
-         "      hydra smb://microsoft.com  -l admin -p tooeasy -m \"other_domain:SECONDDOMAIN\"\n\n");
-}
-
-void usage_http_form(const char* service) {
-  printf("Module %s requires the page and the parameters for the web form.\n\n"
-         "By default this module is configured to follow a maximum of 5 redirections in\n"
-         "a row. It always gathers a new cookie from the same URL without variables\n"
-         "The parameters take three \":\" separated values, plus optional values.\n"
-         "(Note: if you need a colon in the option string as value, escape it with \"\\:\", but do not escape a \"\\\" with \"\\\\\".)\n"
-         "\nSyntax:   <url>:<form parameters>:<condition string>[:<optional>[:<optional>]\n"
-         "First is the page on the server to GET or POST to (URL).\n"
-         "Second is the POST/GET variables (taken from either the browser, proxy, etc.\n"
-         " with usernames and passwords being replaced in the \"^USER^\" and \"^PASS^\"\n"
-         " placeholders (FORM PARAMETERS)\n"
-         "Third is the string that it checks for an *invalid* login (by default)\n"
-         " Invalid condition login check can be preceded by \"F=\", successful condition\n"
-         " login check must be preceded by \"S=\".\n"
-         " This is where most people get it wrong. You have to check the webapp what a\n"
-         " failed string looks like and put it in this parameter!\n"
-         "The following parameters are optional:\n"
-         " C=/page/uri     to define a different page to gather initial cookies from\n"
-         " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each request\n"
-         "                 ^USER^ and ^PASS^ can also be put into these headers!\n"
-         "                 Note: 'h' will add the user-defined header at the end\n"
-         "                 regardless it's already being sent by Hydra or not.\n"
-         "                 'H' will replace the value of that header if it exists, by the\n"
-         "                 one supplied by the user, or add the header at the end\n"
-         "Note that if you are going to put colons (:) in your headers you should escape them with a backslash (\\).\n"
-         " All colons that are not option separators should be escaped (see the examples above and below).\n"
-         " You can specify a header without escaping the colons, but that way you will not be able to put colons\n"
-         " in the header value itself, as they will be interpreted by hydra as option separators.\n"
-         "\nExamples:\n"
-         " \"/login.php:user=^USER^&pass=^PASS^:incorrect\"\n"
-         " \"/login.php:user=^USER^&pass=^PASS^&colon=colon\\:escape:S=authlog=.*success\"\n"
-         " \"/login.php:user=^USER^&pass=^PASS^&mid=123:authlog=.*failed\"\n"
-         " \"/:user=^USER&pass=^PASS^:failed:H=Authorization\\: Basic dT1w:H=Cookie\\: sessid=aaaa:h=X-User\\: ^USER^:H=User-Agent\\: wget\"\n"
-         " \"/exchweb/bin/auth/owaauth.dll:destination=http%%3A%%2F%%2F<target>%%2Fexchange&flags=0&username=<domain>%%5C^USER^&password=^PASS^&SubmitCreds=x&trusted=0:reason=:C=/exchweb\"\n",
-         service);
-}
-
-void usage_http_proxy(const char* service) {
-  printf("Module http-proxy is optionally taking the page to authenticate at.\n"
-         "Default is http://www.microsoft.com/)\n" "Basic, DIGEST-MD5 and NTLM are supported and negotiated automatically.\n\n");
-}
-
-void usage_http_proxy_urlenum(const char* service) {
-  printf("Module http-proxy-urlenum only uses the -L option, not -x or -p/-P option.\n"
-         "The -L loginfile must contain the URL list to try through the proxy.\n"
-         "The proxy credentials cann be put as the optional parameter, e.g.\n"
-         "   hydra -L urllist.txt -s 3128 target.com http-proxy-urlenum user:pass\n" "   hydra -L urllist.txt http-proxy-urlenum://target.com:3128/user:pass\n\n");
-}
-
-void usage_snmp(const char* service) {
-  printf("Module snmp is optionally taking the following parameters:\n"
-         "   READ  perform read requests (default)\n"
-         "   WRITE perform write requests\n"
-         "   1     use SNMP version 1 (default)\n"
-         "   2     use SNMP version 2\n"
-         "   3     use SNMP version 3\n"
-         "           Note that SNMP version 3 usually uses both login and passwords!\n"
-         "           SNMP version 3 has the following optional sub parameters:\n"
-         "             MD5   use MD5 authentication (default)\n"
-         "             SHA   use SHA authentication\n"
-         "             DES   use DES encryption\n"
-         "             AES   use AES encryption\n"
-         "           if no -p/-P parameter is given, SNMPv3 noauth is performed, which\n"
-         "           only requires a password (or username) not both.\n"
-         "To combine the options, use colons (\":\"), e.g.:\n"
-         "   hydra -L user.txt -P pass.txt -m 3:SHA:AES:READ target.com snmp\n"
-         "   hydra -P pass.txt -m 2 target.com snmp\n");
-}
-
-void usage_http(const char* service) {
-  printf("Module %s requires the page to authenticate.\n"
-         "For example:  \"/secret\" or \"http://bla.com/foo/bar\" or \"https://test.com:8080/members\"\n\n", service);
 }
 
 void module_usage() {
