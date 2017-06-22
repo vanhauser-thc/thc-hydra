@@ -350,3 +350,8 @@ int service_http_init(char *ip, int sp, unsigned char options, char *miscptr, FI
 
   return 0;
 }
+
+void usage_http(const char* service) {
+  printf("Module %s requires the page to authenticate.\n"
+         "For example:  \"/secret\" or \"http://bla.com/foo/bar\" or \"https://test.com:8080/members\"\n\n", service);
+}

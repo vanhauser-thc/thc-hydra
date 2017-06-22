@@ -217,3 +217,8 @@ int service_telnet_init(char *ip, int sp, unsigned char options, char *miscptr, 
 
   return 0;
 }
+
+void usage_telnet(const char* service) {
+  printf("Module telnet is optionally taking the string which is displayed after\n"
+         "a successful login (case insensitive), use if the default in the telnet\n" "module produces too many false positives\n\n");
+}

@@ -196,3 +196,7 @@ int service_oracle_init(char *ip, int sp, unsigned char options, char *miscptr, 
 
   return 0;
 }
+
+void usage_oracle(const char* service) {
+  printf("Module oracle / ora is optionally taking the ORACLE SID, default is \"ORCL\"\n\n");
+}

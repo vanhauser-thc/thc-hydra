@@ -211,3 +211,7 @@ int service_cisco_init(char *ip, int sp, unsigned char options, char *miscptr, F
 
   return 0;
 }
+
+void usage_cisco(const char* service) {
+  printf("Module cisco is optionally taking the keyword ENTER, it then sends an initial\n" "ENTER when connecting to the service.\n");
+}

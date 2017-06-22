@@ -1239,3 +1239,40 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
   }
   return ptr_head;
 }
+
+void usage_http_form(const char* service) {
+  printf("Module %s requires the page and the parameters for the web form.\n\n"
+         "By default this module is configured to follow a maximum of 5 redirections in\n"
+         "a row. It always gathers a new cookie from the same URL without variables\n"
+         "The parameters take three \":\" separated values, plus optional values.\n"
+         "(Note: if you need a colon in the option string as value, escape it with \"\\:\", but do not escape a \"\\\" with \"\\\\\".)\n"
+         "\nSyntax:   <url>:<form parameters>:<condition string>[:<optional>[:<optional>]\n"
+         "First is the page on the server to GET or POST to (URL).\n"
+         "Second is the POST/GET variables (taken from either the browser, proxy, etc.\n"
+         " with usernames and passwords being replaced in the \"^USER^\" and \"^PASS^\"\n"
+         " placeholders (FORM PARAMETERS)\n"
+         "Third is the string that it checks for an *invalid* login (by default)\n"
+         " Invalid condition login check can be preceded by \"F=\", successful condition\n"
+         " login check must be preceded by \"S=\".\n"
+         " This is where most people get it wrong. You have to check the webapp what a\n"
+         " failed string looks like and put it in this parameter!\n"
+         "The following parameters are optional:\n"
+         " C=/page/uri     to define a different page to gather initial cookies from\n"
+         " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each request\n"
+         "                 ^USER^ and ^PASS^ can also be put into these headers!\n"
+         "                 Note: 'h' will add the user-defined header at the end\n"
+         "                 regardless it's already being sent by Hydra or not.\n"
+         "                 'H' will replace the value of that header if it exists, by the\n"
+         "                 one supplied by the user, or add the header at the end\n"
+         "Note that if you are going to put colons (:) in your headers you should escape them with a backslash (\\).\n"
+         " All colons that are not option separators should be escaped (see the examples above and below).\n"
+         " You can specify a header without escaping the colons, but that way you will not be able to put colons\n"
+         " in the header value itself, as they will be interpreted by hydra as option separators.\n"
+         "\nExamples:\n"
+         " \"/login.php:user=^USER^&pass=^PASS^:incorrect\"\n"
+         " \"/login.php:user=^USER^&pass=^PASS^&colon=colon\\:escape:S=authlog=.*success\"\n"
+         " \"/login.php:user=^USER^&pass=^PASS^&mid=123:authlog=.*failed\"\n"
+         " \"/:user=^USER&pass=^PASS^:failed:H=Authorization\\: Basic dT1w:H=Cookie\\: sessid=aaaa:h=X-User\\: ^USER^:H=User-Agent\\: wget\"\n"
+         " \"/exchweb/bin/auth/owaauth.dll:destination=http%%3A%%2F%%2F<target>%%2Fexchange&flags=0&username=<domain>%%5C^USER^&password=^PASS^&SubmitCreds=x&trusted=0:reason=:C=/exchweb\"\n",
+         service);
+}

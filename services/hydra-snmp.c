@@ -586,3 +586,23 @@ int service_snmp_init(char *ip, int sp, unsigned char options, char *miscptr, FI
 
   return 0;
 }
+
+void usage_snmp(const char* service) {
+  printf("Module snmp is optionally taking the following parameters:\n"
+         "   READ  perform read requests (default)\n"
+         "   WRITE perform write requests\n"
+         "   1     use SNMP version 1 (default)\n"
+         "   2     use SNMP version 2\n"
+         "   3     use SNMP version 3\n"
+         "           Note that SNMP version 3 usually uses both login and passwords!\n"
+         "           SNMP version 3 has the following optional sub parameters:\n"
+         "             MD5   use MD5 authentication (default)\n"
+         "             SHA   use SHA authentication\n"
+         "             DES   use DES encryption\n"
+         "             AES   use AES encryption\n"
+         "           if no -p/-P parameter is given, SNMPv3 noauth is performed, which\n"
+         "           only requires a password (or username) not both.\n"
+         "To combine the options, use colons (\":\"), e.g.:\n"
+         "   hydra -L user.txt -P pass.txt -m 3:SHA:AES:READ target.com snmp\n"
+         "   hydra -P pass.txt -m 2 target.com snmp\n");
+}

@@ -775,3 +775,9 @@ int service_pop3_init(char *ip, int sp, unsigned char options, char *miscptr, FI
 
   return 0;
 }
+
+void usage_pop3(const char* service) {
+  printf("Module pop3 is optionally taking one authentication type of:\n"
+         "  CLEAR (default), LOGIN, PLAIN, CRAM-MD5, CRAM-SHA1,\n"
+         "  CRAM-SHA256, DIGEST-MD5, NTLM.\n" "Additionally TLS encryption via STLS can be enforced with the TLS option.\n\n" "Example: pop3://target/TLS:PLAIN\n");
+}

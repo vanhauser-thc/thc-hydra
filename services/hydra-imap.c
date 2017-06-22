@@ -584,3 +584,9 @@ int service_imap_init(char *ip, int sp, unsigned char options, char *miscptr, FI
 
   return 0;
 }
+
+void usage_imap(const char* service) {
+  printf("Module imap is optionally taking one authentication type of:\n"
+         "  CLEAR or APOP (default), LOGIN, PLAIN, CRAM-MD5, CRAM-SHA1,\n"
+         "  CRAM-SHA256, DIGEST-MD5, NTLM\n" "Additionally TLS encryption via STARTTLS can be enforced with the TLS option.\n\n" "Example: imap://target/TLS:PLAIN\n");
+}

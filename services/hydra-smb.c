@@ -1440,3 +1440,16 @@ int service_smb_init(char *ip, int sp, unsigned char options, char *miscptr, FIL
 
   return 0;
 }
+
+void usage_smb(const char* service) {
+  printf("Module smb default value is set to test both local and domain account, using a simple password with NTLM dialect.\n"
+         "Note: you can set the group type using LOCAL or DOMAIN keyword\n"
+         "      or other_domain:{value} to specify a trusted domain.\n"
+         "      you can set the password type using HASH or MACHINE keyword\n"
+         "      (to use the Machine's NetBIOS name as the password).\n"
+         "      you can set the dialect using NTLMV2, NTLM, LMV2, LM keyword.\n"
+         "Example: \n"
+         "      hydra smb://microsoft.com  -l admin -p tooeasy -m \"local lmv2\"\n"
+         "      hydra smb://microsoft.com  -l admin -p D5731CFC6C2A069C21FD0D49CAEBC9EA:2126EE7712D37E265FD63F2C84D2B13D::: -m \"local hash\"\n"
+         "      hydra smb://microsoft.com  -l admin -p tooeasy -m \"other_domain:SECONDDOMAIN\"\n\n");
+}

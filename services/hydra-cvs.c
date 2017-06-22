@@ -149,3 +149,7 @@ int service_cvs_init(char *ip, int sp, unsigned char options, char *miscptr, FIL
 
   return 0;
 }
+
+void usage_cvs(const char* service) {
+  printf("Module cvs is optionally taking the repository name to attack, default is \"/root\"\n\n");
+}

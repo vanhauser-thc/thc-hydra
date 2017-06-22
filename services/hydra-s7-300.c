@@ -285,3 +285,7 @@ int service_s7_300_init(char *ip, int sp, unsigned char options, char *miscptr, 
 
   return 0;
 }
+
+void usage_s7_300(const char* service) {
+  printf("Module S7-300 is for a special Siemens PLC. It either requires only a password or no authentication, so just use the -p or -P option.\n\n");
+}

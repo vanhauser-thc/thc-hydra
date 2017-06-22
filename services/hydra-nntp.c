@@ -485,3 +485,7 @@ int service_nntp_init(char *ip, int sp, unsigned char options, char *miscptr, FI
 
   return 0;
 }
+
+void usage_nntp(const char* service) {
+  printf("Module nntp is optionally taking one authentication type of:\n" "  USER (default), LOGIN, PLAIN, CRAM-MD5, DIGEST-MD5, NTLM\n\n");
+}

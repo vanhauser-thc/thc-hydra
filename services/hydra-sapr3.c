@@ -130,3 +130,7 @@ int service_sapr3_init(char *ip, int sp, unsigned char options, char *miscptr, F
 
   return 0;
 }
+
+void usage_sapr3(const char* service) {
+  printf("Module sapr3 requires the client id, a number between 0 and 99\n\n");
+}

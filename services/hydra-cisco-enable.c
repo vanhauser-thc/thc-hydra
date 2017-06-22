@@ -209,3 +209,13 @@ int service_cisco_enable_init(char *ip, int sp, unsigned char options, char *mis
 
   return 0;
 }
+
+void usage_cisco_enable(const char* service) {
+  printf("Module cisco-enable is optionally taking the logon password for the cisco device\n"
+         "Note: if AAA authentication is used, use the -l option for the username\n"
+         "and the optional parameter for the password of the user.\n"
+         "Examples:\n"
+         "  hydra -P pass.txt target cisco-enable  (direct console access)\n"
+         "  hydra -P pass.txt -m cisco target cisco-enable  (Logon password cisco)\n"
+         "  hydra -l foo -m bar -P pass.txt target cisco-enable  (AAA Login foo, password bar)\n");
+}

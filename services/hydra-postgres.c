@@ -132,3 +132,7 @@ int service_postgres_init(char *ip, int sp, unsigned char options, char *miscptr
 
   return 0;
 }
+
+void usage_postgres(const char* service) {
+  printf("Module postgres is optionally taking the database to attack, default is \"template1\"\n\n");
+}

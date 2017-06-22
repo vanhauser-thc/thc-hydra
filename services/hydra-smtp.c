@@ -456,3 +456,9 @@ int service_smtp_init(char *ip, int sp, unsigned char options, char *miscptr, FI
 
   return 0;
 }
+
+void usage_smtp(const char* service) {
+  printf("Module smtp is optionally taking one authentication type of:\n"
+         "  LOGIN (default), PLAIN, CRAM-MD5, DIGEST-MD5, NTLM\n\n"
+         "Additionally TLS encryption via STARTTLS can be enforced with the TLS option.\n\n" "Example: smtp://target/TLS:PLAIN\n");
+}
