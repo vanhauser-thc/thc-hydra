@@ -290,99 +290,95 @@ typedef void (*service_t)(char *ip, int sp, unsigned char options, char *miscptr
 typedef int (*service_init_t)(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 typedef void (*service_usage_t)(const char* service);
 
-#define SERVICE2(name, func) { name, service_##func##_init, service_##func, NULL }
-#define SERVICE(name) { #name, service_##name##_init, service_##name, NULL }
-#define SERVICE3(name, func) { name, service_##func##_init, service_##func, usage_##func }
-
 static const struct {
   const char* name;
   service_init_t init;
   service_t exec;
   service_usage_t usage;
 } services[] = {
-  SERVICE(adam6500),
+  SERVICE_ADAM6500,
 #ifdef LIBAFP
-  SERVICE(afp),
+  SERVICE_AFP,
 #endif
-  SERVICE(asterisk),
-  SERVICE3("cisco", cisco),
-  SERVICE3("cisco-enable", cisco_enable),
-  SERVICE3("cvs", cvs),
+  SERVICE_ASTERISK,
+  SERVICE_CISCO_ENABLE,
+  SERVICE_CISCO,
+  SERVICE_CVS,
 #ifdef LIBFIREBIRD
-  SERVICE3("firebird", firebird),
+  SERVICE_FIREBIRD,
 #endif
-  SERVICE(ftp),
-  { "ftps", service_ftp_init, service_ftps },
-  { "http-get", service_http_init, service_http_get, usage_http },
-  { "http-get-form", service_http_form_init, service_http_get_form, usage_http_form },
-  { "http-head", service_http_init, service_http_head, NULL },
-  { "http-form", service_http_form_init, NULL, usage_http_form },
-  { "http-post", NULL, service_http_post, usage_http },
-  { "http-post-form", service_http_form_init, service_http_post_form, usage_http_form },
-  SERVICE3("http-proxy", http_proxy),
-  SERVICE3("http-proxy-urlenum", http_proxy_urlenum),
-  SERVICE(icq),
-  SERVICE3("imap", imap),
-  SERVICE3("irc", irc),
-  { "ldap2", service_ldap_init, service_ldap2, usage_ldap },
-  { "ldap3", service_ldap_init, service_ldap3, usage_ldap },
-  { "ldap3-crammd5", service_ldap_init, service_ldap3_cram_md5, usage_ldap },
-  { "ldap3-digestmd5", service_ldap_init, service_ldap3_digest_md5, usage_ldap },
-  SERVICE(mssql),
+  SERVICE_FTP,
+  SERVICE_FTPS,
+  SERVICE_HTTP_FORM,
+  SERVICE_HTTP_GET,
+  SERVICE_HTTP_GET_FORM,
+  SERVICE_HTTP_HEAD,
+  SERVICE_HTTP_POST,
+  SERVICE_HTTP_POST_FORM,
+  SERVICE_HTTP_PROXY_URLENUM,
+  SERVICE_HTTP_PROXY,
+  SERVICE_ICQ,
+  SERVICE_IMAP,
+  SERVICE_IRC,
+  SERVICE_LDAP2,
+  SERVICE_LDAP3,
+  SERVICE_LDAP3_CRAM_MD5,
+  SERVICE_LDAP3_DIGEST_MD5,
+  SERVICE_MSSQL,
 #ifdef HAVE_MATH_H
-  SERVICE3("mysql", mysql),
+  SERVICE_MYSQL,
 #endif
 #ifdef LIBNCP
-  SERVICE3("ncp", ncp),
+  SERVICE_NCP,
 #endif
-  SERVICE3("nntp", nntp),
+  SERVICE_NNTP,
 #ifdef LIBORACLE
-  SERVICE3("oracle", oracle),
+  SERVICE_ORACLE,
 #endif
 #ifdef LIBOPENSSL
-  SERVICE3("oracle-listener", oracle_listener),
-  SERVICE2("oracle-sid", oracle_sid),
+  SERVICE_ORACLE_LISTENER,
+  SERVICE_ORACLE_SID,
 #endif
-  SERVICE(pcanywhere),
-  SERVICE(pcnfs),
-  SERVICE3("pop3", pop3),
+  SERVICE_PCANYWHERE,
+  SERVICE_PCNFS,
+  SERVICE_POP3,
 #ifdef LIBPOSTGRES
-  SERVICE3("postgres", postgres),
+  SERVICE_POSTGRES,
 #endif
-  SERVICE(redis),
-  SERVICE(rexec),
 #ifdef LIBOPENSSL
-  SERVICE3("rdp", rdp),
+  SERVICE_RDP,
 #endif
-  SERVICE(rlogin),
-  SERVICE(rsh),
-  SERVICE(rtsp),
-  SERVICE(rpcap),
-  SERVICE3("s7-300", s7_300),
+  SERVICE_REDIS,
+  SERVICE_REXEC,
+  SERVICE_RLOGIN,
+  SERVICE_RPCAP,
+  SERVICE_RSH,
+  SERVICE_RTSP,
+  SERVICE_S7_300,
 #ifdef LIBSAPR3
-  SERVICE3("sarp3", sapr3),
+  SERVICE_SAPR3,
 #endif
 #ifdef LIBOPENSSL
-  SERVICE(sip),
-  SERVICE3("smbnt", smb),
-  SERVICE3("smb", smb),
+  SERVICE_SIP,
+  SERVICE_SMB,
+  SERVICE_SMBNT,
 #endif
-  SERVICE3("smtp", smtp),
-  SERVICE3("smtp-enum", smtp_enum),
-  SERVICE3("snmp", snmp),
-  SERVICE(socks5),
+  SERVICE_SMTP,
+  SERVICE_SMTP_ENUM,
+  SERVICE_SNMP,
+  SERVICE_SOCKS5,
 #ifdef LIBSSH
-  { "ssh", NULL, service_ssh },
-  SERVICE3("sshkey", sshkey),
+  SERVICE_SSH,
+  SERVICE_SSHKEY,
 #endif
 #ifdef LIBSVN
-  SERVICE3("svn", svn),
+  SERVICE_SVN,
 #endif
-  SERVICE(teamspeak),
-  SERVICE3("telnet", telnet),
-  SERVICE(vmauthd),
-  SERVICE(vnc),
-  { "xmpp", service_xmpp_init, NULL, usage_xmpp }
+  SERVICE_TEAMSPEAK,
+  SERVICE_TELNET,
+  SERVICE_VMAUTHD,
+  SERVICE_VNC,
+  SERVICE_XMPP
 };
 
 
