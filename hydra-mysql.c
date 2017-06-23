@@ -437,3 +437,7 @@ int service_mysql_init(char *ip, int sp, unsigned char options, char *miscptr, F
 
   return 0;
 }
+
+void usage_mysql(const char* service) {
+  printf("Module mysql is optionally taking the database to attack, default is \"mysql\"\n\n");
+}

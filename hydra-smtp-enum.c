@@ -262,3 +262,10 @@ int service_smtp_enum_init(char *ip, int sp, unsigned char options, char *miscpt
 
   return 0;
 }
+
+void usage_smtp_enum(const char* service) {
+  printf("Module smtp-enum is optionally taking one SMTP command of:\n\n"
+         "VRFY (default), EXPN, RCPT (which will connect using \"root\" account)\n"
+         "login parameter is used as username and password parameter as the domain name\n"
+         "For example to test if john@localhost exists on 192.168.0.1:\n" "hydra smtp-enum://192.168.0.1/vrfy -l john -p localhost\n\n");
+}

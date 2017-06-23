@@ -159,3 +159,7 @@ int service_firebird_init(char *ip, int sp, unsigned char options, char *miscptr
 
   return 0;
 }
+
+void usage_firebird(const char* service) {
+  printf("Module firebird is optionally taking the database path to attack,\n" "default is \"C:\\Program Files\\Firebird\\Firebird_1_5\\security.fdb\"\n\n");
+}

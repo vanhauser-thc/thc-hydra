@@ -197,3 +197,7 @@ int service_ncp_init(char *ip, int sp, unsigned char options, char *miscptr, FIL
 
   return 0;
 }
+
+void usage_ncp(const char* service) {
+  printf("Module ncp is optionally taking the full context, for example \".O=cx\"\n\n");
+}

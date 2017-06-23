@@ -164,3 +164,10 @@ int service_sshkey_init(char *ip, int sp, unsigned char options, char *miscptr, 
 
   return 0;
 }
+
+void usage_sshkey(const char* service) {
+  printf("Module sshkey does not provide additional options, although the semantic for\n"
+         "options -p and -P is changed:\n"
+         "  -p expects a path to an unencrypted private key in PEM format.\n"
+         "  -P expects a filename containing a list of path to some unencrypted\n" "     private keys in PEM format.\n\n");
+}

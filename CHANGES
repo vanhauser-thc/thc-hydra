@@ -8,6 +8,7 @@ Release 8.6-dev
    -c TIME: seconds between login attempts (over all threads, so -t 1 is recommended)
 * Options put after -R (for loading a restore file) are now honored (and were disallowed before)
 * merged several patches by Diadlo@github to make the code easier readable. thanks for that!
+* merged a patch by Diadlo@github that moves the help output to the invididual module
 
 
 Release 8.5

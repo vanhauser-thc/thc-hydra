@@ -312,3 +312,8 @@ int service_http_proxy_init(char *ip, int sp, unsigned char options, char *miscp
 
   return 0;
 }
+
+void usage_http_proxy(const char* service) {
+  printf("Module http-proxy is optionally taking the page to authenticate at.\n"
+         "Default is http://www.microsoft.com/)\n" "Basic, DIGEST-MD5 and NTLM are supported and negotiated automatically.\n\n");
+}

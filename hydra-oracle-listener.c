@@ -339,4 +339,8 @@ int service_oracle_listener_init(char *ip, int sp, unsigned char options, char *
   return 0;
 }
 
+void usage_oracle_listener(const char* service) {
+  printf("Module oracle-listener / tns is optionally taking the mode the password is stored as, could be PLAIN (default) or CLEAR\n\n");
+}
+
 #endif

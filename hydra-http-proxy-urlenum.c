@@ -291,3 +291,10 @@ int service_http_proxy_urlenum_init(char *ip, int sp, unsigned char options, cha
 
   return 0;
 }
+
+void usage_http_proxy_urlenum(const char* service) {
+  printf("Module http-proxy-urlenum only uses the -L option, not -x or -p/-P option.\n"
+         "The -L loginfile must contain the URL list to try through the proxy.\n"
+         "The proxy credentials cann be put as the optional parameter, e.g.\n"
+         "   hydra -L urllist.txt -s 3128 target.com http-proxy-urlenum user:pass\n" "   hydra -L urllist.txt http-proxy-urlenum://target.com:3128/user:pass\n\n");
+}

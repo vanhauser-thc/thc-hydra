@@ -212,3 +212,7 @@ int service_svn_init(char *ip, int sp, unsigned char options, char *miscptr, FIL
 
   return 0;
 }
+
+void usage_svn(const char* service) {
+  printf("Module svn is optionally taking the repository name to attack, default is \"trunk\"\n\n");
+}

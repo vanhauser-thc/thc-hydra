@@ -222,3 +222,7 @@ int service_irc_init(char *ip, int sp, unsigned char options, char *miscptr, FIL
 
   return 0;
 }
+
+void usage_irc(const char* service) {
+  printf("Module irc is optionally taking the general server password, if the server is requiring one\n" "and none is passed the password from -p/-P will be used\n\n");
+}

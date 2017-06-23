@@ -3247,3 +3247,7 @@ int service_rdp_init(char *ip, int sp, unsigned char options, char *miscptr, FIL
 
   return 0;
 }
+
+void usage_rdp(const char* service) {
+  printf("Module rdp is optionally taking the windows domain name.\n" "For example:\nhydra rdp://192.168.0.1/firstdomainname -l john -p doe\n\n");
+}

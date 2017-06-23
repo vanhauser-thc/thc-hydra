@@ -454,3 +454,14 @@ int service_ldap_init(char *ip, int sp, unsigned char options, char *miscptr, FI
 
   return 0;
 }
+
+void usage_ldap(const char* service) {
+  printf("Module %s is optionally taking the DN (depending of the auth method choosed\n"
+         "Note: you can also specify the DN as login when Simple auth method is used).\n"
+         "The keyword \"^USER^\" is replaced with the login.\n"
+         "Special notes for Simple method has 3 operation modes: anonymous, (no user no pass),\n"
+         "unauthenticated (user but no pass), user/pass authenticated (user and pass).\n"
+         "So don't forget to set empty string as user/pass to test all modes.\n"
+         "Hint: to authenticate to a windows active directy ldap, this is usually\n"
+         " cn=^USER^,cn=users,dc=foo,dc=bar,dc=com for domain foo.bar.com\n\n", service);
+}

@@ -498,3 +498,9 @@ int service_xmpp_init(char *ip, int sp, unsigned char options, char *miscptr, FI
 
   return 0;
 }
+
+void usage_xmpp(const char* service) {
+  printf("Module xmpp is optionally taking one authentication type of:\n"
+         "  LOGIN (default), PLAIN, CRAM-MD5, DIGEST-MD5, SCRAM-SHA1\n\n"
+         "Note, the target passed should be a fdqn as the value is used in the Jabber init request, example: hermes.jabber.org\n\n");
+}
