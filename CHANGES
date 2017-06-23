@@ -4,6 +4,9 @@ Changelog for hydra
 Release 8.6-dev
 * http-form module now supports URLs up to 6000 bytes (thanks to petrock6@github for the patch)
 * Fix for SSL connections that failed with error:00000000:lib(0):func(0):reason(0) (thanks gaia@github for reporting)
+* Added new command line option:
+   -c TIME: seconds between login attempts (over all threads, so -t 1 is recommended)
+* Options put after -R (for loading a restore file) are now honored (and were disallowed before)
 * merged several patches by Diadlo@github to make the code easier readable. thanks for that!
 
 

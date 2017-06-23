@@ -495,7 +495,7 @@ void help(int ext) {
 #ifdef HAVE_MATH_H
                     " [-x MIN:MAX:CHARSET]"
 #endif
-                    " [-ISOuvVd46] "
+                    " [-c TIME] [-ISOuvVd46] "
                     //"[server service [OPT]]|"
                     "[service://server[:PORT][/OPT]]\n");
   PRINT_NORMAL(ext, "\nOptions:\n");
@@ -521,7 +521,10 @@ void help(int ext) {
                     "  -f / -F   exit when a login/pass pair is found (-M: -f per host, -F global)\n");
   PRINT_NORMAL(ext, "  -t TASKS  run TASKS number of connects in parallel per target (default: %d)\n", TASKS);
   PRINT_EXTEND(ext, "  -T TASKS  run TASKS connects in parallel overall (for -M, default: %d)\n"
-                    "  -w / -W TIME  waittime for responses (%d) / between connects per thread (%d)\n"
+                    "  -w / -W TIME  wait time for a response (%d) / between connects per thread (%d)\n"
+#ifdef MSG_PEEK
+                    "  -c TIME   wait time per login attempt over all threads (-t 1 is recommended)\n"
+#endif
                     "  -4 / -6   use IPv4 (default) / IPv6 addresses (put always in [] also in -M)\n"
                     "  -v / -V / -d  verbose mode / show login+pass for each attempt / debug mode \n"
                     "  -O        use old SSL v2 and v3\n"
@@ -970,8 +973,7 @@ void hydra_restore_read() {
   int i, j, orig_debug = debug;
   char out[1024];
 
-  if (debug)
-    printf("[DEBUG] reading restore file %s\n", RESTOREFILE);
+  printf("[INFORMATION] reading restore file %s\n", RESTOREFILE);
   if ((f = fopen(RESTOREFILE, "r")) == NULL) {
     fprintf(stderr, "[ERROR] restore file (%s) not found - ", RESTOREFILE);
     perror("");
@@ -2444,6 +2446,7 @@ int main(int argc, char *argv[]) {
       break;
     case 'R':
       hydra_options.restore = 1;
+      hydra_restore_read();
       break;
     case 'I':
       ignore_restore = 1; // this is not to be saved in hydra_options!
@@ -2610,7 +2613,8 @@ int main(int argc, char *argv[]) {
     printf("[DEBUG] Ouput color flag is %d\n", colored_output);
 
   if (hydra_options.restore && argc > 2 + debug + verbose)
-    bail("no option may be supplied together with -R");
+    fprintf(stderr, "[WARNING] options after -R are now honored (since v8.6)\n");
+//    bail("no option may be supplied together with -R");
 
   printf("%s (%s) starting at %s\n", PROGRAM, RESOURCE, hydra_build_time());
   if (debug) {
@@ -2629,7 +2633,7 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "[WARNING] output file format specified (-b) - but no output file (-o)\n");
     
   if (hydra_options.restore) {
-    hydra_restore_read();
+//    hydra_restore_read();
     // stuff we have to copy from the non-restore part
     if (strncmp(hydra_options.service, "http-", 5) == 0) {
       if (getenv("HYDRA_PROXY_HTTP") && getenv("HYDRA_PROXY"))
@@ -3456,7 +3460,7 @@ int main(int argc, char *argv[]) {
     }
     free(memcheck);
     if ((rfp = fopen(RESTOREFILE, "r")) != NULL) {
-      fprintf(stderr, "[WARNING] Restorefile (%s) from a previous session found, to prevent overwriting, %s\n", ignore_restore == 1 ? "ignored ..." : "you have 10 seconds to abort...", RESTOREFILE);
+      fprintf(stderr, "[WARNING] Restorefile (%s) from a previous session found, to prevent overwriting, %s\n", ignore_restore == 1 ? "ignored ..." : "you have 10 seconds to abort... (use option -I to skip waiting)", RESTOREFILE);
       if (ignore_restore != 1)
         sleep(10);
       fclose(rfp);

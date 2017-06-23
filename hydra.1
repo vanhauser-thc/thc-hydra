@@ -6,7 +6,7 @@ hydra \- a very fast network logon cracker which support many different services
  [[[\-l LOGIN|\-L FILE] [\-p PASS|\-P FILE|\-x OPT \-y]] | [\-C FILE]]
  [\-e nsr] [\-u] [\-f|\-F] [\-M FILE] [\-o FILE] [\-b FORMAT]
  [\-t TASKS] [\-T TASKS] [\-w TIME] [\-W TIME] [\-m OPTIONS] [\-s PORT]
- [\-S] [\-O] [\-4|6] [\-I] [\-vV] [\-d]
+ [\-c TIME] [\-S] [\-O] [\-4|6] [\-I] [\-vV] [\-d]
  server service [OPTIONS]
 .br
 .SH DESCRIPTION
@@ -47,7 +47,8 @@ Some modules have optional or mandatory options. type "hydra \-U <servicename>"
 .TP
 .B \-R 
 restore a previously aborted session. Requires a hydra.restore file was
-written. No other options are allowed when using \-R
+written. Options are restored, but can be changed by setting them after
+\-R on the command line
 .TP
 .B \-S
 connect via SSL
@@ -114,6 +115,10 @@ defines the max wait time in seconds for responses (default: 32)
 .B \-W TIME
 defines a wait time between each connection a task performs. This usually
 only makes sense if a low task number is used, .e.g \-t 1
+.TP
+.B \-c TIME
+the wait time in seconds per login attempt over all threads (-t 1 is recommended)
+This usually only makes sense if a low task number is used, .e.g \-t 1
 .TP
 .B \-4 / \-6 
 prefer IPv4 (default) or IPv6 addresses
