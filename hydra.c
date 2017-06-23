@@ -2298,11 +2298,12 @@ int main(int argc, char *argv[]) {
   FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL, *proxyfp;
   size_t countinfile = 1, sizeinfile = 0;
   unsigned long int math2;
-  int i = 0, j = 0, k, error = 0, modusage = 0, ignore_restore = 0;
-  int head_no = 0, target_no = 0, exit_condition = 0, readres;
+  int i = 0, j = 0, k, error = 0, modusage = 0, ignore_restore = 0, do_switch;
+  int head_no = 0, target_no = 0, exit_condition = 0, readres, time_next_attempt = 0;
   time_t starttime, elapsed_status, elapsed_restore, status_print = 59, tmp_time;
   char *tmpptr, *tmpptr2;
   char rc, buf[MAXBUF];
+  time_t last_attempt = 0;
   fd_set fdreadheads;
   int max_fd;
   struct addrinfo hints, *res, *p;
@@ -2421,7 +2422,7 @@ int main(int argc, char *argv[]) {
     help(1);
   if (argc < 2)
     help(0);
-  while ((i = getopt(argc, argv, "hIq64Rde:vVl:fFg:L:p:OP:o:b:M:C:t:T:m:w:W:s:SUux:y")) >= 0) {
+  while ((i = getopt(argc, argv, "hIq64Rde:vVl:fFg:L:p:OP:o:b:M:C:t:T:m:w:W:s:SUux:yc:")) >= 0) {
     switch (i) {
     case 'h':
       help(1);
@@ -2542,6 +2543,13 @@ int main(int argc, char *argv[]) {
     case 's':
       hydra_options.port = port = atoi(optarg);
       break;
+    case 'c':
+#ifdef MSG_PEEK
+      time_next_attempt = atoi(optarg);
+#else
+      fprintf(stderr, "[WARNING] -c option can not be used as your operating system is missing the MSG_PEEK feature\n");
+#endif
+      break;
     case 'S':
 #ifndef LIBOPENSSL
       fprintf(stderr, "[WARNING] hydra was compiled without SSL support. Install openssl and recompile! Option ignored...\n");
@@ -2611,6 +2619,8 @@ int main(int argc, char *argv[]) {
       printf("%s ", argv[i]);
     printf("\n");
   }
+  if (hydra_options.tasks > 0 && time_next_attempt)
+    fprintf(stderr, "[WARNING] when using the -c option, you should also set the task per target to one (-t 1)\n");
   if (hydra_options.login != NULL && hydra_options.loginfile != NULL)
     bail("You can only use -L OR -l, not both\n");
   if (hydra_options.pass != NULL && hydra_options.passfile != NULL)
@@ -3864,6 +3874,7 @@ int main(int argc, char *argv[]) {
     for (head_no = 0; head_no < hydra_options.max_use; head_no++) {
       if (debug > 1 && hydra_heads[head_no]->active != -1)
         printf("[DEBUG] head_no[%d] to target_no %d active %d\n", head_no, hydra_heads[head_no]->target_no, hydra_heads[head_no]->active);
+       
       switch (hydra_heads[head_no]->active) {
       case -1:
         // disabled head, ignored
@@ -3888,13 +3899,22 @@ int main(int argc, char *argv[]) {
         break;
       case 1:
         if (FD_ISSET(hydra_heads[head_no]->sp[0], &fdreadheads)) {
-          readres = read_safe(hydra_heads[head_no]->sp[0], &rc, 1);
-          if (readres > 0) {
-            FD_CLR(hydra_heads[head_no]->sp[0], &fdreadheads);
-            hydra_heads[head_no]->last_seen = tmp_time;
-            if (debug)
-              printf("[DEBUG] head_no[%d] read %c\n", head_no, rc);
-            switch (rc) {
+          do_switch = 1;
+          if (time_next_attempt > 0) {
+            if (last_attempt + time_next_attempt >= time(NULL)) {
+              if (recv(hydra_heads[head_no]->sp[0], &rc, 1, MSG_PEEK) == 1  && (rc == 'N' || rc == 'n'))
+                do_switch = 0;
+            } else
+              last_attempt = time(NULL);
+          }
+          if (do_switch) {
+            readres = read_safe(hydra_heads[head_no]->sp[0], &rc, 1);
+            if (readres > 0) {
+              FD_CLR(hydra_heads[head_no]->sp[0], &fdreadheads);
+              hydra_heads[head_no]->last_seen = tmp_time;
+              if (debug)
+                printf("[DEBUG] head_no[%d] read %c\n", head_no, rc);
+              switch (rc) {
               // Valid Results:
               //  n - mother says to itself that child requests next login/password pair
               //  N - child requests next login/password pair
@@ -3904,137 +3924,138 @@ int main(int argc, char *argv[]) {
               //  f - child reports that the username does not exist
               //  F - child reports that it found a valid login/password pair
               //        and requests next pair. Sends login/pw pair with next msg!
-            case 'N':          // head wants next pair
-              hydra_targets[hydra_heads[head_no]->target_no]->ok = 1;
-              if (hydra_targets[hydra_heads[head_no]->target_no]->fail_count > 0)
-                hydra_targets[hydra_heads[head_no]->target_no]->fail_count--;
-              // no break here
-            case 'n':          // mother sends this to itself initially
-              loop_cnt = 0;
-              if (hydra_send_next_pair(hydra_heads[head_no]->target_no, head_no) == -1)
-                hydra_kill_head(head_no, 1, 0);
-              break;
-
-            case 'F':          // valid password found
-              hydra_brains.found++;
-              if (colored_output) {
-                if (hydra_heads[head_no]->current_login_ptr == NULL || strlen(hydra_heads[head_no]->current_login_ptr) == 0) {
-                  if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0)
-                    printf("[\e[1;32m%d\e[0m][\e[1;32m%s\e[0m] host: \e[1;32m%s\e[0m\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
-                           hydra_targets[hydra_heads[head_no]->target_no]->target);
-                  else
-                    printf("[\e[1;32m%d\e[0m][\e[1;32m%s\e[0m] host: \e[1;32m%s\e[0m   password: \e[1;32m%s\e[0m\n", hydra_targets[hydra_heads[head_no]->target_no]->port,
-                           hydra_options.service, hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_pass_ptr);
-                } else if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0) {
-                  printf("[\e[1;32m%d\e[0m][\e[1;32m%s\e[0m] host: \e[1;32m%s\e[0m   login: \e[1;32m%s\e[0m\n", hydra_targets[hydra_heads[head_no]->target_no]->port,
-                         hydra_options.service, hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr);
-                } else
-                  printf("[\e[1;32m%d\e[0m][\e[1;32m%s\e[0m] host: \e[1;32m%s\e[0m   login: \e[1;32m%s\e[0m   password: \e[1;32m%s\e[0m\n",
-                         hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service, hydra_targets[hydra_heads[head_no]->target_no]->target,
-                         hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr);
-              } else {
-                if (hydra_heads[head_no]->current_login_ptr == NULL || strlen(hydra_heads[head_no]->current_login_ptr) == 0) {
-                  if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0)
-                    printf("[%d][%s] host: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
-                           hydra_targets[hydra_heads[head_no]->target_no]->target);
-                  else
-                    printf("[%d][%s] host: %s   password: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
-                           hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_pass_ptr);
-                } else if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0) {
-                  printf("[%d][%s] host: %s   login: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
-                         hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr);
-                } else
-                  printf("[%d][%s] host: %s   login: %s   password: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
-                         hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr);
-              }
-              if (hydra_options.outfile_format == FORMAT_JSONV1 && hydra_options.outfile_ptr != NULL && hydra_brains.ofp != NULL) {
-                  fprintf(hydra_brains.ofp, "%s\n\t{\"port\": %d, \"service\": \"%s\", \"host\": \"%s\", \"login\": \"%s\", \"password\": \"%s\"}",
-                          hydra_brains.found == 1 ? "" : ",",  // prefix a comma if not first finding
-                          hydra_targets[hydra_heads[head_no]->target_no]->port,
-                          hydra_options.service,
-                          hydra_targets[hydra_heads[head_no]->target_no]->target !=NULL ?  hydra_targets[hydra_heads[head_no]->target_no]->target : "",
-                          hydra_heads[head_no]->current_login_ptr !=NULL ?  hydra_string_replace(hydra_heads[head_no]->current_login_ptr,"\"","\\\"") : "",
-                          hydra_heads[head_no]->current_pass_ptr != NULL ?  hydra_string_replace(hydra_heads[head_no]->current_pass_ptr,"\"","\\\"") : ""
-                  );
-                fflush(hydra_brains.ofp);
-              } else if (hydra_options.outfile_ptr != NULL && hydra_brains.ofp != NULL) {  // else output format == 0 aka text
-                if (hydra_heads[head_no]->current_login_ptr == NULL || strlen(hydra_heads[head_no]->current_login_ptr) == 0) {
-                  if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0)
-                    fprintf(hydra_brains.ofp, "[%d][%s] host: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
-                            hydra_targets[hydra_heads[head_no]->target_no]->target);
-                  else
-                    fprintf(hydra_brains.ofp, "[%d][%s] host: %s   password: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
-                            hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_pass_ptr);
-                } else if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0) {
-                  fprintf(hydra_brains.ofp, "[%d][%s] host: %s   login: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
-                          hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr);
-                } else
-                  fprintf(hydra_brains.ofp, "[%d][%s] host: %s   login: %s   password: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
-                          hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr);
-                fflush(hydra_brains.ofp);
-              }
-              if (hydra_options.exit_found) {   // option set says quit target after on valid login/pass pair is found
-                if (hydra_targets[hydra_heads[head_no]->target_no]->done == STATE_ACTIVE) {
-                  hydra_targets[hydra_heads[head_no]->target_no]->done = STATE_FINISHED;     // mark target as done
-                  hydra_brains.finished++;
-                  printf("[STATUS] attack finished for %s (valid pair found)\n", hydra_targets[hydra_heads[head_no]->target_no]->target);
-                }
-                if (hydra_options.exit_found == 2) {
-                  for (j = 0; j < hydra_brains.targets; j++)
-                    if (hydra_targets[j]->done == STATE_ACTIVE) {
-                      hydra_targets[j]->done = STATE_FINISHED;
-                      hydra_brains.finished++;
-                    }
-                }
-                for (j = 0; j < hydra_options.max_use; j++)
-                  if (hydra_heads[j]->active >= 0 && (hydra_heads[j]->target_no == target_no || hydra_options.exit_found == 2)) {
-                    if (hydra_brains.targets > hydra_brains.finished && hydra_options.exit_found < 2)
-                      hydra_kill_head(j, 1, 0); // kill all heads working on the target
+              case 'N':          // head wants next pair
+                hydra_targets[hydra_heads[head_no]->target_no]->ok = 1;
+                if (hydra_targets[hydra_heads[head_no]->target_no]->fail_count > 0)
+                  hydra_targets[hydra_heads[head_no]->target_no]->fail_count--;
+                // no break here
+              case 'n':          // mother sends this to itself initially
+                loop_cnt = 0;
+                if (hydra_send_next_pair(hydra_heads[head_no]->target_no, head_no) == -1)
+                  hydra_kill_head(head_no, 1, 0);
+                break;
+  
+              case 'F':          // valid password found
+                hydra_brains.found++;
+                if (colored_output) {
+                  if (hydra_heads[head_no]->current_login_ptr == NULL || strlen(hydra_heads[head_no]->current_login_ptr) == 0) {
+                    if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0)
+                      printf("[\e[1;32m%d\e[0m][\e[1;32m%s\e[0m] host: \e[1;32m%s\e[0m\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
+                             hydra_targets[hydra_heads[head_no]->target_no]->target);
                     else
-                      hydra_kill_head(j, 1, 2); // kill all heads working on the target
+                      printf("[\e[1;32m%d\e[0m][\e[1;32m%s\e[0m] host: \e[1;32m%s\e[0m   password: \e[1;32m%s\e[0m\n", hydra_targets[hydra_heads[head_no]->target_no]->port,
+                             hydra_options.service, hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_pass_ptr);
+                  } else if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0) {
+                    printf("[\e[1;32m%d\e[0m][\e[1;32m%s\e[0m] host: \e[1;32m%s\e[0m   login: \e[1;32m%s\e[0m\n", hydra_targets[hydra_heads[head_no]->target_no]->port,
+                           hydra_options.service, hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr);
+                  } else
+                    printf("[\e[1;32m%d\e[0m][\e[1;32m%s\e[0m] host: \e[1;32m%s\e[0m   login: \e[1;32m%s\e[0m   password: \e[1;32m%s\e[0m\n",
+                           hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service, hydra_targets[hydra_heads[head_no]->target_no]->target,
+                           hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr);
+                } else {
+                  if (hydra_heads[head_no]->current_login_ptr == NULL || strlen(hydra_heads[head_no]->current_login_ptr) == 0) {
+                    if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0)
+                      printf("[%d][%s] host: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
+                             hydra_targets[hydra_heads[head_no]->target_no]->target);
+                    else
+                      printf("[%d][%s] host: %s   password: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
+                             hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_pass_ptr);
+                  } else if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0) {
+                    printf("[%d][%s] host: %s   login: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
+                           hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr);
+                  } else
+                    printf("[%d][%s] host: %s   login: %s   password: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
+                           hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr);
+                }
+                if (hydra_options.outfile_format == FORMAT_JSONV1 && hydra_options.outfile_ptr != NULL && hydra_brains.ofp != NULL) {
+                    fprintf(hydra_brains.ofp, "%s\n\t{\"port\": %d, \"service\": \"%s\", \"host\": \"%s\", \"login\": \"%s\", \"password\": \"%s\"}",
+                            hydra_brains.found == 1 ? "" : ",",  // prefix a comma if not first finding
+                            hydra_targets[hydra_heads[head_no]->target_no]->port,
+                            hydra_options.service,
+                            hydra_targets[hydra_heads[head_no]->target_no]->target !=NULL ?  hydra_targets[hydra_heads[head_no]->target_no]->target : "",
+                            hydra_heads[head_no]->current_login_ptr !=NULL ?  hydra_string_replace(hydra_heads[head_no]->current_login_ptr,"\"","\\\"") : "",
+                            hydra_heads[head_no]->current_pass_ptr != NULL ?  hydra_string_replace(hydra_heads[head_no]->current_pass_ptr,"\"","\\\"") : ""
+                    );
+                  fflush(hydra_brains.ofp);
+                } else if (hydra_options.outfile_ptr != NULL && hydra_brains.ofp != NULL) {  // else output format == 0 aka text
+                  if (hydra_heads[head_no]->current_login_ptr == NULL || strlen(hydra_heads[head_no]->current_login_ptr) == 0) {
+                    if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0)
+                      fprintf(hydra_brains.ofp, "[%d][%s] host: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
+                              hydra_targets[hydra_heads[head_no]->target_no]->target);
+                    else
+                      fprintf(hydra_brains.ofp, "[%d][%s] host: %s   password: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
+                              hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_pass_ptr);
+                  } else if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0) {
+                    fprintf(hydra_brains.ofp, "[%d][%s] host: %s   login: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
+                            hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr);
+                  } else
+                    fprintf(hydra_brains.ofp, "[%d][%s] host: %s   login: %s   password: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service,
+                            hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr);
+                  fflush(hydra_brains.ofp);
+                }
+                if (hydra_options.exit_found) {   // option set says quit target after on valid login/pass pair is found
+                  if (hydra_targets[hydra_heads[head_no]->target_no]->done == STATE_ACTIVE) {
+                    hydra_targets[hydra_heads[head_no]->target_no]->done = STATE_FINISHED;     // mark target as done
+                    hydra_brains.finished++;
+                    printf("[STATUS] attack finished for %s (valid pair found)\n", hydra_targets[hydra_heads[head_no]->target_no]->target);
                   }
-                continue;
-              }
-              // fall through
-            case 'f':          // username identified as invalid
-              hydra_targets[hydra_heads[head_no]->target_no]->ok = 1;
-              if (hydra_targets[hydra_heads[head_no]->target_no]->fail_count > 0)
-                hydra_targets[hydra_heads[head_no]->target_no]->fail_count--;
-              memset(buf, 0, sizeof(buf));
-              read_safe(hydra_heads[head_no]->sp[0], buf, MAXBUF);
-              hydra_skip_user(hydra_heads[head_no]->target_no, buf);
-              fck = write(hydra_heads[head_no]->sp[1], "n", 1); // small hack
-              break;
-
+                  if (hydra_options.exit_found == 2) {
+                    for (j = 0; j < hydra_brains.targets; j++)
+                      if (hydra_targets[j]->done == STATE_ACTIVE) {
+                        hydra_targets[j]->done = STATE_FINISHED;
+                        hydra_brains.finished++;
+                     }
+                  }
+                  for (j = 0; j < hydra_options.max_use; j++)
+                    if (hydra_heads[j]->active >= 0 && (hydra_heads[j]->target_no == target_no || hydra_options.exit_found == 2)) {
+                      if (hydra_brains.targets > hydra_brains.finished && hydra_options.exit_found < 2)
+                        hydra_kill_head(j, 1, 0); // kill all heads working on the target
+                      else
+                        hydra_kill_head(j, 1, 2); // kill all heads working on the target
+                    }
+                  continue;
+                }
+                // fall through
+              case 'f':          // username identified as invalid
+                hydra_targets[hydra_heads[head_no]->target_no]->ok = 1;
+                if (hydra_targets[hydra_heads[head_no]->target_no]->fail_count > 0)
+                  hydra_targets[hydra_heads[head_no]->target_no]->fail_count--;
+                memset(buf, 0, sizeof(buf));
+                read_safe(hydra_heads[head_no]->sp[0], buf, MAXBUF);
+                hydra_skip_user(hydra_heads[head_no]->target_no, buf);
+                fck = write(hydra_heads[head_no]->sp[1], "n", 1); // small hack
+                break;
+  
               // we do not make a difference between 'C' and 'E' results - yet
-            case 'E':          // head reports protocol error
-            case 'C':          // head reports connect error
-              fck = write(hydra_heads[head_no]->sp[0], "Q", 1);
-              if (debug) {
-                printf("[ATTEMPT-ERROR] target %s - login \"%s\" - pass \"%s\" - child %d - %lu of %lu\n",
-                       hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr, head_no,
-                       hydra_targets[hydra_heads[head_no]->target_no]->sent, hydra_brains.todo);
-              }
-              hydra_increase_fail_count(hydra_heads[head_no]->target_no, head_no);
-              break;
+              case 'E':          // head reports protocol error
+              case 'C':          // head reports connect error
+                fck = write(hydra_heads[head_no]->sp[0], "Q", 1);
+                if (debug) {
+                  printf("[ATTEMPT-ERROR] target %s - login \"%s\" - pass \"%s\" - child %d - %lu of %lu\n",
+                         hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr, head_no,
+                         hydra_targets[hydra_heads[head_no]->target_no]->sent, hydra_brains.todo);
+                }
+                hydra_increase_fail_count(hydra_heads[head_no]->target_no, head_no);
+                break;
 
-            case 'Q':          // head reports its quitting
-              fck = write(hydra_heads[head_no]->sp[0], "Q", 1);
-              if (debug)
-                printf("[DEBUG] child %d reported it quit\n", head_no);
-              hydra_kill_head(head_no, 1, 0);
-              break;
-
-            default:
-              fprintf(stderr, "[ERROR] child %d sent nonsense data, killing and restarting it!\n", head_no);
+              case 'Q':          // head reports its quitting
+                fck = write(hydra_heads[head_no]->sp[0], "Q", 1);
+                if (debug)
+                  printf("[DEBUG] child %d reported it quit\n", head_no);
+                hydra_kill_head(head_no, 1, 0);
+                break;
+  
+              default:
+                fprintf(stderr, "[ERROR] child %d sent nonsense data, killing and restarting it!\n", head_no);
+                hydra_increase_fail_count(hydra_heads[head_no]->target_no, head_no);
+              } // end switch
+            } // readres
+            if (readres == -1) {
+              if (verbose)
+                fprintf(stderr, "[WARNING] child %d seems to have died, restarting (this only happens if a module is bad) ... \n", head_no);
               hydra_increase_fail_count(hydra_heads[head_no]->target_no, head_no);
             }
-          }
-          if (readres == -1) {
-            if (verbose)
-              fprintf(stderr, "[WARNING] child %d seems to have died, restarting (this only happens if a module is bad) ... \n", head_no);
-            hydra_increase_fail_count(hydra_heads[head_no]->target_no, head_no);
-          }
+          } // end do_switch
         } else {
           if (hydra_heads[head_no]->last_seen + hydra_options.waittime > tmp_time) {
             // check if recover of timed-out head is necessary
