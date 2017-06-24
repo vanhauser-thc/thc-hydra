@@ -311,6 +311,7 @@ typedef struct {
   int exit_found;
   int max_use;
   int cidr;
+  int time_next_attempt;
   output_format_t outfile_format;
   char *login;
   char *loginfile;
@@ -2094,7 +2095,7 @@ int main(int argc, char *argv[]) {
   size_t countinfile = 1, sizeinfile = 0;
   unsigned long int math2;
   int i = 0, j = 0, k, error = 0, modusage = 0, ignore_restore = 0, do_switch;
-  int head_no = 0, target_no = 0, exit_condition = 0, readres, time_next_attempt = 0;
+  int head_no = 0, target_no = 0, exit_condition = 0, readres;
   time_t starttime, elapsed_status, elapsed_restore, status_print = 59, tmp_time;
   char *tmpptr, *tmpptr2;
   char rc, buf[MAXBUF];
@@ -2341,7 +2342,7 @@ int main(int argc, char *argv[]) {
       break;
     case 'c':
 #ifdef MSG_PEEK
-      time_next_attempt = atoi(optarg);
+      hydra_options.time_next_attempt = atoi(optarg);
 #else
       fprintf(stderr, "[WARNING] -c option can not be used as your operating system is missing the MSG_PEEK feature\n");
 #endif
@@ -2416,7 +2417,7 @@ int main(int argc, char *argv[]) {
       printf("%s ", argv[i]);
     printf("\n");
   }
-  if (hydra_options.tasks > 0 && time_next_attempt)
+  if (hydra_options.tasks > 0 && hydra_options.time_next_attempt)
     fprintf(stderr, "[WARNING] when using the -c option, you should also set the task per target to one (-t 1)\n");
   if (hydra_options.login != NULL && hydra_options.loginfile != NULL)
     bail("You can only use -L OR -l, not both\n");
@@ -3697,8 +3698,8 @@ int main(int argc, char *argv[]) {
       case 1:
         if (FD_ISSET(hydra_heads[head_no]->sp[0], &fdreadheads)) {
           do_switch = 1;
-          if (time_next_attempt > 0) {
-            if (last_attempt + time_next_attempt >= time(NULL)) {
+          if (hydra_options.time_next_attempt > 0) {
+            if (last_attempt + hydra_options.time_next_attempt >= time(NULL)) {
               if (recv(hydra_heads[head_no]->sp[0], &rc, 1, MSG_PEEK) == 1  && (rc == 'N' || rc == 'n'))
                 do_switch = 0;
             } else
