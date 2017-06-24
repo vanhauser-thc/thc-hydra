@@ -468,7 +468,8 @@ return -1 if no response from server
 */
 int analyze_server_response(int s) {
   int runs = 0;
-
+  redirected_flag = 0;
+  auth_flag = 0;
   while ((buf = hydra_receive_line(s)) != NULL) {
     runs++;
     //check for http redirection
@@ -846,6 +847,10 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         for (i = j; i > 0; i--)
           str3[i] = str3[i - 1];
         str3[0] = '/';
+      }
+
+      if(strrchr(url, ':') == NULL && port != 80) {
+        sprintf(str2, "%s:%d", str2, port);
       }
 
       if (verbose)
