@@ -2417,7 +2417,7 @@ int main(int argc, char *argv[]) {
       printf("%s ", argv[i]);
     printf("\n");
   }
-  if (hydra_options.tasks > 0 && hydra_options.time_next_attempt)
+  if (hydra_options.tasks > 1 && hydra_options.time_next_attempt)
     fprintf(stderr, "[WARNING] when using the -c option, you should also set the task per target to one (-t 1)\n");
   if (hydra_options.login != NULL && hydra_options.loginfile != NULL)
     bail("You can only use -L OR -l, not both\n");
@@ -3932,6 +3932,7 @@ int main(int argc, char *argv[]) {
 
     exit_condition = hydra_check_for_exit_condition();
   }
+
   process_restore = 0;
   if (debug)
     printf("[DEBUG] while loop left with %d\n", exit_condition);
@@ -3961,6 +3962,26 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "[ERROR] illegal target result value (%d=>%d)\n", i, hydra_targets[i]->done);
     }
 
+  printf("%d of %d target%s%scompleted, %lu valid password%s found\n", hydra_brains.targets - j - k - error, hydra_brains.targets, hydra_brains.targets == 1 ? " " : "s ",
+         hydra_brains.found > 0 ? "successfully " : "", hydra_brains.found, hydra_brains.found == 1 ? "" : "s");
+
+  if (error == 0 && j == 0) {
+    process_restore = 0;
+    unlink(RESTOREFILE);
+  } else {
+    k = 0;
+    for (j = 0; j < hydra_options.max_use; j++)
+      if (hydra_heads[j]->active > 0)
+        k++;
+    if (hydra_options.cidr == 0 && k == 0) {
+      printf("[INFO] Writing restore file because %d server scan%s could not be completed\n", j + error, j + error == 1 ? "" : "s");
+      hydra_restore_write(1);
+    } else if (k > 0) {
+      printf("[WARNING] Writing restore file because %d final worker threads did not complete until end.\n", k);
+      hydra_restore_write(1);
+    }
+  }
+
   if (debug)
     printf("[DEBUG] killing all remaining childs now that might be stuck\n");
   for (i = 0; i < hydra_options.max_use; i++)
@@ -3968,18 +3989,7 @@ int main(int argc, char *argv[]) {
       hydra_kill_head(i, 1, 3);
   (void) wait3(NULL, WNOHANG, NULL);
 
-  printf("%d of %d target%s%scompleted, %lu valid password%s found\n", hydra_brains.targets - j - k - error, hydra_brains.targets, hydra_brains.targets == 1 ? " " : "s ",
-         hydra_brains.found > 0 ? "successfully " : "", hydra_brains.found, hydra_brains.found == 1 ? "" : "s");
-  if (error == 0 && j == 0) {
-    process_restore = 0;
-    unlink(RESTOREFILE);
-  } else {
-    if (hydra_options.cidr == 0) {
-      printf("[INFO] Writing restore file because %d server scan%s could not be completed\n", j + error, j + error == 1 ? "" : "s");
-      hydra_restore_write(1);
-    }
-  }
-  #define STRMAX (10*1024)
+#define STRMAX (10*1024)
   char json_error[STRMAX+2], tmp_str[STRMAX+2];
   memset(json_error, 0, STRMAX+2);
   memset(tmp_str, 0, STRMAX+2);
