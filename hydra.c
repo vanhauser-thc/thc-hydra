@@ -220,10 +220,16 @@ void hydra_kill_head(int head_no, int killit, int fail);
 
 // some enum definitions
 typedef enum {
-  STATE_ACTIVE = 0,
-  STATE_FINISHED = 1,
-  STATE_ERROR = 2,
-  STATE_UNRESOLVED = 3
+  HEAD_DISABLED = -1,
+  HEAD_UNUSED = 0,
+  HEAD_ACTIVE = 1
+} head_state_t;
+
+typedef enum {
+  TARGET_ACTIVE = 0,
+  TARGET_FINISHED = 1,
+  TARGET_ERROR = 2,
+  TARGET_UNRESOLVED = 3
 } target_state_t;
 
 typedef enum {
@@ -251,7 +257,7 @@ typedef struct {
   char *current_login_ptr;
   char *current_pass_ptr;
   char reverse[256];
-  int active;
+  head_state_t active;
   int redo;
   time_t last_seen;
 } hydra_head;
@@ -645,14 +651,14 @@ void hydra_debug(int force, char *string) {
     return;
 
   for (i = 0; i < hydra_options.max_use; i++) {
-    if (hydra_heads[i]->active >= 0) {
+    if (hydra_heads[i]->active >= HEAD_UNUSED) {
       printf("[DEBUG] Task %d - pid %d  active %d  redo %d  current_login_ptr %s  current_pass_ptr %s\n",
            i, (int) hydra_heads[i]->pid,
            hydra_heads[i]->active,
            hydra_heads[i]->redo,
            STR_NULL(hydra_heads[i]->current_login_ptr),
            STR_NULL(hydra_heads[i]->current_pass_ptr));
-      if (hydra_heads[i]->active == 0)
+      if (hydra_heads[i]->active == HEAD_UNUSED)
         inactive++;
       else
         active++;
@@ -677,7 +683,7 @@ void hydra_restore_write(int print_msg) {
     return;
 
   for (i = 0; i < hydra_brains.targets; i++)
-    if (hydra_targets[j]->done != STATE_FINISHED && hydra_targets[j]->done != STATE_UNRESOLVED)
+    if (hydra_targets[j]->done != TARGET_FINISHED && hydra_targets[j]->done != TARGET_UNRESOLVED)
       j++;
   if (j == 0) {
     process_restore = 0;
@@ -719,7 +725,7 @@ void hydra_restore_write(int print_msg) {
   if (hydra_options.colonfile == NULL || hydra_options.colonfile == empty_login)
     fck = fwrite(pass_ptr, hydra_brains.sizepass, 1, f);
   for (j = 0; j < hydra_brains.targets; j++)
-    if (hydra_targets[j]->done != STATE_FINISHED) {
+    if (hydra_targets[j]->done != TARGET_FINISHED) {
       fck = fwrite(hydra_targets[j], sizeof(hydra_target), 1, f);
       fprintf(f, "%s\n%d\n%d\n", hydra_targets[j]->target == NULL ? "" : hydra_targets[j]->target, (int) (hydra_targets[j]->login_ptr - login_ptr),
               (int) (hydra_targets[j]->pass_ptr - pass_ptr));
@@ -1152,7 +1158,7 @@ void hydra_service_init(int target_no) {
     if (x > 0 && x < 4)
       hydra_targets[target_no]->done = x;
     else
-      hydra_targets[target_no]->done = STATE_ERROR;
+      hydra_targets[target_no]->done = TARGET_ERROR;
     hydra_brains.finished++;
     if (hydra_brains.targets == 1)
       exit(-1);
@@ -1168,7 +1174,7 @@ int hydra_spawn_head(int head_no, int target_no) {
     return -1;
   }
 
-  if (hydra_heads[head_no]->active < 0) {
+  if (hydra_heads[head_no]->active == HEAD_DISABLED) {
     printf("[DEBUG-ERROR] child %d should not be respawned!\n", head_no);
     return -1;
   }
@@ -1235,7 +1241,7 @@ int hydra_spawn_head(int head_no, int target_no) {
         (void) fcntl(hydra_heads[head_no]->sp[0], F_SETFL, O_NONBLOCK);
         if (hydra_heads[head_no]->redo != 1)
           hydra_heads[head_no]->target_no = target_no;
-        hydra_heads[head_no]->active = 1;
+        hydra_heads[head_no]->active = HEAD_ACTIVE;
         hydra_targets[hydra_heads[head_no]->target_no]->use_count++;
         hydra_brains.active++;
         hydra_heads[head_no]->last_seen = time(NULL);
@@ -1244,14 +1250,14 @@ int hydra_spawn_head(int head_no, int target_no) {
       } else {
         perror("[ERROR] Fork for children failed");
         hydra_heads[head_no]->sp[0] = -1;
-        hydra_heads[head_no]->active = 0;
+        hydra_heads[head_no]->active = HEAD_UNUSED;
         return -1;
       }
     }
   } else {
     perror("[ERROR] socketpair creation failed");
     hydra_heads[head_no]->sp[0] = -1;
-    hydra_heads[head_no]->active = 0;
+    hydra_heads[head_no]->active = HEAD_UNUSED;
     return -1;
   }
   return 0;
@@ -1348,7 +1354,7 @@ void hydra_kill_head(int head_no, int killit, int fail) {
     printf("[DEBUG] head_no %d, kill %d, fail %d\n", head_no, killit, fail);
   if (head_no < 0)
     return;
-  if (hydra_heads[head_no]->active > 0 || (hydra_heads[head_no]->sp[0] > 2 && hydra_heads[head_no]->sp[1] > 2)) {
+  if (hydra_heads[head_no]->active == HEAD_ACTIVE || (hydra_heads[head_no]->sp[0] > 2 && hydra_heads[head_no]->sp[1] > 2)) {
     close(hydra_heads[head_no]->sp[0]);
     close(hydra_heads[head_no]->sp[1]);
   }
@@ -1357,8 +1363,8 @@ void hydra_kill_head(int head_no, int killit, int fail) {
       kill(hydra_heads[head_no]->pid, SIGTERM);
     hydra_brains.active--;
   }
-  if (hydra_heads[head_no]->active > 0) {
-    hydra_heads[head_no]->active = 0;
+  if (hydra_heads[head_no]->active == HEAD_ACTIVE) {
+    hydra_heads[head_no]->active = HEAD_UNUSED;
     hydra_targets[hydra_heads[head_no]->target_no]->use_count--;
   }
   if (fail == 1) {
@@ -1366,11 +1372,11 @@ void hydra_kill_head(int head_no, int killit, int fail) {
       hydra_heads[head_no]->redo = 1;
   } else if (fail == 2) {
     if (hydra_options.cidr != 1)
-      hydra_heads[head_no]->active = -1;
+      hydra_heads[head_no]->active = HEAD_DISABLED;
     if (hydra_heads[head_no]->target_no >= 0)
       hydra_targets[hydra_heads[head_no]->target_no]->failed++;
   } else if (fail == 3) {
-    hydra_heads[head_no]->active = -1;
+    hydra_heads[head_no]->active = HEAD_DISABLED;
     if (hydra_heads[head_no]->target_no >= 0)
       hydra_targets[hydra_heads[head_no]->target_no]->failed++;
   }
@@ -1407,11 +1413,11 @@ void hydra_increase_fail_count(int target_no, int head_no) {
   if (hydra_targets[target_no]->fail_count >= maxfail) {
     k = 0;
     for (i = 0; i < hydra_options.max_use; i++)
-      if (hydra_heads[i]->active >= 0 && hydra_heads[i]->target_no == target_no)
+      if (hydra_heads[i]->active >= HEAD_UNUSED && hydra_heads[i]->target_no == target_no)
         k++;
     if (k <= 1) {
       // we need to put this in a list, otherwise we fail one login+pw test
-      if (hydra_targets[target_no]->done == STATE_ACTIVE
+      if (hydra_targets[target_no]->done == TARGET_ACTIVE
           && hydra_targets[target_no]->redo <= hydra_options.max_use * 2
           && ((hydra_heads[head_no]->current_login_ptr != empty_login && hydra_heads[head_no]->current_pass_ptr != empty_login)
               || (hydra_heads[head_no]->current_login_ptr != NULL && hydra_heads[head_no]->current_pass_ptr != NULL))) {
@@ -1426,11 +1432,11 @@ void hydra_increase_fail_count(int target_no, int head_no) {
         hydra_heads[head_no]->current_pass_ptr = empty_login;
       }
       if (hydra_targets[target_no]->fail_count >= MAXFAIL + hydra_options.tasks * hydra_targets[target_no]->ok) {
-        if (hydra_targets[target_no]->done == STATE_ACTIVE && hydra_options.max_use == hydra_targets[target_no]->failed) {
+        if (hydra_targets[target_no]->done == TARGET_ACTIVE && hydra_options.max_use == hydra_targets[target_no]->failed) {
           if (hydra_targets[target_no]->ok == 1)
-            hydra_targets[target_no]->done = STATE_ERROR; // mark target as done by errors
+            hydra_targets[target_no]->done = TARGET_ERROR; // mark target as done by errors
           else
-            hydra_targets[target_no]->done = STATE_UNRESOLVED; // mark target as done by unable to connect
+            hydra_targets[target_no]->done = TARGET_UNRESOLVED; // mark target as done by unable to connect
           hydra_brains.finished++;
           fprintf(stderr, "[ERROR] Too many connect errors to target, disabling %s://%s%s%s:%d\n", hydra_options.service, hydra_targets[target_no]->ip[0] == 16
                   && index(hydra_targets[target_no]->target, ':') != NULL ? "[" : "", hydra_targets[target_no]->target, hydra_targets[target_no]->ip[0] == 16
@@ -1443,7 +1449,7 @@ void hydra_increase_fail_count(int target_no, int head_no) {
       }                         // we keep the last one alive as long as it make sense
     } else {
       // we need to put this in a list, otherwise we fail one login+pw test
-      if (hydra_targets[target_no]->done == STATE_ACTIVE
+      if (hydra_targets[target_no]->done == TARGET_ACTIVE
           && hydra_targets[target_no]->redo <= hydra_options.max_use * 2
           && ((hydra_heads[head_no]->current_login_ptr != empty_login && hydra_heads[head_no]->current_pass_ptr != empty_login)
               || (hydra_heads[head_no]->current_login_ptr != NULL && hydra_heads[head_no]->current_pass_ptr != NULL))) {
@@ -1538,8 +1544,8 @@ int hydra_send_next_pair(int target_no, int head_no) {
     snpdone = 1;
   } else {
     if (hydra_targets[target_no]->sent >= hydra_brains.todo + hydra_targets[target_no]->redo) {
-      if (hydra_targets[target_no]->done == STATE_ACTIVE) {
-        hydra_targets[target_no]->done = STATE_FINISHED;
+      if (hydra_targets[target_no]->done == TARGET_ACTIVE) {
+        hydra_targets[target_no]->done = TARGET_FINISHED;
         hydra_brains.finished++;
         if (verbose)
           printf("[STATUS] attack finished for %s (waiting for children to complete tests)\n", hydra_targets[target_no]->target);
@@ -1579,8 +1585,8 @@ int hydra_send_next_pair(int target_no, int head_no) {
         snpdone = 1;
       } else {
         // if a pair does not complete after this point it is lost
-        if (hydra_targets[target_no]->done == STATE_ACTIVE) {
-          hydra_targets[target_no]->done = STATE_FINISHED;
+        if (hydra_targets[target_no]->done == TARGET_ACTIVE) {
+          hydra_targets[target_no]->done = TARGET_FINISHED;
           hydra_brains.finished++;
           if (verbose)
             printf("[STATUS] attack finished for %s (waiting for children to complete tests)\n", hydra_targets[target_no]->target);
@@ -1589,7 +1595,7 @@ int hydra_send_next_pair(int target_no, int head_no) {
         return -1;
       }
     } else {                    // normale state, no redo
-      if (hydra_targets[target_no]->done != STATE_ACTIVE) {
+      if (hydra_targets[target_no]->done != TARGET_ACTIVE) {
         loop_cnt = 0;
         return -1;              // head will be disabled by main while()
       }
@@ -1805,8 +1811,8 @@ int hydra_send_next_pair(int target_no, int head_no) {
   if (!snpdone || hydra_targets[target_no]->skipcnt >= hydra_brains.countlogin) {
     fck = write(hydra_heads[head_no]->sp[0], HYDRA_EXIT, sizeof(HYDRA_EXIT));
     if (hydra_targets[target_no]->use_count <= 1) {
-      if (hydra_targets[target_no]->done == STATE_ACTIVE) {
-        hydra_targets[target_no]->done = STATE_FINISHED;
+      if (hydra_targets[target_no]->done == TARGET_ACTIVE) {
+        hydra_targets[target_no]->done = TARGET_FINISHED;
         hydra_brains.finished++;
         if (verbose)
           printf("[STATUS] attack finished for %s (waiting for children to complete tests)\n", hydra_targets[target_no]->target);
@@ -1942,7 +1948,7 @@ int hydra_check_for_exit_condition() {
   if (hydra_brains.active < 1) {
     // no head active?! check if they are all disabled, if so, we are done
     for (i = 0; i < hydra_options.max_use && k == 0; i++)
-      if (hydra_heads[i]->active >= 0)
+      if (hydra_heads[i]->active >= HEAD_UNUSED)
         k = 1;
     if (k == 0) {
       fprintf(stderr, "[ERROR] all children were disabled due too many connection errors\n");
@@ -1956,7 +1962,7 @@ int hydra_select_target() {
   int target_no = -1, i, j = -1000;
 
   for (i = 0; i < hydra_brains.targets; i++)
-    if (hydra_targets[i]->use_count < hydra_options.tasks && hydra_targets[i]->done == STATE_ACTIVE)
+    if (hydra_targets[i]->use_count < hydra_options.tasks && hydra_targets[i]->done == TARGET_ACTIVE)
       if (j < hydra_options.tasks - hydra_targets[i]->failed - hydra_targets[i]->use_count) {
         target_no = i;
         j = hydra_options.tasks - hydra_targets[i]->failed - hydra_targets[i]->use_count;
@@ -3558,7 +3564,7 @@ int main(int argc, char *argv[]) {
           printf("[failed for %s] ", hydra_targets[i]->target);
         else
           fprintf(stderr, "[ERROR] could not resolve address: %s\n", hydra_targets[i]->target);
-        hydra_targets[i]->done = STATE_UNRESOLVED;
+        hydra_targets[i]->done = TARGET_UNRESOLVED;
         hydra_brains.finished++;
       }
     } else {
@@ -3580,7 +3586,7 @@ int main(int argc, char *argv[]) {
         if ((strcmp(hydra_options.service, "socks5") == 0) || (strcmp(hydra_options.service, "sip") == 0)) {
           fprintf(stderr, "[ERROR] Target %s resolves to an IPv6 address, however module %s does not support this. Maybe try \"-4\" option. Sending in patches helps.\n",
                   hydra_targets[i]->target, hydra_options.service);
-          hydra_targets[i]->done = STATE_UNRESOLVED;
+          hydra_targets[i]->done = TARGET_UNRESOLVED;
           hydra_brains.finished++;
         } else {
           hydra_targets[i]->ip[0] = 16;
@@ -3605,7 +3611,7 @@ int main(int argc, char *argv[]) {
           printf("[failed for %s] ", hydra_targets[i]->target);
         else
           fprintf(stderr, "[ERROR] Could not resolve proxy address: %s\n", hydra_targets[i]->target);
-        hydra_targets[i]->done = STATE_UNRESOLVED;
+        hydra_targets[i]->done = TARGET_UNRESOLVED;
         hydra_brains.finished++;
       }
       freeaddrinfo(res);
@@ -3660,7 +3666,7 @@ int main(int argc, char *argv[]) {
     max_fd = 0;
     FD_ZERO(&fdreadheads);
     for (head_no = 0, max_fd = 1; head_no < hydra_options.max_use; head_no++) {
-      if (hydra_heads[head_no]->active > 0) {
+      if (hydra_heads[head_no]->active == HEAD_ACTIVE) {
         FD_SET(hydra_heads[head_no]->sp[0], &fdreadheads);
         if (max_fd < hydra_heads[head_no]->sp[0])
           max_fd = hydra_heads[head_no]->sp[0];
@@ -3670,14 +3676,13 @@ int main(int argc, char *argv[]) {
     tmp_time = time(NULL);
 
     for (head_no = 0; head_no < hydra_options.max_use; head_no++) {
-      if (debug > 1 && hydra_heads[head_no]->active != -1)
+      if (debug > 1 && hydra_heads[head_no]->active != HEAD_DISABLED)
         printf("[DEBUG] head_no[%d] to target_no %d active %d\n", head_no, hydra_heads[head_no]->target_no, hydra_heads[head_no]->active);
        
       switch (hydra_heads[head_no]->active) {
-      case -1:
-        // disabled head, ignored
+      case HEAD_DISABLED:
         break;
-      case 0:
+      case HEAD_UNUSED:
         if (hydra_heads[head_no]->redo) {
           hydra_spawn_head(head_no, hydra_heads[head_no]->target_no);
         } else {
@@ -3695,7 +3700,7 @@ int main(int argc, char *argv[]) {
             hydra_spawn_head(head_no, hydra_heads[head_no]->target_no); // target_no is ignored if head->redo == 1
         }
         break;
-      case 1:
+      case HEAD_ACTIVE:
         if (FD_ISSET(hydra_heads[head_no]->sp[0], &fdreadheads)) {
           do_switch = 1;
           if (hydra_options.time_next_attempt > 0) {
@@ -3792,15 +3797,15 @@ int main(int argc, char *argv[]) {
                   fflush(hydra_brains.ofp);
                 }
                 if (hydra_options.exit_found) {   // option set says quit target after on valid login/pass pair is found
-                  if (hydra_targets[hydra_heads[head_no]->target_no]->done == STATE_ACTIVE) {
-                    hydra_targets[hydra_heads[head_no]->target_no]->done = STATE_FINISHED;     // mark target as done
+                  if (hydra_targets[hydra_heads[head_no]->target_no]->done == TARGET_ACTIVE) {
+                    hydra_targets[hydra_heads[head_no]->target_no]->done = TARGET_FINISHED;     // mark target as done
                     hydra_brains.finished++;
                     printf("[STATUS] attack finished for %s (valid pair found)\n", hydra_targets[hydra_heads[head_no]->target_no]->target);
                   }
                   if (hydra_options.exit_found == 2) {
                     for (j = 0; j < hydra_brains.targets; j++)
-                      if (hydra_targets[j]->done == STATE_ACTIVE) {
-                        hydra_targets[j]->done = STATE_FINISHED;
+                      if (hydra_targets[j]->done == TARGET_ACTIVE) {
+                        hydra_targets[j]->done = TARGET_FINISHED;
                         hydra_brains.finished++;
                      }
                   }
@@ -3906,7 +3911,7 @@ int main(int argc, char *argv[]) {
       }
       k = 0;
       for (j = 0; j < hydra_options.max_use; j++)
-        if (hydra_heads[j]->active >= 0)
+        if (hydra_heads[j]->active >= HEAD_UNUSED)
           k++;
 /*	I think we don't need this anymore
       if ((hydra_brains.todo_all + total_redo_count) < hydra_brains.sent) { //in case of overflow of unsigned "-1"
@@ -3940,18 +3945,18 @@ int main(int argc, char *argv[]) {
   j = k = error = 0;
   for (i = 0; i < hydra_brains.targets; i++)
     switch (hydra_targets[i]->done) {
-    case STATE_UNRESOLVED:
+    case TARGET_UNRESOLVED:
       k++;
       break;
-    case STATE_ERROR:
+    case TARGET_ERROR:
       if (hydra_targets[i]->ok == 0)
         k++;
       else
         error++;
       break;
-    case STATE_FINISHED:
+    case TARGET_FINISHED:
       break;
-    case STATE_ACTIVE:
+    case TARGET_ACTIVE:
       if (hydra_targets[i]->ok == 0)
         k++;
       else
@@ -3971,7 +3976,7 @@ int main(int argc, char *argv[]) {
   } else {
     k = 0;
     for (j = 0; j < hydra_options.max_use; j++)
-      if (hydra_heads[j]->active > 0)
+      if (hydra_heads[j]->active == HEAD_ACTIVE)
         k++;
     if (hydra_options.cidr == 0 && k == 0) {
       printf("[INFO] Writing restore file because %d server scan%s could not be completed\n", j + error, j + error == 1 ? "" : "s");
@@ -3985,7 +3990,7 @@ int main(int argc, char *argv[]) {
   if (debug)
     printf("[DEBUG] killing all remaining childs now that might be stuck\n");
   for (i = 0; i < hydra_options.max_use; i++)
-    if (hydra_heads[i]->active > 0 && hydra_heads[i]->pid > 0)
+    if (hydra_heads[i]->active == HEAD_ACTIVE && hydra_heads[i]->pid > 0)
       hydra_kill_head(i, 1, 3);
   (void) wait3(NULL, WNOHANG, NULL);
 
