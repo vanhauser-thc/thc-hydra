@@ -3970,14 +3970,15 @@ int main(int argc, char *argv[]) {
   printf("%d of %d target%s%scompleted, %lu valid password%s found\n", hydra_brains.targets - j - k - error, hydra_brains.targets, hydra_brains.targets == 1 ? " " : "s ",
          hydra_brains.found > 0 ? "successfully " : "", hydra_brains.found, hydra_brains.found == 1 ? "" : "s");
 
-  if (error == 0 && j == 0) {
+  k = 0;
+  for (j = 0; j < hydra_options.max_use; j++)
+    if (hydra_heads[j]->active == HEAD_ACTIVE)
+      k++;
+
+  if (error == 0 && j == 0 && k == 0) {
     process_restore = 0;
     unlink(RESTOREFILE);
   } else {
-    k = 0;
-    for (j = 0; j < hydra_options.max_use; j++)
-      if (hydra_heads[j]->active == HEAD_ACTIVE)
-        k++;
     if (hydra_options.cidr == 0 && k == 0) {
       printf("[INFO] Writing restore file because %d server scan%s could not be completed\n", j + error, j + error == 1 ? "" : "s");
       hydra_restore_write(1);
