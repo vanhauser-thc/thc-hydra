@@ -172,7 +172,7 @@ int service_ssh_init(char *ip, int sp, unsigned char options, char *miscptr, FIL
   ssh_session session = ssh_new();
   
   if (verbose || debug)
-    printf("[INFO] Testing if password authentication is supported by ssh://%s@%s:%d\n", miscptr == NULL ? "hydra" : "miscptr", hydra_address2string(ip), port);
+    printf("[INFO] Testing if password authentication is supported by ssh://%s@%s:%d\n", miscptr == NULL ? "hydra" : miscptr, hydra_address2string(ip), port);
   ssh_options_set(session, SSH_OPTIONS_PORT, &port);
   ssh_options_set(session, SSH_OPTIONS_HOST, hydra_address2string(ip));
   if (miscptr == NULL)
