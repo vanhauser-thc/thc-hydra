@@ -721,9 +721,9 @@ void hydra_restore_write(int print_msg) {
   else
     fprintf(f, "%s\n", hydra_options.outfile_ptr);
   fprintf(f, "%s\n%s\n", hydra_options.miscptr == NULL ? "" : hydra_options.miscptr, hydra_options.service);
-  fck = fwrite(login_ptr, hydra_brains.sizelogin, 1, f);
+  fck = fwrite(login_ptr, hydra_brains.sizelogin + hydra_brains.countlogin + 8, 1, f);
   if (hydra_options.colonfile == NULL || hydra_options.colonfile == empty_login)
-    fck = fwrite(pass_ptr, hydra_brains.sizepass, 1, f);
+    fck = fwrite(pass_ptr, hydra_brains.sizepass + hydra_brains.countpass + 8, 1, f);
   for (j = 0; j < hydra_brains.targets; j++)
     if (hydra_targets[j]->done != TARGET_FINISHED) {
       fck = fwrite(hydra_targets[j], sizeof(hydra_target), 1, f);
@@ -871,13 +871,13 @@ void hydra_restore_read() {
   if (debug)
     printf("[DEBUG] reading restore file: Step 8 complete\n");
 
-  login_ptr = malloc(hydra_brains.sizelogin);
-  fck = (int) fread(login_ptr, hydra_brains.sizelogin, 1, f);
+  login_ptr = malloc(hydra_brains.sizelogin + hydra_brains.countlogin + 8);
+  fck = (int) fread(login_ptr, hydra_brains.sizelogin + hydra_brains.countlogin + 8, 1, f);
   if (debug)
     printf("[DEBUG] reading restore file: Step 9 complete\n");
   if (!check_flag(hydra_options.mode, MODE_COLON_FILE)) {        // NOT colonfile mode
-    pass_ptr = malloc(hydra_brains.sizepass);
-    fck = (int) fread(pass_ptr, hydra_brains.sizepass, 1, f);
+    pass_ptr = malloc(hydra_brains.sizepass + hydra_brains.countpass + 8);
+    fck = (int) fread(pass_ptr, hydra_brains.sizepass + hydra_brains.countpass + 8, 1, f);
   } else {                      // colonfile mode
     hydra_options.colonfile = empty_login;      // dummy
     pass_ptr = csv_ptr = login_ptr;
