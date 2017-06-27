@@ -530,7 +530,7 @@ void help(int ext) {
   PRINT_EXTEND(ext, "  -T TASKS  run TASKS connects in parallel overall (for -M, default: %d)\n"
                     "  -w / -W TIME  wait time for a response (%d) / between connects per thread (%d)\n"
 #ifdef MSG_PEEK
-                    "  -c TIME   wait time per login attempt over all threads (-t 1 is recommended)\n"
+                    "  -c TIME   wait time per login attempt over all threads (enforces -t 1)\n"
 #endif
                     "  -4 / -6   use IPv4 (default) / IPv6 addresses (put always in [] also in -M)\n"
                     "  -v / -V / -d  verbose mode / show login+pass for each attempt / debug mode \n"
@@ -2349,6 +2349,13 @@ int main(int argc, char *argv[]) {
     case 'c':
 #ifdef MSG_PEEK
       hydra_options.time_next_attempt = atoi(optarg);
+      if (hydra_options.time_next_attempt < 0) {
+        fprintf(stderr, "[ERROR] -c option value can not be negative\n");
+        exit(-1);
+      } else if (hydra_options.time_next_attempt > 0) {
+        printf("[INFO] setting max tasks per host to 1 due to -c option usage\n");
+        hydra_options.tasks = 1;
+      }
 #else
       fprintf(stderr, "[WARNING] -c option can not be used as your operating system is missing the MSG_PEEK feature\n");
 #endif
@@ -3970,12 +3977,13 @@ int main(int argc, char *argv[]) {
   printf("%d of %d target%s%scompleted, %lu valid password%s found\n", hydra_brains.targets - j - k - error, hydra_brains.targets, hydra_brains.targets == 1 ? " " : "s ",
          hydra_brains.found > 0 ? "successfully " : "", hydra_brains.found, hydra_brains.found == 1 ? "" : "s");
 
+  error += j;
   k = 0;
   for (j = 0; j < hydra_options.max_use; j++)
     if (hydra_heads[j]->active == HEAD_ACTIVE)
       k++;
 
-  if (error == 0 && j == 0 && k == 0) {
+  if (error == 0 && k == 0) {
     process_restore = 0;
     unlink(RESTOREFILE);
   } else {
@@ -4022,7 +4030,7 @@ int main(int argc, char *argv[]) {
     }
     error = 1;
   }
-  if (j) {
+  if (error) {
     snprintf(tmp_str, STRMAX, "[ERROR] %d target%s did not complete", j, j == 1 ? "" : "s");
     fprintf(stderr, "%s\n", tmp_str);
     if (*json_error) {
