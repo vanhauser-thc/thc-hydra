@@ -2352,10 +2352,7 @@ int main(int argc, char *argv[]) {
       if (hydra_options.time_next_attempt < 0) {
         fprintf(stderr, "[ERROR] -c option value can not be negative\n");
         exit(-1);
-      } else if (hydra_options.time_next_attempt > 0) {
-        printf("[INFO] setting max tasks per host to 1 due to -c option usage\n");
-        hydra_options.tasks = 1;
-      }
+      } 
 #else
       fprintf(stderr, "[WARNING] -c option can not be used as your operating system is missing the MSG_PEEK feature\n");
 #endif
@@ -2397,6 +2394,11 @@ int main(int argc, char *argv[]) {
     default:
       exit(-1);
     }
+  }
+
+  if (hydra_options.time_next_attempt > 0 && hydra_options.tasks != 1) {
+    printf("[INFO] setting max tasks per host to 1 due to -c option usage\n");
+    hydra_options.tasks = 1;
   }
 
   //check if output is redirected from the shell or in a file
