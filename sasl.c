@@ -1,14 +1,14 @@
 #include "sasl.h"
 
-extern int selected_proxy;
+extern int32_t selected_proxy;
 
 /*
 print_hex is used for debug
 it displays the string buf hexa values of size len
 */
-int print_hex(unsigned char *buf, int len) {
-  int i;
-  int n;
+int32_t print_hex(unsigned char *buf, int32_t len) {
+  int32_t i;
+  int32_t n;
 
   for (i = 0, n = 0; i < len; i++) {
     if (n > 7) {
@@ -26,9 +26,9 @@ int print_hex(unsigned char *buf, int len) {
 RFC 4013: SASLprep: Stringprep Profile for User Names and Passwords
 code based on gsasl_saslprep from GSASL project
 */
-int sasl_saslprep(const char *in, sasl_saslprep_flags flags, char **out) {
+int32_t sasl_saslprep(const char *in, sasl_saslprep_flags flags, char **out) {
 #if LIBIDN
-  int rc;
+  int32_t rc;
 
   rc = stringprep_profile(in, out, "SASLprep", (flags & SASL_ALLOW_UNASSIGNED) ? STRINGPREP_NO_UNASSIGNED : 0);
   if (rc != STRINGPREP_OK) {
@@ -71,7 +71,7 @@ the first parameter result must be able to hold at least 255 bytes!
 void sasl_plain(char *result, char *login, char *pass) {
   char *preplogin;
   char *preppasswd;
-  int rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
+  int32_t rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
 
   if (rc) {
     result = NULL;
@@ -107,7 +107,7 @@ void sasl_cram_md5(char *result, char *pass, char *challenge) {
   char opad[64];
   unsigned char md5_raw[MD5_DIGEST_LENGTH];
   MD5_CTX md5c;
-  int i, rc;
+  int32_t i, rc;
   char *preppasswd;
 
   if (challenge == NULL) {
@@ -161,7 +161,7 @@ void sasl_cram_sha1(char *result, char *pass, char *challenge) {
   char opad[64];
   unsigned char sha1_raw[SHA_DIGEST_LENGTH];
   SHA_CTX shac;
-  int i, rc;
+  int32_t i, rc;
   char *preppasswd;
 
   if (challenge == NULL) {
@@ -215,7 +215,7 @@ void sasl_cram_sha256(char *result, char *pass, char *challenge) {
   char opad[64];
   unsigned char sha256_raw[SHA256_DIGEST_LENGTH];
   SHA256_CTX sha256c;
-  int i, rc;
+  int32_t i, rc;
   char *preppasswd;
 
   if (challenge == NULL) {
@@ -262,17 +262,17 @@ void sasl_cram_sha256(char *result, char *pass, char *challenge) {
 RFC 2831: Using Digest Authentication as a SASL Mechanism
 the parameter result must be able to hold at least 500 bytes!!
 */
-void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *miscptr, char *type, char *webtarget, int webport, char *header) {
+void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *miscptr, char *type, char *webtarget, int32_t webport, char *header) {
   char *pbuffer = NULL;
-  int array_size = 10;
+  int32_t array_size = 10;
   unsigned char response[MD5_DIGEST_LENGTH];
   char *array[array_size];
   char buffer2[500], buffer3[500], nonce[200], realm[50], algo[20];
-  int i = 0, ind = 0, lastpos = 0, currentpos = 0, intq = 0, auth_find = 0;
+  int32_t i = 0, ind = 0, lastpos = 0, currentpos = 0, intq = 0, auth_find = 0;
   MD5_CTX md5c;
   char *preplogin;
   char *preppasswd;
-  int rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
+  int32_t rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
 
   memset(realm, 0, sizeof(realm));
   if (rc) {
@@ -286,7 +286,7 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
     return;
   }
 //DEBUG S: nonce="HB3HGAk+hxKpijy/ichq7Wob3Zo17LPM9rr4kMX7xRM=",realm="tida",qop="auth",maxbuf=4096,charset=utf-8,algorithm=md5-sess
-//DEBUG S: nonce="1Mr6c8WjOd/x5r8GUnGeQIRNUtOVtItu3kQOGAmsZfM=",realm="test.com",qop="auth,auth-int,auth-conf",cipher="rc4-40,rc4-56,rc4,des,3des",maxbuf=4096,charset=utf-8,algorithm=md5-sess
+//DEBUG S: nonce="1Mr6c8WjOd/x5r8GUnGeQIRNUtOVtItu3kQOGAmsZfM=",realm="test.com",qop="auth,auth-int32_t,auth-conf",cipher="rc4-40,rc4-56,rc4,des,3des",maxbuf=4096,charset=utf-8,algorithm=md5-sess
 //warning some not well configured xmpp server is sending no realm
 //DEBUG S: nonce="3448160828",qop="auth",charset=utf-8,algorithm=md5-sess
   pbuffer = buffer;
@@ -329,13 +329,13 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
 //check if it contains double-quote
       if (strstr(array[i], "\"") != NULL) {
 //assume last char is also a double-quote
-        int nonce_string_len = strlen(array[i]) - strlen("nonce=\"") - 1;
+        int32_t nonce_string_len = strlen(array[i]) - strlen("nonce=\"") - 1;
 
         if ((nonce_string_len > 0) && (nonce_string_len <= sizeof(nonce) - 1)) {
           strncpy(nonce, strstr(array[i], "nonce=") + strlen("nonce=") + 1, nonce_string_len);
           nonce[nonce_string_len] = '\0';
         } else {
-          int j;
+          int32_t j;
 
           for (j = 0; j < ind; j++)
             if (array[j] != NULL)
@@ -352,13 +352,13 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
     if (strstr(array[i], "realm=") != NULL) {
       if (strstr(array[i], "\"") != NULL) {
 //assume last char is also a double-quote
-        int realm_string_len = strlen(array[i]) - strlen("realm=\"") - 1;
+        int32_t realm_string_len = strlen(array[i]) - strlen("realm=\"") - 1;
 
         if ((realm_string_len > 0) && (realm_string_len <= sizeof(realm) - 1)) {
           strncpy(realm, strstr(array[i], "realm=") + strlen("realm=") + 1, realm_string_len);
           realm[realm_string_len] = '\0';
         } else {
-          int i;
+          int32_t i;
 
           for (i = 0; i < ind; i++)
             if (array[i] != NULL)
@@ -375,13 +375,13 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
     if (strstr(array[i], "qop=") != NULL) {
 
 /*
-The value "auth" indicates authentication; the value "auth-int" indicates
+The value "auth" indicates authentication; the value "auth-int32_t" indicates
 authentication with integrity protection; the value "auth-conf"
 indicates authentication with integrity protection and encryption.
 */
       auth_find = 1;
       if ((strstr(array[i], "\"auth\"") == NULL) && (strstr(array[i], "\"auth,") == NULL) && (strstr(array[i], ",auth\"") == NULL)) {
-        int j;
+        int32_t j;
 
         for (j = 0; j < ind; j++)
           if (array[j] != NULL)
@@ -394,13 +394,13 @@ indicates authentication with integrity protection and encryption.
     if (strstr(array[i], "algorithm=") != NULL) {
       if (strstr(array[i], "\"") != NULL) {
 //assume last char is also a double-quote
-        int algo_string_len = strlen(array[i]) - strlen("algorithm=\"") - 1;
+        int32_t algo_string_len = strlen(array[i]) - strlen("algorithm=\"") - 1;
 
         if ((algo_string_len > 0) && (algo_string_len <= sizeof(algo) - 1)) {
           strncpy(algo, strstr(array[i], "algorithm=") + strlen("algorithm=") + 1, algo_string_len);
           algo[algo_string_len] = '\0';
         } else {
-          int j;
+          int32_t j;
 
           for (j = 0; j < ind; j++)
             if (array[j] != NULL)
@@ -414,7 +414,7 @@ indicates authentication with integrity protection and encryption.
         algo[sizeof(algo) - 1] = '\0';
       }
       if ((strstr(algo, "MD5") == NULL) && (strstr(algo, "md5") == NULL)) {
-        int j;
+        int32_t j;
 
         for (j = 0; j < ind; j++)
           if (array[j] != NULL)
@@ -558,10 +558,10 @@ and my girlfriend that let me work on that 2 whole nights ;)
 clientfirstmessagebare must be at least 500 bytes in size!
 */
 void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, char *serverfirstmessage) {
-  int saltlen = 0;
-  int iter = 4096;
+  int32_t saltlen = 0;
+  int32_t iter = 4096;
   char *salt, *nonce, *ic;
-  unsigned int resultlen = 0;
+  uint32_t resultlen = 0;
   char clientfinalmessagewithoutproof[200];
   char buffer[500];
   unsigned char SaltedPassword[SHA_DIGEST_LENGTH];
@@ -572,7 +572,7 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
   char ClientProof[SHA_DIGEST_LENGTH];
   unsigned char clientproof_b64[50];
   char *preppasswd;
-  int rc = sasl_saslprep(pass, 0, &preppasswd);
+  int32_t rc = sasl_saslprep(pass, 0, &preppasswd);
 
   if (rc) {
     result = NULL;

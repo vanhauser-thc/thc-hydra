@@ -20,12 +20,12 @@ void dummy_ssh() {
 ssh_session session = NULL;
 
 extern char *HYDRA_EXIT;
-int new_session = 1;
+int32_t new_session = 1;
 
-int start_ssh(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_ssh(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass, keep_login[300];
-  int auth_state = 0, rc = 0, i = 0;
+  int32_t auth_state = 0, rc = 0, i = 0;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -107,8 +107,8 @@ int start_ssh(int s, char *ip, int port, unsigned char options, char *miscptr, F
   return 1;
 }
 
-void service_ssh(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
+void service_ssh(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -155,7 +155,7 @@ void service_ssh(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
 // dirty workaround here: miscptr is the ptr to the logins, and the first one is used
 // to test if password authentication is enabled!!
 //
-int service_ssh_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_ssh_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
@@ -168,7 +168,7 @@ int service_ssh_init(char *ip, int sp, unsigned char options, char *miscptr, FIL
   //   2 skip target because of protocol problems
   //   3 skip target because its unreachable
 #ifdef LIBSSH
-  int rc, method;
+  int32_t rc, method;
   ssh_session session = ssh_new();
   
   if (verbose || debug)

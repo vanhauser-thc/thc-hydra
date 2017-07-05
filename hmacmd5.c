@@ -43,8 +43,8 @@
  the rfc 2104 version of hmac_md5 initialisation.
 ***********************************************************************/
 
-void hmac_md5_init_rfc2104(const unsigned char *key, int key_len, HMACMD5Context * ctx) {
-  int i;
+void hmac_md5_init_rfc2104(const unsigned char *key, int32_t key_len, HMACMD5Context * ctx) {
+  int32_t i;
   unsigned char tk[16];
 
   /* if key is longer than 64 bytes reset it to key=MD5(key) */
@@ -79,8 +79,8 @@ void hmac_md5_init_rfc2104(const unsigned char *key, int key_len, HMACMD5Context
  the microsoft version of hmac_md5 initialisation.
 ***********************************************************************/
 
-void hmac_md5_init_limK_to_64(const unsigned char *key, int key_len, HMACMD5Context * ctx) {
-  int i;
+void hmac_md5_init_limK_to_64(const unsigned char *key, int32_t key_len, HMACMD5Context * ctx) {
+  int32_t i;
 
   /* if key is longer than 64 bytes truncate it */
   if (key_len > 64) {
@@ -107,7 +107,7 @@ void hmac_md5_init_limK_to_64(const unsigned char *key, int key_len, HMACMD5Cont
  update hmac_md5 "inner" buffer
 ***********************************************************************/
 
-void hmac_md5_update(const unsigned char *text, int text_len, HMACMD5Context * ctx) {
+void hmac_md5_update(const unsigned char *text, int32_t text_len, HMACMD5Context * ctx) {
   MD5_Update(&ctx->ctx, (void *) text, text_len);       /* then text of datagram */
 }
 
@@ -131,7 +131,7 @@ void hmac_md5_final(unsigned char *digest, HMACMD5Context * ctx)
  use the microsoft hmacmd5 init method because the key is 16 bytes.
 ************************************************************/
 
-void hmac_md5(unsigned char key[16], unsigned char *data, int data_len, unsigned char *digest) {
+void hmac_md5(unsigned char key[16], unsigned char *data, int32_t data_len, unsigned char *digest) {
   HMACMD5Context ctx;
 
   hmac_md5_init_limK_to_64(key, 16, &ctx);

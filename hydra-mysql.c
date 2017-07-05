@@ -11,7 +11,7 @@ void dummy_mysql() {
   printf("\n");
 }
 
-void service_mysql(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+void service_mysql(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   printf("\n");
 }
 #else
@@ -35,16 +35,16 @@ MYSQL *mysql = NULL;
 void hydra_hash_password(unsigned long *result, const char *password);
 char *hydra_scramble(char *to, const char *message, const char *password);
 
-extern int internal__hydra_recv(int socket, char *buf, int length);
-extern int hydra_data_ready_timed(int socket, long sec, long usec);
+extern int32_t internal__hydra_recv(int32_t socket, char *buf, int32_t length);
+extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
 extern char *HYDRA_EXIT;
 char mysqlsalt[9];
 
 /* modified hydra_receive_line, I've striped code which changed every 0x00 to 0x20 */
-char *hydra_mysql_receive_line(int socket) {
+char *hydra_mysql_receive_line(int32_t socket) {
   char buf[300], *buff, *buff2;
-  int i = 0, j = 0, buff_size = 300;
+  int32_t i = 0, j = 0, buff_size = 300;
 
   buff = malloc(buff_size);
   if (buff == NULL)
@@ -87,7 +87,7 @@ char *hydra_mysql_receive_line(int socket) {
 }
 
 /* check if valid mysql protocol, mysql version and read salt */
-char hydra_mysql_init(int sock) {
+char hydra_mysql_init(int32_t sock) {
   char *server_version, *pos, *buf;
   unsigned char protocol;
 
@@ -169,14 +169,14 @@ char hydra_mysql_parse_response(unsigned char *response) {
   return 0;
 }
 
-char hydra_mysql_send_com_quit(int sock) {
+char hydra_mysql_send_com_quit(int32_t sock) {
   char com_quit_packet[5] = { 0x01, 0x00, 0x00, 0x00, 0x01 };
 
   hydra_send(sock, com_quit_packet, 5, 0);
   return 0;
 }
 
-int start_mysql(int sock, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_mysql(int32_t sock, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *response = NULL, *login = NULL, *pass = NULL;
   unsigned long response_len;
   char res = 0;
@@ -213,7 +213,7 @@ int start_mysql(int sock, char *ip, int port, unsigned char options, char *miscp
     }
     /*mysql_options(&mysql,MYSQL_OPT_COMPRESS,0); */
     if (!mysql_real_connect(mysql, hydra_address2string(ip), login, pass, database, 0, NULL, 0)) {
-      int my_errno = mysql_errno(mysql);
+      int32_t my_errno = mysql_errno(mysql);
 
       if (debug)
         hydra_report(stderr, "[ERROR] Failed to connect to database: %s\n", mysql_error(mysql));
@@ -308,9 +308,9 @@ int start_mysql(int sock, char *ip, int port, unsigned char options, char *miscp
   return 1;
 }
 
-void service_mysql(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_MYSQL;
+void service_mysql(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_MYSQL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -330,7 +330,7 @@ void service_mysql(char *ip, int sp, unsigned char options, char *miscptr, FILE 
         port = myport;
       }
       if (sock < 0) {
-        if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+        if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       next_run = 2;
@@ -424,7 +424,7 @@ char *hydra_scramble(char *to, const char *message, const char *password) {
 }
 #endif
 
-int service_mysql_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_mysql_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

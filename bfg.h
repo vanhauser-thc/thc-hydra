@@ -40,14 +40,14 @@ typedef struct {
   char *arg;                    /* argument received for bfg commandline option */
   char *crs;                    /* internal representation of charset */
   char *ptr;                    /* ptr to the last generated password */
-  unsigned int disable_symbols;
+  uint32_t disable_symbols;
 } bf_option;
 
 extern bf_option bf_options;
 
 #ifdef HAVE_MATH_H
-extern unsigned long int bf_get_pcount();
-extern int bf_init(char *arg);
+extern uint64_t bf_get_pcount();
+extern int32_t bf_init(char *arg);
 extern char *bf_next();
 #endif
 

@@ -23,7 +23,7 @@ void dummy_svn() {
 }
 #else
 
-extern int hydra_data_ready_timed(int socket, long sec, long usec);
+extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
 extern char *HYDRA_EXIT;
 
@@ -50,8 +50,8 @@ static svn_error_t *my_simple_prompt_callback(svn_auth_cred_simple_t ** cred, vo
   return SVN_NO_ERROR;
 }
 
-int start_svn(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
-  int ipv6 = 0;
+int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
+  int32_t ipv6 = 0;
   char URL[1024];
   char URLBRANCH[256];
   const char *canonical;
@@ -145,9 +145,9 @@ int start_svn(int s, char *ip, int port, unsigned char options, char *miscptr, F
   return 3;
 }
 
-void service_svn(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_SVN, mysslport = PORT_SVN_SSL;
+void service_svn(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_SVN, mysslport = PORT_SVN_SSL;
 
   hydra_register_socket(sp);
 
@@ -174,7 +174,7 @@ void service_svn(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
 
@@ -199,7 +199,7 @@ void service_svn(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
 
 #endif
 
-int service_svn_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_svn_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

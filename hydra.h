@@ -1,6 +1,13 @@
 #ifndef _HYDRA_H
 
 #include <stdio.h>
+#ifdef __sun
+  #include <sys/int_types.h>
+#elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX)
+  #include <inttypes.h>
+#else
+  #include <stdint.h>
+#endif
 #include <string.h>
 #include <stdarg.h>
 #include <unistd.h>
@@ -149,7 +156,7 @@
 #ifndef _WIN32
 
 int sleepn(time_t seconds);
-int usleepn(long int useconds);
+int usleepn(long useconds);
 
 #else
 

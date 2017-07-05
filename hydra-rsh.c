@@ -13,10 +13,10 @@ no memleaks found on 110425
 extern char *HYDRA_EXIT;
 char *buf;
 
-int start_rsh(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_rsh(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, buffer[300] = "", buffer2[100], *bptr = buffer2;
-  int ret;
+  int32_t ret;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -60,9 +60,9 @@ int start_rsh(int s, char *ip, int port, unsigned char options, char *miscptr, F
   return 1;
 }
 
-void service_rsh(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_RSH, mysslport = PORT_RSH_SSL;
+void service_rsh(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_RSH, mysslport = PORT_RSH_SSL;
 
   hydra_register_socket(sp);
 
@@ -89,7 +89,7 @@ void service_rsh(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
           port = mysslport;
         }
         if (sock < 0) {
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
           hydra_child_exit(1);
         }
         next_run = 2;
@@ -111,7 +111,7 @@ void service_rsh(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
   }
 }
 
-int service_rsh_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_rsh_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

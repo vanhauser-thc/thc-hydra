@@ -16,15 +16,15 @@ passwd will be used as the domain name
 extern char *HYDRA_EXIT;
 char *buf;
 char *err = NULL;
-int tosent = 0;
+int32_t tosent = 0;
 
 #define VRFY 0
 #define EXPN 1
 #define RCPT 2
 
-int smtp_enum_cmd = VRFY;
+int32_t smtp_enum_cmd = VRFY;
 
-int start_smtp_enum(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_smtp_enum(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass, buffer[500];
 
@@ -150,9 +150,9 @@ int start_smtp_enum(int s, char *ip, int port, unsigned char options, char *misc
   return 2;
 }
 
-void service_smtp_enum(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1, i = 0;
-  int myport = PORT_SMTP, mysslport = PORT_SMTP_SSL;
+void service_smtp_enum(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1, i = 0;
+  int32_t myport = PORT_SMTP, mysslport = PORT_SMTP_SSL;
   char *buffer = "HELO hydra\r\n";
 
   hydra_register_socket(sp);
@@ -175,7 +175,7 @@ void service_smtp_enum(char *ip, int sp, unsigned char options, char *miscptr, F
         port = mysslport;
       }
       if (sock < 0) {
-        hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+        hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       /* receive initial header */
@@ -207,7 +207,7 @@ void service_smtp_enum(char *ip, int sp, unsigned char options, char *miscptr, F
 
       if ((miscptr != NULL) && (strlen(miscptr) > 0)) {
         for (i = 0; i < strlen(miscptr); i++)
-          miscptr[i] = (char) toupper((int) miscptr[i]);
+          miscptr[i] = (char) toupper((int32_t) miscptr[i]);
 
         if (strncmp(miscptr, "EXPN", 4) == 0)
           smtp_enum_cmd = EXPN;
@@ -249,7 +249,7 @@ void service_smtp_enum(char *ip, int sp, unsigned char options, char *miscptr, F
   }
 }
 
-int service_smtp_enum_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_smtp_enum_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

@@ -3,15 +3,15 @@
 
 extern char *HYDRA_EXIT;
 char *buf;
-static int http_proxy_auth_mechanism = AUTH_ERROR;
+static int32_t http_proxy_auth_mechanism = AUTH_ERROR;
 
-int start_http_proxy_urlenum(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *hostname) {
+int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp, char *hostname) {
   char *empty = "";
   char *login, *pass, buffer[500], buffer2[500], mlogin[260], mpass[260], mhost[260];
   char url[260], host[30];
   char *header = "";            /* XXX TODO */
   char *ptr;
-  int auth = 0;
+  int32_t auth = 0;
 
   login = hydra_get_next_login();
   if (login == NULL || strlen(login) == 0 || strstr(login, "://") == NULL) {
@@ -228,9 +228,9 @@ int start_http_proxy_urlenum(int s, char *ip, int port, unsigned char options, c
   return 1;
 }
 
-void service_http_proxy_urlenum(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_HTTP_PROXY, mysslport = PORT_HTTP_PROXY_SSL;
+void service_http_proxy_urlenum(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_HTTP_PROXY, mysslport = PORT_HTTP_PROXY_SSL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -256,7 +256,7 @@ void service_http_proxy_urlenum(char *ip, int sp, unsigned char options, char *m
           port = mysslport;
         }
         if (sock < 0) {
-          if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
           hydra_child_exit(1);
         }
         next_run = 2;
@@ -278,7 +278,7 @@ void service_http_proxy_urlenum(char *ip, int sp, unsigned char options, char *m
   }
 }
 
-int service_http_proxy_urlenum_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_http_proxy_urlenum_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

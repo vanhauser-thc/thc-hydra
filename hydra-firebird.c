@@ -27,7 +27,7 @@ void dummy_firebird() {
 
 extern char *HYDRA_EXIT;
 
-int start_firebird(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_firebird(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass;
   char database[256];
@@ -87,9 +87,9 @@ int start_firebird(int s, char *ip, int port, unsigned char options, char *miscp
   return 1;
 }
 
-void service_firebird(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_FIREBIRD, mysslport = PORT_FIREBIRD_SSL;
+void service_firebird(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_FIREBIRD, mysslport = PORT_FIREBIRD_SSL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -113,7 +113,7 @@ void service_firebird(char *ip, int sp, unsigned char options, char *miscptr, FI
         port = mysslport;
       }
       if (sock < 0) {
-        if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+        if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
 
@@ -146,7 +146,7 @@ void service_firebird(char *ip, int sp, unsigned char options, char *miscptr, FI
 
 #endif
 
-int service_firebird_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_firebird_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

@@ -6,9 +6,9 @@
 typedef struct pool_str {
   char ip[36];
 
-  /*  int port;*/// not needed
-  int pop3_auth_mechanism;
-  int disable_tls;
+  /*  int32_t port;*/// not needed
+  int32_t pop3_auth_mechanism;
+  int32_t disable_tls;
   struct pool_str *next;
 } pool;
 
@@ -18,7 +18,7 @@ char apop_challenge[300] = "";
 pool *plist = NULL, *p = NULL;
 
 /* functions */
-int service_pop3_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+int32_t service_pop3_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 
 pool *list_create(pool data) {
   pool *p;
@@ -59,9 +59,9 @@ pool *list_find(char *ip) {
 
 /* how to know when to release the mem ?
    -> well, after _start has determined which pool number it is */
-int list_remove(pool * node) {
+int32_t list_remove(pool * node) {
   pool *save, *list = plist;
-  int ok = -1;
+  int32_t ok = -1;
 
   if (list == NULL || node == NULL)
     return -2;
@@ -78,9 +78,9 @@ int list_remove(pool * node) {
   return ok;
 }
 
-char *pop3_read_server_capacity(int sock) {
+char *pop3_read_server_capacity(int32_t sock) {
   char *ptr = NULL;
-  int resp = 0;
+  int32_t resp = 0;
   char *buf = NULL;
 
   do {
@@ -117,7 +117,7 @@ STLS
   return buf;
 }
 
-int start_pop3(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_pop3(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "\"\"";
   char *login, *pass, buffer[500], buffer2[500], *fooptr;
 
@@ -137,7 +137,7 @@ int start_pop3(int s, char *ip, int port, unsigned char options, char *miscptr, 
   case AUTH_APOP:{
       MD5_CTX c;
       unsigned char md5_raw[MD5_DIGEST_LENGTH];
-      int i;
+      int32_t i;
       char *pbuffer = buffer2;
 
       MD5_Init(&c);
@@ -216,7 +216,7 @@ int start_pop3(int s, char *ip, int port, unsigned char options, char *miscptr, 
   case AUTH_CRAMMD5:
   case AUTH_CRAMSHA1:
   case AUTH_CRAMSHA256:{
-      int rc = 0;
+      int32_t rc = 0;
       char *preplogin;
 
       rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
@@ -413,8 +413,8 @@ int start_pop3(int s, char *ip, int port, unsigned char options, char *miscptr, 
   return 2;
 }
 
-void service_pop3(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
+void service_pop3(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
   char *ptr = NULL;
 
   //extract data from the pool, ip is the key
@@ -448,7 +448,7 @@ void service_pop3(char *ip, int sp, unsigned char options, char *miscptr, FILE *
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       buf = hydra_receive_line(sock);
@@ -513,10 +513,10 @@ void service_pop3(char *ip, int sp, unsigned char options, char *miscptr, FILE *
 }
 
 
-int service_pop3_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int myport = PORT_POP3, mysslport = PORT_POP3_SSL;
+int32_t service_pop3_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t myport = PORT_POP3, mysslport = PORT_POP3_SSL;
   char *ptr = NULL;
-  int sock = -1;
+  int32_t sock = -1;
   char *capa_str = "CAPA\r\n";
   char *quit_str = "QUIT\r\n";
   pool p;
@@ -536,7 +536,7 @@ int service_pop3_init(char *ip, int sp, unsigned char options, char *miscptr, FI
   }
   if (sock < 0) {
     if (verbose || debug)
-      hydra_report(stderr, "[ERROR] pid %d terminating, can not connect\n", (int) getpid());
+      hydra_report(stderr, "[ERROR] pid %d terminating, can not connect\n", (int32_t) getpid());
     return -1;
   }
   buf = hydra_receive_line(sock);
@@ -571,10 +571,10 @@ int service_pop3_init(char *ip, int sp, unsigned char options, char *miscptr, FI
   }
 
   if ((miscptr != NULL) && (strlen(miscptr) > 0)) {
-    int i;
+    int32_t i;
 
     for (i = 0; i < strlen(miscptr); i++)
-      miscptr[i] = (char) toupper((int) miscptr[i]);
+      miscptr[i] = (char) toupper((int32_t) miscptr[i]);
 
     if (strstr(miscptr, "TLS") || strstr(miscptr, "SSL") || strstr(miscptr, "STARTTLS")) {
       p.disable_tls = 0;

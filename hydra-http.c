@@ -5,15 +5,15 @@ extern char *HYDRA_EXIT;
 char *webtarget = NULL;
 char *slash = "/";
 char *http_buf = NULL;
-int webport, freemischttp = 0;
-int http_auth_mechanism = AUTH_BASIC;
+int32_t webport, freemischttp = 0;
+int32_t http_auth_mechanism = AUTH_BASIC;
 
-int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *type) {
+int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp, char *type) {
   char *empty = "";
   char *login, *pass, buffer[500], buffer2[500];
   char header[64] = "Content-Length: 0\r\n";
   char *ptr, *fooptr;
-  int complete_line = 0;
+  int32_t complete_line = 0;
   char tmpreplybuf[1024] = "", *tmpreplybufptr;
 
   if (strlen(login = hydra_get_next_login()) == 0)
@@ -212,7 +212,7 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
     //the first authentication type failed, check the type from server header
     if ((hydra_strcasestr(http_buf, "WWW-Authenticate: Basic") == NULL) && (http_auth_mechanism == AUTH_BASIC)) {
       //seems the auth supported is not Basic shceme so testing further
-      int find_auth = 0;
+      int32_t find_auth = 0;
 
       if (hydra_strcasestr(http_buf, "WWW-Authenticate: NTLM") != NULL) {
         http_auth_mechanism = AUTH_NTLM;
@@ -240,9 +240,9 @@ int start_http(int s, char *ip, int port, unsigned char options, char *miscptr, 
   return 1;
 }
 
-void service_http(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname, char *type) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_HTTP, mysslport = PORT_HTTP_SSL;
+void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname, char *type) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_HTTP, mysslport = PORT_HTTP_SSL;
   char *ptr, *ptr2;
 
   hydra_register_socket(sp);
@@ -299,7 +299,7 @@ void service_http(char *ip, int sp, unsigned char options, char *miscptr, FILE *
         if (sock < 0) {
           if (freemischttp)
             free(miscptr);
-          if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
           hydra_child_exit(1);
         }
         next_run = 2;
@@ -325,19 +325,19 @@ void service_http(char *ip, int sp, unsigned char options, char *miscptr, FILE *
   }
 }
 
-void service_http_get(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+void service_http_get(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   service_http(ip, sp, options, miscptr, fp, port, hostname, "GET");
 }
 
-void service_http_post(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+void service_http_post(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   service_http(ip, sp, options, miscptr, fp, port, hostname, "POST");
 }
 
-void service_http_head(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+void service_http_head(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   service_http(ip, sp, options, miscptr, fp, port, hostname, "HEAD");
 }
 
-int service_http_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

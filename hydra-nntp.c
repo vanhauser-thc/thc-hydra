@@ -10,14 +10,14 @@ RFC 4643: Network News Transfer Protocol (NNTP) Extension for Authentication
 
 */
 
-int nntp_auth_mechanism = AUTH_CLEAR;
+int32_t nntp_auth_mechanism = AUTH_CLEAR;
 
 extern char *HYDRA_EXIT;
 char *buf;
 
-char *nntp_read_server_capacity(int sock) {
+char *nntp_read_server_capacity(int32_t sock) {
   char *ptr = NULL;
-  int resp = 0;
+  int32_t resp = 0;
   char *buf = NULL;
 
   do {
@@ -25,7 +25,7 @@ char *nntp_read_server_capacity(int sock) {
       free(buf);
     ptr = buf = hydra_receive_line(sock);
     if (buf != NULL) {
-      if (isdigit((int) buf[0]) && buf[3] == ' ')
+      if (isdigit((int32_t) buf[0]) && buf[3] == ' ')
         resp = 1;
       else {
         if (buf[strlen(buf) - 1] == '\n')
@@ -38,7 +38,7 @@ char *nntp_read_server_capacity(int sock) {
         if ((ptr = strrchr(buf, '\n')) != NULL) {
 #endif
           ptr++;
-          if (isdigit((int) *ptr) && *(ptr + 3) == ' ')
+          if (isdigit((int32_t) *ptr) && *(ptr + 3) == ' ')
             resp = 1;
         }
       }
@@ -47,10 +47,10 @@ char *nntp_read_server_capacity(int sock) {
   return buf;
 }
 
-int start_nntp(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_nntp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "\"\"";
   char *login, *pass, buffer[500], buffer2[500], *fooptr;
-  int i = 1;
+  int32_t i = 1;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -121,7 +121,7 @@ int start_nntp(int s, char *ip, int port, unsigned char options, char *miscptr, 
     break;
 #ifdef LIBOPENSSL
   case AUTH_CRAMMD5:{
-      int rc = 0;
+      int32_t rc = 0;
       char *preplogin;
 
       rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
@@ -266,9 +266,9 @@ int start_nntp(int s, char *ip, int port, unsigned char options, char *miscptr, 
   return 2;
 }
 
-void service_nntp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int i = 0, run = 1, next_run = 1, sock = -1;
-  int myport = PORT_NNTP, mysslport = PORT_NNTP_SSL, disable_tls = 0;
+void service_nntp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t i = 0, run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_NNTP, mysslport = PORT_NNTP_SSL, disable_tls = 0;
   char *buffer1 = "CAPABILITIES\r\n";
 
   hydra_register_socket(sp);
@@ -293,7 +293,7 @@ void service_nntp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
 //      usleepn(300);
@@ -405,7 +405,7 @@ SASL PLAIN DIGEST-MD5 LOGIN NTLM CRAM-MD5
 
       if ((miscptr != NULL) && (strlen(miscptr) > 0)) {
         for (i = 0; i < strlen(miscptr); i++)
-          miscptr[i] = (char) toupper((int) miscptr[i]);
+          miscptr[i] = (char) toupper((int32_t) miscptr[i]);
 
         if (strncmp(miscptr, "USER", 4) == 0)
           nntp_auth_mechanism = AUTH_CLEAR;
@@ -472,7 +472,7 @@ SASL PLAIN DIGEST-MD5 LOGIN NTLM CRAM-MD5
   }
 }
 
-int service_nntp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_nntp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

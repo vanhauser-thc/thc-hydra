@@ -4,15 +4,15 @@
 extern char *HYDRA_EXIT;
 
 unsigned char *buf;
-int counter;
-int tls_required = 0;
+int32_t counter;
+int32_t tls_required = 0;
 
-int start_ldap(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *hostname, char version, int auth_method) {
+int32_t start_ldap(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp, char *hostname, char version, int32_t auth_method) {
   char *empty = "";
   char *login = "", *pass, *fooptr = "";
   unsigned char buffer[512];
-  int length = 0;
-  int ldap_auth_mechanism = auth_method;
+  int32_t length = 0;
+  int32_t ldap_auth_mechanism = auth_method;
 
   /*
      The LDAP "simple" method has three modes of operation:
@@ -170,7 +170,7 @@ int start_ldap(int s, char *ip, int port, unsigned char options, char *miscptr, 
     if (ldap_auth_mechanism == AUTH_DIGESTMD5) {
       char *ptr;
       char buffer2[500];
-      int ind = 0;
+      int32_t ind = 0;
 
       ptr = strstr((char *) buf, "realm=");
 
@@ -351,9 +351,9 @@ int start_ldap(int s, char *ip, int port, unsigned char options, char *miscptr, 
   return 2;
 }
 
-void service_ldap(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname, char version, int auth_method) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_LDAP, mysslport = PORT_LDAP_SSL;
+void service_ldap(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname, char version, int32_t auth_method) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_LDAP, mysslport = PORT_LDAP_SSL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -377,7 +377,7 @@ void service_ldap(char *ip, int sp, unsigned char options, char *miscptr, FILE *
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       counter = 1;
@@ -425,23 +425,23 @@ void service_ldap(char *ip, int sp, unsigned char options, char *miscptr, FILE *
   }
 }
 
-void service_ldap2(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+void service_ldap2(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   service_ldap(ip, sp, options, miscptr, fp, port, hostname, 2, AUTH_CLEAR);
 }
 
-void service_ldap3(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+void service_ldap3(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   service_ldap(ip, sp, options, miscptr, fp, port, hostname, 3, AUTH_CLEAR);
 }
 
-void service_ldap3_cram_md5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+void service_ldap3_cram_md5(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   service_ldap(ip, sp, options, miscptr, fp, port, hostname, 3, AUTH_CRAMMD5);
 }
 
-void service_ldap3_digest_md5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+void service_ldap3_digest_md5(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   service_ldap(ip, sp, options, miscptr, fp, port, hostname, 3, AUTH_DIGESTMD5);
 }
 
-int service_ldap_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_ldap_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

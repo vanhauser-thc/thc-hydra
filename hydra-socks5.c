@@ -12,12 +12,12 @@ This module enable bruteforcing for socks5, only following types are supported:
 extern char *HYDRA_EXIT;
 unsigned char *buf;
 
-int fail_cnt;
+int32_t fail_cnt;
 
-int start_socks5(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_socks5(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass, buffer[300];
-  int pport, fud = 0;
+  int32_t pport, fud = 0;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -104,9 +104,9 @@ int start_socks5(int s, char *ip, int port, unsigned char options, char *miscptr
   return 2;
 }
 
-void service_socks5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_SOCKS5, mysslport = PORT_SOCKS5_SSL;
+void service_socks5(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_SOCKS5, mysslport = PORT_SOCKS5_SSL;
 
   hydra_register_socket(sp);
   if (port != 0)
@@ -133,7 +133,7 @@ void service_socks5(char *ip, int sp, unsigned char options, char *miscptr, FILE
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       next_run = 2;
@@ -165,7 +165,7 @@ void service_socks5(char *ip, int sp, unsigned char options, char *miscptr, FILE
   }
 }
 
-int service_socks5_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_socks5_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

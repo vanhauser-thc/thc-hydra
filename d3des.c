@@ -1,4 +1,3 @@
-
 /* 2001 van Hauser for Hydra: commented out KnR Kn3 and Df_Key to remove
    compiler warnings for unused definitions.
  */
@@ -84,9 +83,9 @@ static unsigned char pc2[48] = {
 
 void deskey(key, edf)           /* Thanks to James Gillogly & Phil Karn! */
      unsigned char *key;
-     int edf;
+     int32_t edf;
 {
-  register int i, j, l, m, n;
+  register int32_t i, j, l, m, n;
   unsigned char pc1m[56], pcr[56];
   unsigned long kn[32];
 
@@ -132,7 +131,7 @@ static void cookey(raw1)
 {
   register unsigned long *cook, *raw0;
   unsigned long dough[32];
-  register int i;
+  register int32_t i;
 
   cook = dough;
   for (i = 0; i < 16; i++, raw1++) {
@@ -367,7 +366,7 @@ static void desfunc(block, keys)
      register unsigned long *block, *keys;
 {
   register unsigned long fval, work, right, leftt;
-  register int round;
+  register int32_t round;
 
   leftt = block[0];
   right = block[1];

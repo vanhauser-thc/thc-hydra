@@ -51,8 +51,8 @@ BOOL g_bitmap_cache = True;
 BOOL g_bitmap_cache_persist_enable = False;
 BOOL g_bitmap_compression = True;
 BOOL g_desktop_save = True;
-int g_server_depth = -1;
-int os_version = 0;             //2000
+int32_t g_server_depth = -1;
+int32_t os_version = 0;             //2000
 
 uint32 g_rdp5_performanceflags = RDP5_NO_WALLPAPER | RDP5_NO_FULLWINDOWDRAG | RDP5_NO_MENUANIMATIONS;
 
@@ -73,7 +73,7 @@ uint8 g_client_random[SEC_RANDOM_SIZE];
 #define LOGIN_UNKN 0
 #define LOGIN_SUCC 1
 #define LOGIN_FAIL 2
-int login_result = LOGIN_UNKN;
+int32_t login_result = LOGIN_UNKN;
 
 uint8 *g_next_packet;
 uint32 g_rdp_shareid;
@@ -102,15 +102,15 @@ static RDP_ORDER_STATE g_order_state;
 #define STREAM_COUNT 1
 
 
-int g_sock;
+int32_t g_sock;
 static struct stream g_in;
 static struct stream g_out[STREAM_COUNT];
 
 /* wait till socket is ready to write or timeout */
-static BOOL tcp_can_send(int sck, int millis) {
+static BOOL tcp_can_send(int32_t sck, int32_t millis) {
   fd_set wfds;
   struct timeval time;
-  int sel_count;
+  int32_t sel_count;
 
   time.tv_sec = millis / 1000;
   time.tv_usec = (millis * 1000) % 1000000;
@@ -125,7 +125,7 @@ static BOOL tcp_can_send(int sck, int millis) {
 
 /* Initialise TCP transport data packet */
 STREAM tcp_init(uint32 maxlen) {
-  static int cur_stream_id = 0;
+  static int32_t cur_stream_id = 0;
   STREAM result = NULL;
 
   result = &g_out[cur_stream_id];
@@ -144,8 +144,8 @@ STREAM tcp_init(uint32 maxlen) {
 
 /* Send TCP transport data packet */
 void tcp_send(STREAM s) {
-  int length = s->end - s->data;
-  int sent, total = 0;
+  int32_t length = s->end - s->data;
+  int32_t sent, total = 0;
 
 
   while (total < length) {
@@ -167,7 +167,7 @@ void tcp_send(STREAM s) {
 /* Receive a message on the TCP layer */
 STREAM tcp_recv(STREAM s, uint32 length) {
   uint32 new_length, end_offset, p_offset;
-  int rcvd = 0;
+  int32_t rcvd = 0;
 
   if (s == NULL) {
     /* read into "new" stream */
@@ -227,7 +227,7 @@ char *tcp_get_address() {
 
 /* reset the state of the tcp layer */
 void tcp_reset_state(void) {
-  int i;
+  int32_t i;
 
   g_sock = -1;                  /* reset socket */
 
@@ -263,8 +263,8 @@ void tcp_reset_state(void) {
 uint16 g_mcs_userid;
 
 /* Parse an ASN.1 BER header */
-static BOOL ber_parse_header(STREAM s, int tagval, int *length) {
-  int tag, len;
+static BOOL ber_parse_header(STREAM s, int32_t tagval, int32_t *length) {
+  int32_t tag, len;
 
 
   if (tagval > 0xff) {
@@ -292,7 +292,7 @@ static BOOL ber_parse_header(STREAM s, int tagval, int *length) {
 }
 
 /* Output an ASN.1 BER header */
-static void ber_out_header(STREAM s, int tagval, int length) {
+static void ber_out_header(STREAM s, int32_t tagval, int32_t length) {
 
 
   if (tagval > 0xff) {
@@ -309,13 +309,13 @@ static void ber_out_header(STREAM s, int tagval, int length) {
 }
 
 /* Output an ASN.1 BER integer */
-static void ber_out_integer(STREAM s, int value) {
+static void ber_out_integer(STREAM s, int32_t value) {
   ber_out_header(s, BER_TAG_INTEGER, 2);
   out_uint16_be(s, value);
 }
 
 /* Output a DOMAIN_PARAMS structure (ASN.1 BER) */
-static void mcs_out_domain_params(STREAM s, int max_channels, int max_users, int max_tokens, int max_pdusize) {
+static void mcs_out_domain_params(STREAM s, int32_t max_channels, int32_t max_users, int32_t max_tokens, int32_t max_pdusize) {
   ber_out_header(s, MCS_TAG_DOMAIN_PARAMS, 32);
   ber_out_integer(s, max_channels);
   ber_out_integer(s, max_users);
@@ -329,7 +329,7 @@ static void mcs_out_domain_params(STREAM s, int max_channels, int max_users, int
 
 /* Parse a DOMAIN_PARAMS structure (ASN.1 BER) */
 static BOOL mcs_parse_domain_params(STREAM s) {
-  int length = 0;
+  int32_t length = 0;
 
   ber_parse_header(s, MCS_TAG_DOMAIN_PARAMS, &length);
   in_uint8s(s, length);
@@ -339,8 +339,8 @@ static BOOL mcs_parse_domain_params(STREAM s) {
 
 /* Send an MCS_CONNECT_INITIAL message (ASN.1 BER) */
 static void mcs_send_connect_initial(STREAM mcs_data) {
-  int datalen = mcs_data->end - mcs_data->data;
-  int length = 9 + 3 * 34 + 4 + datalen;
+  int32_t datalen = mcs_data->end - mcs_data->data;
+  int32_t length = 9 + 3 * 34 + 4 + datalen;
   STREAM s;
 
   s = iso_init(length + 5);
@@ -368,7 +368,7 @@ static void mcs_send_connect_initial(STREAM mcs_data) {
 /* Expect a MCS_CONNECT_RESPONSE message (ASN.1 BER) */
 static BOOL mcs_recv_connect_response(STREAM mcs_data) {
   uint8 result;
-  int length = 0;
+  int32_t length = 0;
   STREAM s;
 
   s = iso_recv(NULL);
@@ -504,7 +504,7 @@ static BOOL mcs_recv_cjcf(void) {
 }
 
 /* Initialise an MCS transport data packet */
-STREAM mcs_init(int length) {
+STREAM mcs_init(int32_t length) {
   STREAM s;
 
   s = iso_init(length + 8);
@@ -618,7 +618,7 @@ static void iso_send_msg(uint8 code) {
 
 static void iso_send_connection_request(char *username) {
   STREAM s;
-  int length = 30 + strlen(username);
+  int32_t length = 30 + strlen(username);
 
   s = tcp_init(length);
 
@@ -717,7 +717,7 @@ static STREAM iso_recv_msg(uint8 * code, uint8 * rdpver) {
 }
 
 /* Initialise ISO transport data packet */
-STREAM iso_init(int length) {
+STREAM iso_init(int32_t length) {
   STREAM s;
 
   s = tcp_init(length + 7);
@@ -794,7 +794,7 @@ void iso_reset_state(void) {
   tcp_reset_state();
 }
 
-static int g_rc4_key_len;
+static int32_t g_rc4_key_len;
 static SSL_RC4 g_rc4_decrypt_key;
 static SSL_RC4 g_rc4_encrypt_key;
 static uint32 g_server_public_key_len;
@@ -809,8 +809,8 @@ static uint8 g_sec_crypted_random[SEC_MAX_MODULUS_SIZE];
 uint16 g_server_rdp_version = 0;
 
 /* These values must be available to reset state - Session Directory */
-static int g_sec_encrypt_use_count = 0;
-static int g_sec_decrypt_use_count = 0;
+static int32_t g_sec_encrypt_use_count = 0;
+static int32_t g_sec_decrypt_use_count = 0;
 
 
 void ssl_sha1_init(SSL_SHA1 * sha1) {
@@ -845,8 +845,8 @@ void ssl_rc4_crypt(SSL_RC4 * rc4, uint8 * in_data, uint8 * out_data, uint32 len)
   RC4(rc4, len, in_data, out_data);
 }
 
-static void reverse(uint8 * p, int len) {
-  int i, j;
+static void reverse(uint8 * p, int32_t len) {
+  int32_t i, j;
   uint8 temp;
 
   for (i = 0, j = len - 1; i < j; i++, j--) {
@@ -856,11 +856,11 @@ static void reverse(uint8 * p, int len) {
   }
 }
 
-void ssl_rsa_encrypt(uint8 * out, uint8 * in, int len, uint32 modulus_size, uint8 * modulus, uint8 * exponent) {
+void ssl_rsa_encrypt(uint8 * out, uint8 * in, int32_t len, uint32 modulus_size, uint8 * modulus, uint8 * exponent) {
   BN_CTX *ctx;
   BIGNUM *mod, *exp, *x, *y;
   uint8 inr[SEC_MAX_MODULUS_SIZE];
-  int outlen;
+  int32_t outlen;
 
   reverse(modulus, modulus_size);
   reverse(exponent, SEC_EXPONENT_SIZE);
@@ -879,7 +879,7 @@ void ssl_rsa_encrypt(uint8 * out, uint8 * in, int len, uint32 modulus_size, uint
   BN_mod_exp(y, x, exp, mod, ctx);
   outlen = BN_bn2bin(y, out);
   reverse(out, outlen);
-  if (outlen < (int) modulus_size)
+  if (outlen < (int32_t) modulus_size)
     memset(out + outlen, 0, modulus_size - outlen);
 
   BN_free(y);
@@ -903,7 +903,7 @@ static void ssl_cert_free(X509 * cert) {
 SSL_RKEY *ssl_cert_to_rkey(X509 * cert, uint32 * key_len) {
   EVP_PKEY *epk = NULL;
   SSL_RKEY *lkey;
-  int nid;
+  int32_t nid;
 
   /* By some reason, Microsoft sets the OID of the Public RSA key to
      the oid for "MD5 with RSA Encryption" instead of "RSA Encryption"
@@ -942,7 +942,7 @@ SSL_RKEY *ssl_cert_to_rkey(X509 * cert, uint32 * key_len) {
   return lkey;
 }
 
-int ssl_cert_print_fp(FILE * fp, X509 * cert) {
+int32_t ssl_cert_print_fp(FILE * fp, X509 * cert) {
   return X509_print_fp(fp, cert);
 }
 
@@ -951,8 +951,8 @@ void ssl_rkey_free(SSL_RKEY * rkey) {
 }
 
 /* returns error */
-int ssl_rkey_get_exp_mod(SSL_RKEY * rkey, uint8 * exponent, uint32 max_exp_len, uint8 * modulus, uint32 max_mod_len) {
-  int len;
+int32_t ssl_rkey_get_exp_mod(SSL_RKEY * rkey, uint8 * exponent, uint32 max_exp_len, uint8 * modulus, uint32 max_mod_len) {
+  int32_t len;
 
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
   BIGNUM *n, *e, *d;
@@ -960,7 +960,7 @@ int ssl_rkey_get_exp_mod(SSL_RKEY * rkey, uint8 * exponent, uint32 max_exp_len, 
   n = BN_new();
   e = BN_new();
   RSA_get0_key(rkey, &n, &e, NULL);
-  if ((BN_num_bytes(e) > (int) max_exp_len) || (BN_num_bytes(n) > (int) max_mod_len)) {
+  if ((BN_num_bytes(e) > (int32_t) max_exp_len) || (BN_num_bytes(n) > (int32_t) max_mod_len)) {
     return 1;
   }
   len = BN_bn2bin(e, exponent);
@@ -970,7 +970,7 @@ int ssl_rkey_get_exp_mod(SSL_RKEY * rkey, uint8 * exponent, uint32 max_exp_len, 
   BN_free(n);
   BN_free(e);
 #else
-  if ((BN_num_bytes(rkey->e) > (int) max_exp_len) || (BN_num_bytes(rkey->n) > (int) max_mod_len))
+  if ((BN_num_bytes(rkey->e) > (int32_t) max_exp_len) || (BN_num_bytes(rkey->n) > (int32_t) max_mod_len))
     return 1;
   len = BN_bn2bin(rkey->e, exponent);
   reverse(exponent, len);
@@ -986,7 +986,7 @@ BOOL ssl_sig_ok(uint8 * exponent, uint32 exp_len, uint8 * modulus, uint32 mod_le
 }
 
 
-void ssl_hmac_md5(const void *key, int key_len, const unsigned char *msg, int msg_len, unsigned char *md) {
+void ssl_hmac_md5(const void *key, int32_t key_len, const unsigned char *msg, int32_t msg_len, unsigned char *md) {
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L && !defined(LIBRESSL_VERSION_NUMBER)
   HMAC_CTX *ctx;
   ctx = HMAC_CTX_new();
@@ -1020,7 +1020,7 @@ void sec_hash_48(uint8 * out, uint8 * in, uint8 * salt1, uint8 * salt2, uint8 sa
   uint8 pad[4];
   SSL_SHA1 sha1;
   SSL_MD5 md5;
-  int i;
+  int32_t i;
 
   for (i = 0; i < 3; i++) {
     memset(pad, salt + i, i + 1);
@@ -1060,7 +1060,7 @@ static void sec_make_40bit(uint8 * key) {
 }
 
 /* Generate encryption keys given client and server randoms */
-static void sec_generate_keys(uint8 * client_random, uint8 * server_random, int rc4_key_size) {
+static void sec_generate_keys(uint8 * client_random, uint8 * server_random, int32_t rc4_key_size) {
   uint8 pre_master_secret[48];
   uint8 master_secret[48];
   uint8 key_block[48];
@@ -1123,7 +1123,7 @@ void buf_out_uint32(uint8 * buffer, uint32 value) {
 }
 
 /* Generate a MAC hash (5.2.3.1), using a combination of SHA1 and MD5 */
-void sec_sign(uint8 * signature, int siglen, uint8 * session_key, int keylen, uint8 * data, int datalen) {
+void sec_sign(uint8 * signature, int32_t siglen, uint8 * session_key, int32_t keylen, uint8 * data, int32_t datalen) {
   uint8 shasig[20];
   uint8 md5sig[16];
   uint8 lenhdr[4];
@@ -1175,7 +1175,7 @@ static void sec_update(uint8 * key, uint8 * update_key) {
 }
 
 /* Encrypt data using RC4 */
-static void sec_encrypt(uint8 * data, int length) {
+static void sec_encrypt(uint8 * data, int32_t length) {
   if (g_sec_encrypt_use_count == 4096) {
     sec_update(g_sec_encrypt_key, g_sec_encrypt_update_key);
     ssl_rc4_set_key(&g_rc4_encrypt_key, g_sec_encrypt_key, g_rc4_key_len);
@@ -1187,7 +1187,7 @@ static void sec_encrypt(uint8 * data, int length) {
 }
 
 /* Decrypt data using RC4 */
-void sec_decrypt(uint8 * data, int length) {
+void sec_decrypt(uint8 * data, int32_t length) {
   if (g_sec_decrypt_use_count == 4096) {
     sec_update(g_sec_decrypt_key, g_sec_decrypt_update_key);
     ssl_rc4_set_key(&g_rc4_decrypt_key, g_sec_decrypt_key, g_rc4_key_len);
@@ -1199,13 +1199,13 @@ void sec_decrypt(uint8 * data, int length) {
 }
 
 /* Perform an RSA public key encryption operation */
-static void sec_rsa_encrypt(uint8 * out, uint8 * in, int len, uint32 modulus_size, uint8 * modulus, uint8 * exponent) {
+static void sec_rsa_encrypt(uint8 * out, uint8 * in, int32_t len, uint32 modulus_size, uint8 * modulus, uint8 * exponent) {
   ssl_rsa_encrypt(out, in, len, modulus_size, modulus, exponent);
 }
 
 /* Initialise secure transport packet */
-STREAM sec_init(uint32 flags, int maxlen) {
-  int hdrlen;
+STREAM sec_init(uint32 flags, int32_t maxlen) {
+  int32_t hdrlen;
   STREAM s;
 
 //      if (!g_licence_issued)
@@ -1221,7 +1221,7 @@ STREAM sec_init(uint32 flags, int maxlen) {
 
 /* Transmit secure transport packet over specified channel */
 void sec_send_to_channel(STREAM s, uint32 flags, uint16 channel) {
-  int datalen;
+  int32_t datalen;
 
   s_pop_layer(s, sec_hdr);
   out_uint32_le(s, flags);
@@ -1261,8 +1261,8 @@ static void sec_establish_key(void) {
 }
 
 /* Output a string in Unicode */
-void rdp_out_unistr(STREAM s, char *string, int len) {
-  int i = 0, j = 0;
+void rdp_out_unistr(STREAM s, char *string, int32_t len) {
+  int32_t i = 0, j = 0;
 
   len += 2;
   while (i < len) {
@@ -1275,8 +1275,8 @@ void rdp_out_unistr(STREAM s, char *string, int len) {
 /* Output connect initial data blob */
 static void sec_out_mcs_data(STREAM s) {
   char *g_hostname = "hydra";
-  int hostlen = 2 * strlen(g_hostname);
-  int length = 158 + 76 + 12 + 4;
+  int32_t hostlen = 2 * strlen(g_hostname);
+  int32_t length = 158 + 76 + 12 + 4;
 
 /*
 	if (g_num_channels > 0)
@@ -1720,9 +1720,9 @@ void sec_reset_state(void) {
 
 
 /* Read field indicating which parameters are present */
-static void rdp_in_present(STREAM s, uint32 * present, uint8 flags, int size) {
+static void rdp_in_present(STREAM s, uint32 * present, uint8 flags, int32_t size) {
   uint8 bits;
-  int i;
+  int32_t i;
 
   if (flags & RDP_ORDER_SMALL) {
     size--;
@@ -1831,7 +1831,7 @@ static void process_rect(STREAM s, RECT_ORDER * os, uint32 present, BOOL delta) 
 
 /* Process a desktop save order */
 static void process_desksave(STREAM s, DESKSAVE_ORDER * os, uint32 present, BOOL delta) {
-  int width, height;
+  int32_t width, height;
 
   if (present & 0x01)
     in_uint32_le(s, os->offset);
@@ -1902,7 +1902,7 @@ static void process_memblt(STREAM s, MEMBLT_ORDER * os, uint32 present, BOOL del
 
 /* Process a text order */
 static void process_text2(STREAM s, TEXT2_ORDER * os, uint32 present, BOOL delta) {
-  int i;
+  int32_t i;
 
   if (present & 0x000001)
     in_uint8(s, os->font);
@@ -2047,7 +2047,7 @@ void process_orders(STREAM s, uint16 num_orders) {
   RDP_ORDER_STATE *os = &g_order_state;
   uint32 present;
   uint8 order_flags;
-  int size, processed = 0;
+  int32_t size, processed = 0;
   BOOL delta;
 
   while (processed < num_orders) {
@@ -2256,7 +2256,7 @@ BOOL rdp_loop(BOOL * deactivated, uint32 * ext_disc_reason) {
 }
 
 /* Process incoming packets */
-int rdp_main_loop(BOOL * deactivated, uint32 * ext_disc_reason) {
+int32_t rdp_main_loop(BOOL * deactivated, uint32 * ext_disc_reason) {
   while (rdp_loop(deactivated, ext_disc_reason)) {
     if (login_result != LOGIN_UNKN) {
       return login_result;
@@ -2270,14 +2270,14 @@ int rdp_main_loop(BOOL * deactivated, uint32 * ext_disc_reason) {
 /* Parse a logon info packet */
 static void rdp_send_logon_info(uint32 flags, char *domain, char *user, char *password, char *program, char *directory) {
   char *ipaddr = tcp_get_address();
-  int len_domain = 2 * strlen(domain);
-  int len_user = 2 * strlen(user);
-  int len_password = 2 * strlen(password);
-  int len_program = 2 * strlen(program);
-  int len_directory = 2 * strlen(directory);
-  int len_ip = 2 * strlen(ipaddr);
-  int len_dll = 2 * strlen("C:\\WINNT\\System32\\mstscax.dll");
-  int packetlen = 0;
+  int32_t len_domain = 2 * strlen(domain);
+  int32_t len_user = 2 * strlen(user);
+  int32_t len_password = 2 * strlen(password);
+  int32_t len_program = 2 * strlen(program);
+  int32_t len_directory = 2 * strlen(directory);
+  int32_t len_ip = 2 * strlen(ipaddr);
+  int32_t len_dll = 2 * strlen("C:\\WINNT\\System32\\mstscax.dll");
+  int32_t packetlen = 0;
   uint32 sec_flags = g_encryption ? (SEC_LOGON_INFO | SEC_ENCRYPT) : SEC_LOGON_INFO;
   STREAM s = NULL;
   time_t t = time(NULL);
@@ -2430,7 +2430,7 @@ BOOL rdp_connect(char *server, uint32 flags, char *domain, char *login, char *pa
   return True;
 }
 
-int start_rdp(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_rdp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass;
   char server[64];
@@ -2484,9 +2484,9 @@ int start_rdp(int s, char *ip, int port, unsigned char options, char *miscptr, F
 }
 
 /* Client program */
-void service_rdp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1;
-  int myport = PORT_RDP;
+void service_rdp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1;
+  int32_t myport = PORT_RDP;
 
   if (port != 0)
     myport = port;
@@ -2502,7 +2502,7 @@ void service_rdp(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
       rdesktop_reset_state();
       g_sock = hydra_connect_tcp(ip, myport);
       if (g_sock < 0) {
-        hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+        hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       next_run = start_rdp(g_sock, ip, port, options, miscptr, fp);
@@ -2529,7 +2529,7 @@ void generate_random(uint8 * random) {
   struct tms tmsbuf;
   SSL_MD5 md5;
   uint32 *r;
-  int fd, n;
+  int32_t fd, n;
 
   /* If we have a kernel random device, try that first */
   if (((fd = open("/dev/urandom", O_RDONLY)) != -1)
@@ -2559,7 +2559,7 @@ void generate_random(uint8 * random) {
 }
 
 /* malloc; exit if out of memory */
-void *xmalloc(int size) {
+void *xmalloc(int32_t size) {
   void *mem = malloc(size);
 
   if (mem == NULL) {
@@ -2634,9 +2634,9 @@ void unimpl(char *format, ...) {
 }
 
 /* produce a hex dump */
-void hexdump(unsigned char *p, unsigned int len) {
+void hexdump(unsigned char *p, uint32_t len) {
   unsigned char *line = p;
-  int i, thisline, offset = 0;
+  int32_t i, thisline, offset = 0;
 
   while (offset < len) {
     printf("%04x ", offset);
@@ -2660,7 +2660,7 @@ void hexdump(unsigned char *p, unsigned int len) {
 }
 
 /* Initialise an RDP data packet */
-static STREAM rdp_init_data(int maxlen) {
+static STREAM rdp_init_data(int32_t maxlen) {
   STREAM s;
 
   s = sec_init(g_encryption ? SEC_ENCRYPT : 0, maxlen + 18);
@@ -2695,10 +2695,10 @@ static void rdp_send_data(STREAM s, uint8 data_pdu_type) {
  *
  * Returns str_len of string
  */
-int rdp_in_unistr(STREAM s, char *string, int str_size, int in_len) {
-  int i = 0;
-  int len = in_len / 2;
-  int rem = 0;
+int32_t rdp_in_unistr(STREAM s, char *string, int32_t str_size, int32_t in_len) {
+  int32_t i = 0;
+  int32_t len = in_len / 2;
+  int32_t rem = 0;
 
   if (len > str_size - 1) {
     warning("server sent an unexpectedly long string, truncating\n");
@@ -2865,7 +2865,7 @@ static void rdp_out_order_caps(STREAM s) {
 
 /* Output bitmap cache capability set */
 static void rdp_out_bmpcache_caps(STREAM s) {
-  int Bpp;
+  int32_t Bpp;
 
   out_uint16_le(s, RDP_CAPSET_BMPCACHE);
   out_uint16_le(s, RDP_CAPLEN_BMPCACHE);
@@ -3070,7 +3070,7 @@ static void rdp_process_bitmap_caps(STREAM s) {
 
 /* Process server capabilities */
 static void rdp_process_server_caps(STREAM s, uint16 length) {
-  int n;
+  int32_t n;
   uint8 *next, *start;
   uint16 ncapsets, capset_type, capset_length;
 
@@ -3234,7 +3234,7 @@ static BOOL process_data_pdu(STREAM s, uint32 * ext_disc_reason) {
 }
 #endif
 
-int service_rdp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_rdp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

@@ -7,8 +7,8 @@
 #include <fcntl.h>
 
 /* handles select errors */
-int my_select(int fd, fd_set * fdread, fd_set * fdwrite, fd_set * fdex, long sec, long usec) {
-  int ret_val;
+int32_t my_select(int32_t fd, fd_set * fdread, fd_set * fdwrite, fd_set * fdex, long sec, long usec) {
+  int32_t ret_val;
   struct timeval stv;
   fd_set *fdr2, *fdw2, *fde2;
 
@@ -28,13 +28,13 @@ int my_select(int fd, fd_set * fdread, fd_set * fdwrite, fd_set * fdex, long sec
 }
 
 /*reads in a non-blocking way*/
-ssize_t read_safe(int fd, void *buffer, size_t len) {
-  int r = 0;
-  int total = 0;
-  int toread = len;
+ssize_t read_safe(int32_t fd, void *buffer, size_t len) {
+  int32_t r = 0;
+  int32_t total = 0;
+  int32_t toread = len;
   fd_set fr;
   struct timeval tv;
-  int ret = 0;
+  int32_t ret = 0;
 
   (void)fcntl(fd, F_SETFL, O_NONBLOCK);
   do {

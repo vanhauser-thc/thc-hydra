@@ -6,15 +6,22 @@
 #include <string.h>
 #include <math.h>
 #include <ctype.h>
+#ifdef __sun
+  #include <sys/int_types.h>
+#elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX)
+  #include <inttypes.h>
+#else
+  #include <stdint.h>
+#endif
 #include "bfg.h"
 
 bf_option bf_options;
 
 #ifdef HAVE_MATH_H
 
-extern int debug;
+extern int32_t debug;
 
-static int add_single_char(char ch, char flags, int* crs_len) {
+static int32_t add_single_char(char ch, char flags, int32_t* crs_len) {
   if ((ch >= '2' && ch <= '9') || ch == '0') {
     if ((flags & BF_NUMS) > 0) {
       printf("[ERROR] character %c defined in -x although the whole number range was already defined by '1', ignored\n", ch);
@@ -22,7 +29,7 @@ static int add_single_char(char ch, char flags, int* crs_len) {
     }
     //printf("[WARNING] adding character %c for -x, note that '1' will add all numbers from 0-9\n", ch);
   }
-  if (tolower((int) ch) >= 'b' && tolower((int) ch) <= 'z') {
+  if (tolower((int32_t) ch) >= 'b' && tolower((int32_t) ch) <= 'z') {
     if ((ch <= 'Z' && (flags & BF_UPPER) > 0) || (ch > 'Z' && (flags & BF_UPPER) > 0)) {
       printf("[ERROR] character %c defined in -x although the whole letter range was already defined by '%c', ignored\n", ch, ch <= 'Z' ? 'A' : 'a');
       return 0;
@@ -43,9 +50,9 @@ static int add_single_char(char ch, char flags, int* crs_len) {
 //
 // note that we check for -x .:.:ab but not for -x .:.:ba
 //
-int bf_init(char *arg) {
-  int i = 0;
-  int crs_len = 0;
+int32_t bf_init(char *arg) {
+  int32_t i = 0;
+  int32_t crs_len = 0;
   char flags = 0;
   char *tmp = strchr(arg, ':');
 
@@ -165,10 +172,10 @@ int bf_init(char *arg) {
 }
 
 
-unsigned long int bf_get_pcount() {
-  int i;
+uint64_t bf_get_pcount() {
+  int32_t i;
   double count = 0;
-  unsigned long int foo;
+  uint64_t foo;
 
   for (i = bf_options.from; i <= bf_options.to; i++)
     count += (pow((double) bf_options.crs_len, (double) i));
@@ -183,7 +190,7 @@ unsigned long int bf_get_pcount() {
 
 
 char *bf_next() {
-  int i, pos = bf_options.current - 1;
+  int32_t i, pos = bf_options.current - 1;
 
   if (bf_options.current > bf_options.to)
     return NULL;                // we are done

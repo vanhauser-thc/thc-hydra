@@ -54,7 +54,7 @@
 
 /*
    This file implements macros for machine independent short and 
-   int manipulation
+   int32_t manipulation
 
 Here is a description of this file that I emailed to the samba list once:
 
@@ -72,7 +72,7 @@ an optimisation. You can take it out completely and it will make no
 difference. The routines (macros) in byteorder.h are totally byteorder
 independent. The 386 optimsation just takes advantage of the fact that
 the x86 processors don't care about alignment, so we don't have to
-align ints on int boundaries etc. If there are other processors out
+align ints on int32_t boundaries etc. If there are other processors out
 there that aren't alignment sensitive then you could also define
 CAREFUL_ALIGNMENT=0 on those processors as well.
 
@@ -81,7 +81,7 @@ want to extract a 2 byte integer from a SMB packet and put it into a
 type called uint16 that is in the local machines byte order, and you
 want to do it with only the assumption that uint16 is _at_least_ 16
 bits long (this last condition is very important for architectures
-that don't have any int types that are 2 bytes long)
+that don't have any int32_t types that are 2 bytes long)
 
 You do this:
 
@@ -207,10 +207,10 @@ it also defines lots of intermediate macros, just ignore those :-)
 /* macros for reading / writing arrays */
 
 #define SMBMACRO(macro,buf,pos,val,len,size) \
-{ int l; for (l = 0; l < (len); l++) (val)[l] = macro((buf), (pos) + (size)*l); }
+{ int32_t l; for (l = 0; l < (len); l++) (val)[l] = macro((buf), (pos) + (size)*l); }
 
 #define SSMBMACRO(macro,buf,pos,val,len,size) \
-{ int l; for (l = 0; l < (len); l++) macro((buf), (pos) + (size)*l, (val)[l]); }
+{ int32_t l; for (l = 0; l < (len); l++) macro((buf), (pos) + (size)*l, (val)[l]); }
 
 /* reads multiple data from an SMB buffer */
 #define PCVAL(buf,pos,val,len) SMBMACRO(CVAL,buf,pos,val,len,1)
@@ -259,7 +259,7 @@ it also defines lots of intermediate macros, just ignore those :-)
 	DEBUG(5,("%s%04x %s: ", \
              tab_depth(depth), base,string)); \
     if (charmode) print_asc(5, (unsigned char*)(outbuf), (len)); else \
-	{ int idx; for (idx = 0; idx < len; idx++) { DEBUG(5,("%02x ", (outbuf)[idx])); } } \
+	{ int32_t idx; for (idx = 0; idx < len; idx++) { DEBUG(5,("%02x ", (outbuf)[idx])); } } \
 	DEBUG(5,("\n")); }
 
 #define DBG_RW_PSVAL(charmode,string,depth,base,read,big_endian,inbuf,outbuf,len) \
@@ -267,7 +267,7 @@ it also defines lots of intermediate macros, just ignore those :-)
 	DEBUG(5,("%s%04x %s: ", \
              tab_depth(depth), base,string)); \
     if (charmode) print_asc(5, (unsigned char*)(outbuf), 2*(len)); else \
-	{ int idx; for (idx = 0; idx < len; idx++) { DEBUG(5,("%04x ", (outbuf)[idx])); } } \
+	{ int32_t idx; for (idx = 0; idx < len; idx++) { DEBUG(5,("%04x ", (outbuf)[idx])); } } \
 	DEBUG(5,("\n")); }
 
 #define DBG_RW_PIVAL(charmode,string,depth,base,read,big_endian,inbuf,outbuf,len) \
@@ -275,7 +275,7 @@ it also defines lots of intermediate macros, just ignore those :-)
 	DEBUG(5,("%s%04x %s: ", \
              tab_depth(depth), base,string)); \
     if (charmode) print_asc(5, (unsigned char*)(outbuf), 4*(len)); else \
-	{ int idx; for (idx = 0; idx < len; idx++) { DEBUG(5,("%08x ", (outbuf)[idx])); } } \
+	{ int32_t idx; for (idx = 0; idx < len; idx++) { DEBUG(5,("%08x ", (outbuf)[idx])); } } \
 	DEBUG(5,("\n")); }
 
 #define DBG_RW_CVAL(string,depth,base,read,inbuf,outbuf) \
@@ -300,7 +300,7 @@ it also defines lots of intermediate macros, just ignore those :-)
 
 /* NOTE: This code makes no attempt to be fast! 
 
-   It assumes that a int is at least 32 bits long
+   It assumes that a int32_t is at least 32 bits long
 */
 
 static uint32 A, B, C, D;
@@ -317,7 +317,7 @@ static uint32 H(uint32 X, uint32 Y, uint32 Z) {
   return X ^ Y ^ Z;
 }
 
-static uint32 lshift(uint32 x, int s) {
+static uint32 lshift(uint32 x, int32_t s) {
   x &= 0xFFFFFFFF;
   return ((x << s) & 0xFFFFFFFF) | (x >> (32 - s));
 }
@@ -328,7 +328,7 @@ static uint32 lshift(uint32 x, int s) {
 
 /* this applies md4 to 64 byte chunks */
 static void mdfour64(uint32 * M) {
-  int j;
+  int32_t j;
   uint32 AA, BB, CC, DD;
   uint32 X[16];
 
@@ -406,7 +406,7 @@ static void mdfour64(uint32 * M) {
 }
 
 static void copy64(uint32 * M, unsigned char *in) {
-  int i;
+  int32_t i;
 
   for (i = 0; i < 16; i++)
     M[i] = (in[i * 4 + 3] << 24) | (in[i * 4 + 2] << 16) | (in[i * 4 + 1] << 8) | (in[i * 4 + 0] << 0);
@@ -420,11 +420,11 @@ static void copy4(unsigned char *out, uint32 x) {
 }
 
 /* produce a md4 message digest from data of length n bytes */
-void mdfour(unsigned char *out, unsigned char *in, int n) {
+void mdfour(unsigned char *out, unsigned char *in, int32_t n) {
   unsigned char buf[128];
   uint32 M[16];
   uint32 b = n * 8;
-  int i;
+  int32_t i;
 
   A = 0x67452301;
   B = 0xefcdab89;
@@ -577,16 +577,16 @@ static uchar sbox[8][4][16] = {
    {2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11}}
 };
 
-static void permute(char *out, char *in, uchar * p, int n) {
-  int i;
+static void permute(char *out, char *in, uchar * p, int32_t n) {
+  int32_t i;
 
   for (i = 0; i < n; i++)
     out[i] = in[p[i] - 1];
 }
 
-static void l_shift(char *d, int count, int n) {
+static void l_shift(char *d, int32_t count, int32_t n) {
   char out[64];
-  int i;
+  int32_t i;
 
   for (i = 0; i < n; i++)
     out[i] = d[(i + count) % n];
@@ -594,22 +594,22 @@ static void l_shift(char *d, int count, int n) {
     d[i] = out[i];
 }
 
-static void concat(char *out, char *in1, char *in2, int l1, int l2) {
+static void concat(char *out, char *in1, char *in2, int32_t l1, int32_t l2) {
   while (l1--)
     *out++ = *in1++;
   while (l2--)
     *out++ = *in2++;
 }
 
-void xor(char *out, char *in1, char *in2, int n) {
-  int i;
+void xor(char *out, char *in1, char *in2, int32_t n) {
+  int32_t i;
 
   for (i = 0; i < n; i++)
     out[i] = in1[i] ^ in2[i];
 }
 
-static void dohash(char *out, char *in, char *key, int forw) {
-  int i, j, k;
+static void dohash(char *out, char *in, char *key, int32_t forw) {
+  int32_t i, j, k;
   char pk1[56];
   char c[28];
   char d[28];
@@ -658,7 +658,7 @@ static void dohash(char *out, char *in, char *key, int forw) {
         b[j][k] = erk[j * 6 + k];
 
     for (j = 0; j < 8; j++) {
-      int m, n;
+      int32_t m, n;
 
       m = (b[j][0] << 1) | b[j][5];
 
@@ -688,7 +688,7 @@ static void dohash(char *out, char *in, char *key, int forw) {
 }
 
 static void str_to_key(unsigned char *str, unsigned char *key) {
-  int i;
+  int32_t i;
 
   key[0] = str[0] >> 1;
   key[1] = ((str[0] & 0x01) << 6) | (str[1] >> 2);
@@ -704,8 +704,8 @@ static void str_to_key(unsigned char *str, unsigned char *key) {
 }
 
 
-static void smbhash(unsigned char *out, unsigned char *in, unsigned char *key, int forw) {
-  int i;
+static void smbhash(unsigned char *out, unsigned char *in, unsigned char *key, int32_t forw) {
+  int32_t i;
   char outb[64];
   char inb[64];
   char keyb[64];
@@ -769,7 +769,7 @@ void cred_hash2(unsigned char *out, unsigned char *in, unsigned char *key) {
   smbhash(out, buf, key2, 1);
 }
 
-void cred_hash3(unsigned char *out, unsigned char *in, unsigned char *key, int forw) {
+void cred_hash3(unsigned char *out, unsigned char *in, unsigned char *key, int32_t forw) {
   static unsigned char key2[8];
 
   smbhash(out, in, key, forw);
@@ -777,12 +777,12 @@ void cred_hash3(unsigned char *out, unsigned char *in, unsigned char *key, int f
   smbhash(out + 8, in + 8, key2, forw);
 }
 
-void SamOEMhash(unsigned char *data, unsigned char *key, int val) {
+void SamOEMhash(unsigned char *data, unsigned char *key, int32_t val) {
   unsigned char s_box[256];
   unsigned char index_i = 0;
   unsigned char index_j = 0;
   unsigned char j = 0;
-  int ind;
+  int32_t ind;
 
   for (ind = 0; ind < 256; ind++) {
     s_box[ind] = (unsigned char) ind;
@@ -861,7 +861,7 @@ char *safe_strcpy(char *dest, const char *src, size_t maxlength) {
   len = strlen(src);
 
   if (len > maxlength) {
-    DEBUG(0, ("Error: string overflow by %d in safe_strcpy [%.50s]\n", (int) (len - maxlength), src));
+    DEBUG(0, ("Error: string overflow by %d in safe_strcpy [%.50s]\n", (int32_t) (len - maxlength), src));
     len = maxlength;
   }
 
@@ -879,8 +879,8 @@ void strupper(char *s) {
       if (skip != 0)
         s += skip;
       else {
-        if (islower((int) *s))
-          *s = toupper((int) *s);
+        if (islower((int32_t) *s))
+          *s = toupper((int32_t) *s);
         s++;
       }
     }
@@ -916,8 +916,8 @@ void SMBencrypt(uchar * passwd, uchar * c8, uchar * p24) {
 }
 
 /* Routines for Windows NT MD4 Hash functions. */
-static int _my_wcslen(int16 * str) {
-  int len = 0;
+static int32_t _my_wcslen(int16 * str) {
+  int32_t len = 0;
 
   while (*str++ != 0)
     len++;
@@ -931,8 +931,8 @@ static int _my_wcslen(int16 * str) {
  * format.
  */
 
-static int _my_mbstowcs(int16 * dst, uchar * src, int len) {
-  int i;
+static int32_t _my_mbstowcs(int16 * dst, uchar * src, int32_t len) {
+  int32_t i;
   int16 val;
 
   for (i = 0; i < len; i++) {
@@ -951,7 +951,7 @@ static int _my_mbstowcs(int16 * dst, uchar * src, int len) {
  */
 
 void E_md4hash(uchar * passwd, uchar * p16) {
-  int len;
+  int32_t len;
   int16 wpwd[129];
 
   /* Password cannot be longer than 128 characters */
@@ -1051,7 +1051,7 @@ void SMBNTencrypt(uchar * passwd, uchar * c8, uchar * p24) {
 #if 0
 
 BOOL make_oem_passwd_hash(char data[516], const char *passwd, uchar old_pw_hash[16], BOOL unicode) {
-  int new_pw_len = strlen(passwd) * (unicode ? 2 : 1);
+  int32_t new_pw_len = strlen(passwd) * (unicode ? 2 : 1);
 
   if (new_pw_len > 512) {
     DEBUG(0, ("make_oem_passwd_hash: new password is too long.\n"));
@@ -1134,7 +1134,7 @@ else \
 #define AddString(ptr, header, string) \
 { \
 char *p = string; \
-int len = 0; \
+int32_t len = 0; \
 if (p) len = strlen(p); \
 AddBytes(ptr, header, ((unsigned char*)p), len); \
 }
@@ -1143,7 +1143,7 @@ AddBytes(ptr, header, ((unsigned char*)p), len); \
 { \
 char *p = string; \
 unsigned char *b = NULL; \
-int len = 0; \
+int32_t len = 0; \
 if (p) \
   { \
   len = strlen(p); \
@@ -1162,21 +1162,21 @@ dumpRaw(fp,((unsigned char*)structPtr)+IVAL(&structPtr->header.offset,0),SVAL(&s
 
 
 static void dumpRaw(FILE * fp, unsigned char *buf, size_t len) {
-  int i;
+  int32_t i;
 
-  for (i = 0; i < (signed int) len; ++i)
+  for (i = 0; i < (int32_t) len; ++i)
     fprintf(fp, "%02x ", buf[i]);
 
   fprintf(fp, "\n");
 }
 
 static char *unicodeToString(char *p, size_t len) {
-  int i;
+  int32_t i;
   static char buf[4096];
 
   assert(len + 1 < sizeof buf);
 
-  for (i = 0; i < (signed int) len; ++i) {
+  for (i = 0; i < (int32_t) len; ++i) {
     buf[i] = *p & 0x7f;
     p += 2;
   }
@@ -1188,7 +1188,7 @@ static char *unicodeToString(char *p, size_t len) {
 static unsigned char *strToUnicode(char *p) {
   static unsigned char buf[4096];
   size_t l = strlen(p);
-  int i = 0;
+  int32_t i = 0;
 
   assert(l * 2 < sizeof buf);
 
@@ -1377,7 +1377,7 @@ static const char base64val[] = {
 
 #define DECODE64(c)  (isascii(c) ? base64val[c] : BAD)
 
-void to64frombits(unsigned char *out, const unsigned char *in, int inlen)
+void to64frombits(unsigned char *out, const unsigned char *in, int32_t inlen)
 
 /* raw bytes in quasi-big-endian order to base 64 string (NUL-terminated) */
 {
@@ -1402,11 +1402,11 @@ void to64frombits(unsigned char *out, const unsigned char *in, int inlen)
   *out = '\0';
 }
 
-int from64tobits(char *out, const char *in)
+int32_t from64tobits(char *out, const char *in)
 
 /* base 64 to raw bytes in quasi-big-endian order, returning count of bytes */
 {
-  int len = 0;
+  int32_t len = 0;
   register unsigned char digit1, digit2, digit3, digit4;
 
   if (in[0] == '+' && in[1] == ' ')

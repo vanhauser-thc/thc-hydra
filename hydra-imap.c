@@ -3,13 +3,13 @@
 
 extern char *HYDRA_EXIT;
 char *buf;
-int counter;
+int32_t counter;
 
-int imap_auth_mechanism = AUTH_CLEAR;
+int32_t imap_auth_mechanism = AUTH_CLEAR;
 
-char *imap_read_server_capacity(int sock) {
+char *imap_read_server_capacity(int32_t sock) {
   char *ptr = NULL;
-  int resp = 0;
+  int32_t resp = 0;
   char *buf = NULL;
 
   do {
@@ -30,7 +30,7 @@ char *imap_read_server_capacity(int sock) {
           buf[strlen(buf) - 1] = 0;
         if (buf[strlen(buf) - 1] == '\r')
           buf[strlen(buf) - 1] = 0;
-        if (isdigit((int) *ptr) && *(ptr + 1) == ' ') {
+        if (isdigit((int32_t) *ptr) && *(ptr + 1) == ' ') {
           resp = 1;
         }
       }
@@ -39,7 +39,7 @@ char *imap_read_server_capacity(int sock) {
   return buf;
 }
 
-int start_imap(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_imap(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass, buffer[500], buffer2[500], *fooptr;
 
@@ -111,7 +111,7 @@ int start_imap(int s, char *ip, int port, unsigned char options, char *miscptr, 
   case AUTH_CRAMMD5:
   case AUTH_CRAMSHA1:
   case AUTH_CRAMSHA256:{
-      int rc = 0;
+      int32_t rc = 0;
       char *preplogin;
 
       rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
@@ -220,7 +220,7 @@ int start_imap(int s, char *ip, int port, unsigned char options, char *miscptr, 
       char clientfirstmessagebare[200];
       char serverfirstmessage[200];
       char *preplogin;
-      int rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
+      int32_t rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
 
       if (rc) {
         return 3;
@@ -353,9 +353,9 @@ int start_imap(int s, char *ip, int port, unsigned char options, char *miscptr, 
   return 1;
 }
 
-void service_imap(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_IMAP, mysslport = PORT_IMAP_SSL, disable_tls = 1;
+void service_imap(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_IMAP, mysslport = PORT_IMAP_SSL, disable_tls = 1;
   char *buffer1 = "1 CAPABILITY\r\n";
 
   hydra_register_socket(sp);
@@ -380,7 +380,7 @@ void service_imap(char *ip, int sp, unsigned char options, char *miscptr, FILE *
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       buf = hydra_receive_line(sock);
@@ -404,10 +404,10 @@ void service_imap(char *ip, int sp, unsigned char options, char *miscptr, FILE *
       }
 
       if ((miscptr != NULL) && (strlen(miscptr) > 0)) {
-        int i;
+        int32_t i;
 
         for (i = 0; i < strlen(miscptr); i++)
-          miscptr[i] = (char) toupper((int) miscptr[i]);
+          miscptr[i] = (char) toupper((int32_t) miscptr[i]);
 
         if (strstr(miscptr, "TLS") || strstr(miscptr, "SSL") || strstr(miscptr, "STARTTLS")) {
           disable_tls = 0;
@@ -571,7 +571,7 @@ void service_imap(char *ip, int sp, unsigned char options, char *miscptr, FILE *
   }
 }
 
-int service_imap_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_imap_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

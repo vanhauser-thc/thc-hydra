@@ -7,13 +7,13 @@
 #include <openssl/aes.h>
 #endif
 
-extern int hydra_data_ready_timed(int socket, long sec, long usec);
+extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
 extern char *HYDRA_EXIT;
-extern int child_head_no;
+extern int32_t child_head_no;
 
 char snmpv3buf[1024], *snmpv3info = NULL;
-int snmpv3infolen = 0, snmpversion = 1, snmpread = 1, hashtype = 1, enctype = 0;
+int32_t snmpv3infolen = 0, snmpversion = 1, snmpread = 1, hashtype = 1, enctype = 0;
 
 unsigned char snmpv3_init[] = { 0x30, 0x3e, 0x02, 0x01, 0x03, 0x30, 0x11, 0x02,
   0x04, 0x08, 0x86, 0xdd, 0xf0, 0x02, 0x03, 0x00,
@@ -196,11 +196,11 @@ void password_to_key_sha(u_char * password,     /* IN */
 }
 #endif
 
-int start_snmp(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_snmp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "\"\"", *ptr, *login, *pass, buffer[1024], buf[1024], hash[64], key[256] = "", salt[8] = "";
-  int i, j, k, size, off = 0, off2 = 0, done = 0;
+  int32_t i, j, k, size, off = 0, off2 = 0, done = 0;
   unsigned char initVect[8], privacy_params[8];
-  int engine_boots = 0;
+  int32_t engine_boots = 0;
 
 #ifdef LIBOPENSSL
   DES_key_schedule symcbc;
@@ -316,13 +316,13 @@ int start_snmp(int s, char *ip, int port, unsigned char options, char *miscptr, 
 
 /*
 //PrivDES::encrypt(const unsigned char *key,  
-      //                 const unsigned int   /*key_len*///,  
+      //                 const uint32_t   /*key_len*///,  
 //                 const unsigned char *buffer,  
-//                 const unsigned int   buffer_len,  
+//                 const uint32_t   buffer_len,  
 //                 unsigned char       *out_buffer,  
-//                 unsigned int        *out_buffer_len,  
+//                 uint32_t        *out_buffer_len,  
 //                 unsigned char       *privacy_params,  
-//                 unsigned int        *privacy_params_len,  
+//                 uint32_t        *privacy_params_len,  
 //                 const unsigned long  engine_boots,  
 //                 const unsigned long  /*engine_time*/) 
 // last 8 bytes of key are used as base for initialization vector   */
@@ -347,9 +347,9 @@ int start_snmp(int s, char *ip, int port, unsigned char options, char *miscptr, 
   if (buffer_len % 8) {  
     unsigned char tmp_buf[8];  
     unsigned char *tmp_buf_ptr = tmp_buf;  
-    int start = buffer_len - (buffer_len % 8);  
+    int32_t start = buffer_len - (buffer_len % 8);  
     memset(tmp_buf, 0, 8);  
-    for (unsigned int l = start; l < buffer_len; l++)  
+    for (uint32_t l = start; l < buffer_len; l++)  
       *tmp_buf_ptr++ = buffer[l];  
     DES_ncbc_encrypt(tmp_buf, buf + start, 1, &symcbc, (const_DES_cblock*)(initVect), DES_ENCRYPT);
     *out_buffer_len = buffer_len + 8 - (buffer_len % 8);  
@@ -470,9 +470,9 @@ int start_snmp(int s, char *ip, int port, unsigned char options, char *miscptr, 
   return 1;
 }
 
-void service_snmp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1, i = 0;
-  int myport = PORT_SNMP;
+void service_snmp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1, i = 0;
+  int32_t myport = PORT_SNMP;
   char *lptr;
 
   if (miscptr != NULL) {
@@ -519,7 +519,7 @@ void service_snmp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
   hydra_register_socket(sp);
 
   if (sock < 0) {
-    hydra_report(stderr, "[ERROR] Child with pid %d terminating, no socket available\n", (int) getpid());
+    hydra_report(stderr, "[ERROR] Child with pid %d terminating, no socket available\n", (int32_t) getpid());
     hydra_child_exit(1);
   }
 
@@ -573,7 +573,7 @@ void service_snmp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
   }
 }
 
-int service_snmp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_snmp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

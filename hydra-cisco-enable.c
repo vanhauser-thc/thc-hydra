@@ -3,7 +3,7 @@
 extern char *HYDRA_EXIT;
 char *buf;
 
-int start_cisco_enable(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_cisco_enable(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *pass, buffer[300];
 
@@ -58,9 +58,9 @@ int start_cisco_enable(int s, char *ip, int port, unsigned char options, char *m
   return 3;
 }
 
-void service_cisco_enable(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, failc = 0, retry = 1, next_run = 1, sock = -1;
-  int myport = PORT_TELNET, mysslport = PORT_TELNET_SSL;
+void service_cisco_enable(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, failc = 0, retry = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_TELNET, mysslport = PORT_TELNET_SSL;
   char buffer[300];
   char *login;
 
@@ -87,7 +87,7 @@ void service_cisco_enable(char *ip, int sp, unsigned char options, char *miscptr
           port = mysslport;
         }
         if (sock < 0) {
-          if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
           hydra_child_exit(1);
         }
 
@@ -101,7 +101,7 @@ void service_cisco_enable(char *ip, int sp, unsigned char options, char *miscptr
 
           sprintf(buffer, "%.250s\r\n", login);
           if (hydra_send(sock, buffer, strlen(buffer), 0) < 0) {
-            if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not send login\n", (int) getpid());
+            if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not send login\n", (int32_t) getpid());
             hydra_child_exit(2);
           }
         }
@@ -117,7 +117,7 @@ void service_cisco_enable(char *ip, int sp, unsigned char options, char *miscptr
 
           sprintf(buffer, "%.250s\r\n", miscptr);
           if (hydra_send(sock, buffer, strlen(buffer), 0) < 0) {
-            if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not send login\n", (int) getpid());
+            if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not send login\n", (int32_t) getpid());
             hydra_child_exit(2);
           }
         }
@@ -132,7 +132,7 @@ void service_cisco_enable(char *ip, int sp, unsigned char options, char *miscptr
         }
 
         if (strstr(buf, "assw") != NULL) {
-          if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating - can not login, can not login\n", (int) getpid());
+          if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating - can not login, can not login\n", (int32_t) getpid());
           hydra_child_exit(2);
         }
         free(buf);
@@ -143,11 +143,11 @@ void service_cisco_enable(char *ip, int sp, unsigned char options, char *miscptr
     case 2:                    /* run the cracking function */
       {
         unsigned char *buf2;
-        int f = 0;
+        int32_t f = 0;
 
         sprintf(buffer, "%.250s\r\n", "ena");
         if (hydra_send(sock, buffer, strlen(buffer), 0) < 0) {
-          if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not send 'ena'\n", (int) getpid());
+          if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not send 'ena'\n", (int32_t) getpid());
           hydra_child_exit(2);
         }
 
@@ -160,11 +160,11 @@ void service_cisco_enable(char *ip, int sp, unsigned char options, char *miscptr
             if (failc < retry) {
               next_run = 1;
               failc++;
-              if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d was disconnected - retrying (%d of %d retries)\n", (int) getpid(), failc, retry);
+              if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d was disconnected - retrying (%d of %d retries)\n", (int32_t) getpid(), failc, retry);
               sleep(3);
               break;
             } else {
-              fprintf(stderr, "[ERROR] Child with pid %d was disconnected - exiting\n", (int) getpid());
+              fprintf(stderr, "[ERROR] Child with pid %d was disconnected - exiting\n", (int32_t) getpid());
               hydra_child_exit(0);
             }
           }
@@ -180,7 +180,7 @@ void service_cisco_enable(char *ip, int sp, unsigned char options, char *miscptr
     case 3:                    /* clean exit */
       sprintf(buffer, "%.250s\r\n", "exit");
       if (hydra_send(sock, buffer, strlen(buffer), 0) < 0) {
-        if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not send 'exit'\n", (int) getpid());
+        if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not send 'exit'\n", (int32_t) getpid());
         hydra_child_exit(0);
       }
       if (sock >= 0)
@@ -196,7 +196,7 @@ void service_cisco_enable(char *ip, int sp, unsigned char options, char *miscptr
   }
 }
 
-int service_cisco_enable_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_cisco_enable_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

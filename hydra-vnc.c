@@ -15,8 +15,8 @@
 //for RFB 3.7 and onwards
 #define RFB37 2
 
-int vnc_client_version = RFB33;
-int failed_auth = 0;
+int32_t vnc_client_version = RFB33;
+int32_t failed_auth = 0;
 
 extern char *HYDRA_EXIT;
 char *buf;
@@ -28,7 +28,7 @@ char *buf;
 
 void vncEncryptBytes(unsigned char *bytes, char *passwd) {
   unsigned char key[8];
-  int i;
+  int32_t i;
 
   /* key is simply password padded with nulls */
   for (i = 0; i < 8; i++) {
@@ -44,7 +44,7 @@ void vncEncryptBytes(unsigned char *bytes, char *passwd) {
   }
 }
 
-int start_vnc(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *pass;
   unsigned char buf2[CHALLENGESIZE + 4];
@@ -55,7 +55,7 @@ int start_vnc(int s, char *ip, int port, unsigned char options, char *miscptr, F
   recv(s, buf2, CHALLENGESIZE + 4, 0);
 
   if (vnc_client_version == RFB37) {
-    int i;
+    int32_t i;
 
     //fprintf(stderr,"number of security types supported: %d\n", buf2[0]);
     if (buf2[0] == 0 || buf2[0] > CHALLENGESIZE + 4) {
@@ -143,9 +143,9 @@ int start_vnc(int s, char *ip, int port, unsigned char options, char *miscptr, F
   return 1;                     /* never reached */
 }
 
-void service_vnc(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_VNC, mysslport = PORT_VNC_SSL;
+void service_vnc(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_VNC, mysslport = PORT_VNC_SSL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -167,7 +167,7 @@ void service_vnc(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
         port = mysslport;
       }
       if (sock < 0) {
-        hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+        hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       usleepn(300);
@@ -229,7 +229,7 @@ void service_vnc(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
   }
 }
 
-int service_vnc_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_vnc_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

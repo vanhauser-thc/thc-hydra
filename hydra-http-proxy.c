@@ -2,10 +2,10 @@
 #include "sasl.h"
 
 extern char *HYDRA_EXIT;
-static int http_proxy_auth_mechanism = AUTH_ERROR;
+static int32_t http_proxy_auth_mechanism = AUTH_ERROR;
 char *http_proxy_buf = NULL;
 
-int start_http_proxy(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *hostname) {
+int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp, char *hostname) {
   char *empty = "";
   char *login, *pass, buffer[500], buffer2[500];
   char url[210], host[30];
@@ -246,9 +246,9 @@ int start_http_proxy(int s, char *ip, int port, unsigned char options, char *mis
     return 1;
 }
 
-void service_http_proxy(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_HTTP_PROXY, mysslport = PORT_HTTP_PROXY_SSL;
+void service_http_proxy(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_HTTP_PROXY, mysslport = PORT_HTTP_PROXY_SSL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -277,7 +277,7 @@ void service_http_proxy(char *ip, int sp, unsigned char options, char *miscptr, 
         }
 
         if (sock < 0) {
-          if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
           hydra_child_exit(1);
         }
         next_run = 2;
@@ -299,7 +299,7 @@ void service_http_proxy(char *ip, int sp, unsigned char options, char *miscptr, 
   }
 }
 
-int service_http_proxy_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_http_proxy_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

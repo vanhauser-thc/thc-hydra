@@ -46,138 +46,138 @@ void usage_snmp(const char* service);
 void usage_http(const char* service);
 
 
-extern void service_asterisk(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_telnet(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_ftp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_ftps(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_pop3(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_vmauthd(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_imap(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_ldap2(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_ldap3(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_ldap3_cram_md5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_ldap3_digest_md5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_adam6500(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_cisco(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_cisco_enable(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_vnc(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_socks5(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_rexec(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_rlogin(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_rsh(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_nntp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_http_head(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_http_get(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_http_post(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_http_get_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_http_post_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_icq(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_pcnfs(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_mssql(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_cvs(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_snmp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_smtp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_smtp_enum(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_teamspeak(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_pcanywhere(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_http_proxy(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_xmpp(char *target, char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_irc(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_redis(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_http_proxy_urlenum(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_s7_300(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_rtsp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_rpcap(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern void service_asterisk(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_telnet(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_ftp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_ftps(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_pop3(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_vmauthd(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_imap(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_ldap2(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_ldap3(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_ldap3_cram_md5(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_ldap3_digest_md5(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_adam6500(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_cisco(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_cisco_enable(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_vnc(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_socks5(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_rexec(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_rlogin(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_rsh(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_nntp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_http_head(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_http_get(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_http_post(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_http_get_form(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_http_post_form(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_icq(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_pcnfs(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_mssql(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_cvs(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_snmp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_smtp_enum(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_teamspeak(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_pcanywhere(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_http_proxy(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_xmpp(char *target, char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_irc(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_redis(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_http_proxy_urlenum(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_s7_300(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_rtsp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_rpcap(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 
 // ADD NEW SERVICES HERE
 
 
 #ifdef HAVE_MATH_H
-extern void service_mysql(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_mysql_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern void service_mysql(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_mysql_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
 #ifdef LIBPOSTGRES
-extern void service_postgres(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_postgres_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern void service_postgres(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_postgres_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
 #ifdef LIBOPENSSL
-extern void service_smb(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_smb_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_oracle_listener(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_oracle_listener_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_oracle_sid(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_oracle_sid_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_sip(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_sip_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_rdp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_rdp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern void service_smb(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_smb_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_oracle_listener(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_oracle_listener_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_oracle_sid(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_oracle_sid_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_sip(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_sip_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_rdp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_rdp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
 #ifdef LIBSAPR3
-extern void service_sapr3(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_sapr3_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern void service_sapr3(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_sapr3_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
 #ifdef LIBFIREBIRD
-extern void service_firebird(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_firebird_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern void service_firebird(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_firebird_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
 #ifdef LIBAFP
-extern void service_afp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_afp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern void service_afp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_afp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
 #ifdef LIBNCP
-extern void service_ncp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_ncp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern void service_ncp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_ncp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
 #ifdef LIBSSH
-extern void service_ssh(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_ssh_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern void service_sshkey(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_sshkey_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern void service_ssh(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_ssh_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_sshkey(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_sshkey_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
 #ifdef LIBSVN
-extern void service_svn(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_svn_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern void service_svn(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_svn_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
 #ifdef LIBORACLE
-extern void service_oracle(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_oracle_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern void service_oracle(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_oracle_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
 
-extern int service_adam6500_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_cisco_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_cisco_enable_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_cvs_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_smtp_enum_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_http_form_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_ftp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_http_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_icq_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_imap_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_irc_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_ldap_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_mssql_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_nntp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_pcanywhere_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_pcnfs_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_pop3_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_http_proxy_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_asterisk_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_redis_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_rexec_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_rlogin_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_rsh_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_smtp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_snmp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_socks5_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_teamspeak_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_telnet_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_http_proxy_urlenum_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_vmauthd_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_vnc_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_xmpp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_s7_300_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_rtsp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-extern int service_rpcap_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+extern int32_t service_adam6500_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_cisco_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_cisco_enable_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_cvs_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_smtp_enum_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_http_form_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_ftp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_icq_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_imap_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_irc_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_ldap_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_mssql_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_nntp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_pcanywhere_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_pcnfs_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_pop3_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_http_proxy_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_asterisk_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_redis_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_rexec_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_rlogin_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_rsh_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_smtp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_snmp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_socks5_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_teamspeak_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_telnet_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_http_proxy_urlenum_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_vmauthd_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_vnc_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_xmpp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_s7_300_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_rtsp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_rpcap_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 
 // ADD NEW SERVICES HERE
 
@@ -208,15 +208,15 @@ char *SERVICES =
 #define RESOURCE  "http://www.thc.org/thc-hydra"
 
 extern char *hydra_strcasestr(const char *haystack, const char *needle);
-extern void hydra_tobase64(unsigned char *buf, int buflen, int bufsize);
+extern void hydra_tobase64(unsigned char *buf, int32_t buflen, int32_t bufsize);
 extern char *hydra_string_replace(const char *string, const char *substr, const char *replacement);
 extern char *hydra_address2string(char *address);
-extern int colored_output;
+extern int32_t colored_output;
 extern char quiet;
-extern int do_retry;
-extern int old_ssl;
+extern int32_t do_retry;
+extern int32_t old_ssl;
 
-void hydra_kill_head(int head_no, int killit, int fail);
+void hydra_kill_head(int32_t head_no, int32_t killit, int32_t fail);
 
 // some enum definitions
 typedef enum {
@@ -252,13 +252,13 @@ typedef enum {
 // some structure definitions
 typedef struct {
   pid_t pid;
-  int sp[2];
-  int target_no;
+  int32_t sp[2];
+  int32_t target_no;
   char *current_login_ptr;
   char *current_pass_ptr;
   char reverse[256];
   head_state_t active;
-  int redo;
+  int32_t redo;
   time_t last_seen;
 } hydra_head;
 
@@ -267,19 +267,19 @@ typedef struct {
   char ip[36];
   char *login_ptr;
   char *pass_ptr;
-  unsigned long int login_no;
-  unsigned long int pass_no;
-  unsigned long int sent;
-  int pass_state;
-  int use_count;
+  uint64_t login_no;
+  uint64_t pass_no;
+  uint64_t sent;
+  int32_t pass_state;
+  int32_t use_count;
   target_state_t done;
-  int fail_count;
-  int redo_state;
-  int redo;
-  int ok;
-  int failed;
-  int skipcnt;
-  int port;
+  int32_t fail_count;
+  int32_t redo_state;
+  int32_t redo;
+  int32_t ok;
+  int32_t failed;
+  int32_t skipcnt;
+  int32_t port;
   char *redo_login[MAXTASKS * 2 + 2];
   char *redo_pass[MAXTASKS * 2 + 2];
   char *skiplogin[SKIPLOGIN];
@@ -287,16 +287,16 @@ typedef struct {
 } hydra_target;
 
 typedef struct {
-  int active;                   // active tasks of hydra_options.max_use
-  int targets;
-  int finished;
-  int exit;
-  unsigned long int todo_all;
-  unsigned long int todo;
-  unsigned long int sent;
-  unsigned long int found;
-  unsigned long int countlogin;
-  unsigned long int countpass;
+  int32_t active;                   // active tasks of hydra_options.max_use
+  int32_t targets;
+  int32_t finished;
+  int32_t exit;
+  uint64_t todo_all;
+  uint64_t todo;
+  uint64_t sent;
+  uint64_t found;
+  uint64_t countlogin;
+  uint64_t countpass;
   size_t sizelogin;
   size_t sizepass;
   FILE *ofp;
@@ -304,20 +304,20 @@ typedef struct {
 
 typedef struct {
   hydra_mode_t mode;
-  int loop_mode;                // valid modes: 0 = password, 1 = user
-  int ssl;
-  int restore;
-  int debug;                    // is external - for restore
-  int verbose;                  // is external - for restore
-  int showAttempt;
-  int tasks;
-  int try_null_password;
-  int try_password_same_as_login;
-  int try_password_reverse_login;
-  int exit_found;
-  int max_use;
-  int cidr;
-  int time_next_attempt;
+  int32_t loop_mode;                // valid modes: 0 = password, 1 = user
+  int32_t ssl;
+  int32_t restore;
+  int32_t debug;                    // is external - for restore
+  int32_t verbose;                  // is external - for restore
+  int32_t showAttempt;
+  int32_t tasks;
+  int32_t try_null_password;
+  int32_t try_password_same_as_login;
+  int32_t try_password_reverse_login;
+  int32_t exit_found;
+  int32_t max_use;
+  int32_t cidr;
+  int32_t time_next_attempt;
   output_format_t outfile_format;
   char *login;
   char *loginfile;
@@ -326,9 +326,9 @@ typedef struct {
   char *outfile_ptr;
   char *infile_ptr;
   char *colonfile;
-  int waittime;                 // is external - for restore
-  int conwait;                  // is external - for restore
-  unsigned int port;            // is external - for restore
+  int32_t waittime;                 // is external - for restore
+  int32_t conwait;                  // is external - for restore
+  uint32_t port;            // is external - for restore
   char *miscptr;
   char *server;
   char *service;
@@ -337,24 +337,24 @@ typedef struct {
 
 typedef struct {
   char *name;
-  int port;
-  int port_ssl;
+  int32_t port;
+  int32_t port_ssl;
 } hydra_portlist;
 
 // external vars
 extern char HYDRA_EXIT[5];
 #if !defined(ANDROID) && !defined(__BIONIC__)
-extern int errno;
+extern int32_t errno;
 #endif
-extern int debug;
-extern int verbose;
-extern int waittime;
-extern int port;
-extern int found;
-extern int use_proxy;
-extern int proxy_count;
-extern int selected_proxy;
-extern int proxy_string_port[MAX_PROXY_COUNT];
+extern int32_t debug;
+extern int32_t verbose;
+extern int32_t waittime;
+extern int32_t port;
+extern int32_t found;
+extern int32_t use_proxy;
+extern int32_t proxy_count;
+extern int32_t selected_proxy;
+extern int32_t proxy_string_port[MAX_PROXY_COUNT];
 extern char proxy_string_ip[MAX_PROXY_COUNT][36];
 extern char proxy_string_type[MAX_PROXY_COUNT][10];
 extern char *proxy_authentication[MAX_PROXY_COUNT];
@@ -369,24 +369,24 @@ hydra_target **hydra_targets = NULL;
 hydra_option hydra_options;
 hydra_brain hydra_brains;
 char *sck = NULL;
-int prefer_ipv6 = 0, conwait = 0, loop_cnt = 0, fck = 0, options = 0, killed = 0;
-int child_head_no = -1, child_socket;
-int total_redo_count = 0;
+int32_t prefer_ipv6 = 0, conwait = 0, loop_cnt = 0, fck = 0, options = 0, killed = 0;
+int32_t child_head_no = -1, child_socket;
+int32_t total_redo_count = 0;
 
 // moved for restore feature
-int process_restore = 0, dont_unlink;
+int32_t process_restore = 0, dont_unlink;
 char *login_ptr = NULL, *pass_ptr = "", *csv_ptr = NULL, *servers_ptr = NULL;
 size_t countservers = 1, sizeservers = 0;
 char empty_login[2] = "", unsupported[500] = "";
 
 // required to save stack memory
 char snpbuf[MAXBUF];
-int snpdone, snp_is_redo, snpbuflen, snpi, snpj, snpdont;
+int32_t snpdone, snp_is_redo, snpbuflen, snpi, snpj, snpdont;
 
 #include "performance.h"
 
-typedef void (*service_t)(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
-typedef int (*service_init_t)(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+typedef void (*service_t)(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+typedef int32_t (*service_init_t)(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 typedef void (*service_usage_t)(const char* service);
 
 #define SERVICE2(name, func) { name, service_##func##_init, service_##func, NULL }
@@ -492,11 +492,11 @@ static const struct {
   } while(0)
 
 
-int inline check_flag(int value, int flag) {
+int32_t inline check_flag(int32_t value, int32_t flag) {
   return (value & flag) == flag;
 }
 
-void help(int ext) {
+void help(int32_t ext) {
   PRINT_NORMAL(ext, "Syntax: hydra [[[-l LOGIN|-L FILE] [-p PASS|-P FILE]] | [-C FILE]] [-e nsr]"
                     " [-o FILE] [-t TASKS] [-M FILE [-T TASKS]] [-w TIME] [-W TIME] [-f] [-s PORT]"
 #ifdef HAVE_MATH_H
@@ -589,7 +589,7 @@ void help_bfg() {
 }
 
 void module_usage() {
-  int i;
+  int32_t i;
   if (!hydra_options.service) {
     printf("The Module %s does not need or support optional parameters\n", hydra_options.service);
     exit(0);
@@ -611,13 +611,13 @@ void module_usage() {
 
 #define STR_NULL(s) ((s) == NULL ? "(null)" : (s))
 
-void hydra_debug(int force, char *string) {
-  int active = 0, inactive = 0, i;
+void hydra_debug(int32_t force, char *string) {
+  int32_t active = 0, inactive = 0, i;
 
   if (!debug && !force)
     return;
 
-  printf("[DEBUG] Code: %s   Time: %lu\n", string, (unsigned long int) time(NULL));
+  printf("[DEBUG] Code: %s   Time: %lu\n", string, (uint64_t) time(NULL));
   printf("[DEBUG] Options: mode %d  ssl %d  restore %d  showAttempt %d  tasks %d  max_use %d tnp %d  tpsal %d  tprl %d  exit_found %d  miscptr %s  service %s\n",
          hydra_options.mode,        hydra_options.ssl,   hydra_options.restore,
          hydra_options.showAttempt, hydra_options.tasks, hydra_options.max_use,
@@ -629,10 +629,10 @@ void hydra_debug(int force, char *string) {
          hydra_brains.active, hydra_brains.targets, hydra_brains.finished,
          hydra_brains.todo_all + total_redo_count,  hydra_brains.todo,
          hydra_brains.sent, hydra_brains.found,
-         (unsigned long int) hydra_brains.countlogin,
-         (unsigned long int) hydra_brains.sizelogin,
-         (unsigned long int) hydra_brains.countpass,
-         (unsigned long int) hydra_brains.sizepass);
+         (uint64_t) hydra_brains.countlogin,
+         (uint64_t) hydra_brains.sizelogin,
+         (uint64_t) hydra_brains.countpass,
+         (uint64_t) hydra_brains.sizepass);
 
   for (i = 0; i < hydra_brains.targets; i++) {
     hydra_target* target = hydra_targets[i];
@@ -653,7 +653,7 @@ void hydra_debug(int force, char *string) {
   for (i = 0; i < hydra_options.max_use; i++) {
     if (hydra_heads[i]->active >= HEAD_UNUSED) {
       printf("[DEBUG] Task %d - pid %d  active %d  redo %d  current_login_ptr %s  current_pass_ptr %s\n",
-           i, (int) hydra_heads[i]->pid,
+           i, (int32_t) hydra_heads[i]->pid,
            hydra_heads[i]->active,
            hydra_heads[i]->redo,
            STR_NULL(hydra_heads[i]->current_login_ptr),
@@ -672,11 +672,11 @@ void bail(char *text) {
   exit(-1);
 }
 
-void hydra_restore_write(int print_msg) {
+void hydra_restore_write(int32_t print_msg) {
   FILE *f;
   hydra_brain brain;
   char mynull[4] = { 0, 0, 0, 0 }, buf[4];
-  int i = 0, j = 0;
+  int32_t i = 0, j = 0;
   hydra_head hh;
 
   if (process_restore != 1)
@@ -701,7 +701,7 @@ void hydra_restore_write(int print_msg) {
   fprintf(f, "%s\n", PROGRAM);
   buf[0] = VERSION[1];
   buf[1] = VERSION[3];
-  buf[2] = sizeof(int) % 256;
+  buf[2] = sizeof(int32_t) % 256;
   buf[3] = sizeof(hydra_target*) % 256;
   fwrite(buf, 1, 4, f);
   memcpy(&brain, &hydra_brains, sizeof(hydra_brain));
@@ -727,8 +727,8 @@ void hydra_restore_write(int print_msg) {
   for (j = 0; j < hydra_brains.targets; j++)
     if (hydra_targets[j]->done != TARGET_FINISHED) {
       fck = fwrite(hydra_targets[j], sizeof(hydra_target), 1, f);
-      fprintf(f, "%s\n%d\n%d\n", hydra_targets[j]->target == NULL ? "" : hydra_targets[j]->target, (int) (hydra_targets[j]->login_ptr - login_ptr),
-              (int) (hydra_targets[j]->pass_ptr - pass_ptr));
+      fprintf(f, "%s\n%d\n%d\n", hydra_targets[j]->target == NULL ? "" : hydra_targets[j]->target, (int32_t) (hydra_targets[j]->login_ptr - login_ptr),
+              (int32_t) (hydra_targets[j]->pass_ptr - pass_ptr));
       fprintf(f, "%s\n%s\n", hydra_targets[j]->login_ptr, hydra_targets[j]->pass_ptr);
       if (hydra_targets[j]->redo)
         for (i = 0; i < hydra_targets[j]->redo; i++)
@@ -770,7 +770,7 @@ void hydra_restore_write(int print_msg) {
 void hydra_restore_read() {
   FILE *f;
   char mynull[4], buf[4];
-  int i, j, orig_debug = debug;
+  int32_t i, j, orig_debug = debug;
   char out[1024];
 
   printf("[INFORMATION] reading restore file %s\n", RESTOREFILE);
@@ -788,7 +788,7 @@ void hydra_restore_read() {
     exit(-1);
   }
 
-  if ((fck = (int) fread(buf, 1, 4, f)) != 4) {
+  if ((fck = (int32_t) fread(buf, 1, 4, f)) != 4) {
     fprintf(stderr, "[ERROR] invalid restore file (platform)\n");
     exit(-1);
   }
@@ -798,13 +798,13 @@ void hydra_restore_read() {
   }
   if (buf[0] != VERSION[1] || buf[1] != VERSION[3])
     fprintf(stderr, "[WARNING] restore file was created by version %c.%c, this is version %s\n", buf[0], buf[2], VERSION);
-  if (buf[2] != sizeof(int) % 256 || buf[3] != sizeof(hydra_head*) % 256) {
+  if (buf[2] != sizeof(int32_t) % 256 || buf[3] != sizeof(hydra_head*) % 256) {
     fprintf(stderr, "[ERROR] restore file was created on a different, incompatible processor platform!\n");
     exit(-1);
   }
 
-  fck = (int) fread(&bf_options, sizeof(bf_options), 1, f);
-  fck = (int) fread(mynull, sizeof(mynull), 1, f);
+  fck = (int32_t) fread(&bf_options, sizeof(bf_options), 1, f);
+  fck = (int32_t) fread(mynull, sizeof(mynull), 1, f);
   if (debug)
     printf("[DEBUG] reading restore file: Step 1 complete\n");
   if (mynull[0] + mynull[1] + mynull[2] + mynull[3] == 0) {
@@ -817,9 +817,9 @@ void hydra_restore_read() {
   if (debug)
     printf("[DEBUG] reading restore file: Step 2 complete\n");
 
-  fck = (int) fread(&hydra_brains, sizeof(hydra_brain), 1, f);
+  fck = (int32_t) fread(&hydra_brains, sizeof(hydra_brain), 1, f);
   hydra_brains.ofp = stdout;
-  fck = (int) fread(&hydra_options, sizeof(hydra_option), 1, f);
+  fck = (int32_t) fread(&hydra_options, sizeof(hydra_option), 1, f);
   hydra_options.restore = 1;
   verbose = hydra_options.verbose;
   debug = hydra_options.debug;
@@ -872,12 +872,12 @@ void hydra_restore_read() {
     printf("[DEBUG] reading restore file: Step 8 complete\n");
 
   login_ptr = malloc(hydra_brains.sizelogin + hydra_brains.countlogin + 8);
-  fck = (int) fread(login_ptr, hydra_brains.sizelogin + hydra_brains.countlogin + 8, 1, f);
+  fck = (int32_t) fread(login_ptr, hydra_brains.sizelogin + hydra_brains.countlogin + 8, 1, f);
   if (debug)
     printf("[DEBUG] reading restore file: Step 9 complete\n");
   if (!check_flag(hydra_options.mode, MODE_COLON_FILE)) {        // NOT colonfile mode
     pass_ptr = malloc(hydra_brains.sizepass + hydra_brains.countpass + 8);
-    fck = (int) fread(pass_ptr, hydra_brains.sizepass + hydra_brains.countpass + 8, 1, f);
+    fck = (int32_t) fread(pass_ptr, hydra_brains.sizepass + hydra_brains.countpass + 8, 1, f);
   } else {                      // colonfile mode
     hydra_options.colonfile = empty_login;      // dummy
     pass_ptr = csv_ptr = login_ptr;
@@ -888,7 +888,7 @@ void hydra_restore_read() {
   hydra_targets = malloc((hydra_brains.targets + 3) * sizeof(hydra_targets));
   for (j = 0; j < hydra_brains.targets; j++) {
     hydra_targets[j] = malloc(sizeof(hydra_target));
-    fck = (int) fread(hydra_targets[j], sizeof(hydra_target), 1, f);
+    fck = (int32_t) fread(hydra_targets[j], sizeof(hydra_target), 1, f);
     sck = fgets(out, sizeof(out), f);
     if (out[0] != 0 && out[strlen(out) - 1] == '\n')
       out[strlen(out) - 1] = 0;
@@ -939,7 +939,7 @@ void hydra_restore_read() {
   hydra_heads = malloc(sizeof(hydra_head*) * hydra_options.max_use);
   for (j = 0; j < hydra_options.max_use; j++) {
     hydra_heads[j] = malloc(sizeof(hydra_head));
-    fck = (int) fread(hydra_heads[j], sizeof(hydra_head), 1, f);
+    fck = (int32_t) fread(hydra_heads[j], sizeof(hydra_head), 1, f);
     hydra_heads[j]->sp[0] = -1;
     hydra_heads[j]->sp[1] = -1;
     sck = fgets(out, sizeof(out), f);
@@ -983,8 +983,8 @@ void hydra_restore_read() {
   hydra_debug(0, "hydra_restore_read");
 }
 
-void killed_childs(int signo) {
-  int pid, i;
+void killed_childs(int32_t signo) {
+  int32_t pid, i;
 
   killed++;
   pid = wait3(NULL, WNOHANG, NULL);
@@ -997,15 +997,15 @@ void killed_childs(int signo) {
   }
 }
 
-void killed_childs_report(int signo) {
+void killed_childs_report(int32_t signo) {
   if (debug)
     printf("[DEBUG] children crashed! (%d)\n", child_head_no);
   fck = write(child_socket, "E", 1);
   _exit(-1);
 }
 
-void kill_children(int signo) {
-  int i;
+void kill_children(int32_t signo) {
+  int32_t i;
 
   if (verbose)
     fprintf(stderr, "[ERROR] Received signal %d, going down ...\n", signo);
@@ -1022,10 +1022,10 @@ void kill_children(int signo) {
   exit(0);
 }
 
-unsigned long int countlines(FILE * fd, int colonmode) {
+uint64_t countlines(FILE * fd, int32_t colonmode) {
   size_t clines = 0;
   char *buf = malloc(MAXLINESIZE);
-  int only_one_empty_line = 0;
+  int32_t only_one_empty_line = 0;
 
 #ifdef HAVE_ZLIB
   gzFile fp = gzdopen(fileno(fd), "r");
@@ -1064,10 +1064,10 @@ unsigned long int countlines(FILE * fd, int colonmode) {
   return clines;
 }
 
-void fill_mem(char *ptr, FILE * fd, int colonmode) {
+void fill_mem(char *ptr, FILE * fd, int32_t colonmode) {
   char tmp[MAXBUF + 4] = "", *ptr2;
-  unsigned int len;
-  int only_one_empty_line = 0;
+  uint32_t len;
+  int32_t only_one_empty_line = 0;
 #ifdef HAVE_ZLIB
   gzFile fp = gzdopen(fileno(fd), "r");
 
@@ -1132,9 +1132,9 @@ char *hydra_build_time() {
   return (char *) &datetime;
 }
 
-void hydra_service_init(int target_no) {
-  int x = 99;
-  int i;
+void hydra_service_init(int32_t target_no) {
+  int32_t x = 99;
+  int32_t i;
   hydra_target* t = hydra_targets[target_no];
   char* miscptr = hydra_options.miscptr;
   FILE* ofp = hydra_brains.ofp;
@@ -1165,8 +1165,8 @@ void hydra_service_init(int target_no) {
   }
 }
 
-int hydra_spawn_head(int head_no, int target_no) {
-  int i;
+int32_t hydra_spawn_head(int32_t head_no, int32_t target_no) {
+  int32_t i;
 
   if (head_no < 0 || head_no >= hydra_options.max_use || target_no < 0 || target_no >= hydra_brains.targets) {
     if (verbose > 1 || debug)
@@ -1213,7 +1213,7 @@ int hydra_spawn_head(int head_no, int target_no) {
         printf("[DEBUG] head_no %d has pid %d\n", head_no, getpid());
 
       hydra_target* t = hydra_targets[target_no];
-      int sp = hydra_heads[head_no]->sp[1];
+      int32_t sp = hydra_heads[head_no]->sp[1];
       char* miscptr = hydra_options.miscptr;
       FILE* ofp = hydra_brains.ofp;
       hydra_target* head_target = hydra_targets[hydra_heads[head_no]->target_no];
@@ -1263,8 +1263,8 @@ int hydra_spawn_head(int head_no, int target_no) {
   return 0;
 }
 
-int hydra_lookup_port(char *service) {
-  int i = 0, port = -2;
+int32_t hydra_lookup_port(char *service) {
+  int32_t i = 0, port = -2;
 
   hydra_portlist hydra_portlists[] = {
     {"ftp", PORT_FTP, PORT_FTP_SSL},
@@ -1349,7 +1349,7 @@ int hydra_lookup_port(char *service) {
 }
 
 // killit = 1 : kill(pid); fail = 1 : redo, fail = 2/3 : disable
-void hydra_kill_head(int head_no, int killit, int fail) {
+void hydra_kill_head(int32_t head_no, int32_t killit, int32_t fail) {
   if (debug)
     printf("[DEBUG] head_no %d, kill %d, fail %d\n", head_no, killit, fail);
   if (head_no < 0)
@@ -1393,17 +1393,17 @@ void hydra_kill_head(int head_no, int killit, int fail) {
   (void) wait3(NULL, WNOHANG, NULL);
 }
 
-void hydra_increase_fail_count(int target_no, int head_no) {
-  int i, k, ok, maxfail = 0;
+void hydra_increase_fail_count(int32_t target_no, int32_t head_no) {
+  int32_t i, k, ok, maxfail = 0;
 
   if (target_no < 0)
     return;
 
   if (hydra_targets[target_no]->ok) {
-      const int tasks = hydra_options.tasks;
-      const int success = tasks - hydra_targets[target_no]->failed;
-      const int t = tasks < 5 ? 6 - tasks : 1;
-      const int s = success < 5 ? 6 - success : 1;
+      const int32_t tasks = hydra_options.tasks;
+      const int32_t success = tasks - hydra_targets[target_no]->failed;
+      const int32_t t = tasks < 5 ? 6 - tasks : 1;
+      const int32_t s = success < 5 ? 6 - success : 1;
       maxfail = MAXFAIL + t + s + 2;
   }
 
@@ -1483,8 +1483,8 @@ void hydra_increase_fail_count(int target_no, int head_no) {
   }
 }
 
-char *hydra_reverse_login(int head_no, char *login) {
-  int i, j;
+char *hydra_reverse_login(int32_t head_no, char *login) {
+  int32_t i, j;
   char *start, *pos;
   unsigned char keep;
 
@@ -1532,7 +1532,7 @@ char *hydra_reverse_login(int head_no, char *login) {
   return hydra_heads[head_no]->reverse;
 }
 
-int hydra_send_next_pair(int target_no, int head_no) {
+int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
   // variables moved to save stack
   snpdone = 0;
   snp_is_redo = 0;
@@ -1894,8 +1894,8 @@ int hydra_send_next_pair(int target_no, int head_no) {
   return -1;
 }
 
-void hydra_skip_user(int target_no, char *username) {
-  int i;
+void hydra_skip_user(int32_t target_no, char *username) {
+  int32_t i;
 
   if (username == NULL || *username == 0)
     return;
@@ -1932,8 +1932,8 @@ void hydra_skip_user(int target_no, char *username) {
   }
 }
 
-int hydra_check_for_exit_condition() {
-  int i, k = 0;
+int32_t hydra_check_for_exit_condition() {
+  int32_t i, k = 0;
 
   if (hydra_brains.exit) {
     if (debug)
@@ -1958,8 +1958,8 @@ int hydra_check_for_exit_condition() {
   return 0;
 }
 
-int hydra_select_target() {
-  int target_no = -1, i, j = -1000;
+int32_t hydra_select_target() {
+  int32_t target_no = -1, i, j = -1000;
 
   for (i = 0; i < hydra_brains.targets; i++)
     if (hydra_targets[i]->use_count < hydra_options.tasks && hydra_targets[i]->done == TARGET_ACTIVE)
@@ -1970,9 +1970,9 @@ int hydra_select_target() {
   return target_no;
 }
 
-void process_proxy_line(int type, char *string) {
+void process_proxy_line(int32_t type, char *string) {
   char *type_string = string, *target_string, *port_string, *auth_string = NULL, *device_string = NULL, *sep;
-  int port;
+  int32_t port;
   struct addrinfo hints, *res, *p;
   struct sockaddr_in6 *ipv6 = NULL;
   struct sockaddr_in *ipv4 = NULL;
@@ -2094,20 +2094,20 @@ void process_proxy_line(int type, char *string) {
   proxy_count++;
 }
 
-int main(int argc, char *argv[]) {
+int32_t main(int32_t argc, char *argv[]) {
   char *proxy_string = NULL, *device = NULL, *memcheck, *cmdtarget = NULL;
   char *outfile_format_tmp;
   FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL, *proxyfp;
   size_t countinfile = 1, sizeinfile = 0;
-  unsigned long int math2;
-  int i = 0, j = 0, k, error = 0, modusage = 0, ignore_restore = 0, do_switch;
-  int head_no = 0, target_no = 0, exit_condition = 0, readres;
+  uint64_t math2;
+  int32_t i = 0, j = 0, k, error = 0, modusage = 0, ignore_restore = 0, do_switch;
+  int32_t head_no = 0, target_no = 0, exit_condition = 0, readres;
   time_t starttime, elapsed_status, elapsed_restore, status_print = 59, tmp_time;
   char *tmpptr, *tmpptr2;
   char rc, buf[MAXBUF];
   time_t last_attempt = 0;
   fd_set fdreadheads;
-  int max_fd;
+  int32_t max_fd;
   struct addrinfo hints, *res, *p;
   struct sockaddr_in6 *ipv6 = NULL;
   struct sockaddr_in *ipv4 = NULL;
@@ -3169,7 +3169,7 @@ int main(int argc, char *argv[]) {
           exit(-1);
         }
         if (hydra_brains.sizelogin > MAX_BYTES) {
-          fprintf(stderr, "[ERROR] Maximum size of the login file is %d, this file has %lu bytes.\n", MAX_BYTES, (unsigned long int) hydra_brains.sizelogin);
+          fprintf(stderr, "[ERROR] Maximum size of the login file is %d, this file has %lu bytes.\n", MAX_BYTES, (uint64_t) hydra_brains.sizelogin);
           exit(-1);
         }
         login_ptr = malloc(hydra_brains.sizelogin + hydra_brains.countlogin + 8);
@@ -3198,7 +3198,7 @@ int main(int argc, char *argv[]) {
           exit(-1);
         }
         if (hydra_brains.sizepass > MAX_BYTES) {
-          fprintf(stderr, "[ERROR] Maximum size of the password file is %d, this file has %lu bytes.\n", MAX_BYTES, (unsigned long int) hydra_brains.sizepass);
+          fprintf(stderr, "[ERROR] Maximum size of the password file is %d, this file has %lu bytes.\n", MAX_BYTES, (uint64_t) hydra_brains.sizepass);
           exit(-1);
         }
         pass_ptr = malloc(hydra_brains.sizepass + hydra_brains.countpass + 8);
@@ -3245,7 +3245,7 @@ int main(int argc, char *argv[]) {
         exit(-1);
       }
       if (hydra_brains.sizelogin > MAX_BYTES / 2) {
-        fprintf(stderr, "[ERROR] Maximum size of the colon file is %d, this file has %lu bytes.\n", MAX_BYTES / 2, (unsigned long int) hydra_brains.sizelogin);
+        fprintf(stderr, "[ERROR] Maximum size of the colon file is %d, this file has %lu bytes.\n", MAX_BYTES / 2, (uint64_t) hydra_brains.sizelogin);
         exit(-1);
       }
       csv_ptr = malloc(hydra_brains.sizelogin + 2 * hydra_brains.countlogin + 8);
@@ -3291,11 +3291,11 @@ int main(int argc, char *argv[]) {
         bail("Could not allocate enough memory for target data");
       sizeinfile = size_of_data;
       if (countinfile > MAX_LINES / 1000) {
-        fprintf(stderr, "[ERROR] Maximum number of target file entries is %d, this file has %d entries.\n", MAX_LINES / 1000, (int) countinfile);
+        fprintf(stderr, "[ERROR] Maximum number of target file entries is %d, this file has %d entries.\n", MAX_LINES / 1000, (int32_t) countinfile);
         exit(-1);
       }
       if (sizeinfile > MAX_BYTES / 1000) {
-        fprintf(stderr, "[ERROR] Maximum size of the server file is %d, this file has %d bytes.\n", MAX_BYTES / 1000, (int) sizeinfile);
+        fprintf(stderr, "[ERROR] Maximum size of the server file is %d, this file has %d bytes.\n", MAX_BYTES / 1000, (int32_t) sizeinfile);
         exit(-1);
       }
       if ((servers_ptr = malloc(sizeinfile + countservers + 8)) == NULL)
@@ -3345,7 +3345,7 @@ int main(int argc, char *argv[]) {
        sizeservers = strlen(hydra_options.server) + 1;
      } else {
       /* CIDR notation on command line, e.g. 192.168.0.0/24 */
-      unsigned int four_from, four_to, addr_cur, addr_cur2, k, l;
+      uint32_t four_from, four_to, addr_cur, addr_cur2, k, l;
       in_addr_t addr4;
       struct sockaddr_in target;
 
@@ -3506,7 +3506,7 @@ int main(int argc, char *argv[]) {
   else
     printf("[DATA] max %d task%s per %d server%s, overall %d tasks, %lu login tr%s (l:%lu/p:%lu), ~%lu tr%s per task\n", hydra_options.tasks, hydra_options.tasks == 1 ? "" : "s",
            hydra_brains.targets, hydra_brains.targets == 1 ? "" : "s", hydra_options.max_use, hydra_brains.todo, hydra_brains.todo == 1 ? "y" : "ies",
-           (unsigned long int) hydra_brains.countlogin, (unsigned long int) hydra_brains.countpass, math2, math2 == 1 ? "y" : "ies");
+           (uint64_t) hydra_brains.countlogin, (uint64_t) hydra_brains.countpass, math2, math2 == 1 ? "y" : "ies");
 
   printf("[DATA] attacking service %s on port %d%s\n", hydra_options.service, port, hydra_options.ssl == 1 ? " with SSL" : "");
   if (hydra_options.miscptr != NULL && hydra_options.miscptr[0] != 0)
@@ -3933,12 +3933,12 @@ int main(int argc, char *argv[]) {
 */
       printf("[STATUS] %.2f tries/min, %lu tries in %02lu:%02luh, %lu to do in %02lu:%02luh, %d active\n", (1.0 * hydra_brains.sent) / (((elapsed_status - starttime) * 1.0) / 60),     // tries/min
              hydra_brains.sent, // tries
-             (long unsigned int) ((elapsed_status - starttime) / 3600), // hours
-             (long unsigned int) (((elapsed_status - starttime) % 3600) / 60),  // minutes
+             (uint64_t) ((elapsed_status - starttime) / 3600), // hours
+             (uint64_t) (((elapsed_status - starttime) % 3600) / 60),  // minutes
              (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent != 0 ? (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent : 1,    // left todo
-             (long unsigned int) (((double) (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / ((double) hydra_brains.sent / (elapsed_status - starttime))
+             (uint64_t) (((double) (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / ((double) hydra_brains.sent / (elapsed_status - starttime))
              ) / 3600,          // hours
-             (((long unsigned int) (((double) (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / ((double) hydra_brains.sent / (elapsed_status - starttime))
+             (((uint64_t) (((double) (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / ((double) hydra_brains.sent / (elapsed_status - starttime))
                ) % 3600) / 60) + 1,     // min
              k);
       hydra_debug(0, "STATUS");

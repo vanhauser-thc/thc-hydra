@@ -25,11 +25,11 @@ void dummy_oracle_listener() {
 extern char *HYDRA_EXIT;
 char *buf;
 unsigned char *hash;
-int sid_mechanism = AUTH_PLAIN;
+int32_t sid_mechanism = AUTH_PLAIN;
 
-int initial_permutation(unsigned char **result, char *p_str, int *sz) {
-  int k = 0;
-  int i = strlen(p_str);
+int32_t initial_permutation(unsigned char **result, char *p_str, int32_t *sz) {
+  int32_t k = 0;
+  int32_t i = strlen(p_str);
   char *buff;
 
   //expand the string with zero so that length is a multiple of 4
@@ -67,8 +67,8 @@ int initial_permutation(unsigned char **result, char *p_str, int *sz) {
   return 0;
 }
 
-int ora_hash(unsigned char **orahash, unsigned char *buf, int len) {
-  int i;
+int32_t ora_hash(unsigned char **orahash, unsigned char *buf, int32_t len) {
+  int32_t i;
 
   if ((*orahash = malloc(HASHSIZE)) == NULL) {
     hydra_report(stderr, "[ERROR] Can't allocate memory\n");
@@ -81,8 +81,8 @@ int ora_hash(unsigned char **orahash, unsigned char *buf, int len) {
   return 0;
 }
 
-int convert_byteorder(unsigned char **result, int size) {
-  int i = 0;
+int32_t convert_byteorder(unsigned char **result, int32_t size) {
+  int32_t i = 0;
   char *buff;
 
   if ((buff = malloc(size)) == NULL) {
@@ -103,8 +103,8 @@ int convert_byteorder(unsigned char **result, int size) {
   return 0;
 }
 
-int ora_descrypt(unsigned char **rs, unsigned char *result, int siz) {
-  int i = 0;
+int32_t ora_descrypt(unsigned char **rs, unsigned char *result, int32_t siz) {
+  int32_t i = 0;
   char lastkey[8];
   DES_key_schedule ks1;
   unsigned char key1[8] = { 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF };
@@ -138,9 +138,9 @@ int ora_descrypt(unsigned char **rs, unsigned char *result, int siz) {
   return 0;
 }
 
-int ora_hash_password(char *pass) {
+int32_t ora_hash_password(char *pass) {
   // secret hash function comes here, and written to char *hash
-  int siz = 0;
+  int32_t siz = 0;
   unsigned char *desresult;
   unsigned char *result;
   char buff[strlen(pass) + 5];
@@ -180,7 +180,7 @@ int ora_hash_password(char *pass) {
   return 0;
 }
 
-int start_oracle_listener(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_oracle_listener(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   unsigned char tns_packet_begin[22] = {
     "\x00\x00\x01\x00\x00\x00\x01\x36\x01\x2c\x00\x00\x08\x00\x7f\xff\x86\x0e\x00\x00\x01\x00"
   };
@@ -192,7 +192,7 @@ int start_oracle_listener(int s, char *ip, int port, unsigned char options, char
   char *pass;
   char connect_string[200];
   char buffer2[260];
-  int siz = 0;
+  int32_t siz = 0;
 
   memset(connect_string, 0, sizeof(connect_string));
   memset(buffer2, 0, sizeof(buffer2));
@@ -258,9 +258,9 @@ int start_oracle_listener(int s, char *ip, int port, unsigned char options, char
   return 1;
 }
 
-void service_oracle_listener(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_ORACLE, mysslport = PORT_ORACLE_SSL;
+void service_oracle_listener(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_ORACLE, mysslport = PORT_ORACLE_SSL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -301,7 +301,7 @@ void service_oracle_listener(char *ip, int sp, unsigned char options, char *misc
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       /* run the cracking function */
@@ -325,7 +325,7 @@ void service_oracle_listener(char *ip, int sp, unsigned char options, char *misc
   }
 }
 
-int service_oracle_listener_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_oracle_listener_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

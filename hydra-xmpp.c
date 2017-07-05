@@ -6,12 +6,12 @@
 extern char *HYDRA_EXIT;
 static char *domain = NULL;
 
-int xmpp_auth_mechanism = AUTH_ERROR;
+int32_t xmpp_auth_mechanism = AUTH_ERROR;
 
 char *JABBER_CLIENT_INIT_STR = "<?xml version='1.0' ?><stream:stream to='";
 char *JABBER_CLIENT_INIT_END_STR = "' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0'>";
 
-int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_xmpp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "\"\"";
   char *login, *pass, buffer[500], buffer2[500];
   char *AUTH_STR = "<auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' mechanism='";
@@ -65,7 +65,7 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
     if (!ptr)
       ptr = strstr(buf, CHALLENGE_STR2);
     char *ptr_end = strstr(ptr, CHALLENGE_END_STR);
-    int chglen = ptr_end - ptr - strlen(CHALLENGE_STR);
+    int32_t chglen = ptr_end - ptr - strlen(CHALLENGE_STR);
 
     if ((chglen > 0) && (chglen < sizeof(buffer2))) {
       strncpy(buffer2, ptr + strlen(CHALLENGE_STR), chglen);
@@ -100,7 +100,7 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
             if (!ptr)
               ptr = strstr(buf, CHALLENGE_STR2);
             char *ptr_end = strstr(ptr, CHALLENGE_END_STR);
-            int chglen = ptr_end - ptr - strlen(CHALLENGE_STR);
+            int32_t chglen = ptr_end - ptr - strlen(CHALLENGE_STR);
 
             if ((chglen > 0) && (chglen < sizeof(buffer2))) {
               strncpy(buffer2, ptr + strlen(CHALLENGE_STR), chglen);
@@ -133,7 +133,7 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
       }
       break;
     case AUTH_CRAMMD5:{
-        int rc = 0;
+        int32_t rc = 0;
         char *preplogin;
 
         memset(buffer2, 0, sizeof(buffer2));
@@ -173,7 +173,7 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
         /*client-first-message */
         char clientfirstmessagebare[200];
         char *preplogin;
-        int rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
+        int32_t rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
 
         if (rc) {
           free(buf);
@@ -201,7 +201,7 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
           if (!ptr)
             ptr = strstr(buf, CHALLENGE_STR2);
           char *ptr_end = strstr(ptr, CHALLENGE_END_STR);
-          int chglen = ptr_end - ptr - strlen(CHALLENGE_STR);
+          int32_t chglen = ptr_end - ptr - strlen(CHALLENGE_STR);
 
           if ((chglen > 0) && (chglen < sizeof(buffer2))) {
             strncpy(buffer2, ptr + strlen(CHALLENGE_STR), chglen);
@@ -278,10 +278,10 @@ int start_xmpp(int s, char *ip, int port, unsigned char options, char *miscptr, 
   return 3;
 }
 
-void service_xmpp(char *target, char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1, tls = 0;
+void service_xmpp(char *target, char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1, tls = 0;
   char buffer[500], *buf = NULL;
-  int myport = PORT_XMPP, mysslport = PORT_XMPP_SSL, disable_tls = 0;
+  int32_t myport = PORT_XMPP, mysslport = PORT_XMPP_SSL, disable_tls = 0;
   char *enddomain = NULL;
 
   //we have to pass the target here as the reverse dns resolution is not working for some servers
@@ -325,7 +325,7 @@ void service_xmpp(char *target, char *ip, int sp, unsigned char options, char *m
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       memset(buffer, 0, sizeof(buffer));
@@ -384,10 +384,10 @@ void service_xmpp(char *target, char *ip, int sp, unsigned char options, char *m
       } while (xmpp_auth_mechanism == AUTH_ERROR);
 
       if ((miscptr != NULL) && (strlen(miscptr) > 0)) {
-        int i;
+        int32_t i;
 
         for (i = 0; i < strlen(miscptr); i++)
-          miscptr[i] = (char) toupper((int) miscptr[i]);
+          miscptr[i] = (char) toupper((int32_t) miscptr[i]);
 
         if (strncmp(miscptr, "LOGIN", 5) == 0)
           xmpp_auth_mechanism = AUTH_LOGIN;
@@ -485,7 +485,7 @@ void service_xmpp(char *target, char *ip, int sp, unsigned char options, char *m
   }
 }
 
-int service_xmpp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_xmpp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

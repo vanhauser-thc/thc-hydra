@@ -97,8 +97,8 @@ http://technet.microsoft.com/en-us/library/cc960646.aspx
 #define TIME_T_MAX (~ (time_t) 0 - TIME_T_MIN)
 #endif
 
-#define IVAL_NC(buf,pos) (*(unsigned int *)((char *)(buf) + (pos)))     /* Non const version of above. */
-#define SIVAL(buf,pos,val) IVAL_NC(buf,pos)=((unsigned int)(val))
+#define IVAL_NC(buf,pos) (*(uint32_t *)((char *)(buf) + (pos)))     /* Non const version of above. */
+#define SIVAL(buf,pos,val) IVAL_NC(buf,pos)=((uint32_t)(val))
 
 #define TIME_FIXUP_CONSTANT_INT 11644473600LL
 
@@ -108,15 +108,15 @@ static unsigned char challenge[8];
 static unsigned char workgroup[16];
 static unsigned char domain[16];
 static unsigned char machine_name[16];
-int hashFlag, accntFlag, protoFlag;
+int32_t hashFlag, accntFlag, protoFlag;
 
-int smb_auth_mechanism = AUTH_NTLM;
-int security_mode = ENCRYPTED;
+int32_t smb_auth_mechanism = AUTH_NTLM;
+int32_t security_mode = ENCRYPTED;
 
-static size_t UTF8_UTF16LE(unsigned char *in, int insize, unsigned char *out, int outsize)
+static size_t UTF8_UTF16LE(unsigned char *in, int32_t insize, unsigned char *out, int32_t outsize)
 {
-  int i=0,j=0;
-  unsigned long int ch;
+  int32_t i=0,j=0;
+  uint64_t ch;
   if (debug) {
      hydra_report(stderr, "[DEBUG] UTF8_UTF16LE in:\n");
      hydra_dump_asciihex(in, insize);
@@ -154,8 +154,8 @@ static size_t UTF8_UTF16LE(unsigned char *in, int insize, unsigned char *out, in
   return j;
 }
 
-static unsigned char Get7Bits(unsigned char *input, int startBit) {
-  register unsigned int word;
+static unsigned char Get7Bits(unsigned char *input, int32_t startBit) {
+  register uint32_t word;
 
   word = (unsigned) input[startBit / 8] << 8;
   word |= (unsigned) input[startBit / 8 + 1];
@@ -197,15 +197,15 @@ void DesEncrypt(unsigned char *clear, unsigned char *key, unsigned char *cipher)
         pass      = users password
         challenge = the challenge recieved from the server
 */
-int HashLM(unsigned char **lmhash, unsigned char *pass, unsigned char *challenge) {
+int32_t HashLM(unsigned char **lmhash, unsigned char *pass, unsigned char *challenge) {
   static unsigned char magic[] = { 0x4b, 0x47, 0x53, 0x21, 0x40, 0x23, 0x24, 0x25 };
   unsigned char password[14 + 1];
   unsigned char lm_hash[21];
   unsigned char lm_response[24];
-  int i = 0, j = 0;
+  int32_t i = 0, j = 0;
   unsigned char *p = NULL;
   char HexChar;
-  int HexValue;
+  int32_t HexValue;
 
   memset(password, 0, 14 + 1);
   memset(lm_hash, 0, 21);
@@ -300,15 +300,15 @@ int HashLM(unsigned char **lmhash, unsigned char *pass, unsigned char *challenge
   MakeNTLM
   Function: Create a NTLM hash from the password 
 */
-int MakeNTLM(unsigned char *ntlmhash, unsigned char *pass) {
+int32_t MakeNTLM(unsigned char *ntlmhash, unsigned char *pass) {
   MD4_CTX md4Context;
   unsigned char hash[16];       /* MD4_SIGNATURE_SIZE = 16 */
   unsigned char unicodePassword[256 * 2];       /* MAX_NT_PASSWORD = 256 */
-  int i = 0, j = 0;
-  int mdlen;
+  int32_t i = 0, j = 0;
+  int32_t mdlen;
   unsigned char *p = NULL;
   char HexChar;
-  int HexValue;
+  int32_t HexValue;
 
   /* Use NTLM Hash instead of password */
   if (hashFlag == 1) {
@@ -389,14 +389,14 @@ int MakeNTLM(unsigned char *ntlmhash, unsigned char *pass) {
     samba-3.0.28a - libsmb/smbencrypt.c
     jcifs - packet capture of LMv2-only connection
 */
-int HashLMv2(unsigned char **LMv2hash, unsigned char *szLogin, unsigned char *szPassword) {
+int32_t HashLMv2(unsigned char **LMv2hash, unsigned char *szLogin, unsigned char *szPassword) {
   unsigned char ntlm_hash[16];
   unsigned char lmv2_response[24];
   unsigned char unicodeUsername[20 * 2];
   unsigned char unicodeTarget[256 * 2];
   HMACMD5Context ctx;
   unsigned char kr_buf[16];
-  int ret, i;
+  int32_t ret, i;
   unsigned char client_challenge[8] = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 };
 
   memset(ntlm_hash, 0, 16);
@@ -486,14 +486,14 @@ int HashLMv2(unsigned char **LMv2hash, unsigned char *szLogin, unsigned char *sz
   GPO:     "Network Security: LAN Manager authentication level"
   Setting: "Send NTLMv2 response only\refuse LM & NTLM"
 */
-int HashNTLMv2(unsigned char **NTLMv2hash, int *iByteCount, unsigned char *szLogin, unsigned char *szPassword) {
+int32_t HashNTLMv2(unsigned char **NTLMv2hash, int32_t *iByteCount, unsigned char *szLogin, unsigned char *szPassword) {
   unsigned char ntlm_hash[16];
   unsigned char ntlmv2_response[56 + 20 * 2 + 256 * 2];
   unsigned char unicodeUsername[20 * 2];
   unsigned char unicodeTarget[256 * 2];
   HMACMD5Context ctx;
   unsigned char kr_buf[16];
-  int ret, i, iTargetLen;
+  int32_t ret, i, iTargetLen;
   unsigned char client_challenge[8] = { 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88 };
 
   /*
@@ -650,8 +650,8 @@ int HashNTLMv2(unsigned char **NTLMv2hash, int *iByteCount, unsigned char *szLog
         pass      = users password
         challenge = the challenge recieved from the server
 */
-int HashNTLM(unsigned char **ntlmhash, unsigned char *pass, unsigned char *challenge, char *miscptr) {
-  int ret;
+int32_t HashNTLM(unsigned char **ntlmhash, unsigned char *pass, unsigned char *challenge, char *miscptr) {
+  int32_t ret;
   unsigned char hash[16];       /* MD4_SIGNATURE_SIZE = 16 */
   unsigned char p21[21];
   unsigned char ntlm_response[24];
@@ -677,13 +677,13 @@ int HashNTLM(unsigned char **ntlmhash, unsigned char *pass, unsigned char *chall
    Function: Request a new session from the server
    Returns: TRUE on success else FALSE.
 */
-int NBSSessionRequest(int s) {
+int32_t NBSSessionRequest(int32_t s) {
   char nb_name[32];             /* netbiosname */
   char nb_local[32];            /* netbios localredirector */
   unsigned char rqbuf[7] = { 0x81, 0x00, 0x00, 0x44, 0x20, 0x00, 0x20 };
   char *buf;
   unsigned char rbuf[400];
-  int k;
+  int32_t k;
 
   /* if we are running in native mode (aka port 445) don't do netbios */
   if (protoFlag == WIN2000_NATIVEMODE)
@@ -726,7 +726,7 @@ int NBSSessionRequest(int s) {
     The challenge is retrieved from the answer
     No error checking is performed i.e cross your fingers....
 */
-int SMBNegProt(int s) {
+int32_t SMBNegProt(int32_t s) {
   unsigned char buf[] = {
     0x00, 0x00, 0x00, 0xbe, 0xff, 0x53, 0x4d, 0x42,
     0x72, 0x00, 0x00, 0x00, 0x00, 0x08, 0x01, 0xc0,
@@ -778,9 +778,9 @@ int SMBNegProt(int s) {
   unsigned char rbuf[400];
   unsigned char sess_key[2];
   unsigned char userid[2] = { 0xCD, 0xEF };
-  int i = 0, j = 0, k;
-  int iLength = 194;
-  int iResponseOffset = 73;
+  int32_t i = 0, j = 0, k;
+  int32_t iLength = 194;
+  int32_t iResponseOffset = 73;
 
   memset((char *) rbuf, 0, 400);
 
@@ -894,18 +894,18 @@ int SMBNegProt(int s) {
             the server.
   Returns: TRUE on success else FALSE.
 */
-unsigned long SMBSessionSetup(int s, char *szLogin, char *szPassword, char *miscptr) {
+unsigned long SMBSessionSetup(int32_t s, char *szLogin, char *szPassword, char *miscptr) {
   unsigned char buf[512];
   unsigned char *LMv2hash = NULL;
   unsigned char *NTLMv2hash = NULL;
   unsigned char *NTLMhash = NULL;
   unsigned char *LMhash = NULL;
 //  unsigned char unicodeLogin[32 * 2];
-  int j;
+  int32_t j;
   char bufReceive[512];
-  int nReceiveBufferSize = 0;
-  int ret;
-  int iByteCount = 0, iOffset = 0;
+  int32_t nReceiveBufferSize = 0;
+  int32_t ret;
+  int32_t iByteCount = 0, iOffset = 0;
 
   if (accntFlag == 0) {
     strcpy((char *) workgroup, "localhost");
@@ -1197,10 +1197,10 @@ unsigned long SMBSessionSetup(int s, char *szLogin, char *szPassword, char *misc
   return (((bufReceive[41] & 0x01) << 24) | ((bufReceive[11] & 0xFF) << 16) | ((bufReceive[10] & 0xFF) << 8) | (bufReceive[9] & 0xFF));
 }
 
-int start_smb(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_smb(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass;
-  int SMBerr, SMBaction;
+  int32_t SMBerr, SMBaction;
   unsigned long SMBSessionRet;
   char ipaddr_str[64];
   char ErrorCode[10];
@@ -1221,7 +1221,7 @@ int start_smb(int s, char *ip, int port, unsigned char options, char *miscptr, F
   SMBaction = ((unsigned long) SMBSessionRet & 0xFF000000) >> 24;
 
   if (verbose)
-    hydra_report(stderr, "[VERBOSE] SMBSessionRet: %8.8X SMBerr: %4.4X SMBaction: %2.2X\n", (unsigned int) SMBSessionRet, SMBerr, SMBaction);
+    hydra_report(stderr, "[VERBOSE] SMBSessionRet: %8.8X SMBerr: %4.4X SMBaction: %2.2X\n", (uint32_t) SMBSessionRet, SMBerr, SMBaction);
 
   /*
      some error code are available here:
@@ -1303,8 +1303,8 @@ int start_smb(int s, char *ip, int port, unsigned char options, char *miscptr, F
   return 1;
 }
 
-void service_smb(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
+void service_smb(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
 
   //default is both (local and domain) checks and normal passwd
   accntFlag = 2;                //BOTH
@@ -1316,7 +1316,7 @@ void service_smb(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
     strupper(miscptr);
     if (strstr(miscptr, "OTHER_DOMAIN:") != NULL) {
       char *tmpdom;
-      int err = 0;
+      int32_t err = 0;
 
       accntFlag = 4;            //OTHER DOMAIN
       tmpdom = strstr(miscptr, "OTHER_DOMAIN:");
@@ -1401,7 +1401,7 @@ void service_smb(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
         }
       }
       if (sock < 0) {
-        if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+        if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       if (NBSSessionRequest(sock) < 0) {
@@ -1427,7 +1427,7 @@ void service_smb(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
 }
 #endif
 
-int service_smb_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_smb_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

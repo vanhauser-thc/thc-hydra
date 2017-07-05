@@ -36,10 +36,10 @@ void help() {
   exit(-1);
 }
 
-int main(int argc, char *argv[]) {
-  int i, j, k;
-  int sets = 0, countsets = 0, minlen = 0, maxlen = MAXLENGTH, count = 0;
-  int set_low = 0, set_up = 0, set_no = 0, set_print = 0, set_other = 0;
+int32_t main(int32_t argc, char *argv[]) {
+  int32_t i, j, k;
+  int32_t sets = 0, countsets = 0, minlen = 0, maxlen = MAXLENGTH, count = 0;
+  int32_t set_low = 0, set_up = 0, set_no = 0, set_print = 0, set_other = 0;
   FILE *in = stdin, *out = stdout;
   char buf[MAXLENGTH + 1];
 
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
         if (set_print) {
           j = 0;
           for (k = 0; k < strlen(buf); k++)
-            if (isprint((int) buf[k]) != 0 && isalnum((int) buf[k]) == 0)
+            if (isprint((int32_t) buf[k]) != 0 && isalnum((int32_t) buf[k]) == 0)
               j = 1;
           if (j)
             i++;
@@ -144,7 +144,7 @@ int main(int argc, char *argv[]) {
         if (set_other) {
           j = 0;
           for (k = 0; k < strlen(buf); k++)
-            if (isprint((int) buf[k]) == 0 && isalnum((int) buf[k]) == 0)
+            if (isprint((int32_t) buf[k]) == 0 && isalnum((int32_t) buf[k]) == 0)
               j = 1;
           if (j)
             i++;

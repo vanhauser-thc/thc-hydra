@@ -27,27 +27,27 @@
 #define SOCKS_DOMAIN	3
 #define SOCKS_IPV6	4
 
-extern int conwait;
+extern int32_t conwait;
 char quiet;
-int do_retry = 1;
-int module_auth_type = -1;
-int intern_socket, extern_socket;
+int32_t do_retry = 1;
+int32_t module_auth_type = -1;
+int32_t intern_socket, extern_socket;
 char pair[260];
 char HYDRA_EXIT[5] = "\x00\xff\x00\xff\x00";
 char *HYDRA_EMPTY = "\x00\x00\x00\x00";
 char *fe80 = "\xfe\x80\x00";
-int fail = 0;
-int alarm_went_off = 0;
-int use_ssl = 0;
+int32_t fail = 0;
+int32_t alarm_went_off = 0;
+int32_t use_ssl = 0;
 char ipaddr_str[64];
-int src_port = 0;
-int __fck = 0;
-int ssl_first = 1;
-int __first_connect = 1;
+int32_t src_port = 0;
+int32_t __fck = 0;
+int32_t ssl_first = 1;
+int32_t __first_connect = 1;
 char ipstring[64];
-unsigned int colored_output = 1;
+uint32_t colored_output = 1;
 char quiet = 0;
-int old_ssl = 0;
+int32_t old_ssl = 0;
 
 #ifdef LIBOPENSSL
 SSL *ssl = NULL;
@@ -56,7 +56,7 @@ RSA *rsa = NULL;
 #endif
 
 /* prototype */
-int my_select(int fd, fd_set * fdread, fd_set * fdwrite, fd_set * fdex, long sec, long usec);
+int32_t my_select(int32_t fd, fd_set * fdread, fd_set * fdwrite, fd_set * fdex, long sec, long usec);
 
 /* ----------------- alarming functions ---------------- */
 void alarming() {
@@ -66,14 +66,14 @@ void alarming() {
 /* uh, I think it's not good for performance if we try to reconnect to a timeout system!
  *  if (fail > MAX_CONNECT_RETRY) {
  */
-  //fprintf(stderr, "Process %d: Can not connect [timeout], process exiting\n", (int) getpid());
+  //fprintf(stderr, "Process %d: Can not connect [timeout], process exiting\n", (int32_t) getpid());
   if (debug)
     printf("DEBUG_CONNECT_TIMEOUT\n");
   hydra_child_exit(1);
 
 /*
  *   } else {
- *     if (verbose) fprintf(stderr, "Process %d: Can not connect [timeout], retrying (%d of %d retries)\n", (int)getpid(), fail, MAX_CONNECT_RETRY);
+ *     if (verbose) fprintf(stderr, "Process %d: Can not connect [timeout], retrying (%d of %d retries)\n", (int32_t)getpid(), fail, MAX_CONNECT_RETRY);
  *   }
  */
 }
@@ -85,8 +85,8 @@ void interrupt() {
 
 /* ----------------- internal functions ----------------- */
 
-int internal__hydra_connect(char *host, int port, int protocol, int type) {
-  int s, ret = -1, ipv6 = 0, reset_selected = 0;
+int32_t internal__hydra_connect(char *host, int32_t port, int32_t protocol, int32_t type) {
+  int32_t s, ret = -1, ipv6 = 0, reset_selected = 0;
 
 #ifdef AF_INET6
   struct sockaddr_in6 target6;
@@ -95,7 +95,7 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
   struct sockaddr_in target;
   struct sockaddr_in sin;
   char *buf, *tmpptr = NULL;
-  int err = 0;
+  int32_t err = 0;
   
   if (proxy_count > 0 && use_proxy > 0 && selected_proxy == -1) {
     reset_selected = 1;
@@ -117,7 +117,7 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
     s = socket(PF_INET, protocol, type);
   if (s >= 0) {
     if (src_port != 0) {
-      int bind_ok = 0;
+      int32_t bind_ok = 0;
 
 #ifdef AF_INET6
       if (ipv6) {
@@ -221,9 +221,9 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
         fail++;
         if (verbose ) {
           if (do_retry && fail <= MAX_CONNECT_RETRY)
-            fprintf(stderr, "Process %d: Can not connect [unreachable], retrying (%d of %d retries)\n", (int) getpid(), fail, MAX_CONNECT_RETRY);
+            fprintf(stderr, "Process %d: Can not connect [unreachable], retrying (%d of %d retries)\n", (int32_t) getpid(), fail, MAX_CONNECT_RETRY);
           else
-            fprintf(stderr, "Process %d: Can not connect [unreachable]\n", (int) getpid());
+            fprintf(stderr, "Process %d: Can not connect [unreachable]\n", (int32_t) getpid());
         }
       }
     } while (ret < 0 && fail <= MAX_CONNECT_RETRY && do_retry);
@@ -232,7 +232,7 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
         printf("DEBUG_CONNECT_UNREACHABLE\n");
 
 /* we wont quit here, thats up to the module to decide what to do 
- *              fprintf(stderr, "Process %d: Can not connect [unreachable], process exiting\n", (int)getpid());
+ *              fprintf(stderr, "Process %d: Can not connect [unreachable], process exiting\n", (int32_t)getpid());
  *              hydra_child_exit(1);
  */
       extern_socket = -1;
@@ -317,7 +317,7 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
               hydra_report(stderr, "[ERROR] SOCKS5 proxy read failed (%zu/2)\n", cnt);
               err = 1;
             }
-            if ((unsigned int) buf[1] == SOCKS_NOMETHOD) {
+            if ((uint32_t) buf[1] == SOCKS_NOMETHOD) {
               hydra_report(stderr, "[ERROR] SOCKS5 proxy authentication method negotiation failed\n");
               err = 1;
             }
@@ -457,8 +457,8 @@ int internal__hydra_connect(char *host, int port, int protocol, int type) {
 }
 
 #if defined(LIBOPENSSL) && !defined(LIBRESSL_VERSION_NUMBER)
-RSA *ssl_temp_rsa_cb(SSL * ssl, int export, int keylength) {
-  int ok = 0;
+RSA *ssl_temp_rsa_cb(SSL * ssl, int32_t export, int32_t keylength) {
+  int32_t ok = 0;
 #if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10100000L
   BIGNUM *n;
   n = BN_new();
@@ -493,8 +493,8 @@ RSA *ssl_temp_rsa_cb(SSL * ssl, int export, int keylength) {
 #endif
 
 #if defined(LIBOPENSSL)
-int internal__hydra_connect_to_ssl(int socket, char *hostname) {
-  int err;
+int32_t internal__hydra_connect_to_ssl(int32_t socket, char *hostname) {
+  int32_t err;
 
   if (ssl_first) {
     SSL_load_error_strings();
@@ -574,8 +574,8 @@ int internal__hydra_connect_to_ssl(int socket, char *hostname) {
   return socket;
 }
 
-int internal__hydra_connect_ssl(char *host, int port, int protocol, int type, char *hostname) {
-  int socket;
+int32_t internal__hydra_connect_ssl(char *host, int32_t port, int32_t protocol, int32_t type, char *hostname) {
+  int32_t socket;
 
   if ((socket = internal__hydra_connect(host, port, protocol, type)) < 0)
     return -1;
@@ -584,7 +584,7 @@ int internal__hydra_connect_ssl(char *host, int port, int protocol, int type, ch
 }
 #endif
 
-int internal__hydra_recv(int socket, char *buf, int length) {
+int32_t internal__hydra_recv(int32_t socket, char *buf, int32_t length) {
 #ifdef LIBOPENSSL
   if (use_ssl) {
     return SSL_read(ssl, buf, length);
@@ -593,7 +593,7 @@ int internal__hydra_recv(int socket, char *buf, int length) {
     return recv(socket, buf, length, 0);
 }
 
-int internal__hydra_send(int socket, char *buf, int size, int options) {
+int32_t internal__hydra_send(int32_t socket, char *buf, int32_t size, int32_t options) {
 #ifdef LIBOPENSSL
   if (use_ssl) {
     return SSL_write(ssl, buf, size);
@@ -604,7 +604,7 @@ int internal__hydra_send(int socket, char *buf, int size, int options) {
 
 /* ------------------ public functions ------------------ */
 
-void hydra_child_exit(int code) {
+void hydra_child_exit(int32_t code) {
   char buf[2];
 
   if (debug)
@@ -628,7 +628,7 @@ void hydra_child_exit(int code) {
   exit(0);                      // might be killed before reaching this
 }
 
-void hydra_register_socket(int s) {
+void hydra_register_socket(int32_t s) {
   intern_socket = s;
 }
 
@@ -694,7 +694,7 @@ void hydra_report_debug(FILE * st, char *format, ...) {
   char bufOut[33000];
   char temp[6];
   unsigned char cTemp;
-  int i = 0, len;
+  int32_t i = 0, len;
 
   if (format == NULL) {
     fprintf(stderr, "[ERROR] no msg passed.\n");
@@ -724,7 +724,7 @@ void hydra_report_debug(FILE * st, char *format, ...) {
   return;
 }
 
-void hydra_report_found(int port, char *svc, FILE * fp) {
+void hydra_report_found(int32_t port, char *svc, FILE * fp) {
 /*
   if (!strcmp(svc, "rsh"))
     if (colored_output)
@@ -748,7 +748,7 @@ void hydra_report_found(int port, char *svc, FILE * fp) {
 }
 
 /* needed for irc module to display the general server password */
-void hydra_report_pass_found(int port, char *ip, char *svc, FILE * fp) {
+void hydra_report_pass_found(int32_t port, char *ip, char *svc, FILE * fp) {
 /*
   strcpy(ipaddr_str, hydra_address2string(ip));
   if (colored_output)
@@ -761,7 +761,7 @@ void hydra_report_pass_found(int port, char *ip, char *svc, FILE * fp) {
 */
 }
 
-void hydra_report_found_host(int port, char *ip, char *svc, FILE * fp) {
+void hydra_report_found_host(int32_t port, char *ip, char *svc, FILE * fp) {
 /*  char *keyw = "password";
 
   strcpy(ipaddr_str, hydra_address2string(ip));
@@ -802,7 +802,7 @@ void hydra_report_found_host(int port, char *ip, char *svc, FILE * fp) {
 */
 }
 
-void hydra_report_found_host_msg(int port, char *ip, char *svc, FILE * fp, char *msg) {
+void hydra_report_found_host_msg(int32_t port, char *ip, char *svc, FILE * fp, char *msg) {
 /*
   strcpy(ipaddr_str, hydra_address2string(ip));
   if (colored_output)
@@ -816,7 +816,7 @@ void hydra_report_found_host_msg(int port, char *ip, char *svc, FILE * fp, char 
 */
 }
 
-int hydra_connect_to_ssl(int socket, char *hostname) {
+int32_t hydra_connect_to_ssl(int32_t socket, char *hostname) {
 #ifdef LIBOPENSSL
   return (internal__hydra_connect_to_ssl(socket, hostname));
 #else
@@ -825,7 +825,7 @@ int hydra_connect_to_ssl(int socket, char *hostname) {
 #endif
 }
 
-int hydra_connect_ssl(char *host, int port, char *hostname) {
+int32_t hydra_connect_ssl(char *host, int32_t port, char *hostname) {
   if (__first_connect != 0)
     __first_connect = 0;
   else
@@ -838,7 +838,7 @@ int hydra_connect_ssl(char *host, int port, char *hostname) {
 #endif
 }
 
-int hydra_connect_tcp(char *host, int port) {
+int32_t hydra_connect_tcp(char *host, int32_t port) {
   if (__first_connect != 0)
     __first_connect = 0;
   else
@@ -846,7 +846,7 @@ int hydra_connect_tcp(char *host, int port) {
   return (internal__hydra_connect(host, port, SOCK_STREAM, 6));
 }
 
-int hydra_connect_udp(char *host, int port) {
+int32_t hydra_connect_udp(char *host, int32_t port) {
   if (__first_connect != 0)
     __first_connect = 0;
   else
@@ -854,7 +854,7 @@ int hydra_connect_udp(char *host, int port) {
   return (internal__hydra_connect(host, port, SOCK_DGRAM, 17));
 }
 
-int hydra_disconnect(int socket) {
+int32_t hydra_disconnect(int32_t socket) {
 #ifdef LIBOPENSSL
   if (use_ssl && SSL_get_fd(ssl) == socket) {
     /* SSL_shutdown(ssl); ...skip this--it slows things down */
@@ -869,7 +869,7 @@ int hydra_disconnect(int socket) {
   return -1;
 }
 
-int hydra_data_ready_writing_timed(int socket, long sec, long usec) {
+int32_t hydra_data_ready_writing_timed(int32_t socket, long sec, long usec) {
   fd_set fds;
 
   FD_ZERO(&fds);
@@ -877,11 +877,11 @@ int hydra_data_ready_writing_timed(int socket, long sec, long usec) {
   return (my_select(socket + 1, &fds, NULL, NULL, sec, usec));
 }
 
-int hydra_data_ready_writing(int socket) {
+int32_t hydra_data_ready_writing(int32_t socket) {
   return (hydra_data_ready_writing_timed(socket, 30, 0));
 }
 
-int hydra_data_ready_timed(int socket, long sec, long usec) {
+int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec) {
   fd_set fds;
 
   FD_ZERO(&fds);
@@ -889,12 +889,12 @@ int hydra_data_ready_timed(int socket, long sec, long usec) {
   return (my_select(socket + 1, &fds, NULL, NULL, sec, usec));
 }
 
-int hydra_data_ready(int socket) {
+int32_t hydra_data_ready(int32_t socket) {
   return (hydra_data_ready_timed(socket, 0, 100));
 }
 
-int hydra_recv(int socket, char *buf, int length) {
-  int ret;
+int32_t hydra_recv(int32_t socket, char *buf, int32_t length) {
+  int32_t ret;
   char text[64];
 
   ret = internal__hydra_recv(socket, buf, length);
@@ -906,8 +906,8 @@ int hydra_recv(int socket, char *buf, int length) {
   return ret;
 }
 
-int hydra_recv_nb(int socket, char *buf, int length) {
-  int ret = -1;
+int32_t hydra_recv_nb(int32_t socket, char *buf, int32_t length) {
+  int32_t ret = -1;
   char text[64];
 
   if (hydra_data_ready_timed(socket, (long) waittime, 0) > 0) {
@@ -928,9 +928,9 @@ int hydra_recv_nb(int socket, char *buf, int length) {
   return ret;
 }
 
-char *hydra_receive_line(int socket) {
+char *hydra_receive_line(int32_t socket) {
   char buf[1024], *buff, *buff2, text[64];
-  int i, j = 1, k, got = 0;
+  int32_t i, j = 1, k, got = 0;
 
   if ((buff = malloc(sizeof(buf))) == NULL) {
     fprintf(stderr, "[ERROR] could not malloc\n");
@@ -1001,14 +1001,14 @@ char *hydra_receive_line(int socket) {
   return buff;
 }
 
-int hydra_send(int socket, char *buf, int size, int options) {
+int32_t hydra_send(int32_t socket, char *buf, int32_t size, int32_t options) {
   char text[64];
 
   if (debug) {
     sprintf(text, "[DEBUG] SEND [pid:%d]", getpid());
     hydra_dump_data(buf, size, text);
 
-/*    int k;
+/*    int32_t k;
     char *debugbuf = malloc(size + 1);
 
     if (debugbuf != NULL) {
@@ -1027,18 +1027,18 @@ int hydra_send(int socket, char *buf, int size, int options) {
   return (internal__hydra_send(socket, buf, size, options));
 }
 
-int make_to_lower(char *buf) {
+int32_t make_to_lower(char *buf) {
   if (buf == NULL)
     return 1;
   while (buf[0] != 0) {
-    buf[0] = tolower((int) buf[0]);
+    buf[0] = tolower((int32_t) buf[0]);
     buf++;
   }
   return 1;
 }
 
 char *hydra_strrep(char *string, char *oldpiece, char *newpiece) {
-  int str_index, newstr_index, oldpiece_index, end, new_len, old_len, cpy_len;
+  int32_t str_index, newstr_index, oldpiece_index, end, new_len, old_len, cpy_len;
   char *c, oldstring[6096], newstring[6096]; //updated due to issue 192 on github.
   static char finalstring[6096];
 
@@ -1102,12 +1102,12 @@ unsigned char hydra_conv64(unsigned char in) {
   }
 }
 
-void hydra_tobase64(unsigned char *buf, int buflen, int bufsize) {
+void hydra_tobase64(unsigned char *buf, int32_t buflen, int32_t bufsize) {
   unsigned char small[3] = { 0, 0, 0 };
   unsigned char big[5];
   unsigned char *ptr = buf;
-  int i = bufsize;
-  unsigned int len = 0;
+  int32_t i = bufsize;
+  uint32_t len = 0;
   unsigned char bof[i];
 
   if (buf == NULL || strlen((char *) buf) == 0)
@@ -1151,12 +1151,12 @@ void hydra_tobase64(unsigned char *buf, int buflen, int bufsize) {
   strcpy((char *) buf, (char *) bof);   /* can not overflow */
 }
 
-void hydra_dump_asciihex(unsigned char *string, int length) {
+void hydra_dump_asciihex(unsigned char *string, int32_t length) {
   unsigned char *p = (unsigned char *) string;
   unsigned char lastrow_data[16];
-  int rows = length / HYDRA_DUMP_ROWS;
-  int lastrow = length % HYDRA_DUMP_ROWS;
-  int i, j;
+  int32_t rows = length / HYDRA_DUMP_ROWS;
+  int32_t lastrow = length % HYDRA_DUMP_ROWS;
+  int32_t i, j;
 
   for (i = 0; i < rows; i++) {
     printf("%04hx:  ", i * 16);
@@ -1227,16 +1227,16 @@ char *hydra_address2string(char *address) {
   return NULL;                  // not reached
 }
 
-void hydra_set_srcport(int port) {
+void hydra_set_srcport(int32_t port) {
   src_port = port;
 }
 
 #ifdef HAVE_PCRE
-int hydra_string_match(char *str, const char *regex) {
+int32_t hydra_string_match(char *str, const char *regex) {
   pcre *re = NULL;
-  int offset_error = 0;
+  int32_t offset_error = 0;
   const char *error = NULL;
-  int rc = 0;
+  int32_t rc = 0;
 
   re = pcre_compile(regex, PCRE_CASELESS | PCRE_DOTALL, &error, &offset_error, NULL);
   if (re == NULL) {
@@ -1287,11 +1287,11 @@ char *hydra_strcasestr(const char *haystack, const char *needle) {
     return NULL;
 
   for (; *haystack; ++haystack) {
-    if (toupper((int) *haystack) == toupper((int) *needle)) {
+    if (toupper((int32_t) *haystack) == toupper((int32_t) *needle)) {
       const char *h, *n;
 
       for (h = haystack, n = needle; *h && *n; ++h, ++n) {
-        if (toupper((int) *h) != toupper((int) *n)) {
+        if (toupper((int32_t) *h) != toupper((int32_t) *n)) {
           break;
         }
       }
@@ -1303,12 +1303,12 @@ char *hydra_strcasestr(const char *haystack, const char *needle) {
   return NULL;
 }
 
-void hydra_dump_data(unsigned char *buf, int len, char *text) {
+void hydra_dump_data(unsigned char *buf, int32_t len, char *text) {
   unsigned char *p = (unsigned char *) buf;
   unsigned char lastrow_data[16];
-  int rows = len / 16;
-  int lastrow = len % 16;
-  int i, j;
+  int32_t rows = len / 16;
+  int32_t lastrow = len % 16;
+  int32_t i, j;
 
   if (text != NULL && text[0] != 0)
     printf("%s (%d bytes):\n", text, len);
@@ -1362,8 +1362,8 @@ void hydra_dump_data(unsigned char *buf, int len, char *text) {
   }
 }
 
-int hydra_memsearch(char *haystack, int hlen, char *needle, int nlen) {
-  int i;
+int32_t hydra_memsearch(char *haystack, int32_t hlen, char *needle, int32_t nlen) {
+  int32_t i;
 
   for (i = 0; i <= hlen - nlen; i++)
     if (memcmp(haystack + i, needle, nlen) == 0)
