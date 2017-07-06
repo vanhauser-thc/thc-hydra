@@ -1215,7 +1215,7 @@ char *hydra_address2string(char *address) {
 #ifdef AF_INET6
   if (address[0] == 16) {
     memcpy(&target6.sin6_addr, &address[1], 16);
-    ipstring[0] = '[
+    ipstring[0] = '[';
     inet_ntop(AF_INET6, &target6.sin6_addr, ipstring + 1, sizeof(ipstring) - 1);
     if (address[17] != 0) {
       strcat(ipstring, "%");
