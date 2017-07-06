@@ -3637,8 +3637,10 @@ int32_t main(int32_t argc, char *argv[]) {
       freeaddrinfo(res);
     }
     // restore device information if present
-    if (device != NULL)
+    if (device != NULL) {
       *(device - 1) = '%';
+      fprintf(stderr, "[WARNING] not all modules support BINDTODEVICE for IPv6 link local addresses, e.g. SSH does not\n");
+    }
   }
   if (verbose)
     printf("[VERBOSE] resolving done\n");
