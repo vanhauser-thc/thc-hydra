@@ -3512,9 +3512,16 @@ int32_t main(int32_t argc, char *argv[]) {
            (uint64_t) hydra_brains.countlogin, (uint64_t) hydra_brains.countpass,
            math2, math2 == 1 ? "y" : "ies");
 
-  printf("[DATA] attacking service %s on port %d%s\n", hydra_options.service, port, hydra_options.ssl == 1 ? " with SSL" : "");
-  if (hydra_options.miscptr != NULL && hydra_options.miscptr[0] != 0)
-    printf("[DATA] with additional data %s\n", hydra_options.miscptr);
+  if (hydra_brains.targets == 1) {
+    if (index(hydra_targets[0]->target, ':') == NULL)
+      printf("[DATA] attacking %s%s://%s:%d/%s\n", hydra_options.service, hydra_options.ssl == 1 ? "s" : "", hydra_targets[0]->target, port, hydra_options.miscptr != NULL ? hydra_options.miscptr : "");
+    else
+      printf("[DATA] attacking %s%s://[%s]:%d/%s\n", hydra_options.service, hydra_options.ssl == 1 ? "s" : "", hydra_targets[0]->target, port, hydra_options.miscptr != NULL ? hydra_options.miscptr : "");
+  } else
+    printf("[DATA] attacking %s%s://(%d targets):%d/%s\n", hydra_options.service, hydra_options.ssl == 1 ? "s" : "", hydra_brains.targets, port, hydra_options.miscptr != NULL ? hydra_options.miscptr : "");
+   //service %s on port %d%s\n", hydra_options.service, port, hydra_options.ssl == 1 ? " with SSL" : "");
+//  if (hydra_options.miscptr != NULL && hydra_options.miscptr[0] != 0)
+//    printf("[DATA] with additional data %s\n", hydra_options.miscptr);
 
   if (hydra_options.outfile_ptr != NULL) {
     if ((hydra_brains.ofp = fopen(hydra_options.outfile_ptr, "a+")) == NULL) {
@@ -3629,6 +3636,9 @@ int32_t main(int32_t argc, char *argv[]) {
       }
       freeaddrinfo(res);
     }
+    // restore device information if present
+    if (device != NULL)
+      *(device - 1) = '%';
   }
   if (verbose)
     printf("[VERBOSE] resolving done\n");
