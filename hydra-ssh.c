@@ -172,7 +172,7 @@ int32_t service_ssh_init(char *ip, int32_t sp, unsigned char options, char *misc
   ssh_session session = ssh_new();
   
   if (verbose || debug)
-    printf("[INFO] Testing if password authentication is supported by ssh://%s@%s:%d\n", miscptr == NULL ? "hydra" : miscptr, hydra_address2string(ip), port);
+    printf("[INFO] Testing if password authentication is supported by ssh://%s@%s:%d\n", miscptr == NULL ? "hydra" : miscptr, hydra_address2string_beautiful(ip), port);
   ssh_options_set(session, SSH_OPTIONS_PORT, &port);
   ssh_options_set(session, SSH_OPTIONS_HOST, hydra_address2string(ip));
   if (miscptr == NULL)
@@ -182,7 +182,7 @@ int32_t service_ssh_init(char *ip, int32_t sp, unsigned char options, char *misc
   ssh_options_set(session, SSH_OPTIONS_COMPRESSION_C_S, "none");
   ssh_options_set(session, SSH_OPTIONS_COMPRESSION_S_C, "none");
   if (ssh_connect(session) != 0) {
-    fprintf(stderr, "[ERROR] could not connect to ssh://%s:%d - %s\n", hydra_address2string(ip), port, ssh_get_error(session));
+    fprintf(stderr, "[ERROR] could not connect to ssh://%s:%d - %s\n", hydra_address2string_beautiful(ip), port, ssh_get_error(session));
     return 2;
   } 
   rc = ssh_userauth_none(session, NULL);
@@ -193,11 +193,11 @@ int32_t service_ssh_init(char *ip, int32_t sp, unsigned char options, char *misc
 
   if ((method & SSH_AUTH_METHOD_INTERACTIVE) || (method & SSH_AUTH_METHOD_PASSWORD)) {
     if (verbose || debug)
-      printf("[INFO] Successful, password authentication is supported by ssh://%s:%d\n", hydra_address2string(ip), port);
+      printf("[INFO] Successful, password authentication is supported by ssh://%s:%d\n", hydra_address2string_beautiful(ip), port);
     return 0;
   }
 
-  fprintf(stderr, "[ERROR] target ssh://%s:%d/ does not support password authentication.\n", hydra_address2string(ip), port);
+  fprintf(stderr, "[ERROR] target ssh://%s:%d/ does not support password authentication.\n", hydra_address2string_beautiful(ip), port);
   return 1;
 #else
   return 0;

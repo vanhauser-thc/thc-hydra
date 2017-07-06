@@ -1,4 +1,3 @@
-
 /*
  *	PostgresSQL Support - by Diaul (at) devilopers.org 
  *

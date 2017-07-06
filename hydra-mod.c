@@ -1215,6 +1215,29 @@ char *hydra_address2string(char *address) {
 #ifdef AF_INET6
   if (address[0] == 16) {
     memcpy(&target6.sin6_addr, &address[1], 16);
+    inet_ntop(AF_INET6, &target6.sin6_addr, ipstring, sizeof(ipstring));
+    return ipstring;
+  } else
+#endif
+  {
+    if (debug)
+      fprintf(stderr, "[ERROR] unknown address string size!\n");
+    return NULL;
+  }
+  return NULL;                  // not reached
+}
+
+char *hydra_address2string_beautiful(char *address) {
+  struct sockaddr_in target;
+  struct sockaddr_in6 target6;
+
+  if (address[0] == 4) {
+    memcpy(&target.sin_addr.s_addr, &address[1], 4);
+    return inet_ntoa((struct in_addr) target.sin_addr);
+  } else
+#ifdef AF_INET6
+  if (address[0] == 16) {
+    memcpy(&target6.sin6_addr, &address[1], 16);
     ipstring[0] = '[';
     inet_ntop(AF_INET6, &target6.sin6_addr, ipstring + 1, sizeof(ipstring) - 1);
     if (address[17] != 0) {

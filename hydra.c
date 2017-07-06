@@ -211,6 +211,7 @@ extern char *hydra_strcasestr(const char *haystack, const char *needle);
 extern void hydra_tobase64(unsigned char *buf, int32_t buflen, int32_t bufsize);
 extern char *hydra_string_replace(const char *string, const char *substr, const char *replacement);
 extern char *hydra_address2string(char *address);
+extern char *hydra_address2string_beautiful(char *address);
 extern int32_t colored_output;
 extern char quiet;
 extern int32_t do_retry;
@@ -638,7 +639,7 @@ void hydra_debug(int32_t force, char *string) {
     hydra_target* target = hydra_targets[i];
     printf
       ("[DEBUG] Target %d - target %s  ip %s  login_no %llu  pass_no %llu  sent %llu  pass_state %d  redo_state %d (%d redos)  use_count %d  failed %d  done %d  fail_count %d  login_ptr %s  pass_ptr %s\n",
-       i, STR_NULL(target->target), hydra_address2string(target->ip),
+       i, STR_NULL(target->target), hydra_address2string_beautiful(target->ip),
        target->login_no,   target->pass_no,    target->sent,
        target->pass_state, target->redo_state, target->redo,
        target->use_count,  target->failed,     target->done,

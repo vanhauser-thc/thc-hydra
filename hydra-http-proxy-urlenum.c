@@ -210,8 +210,8 @@ int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned cha
   if (*ptr == '2' || (*ptr == '3' && (*(ptr + 2) == '1' || *(ptr + 2) == '2')) || strncmp(ptr, "404", 4) == 0 || strncmp(ptr, "403", 4) == 0) {
     hydra_report_found_host(port, ip, "http-proxy", fp);
     if (fp != stdout)
-      fprintf(fp, "[%d][http-proxy-urlenum] host: %s   url: %s\n", port, hydra_address2string(ip), url);
-    printf("[%d][http-proxy-urlenum] host: %s   url: %s\n", port, hydra_address2string(ip), url);
+      fprintf(fp, "[%d][http-proxy-urlenum] host: %s   url: %s\n", port, hydra_address2string_beautiful(ip), url);
+    printf("[%d][http-proxy-urlenum] host: %s   url: %s\n", port, hydra_address2string_beautiful(ip), url);
     hydra_completed_pair_found();
   } else {
     if (strncmp(ptr, "407", 3) == 0 /*|| strncmp(ptr, "401", 3) == 0 */ ) {

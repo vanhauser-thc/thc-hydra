@@ -1,4 +1,3 @@
-
 /*
 
 Firebird Support - by David Maciejak @ GMAIL dot com

@@ -103,10 +103,7 @@ int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char
   svn_auth_open(&ctx->auth_baton, providers, pool);
 
   revision.kind = svn_opt_revision_head;
-  if (ipv6)
-    snprintf(URL, sizeof(URL), "svn://[%s]:%d/%s", hydra_address2string(ip), port, URLBRANCH);
-  else
-    snprintf(URL, sizeof(URL), "svn://%s:%d/%s", hydra_address2string(ip), port, URLBRANCH);
+  snprintf(URL, sizeof(URL), "svn://%s:%d/%s", hydra_address2string_beautiful(ip), port, URLBRANCH);
   dirents = SVN_DIRENT_KIND;
   canonical = svn_uri_canonicalize(URL, pool);
   //err = svn_client_list2(canonical, &revision, &revision, svn_depth_unknown, dirents, FALSE, print_dirdummy, NULL, ctx, pool);
