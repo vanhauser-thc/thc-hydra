@@ -34,6 +34,7 @@ extern void hydra_tobase64(unsigned char *buf, int32_t buflen, int32_t bufsize);
 extern void hydra_dump_asciihex(unsigned char *string, int32_t length);
 extern void hydra_set_srcport(int32_t port);
 extern char *hydra_address2string(char *address);
+extern char *hydra_address2string_beautiful(char *address);
 extern char *hydra_strcasestr(const char *haystack, const char *needle);
 extern void hydra_dump_data(unsigned char *buf, int32_t len, char *text);
 extern int32_t hydra_memsearch(char *haystack, int32_t hlen, char *needle, int32_t nlen);
