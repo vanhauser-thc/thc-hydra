@@ -3564,9 +3564,9 @@ int32_t main(int32_t argc, char *argv[]) {
     ipv4 = NULL;
 #ifdef AF_INET6
     ipv6 = NULL;
+#endif
     if ((device = index(hydra_targets[i]->target, '%')) != NULL)
       *device++ = 0;
-#endif
     if (getaddrinfo(hydra_targets[i]->target, NULL, &hints, &res) != 0) {
       if (use_proxy == 0) {
         if (verbose)
