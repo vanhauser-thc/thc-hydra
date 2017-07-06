@@ -1,4 +1,4 @@
-#ifndef _HYDRA_H
+
 
 #include <stdio.h>
 #ifdef __sun
@@ -155,13 +155,13 @@
 
 #ifndef _WIN32
 
-int sleepn(time_t seconds);
-int usleepn(long useconds);
+int32_t sleepn(time_t seconds);
+int32_t usleepn(long useconds);
 
 #else
 
-int sleepn(unsigned int seconds);
-int usleepn(unsigned int useconds);
+int32_t sleepn(uint32_t seconds);
+int32_t usleepn(uint32_t useconds);
 
 #endif
 
