@@ -493,7 +493,7 @@ static const struct {
   } while(0)
 
 
-int32_t inline check_flag(int32_t value, int32_t flag) {
+int32_t /*inline*/ check_flag(int32_t value, int32_t flag) { // inline does not compile with debug
   return (value & flag) == flag;
 }
 
