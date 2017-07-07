@@ -198,7 +198,7 @@ void password_to_key_sha(u_char * password,     /* IN */
 
 int32_t start_snmp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "\"\"", *ptr, *login, *pass, buffer[1024], buf[1024], hash[64], key[256] = "", salt[8] = "";
-  int32_t i, j, k, size, off = 0, off2 = 0, done = 0;
+  int32_t i, j, k, size, off = 0, off2 = 0;
   unsigned char initVect[8], privacy_params[8];
   int32_t engine_boots = 0;
 
@@ -316,7 +316,7 @@ int32_t start_snmp(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
 /*
 //PrivDES::encrypt(const unsigned char *key,  
-      //                 const uint32_t   /*key_len*///,  
+//                 const uint32_t   key_len,  
 //                 const unsigned char *buffer,  
 //                 const uint32_t   buffer_len,  
 //                 unsigned char       *out_buffer,  
@@ -324,7 +324,7 @@ int32_t start_snmp(int32_t s, char *ip, int32_t port, unsigned char options, cha
 //                 unsigned char       *privacy_params,  
 //                 uint32_t        *privacy_params_len,  
 //                 const unsigned long  engine_boots,  
-//                 const unsigned long  /*engine_time*/) 
+//                 const unsigned long  engine_time) 
 // last 8 bytes of key are used as base for initialization vector   */
       k = 0;
       memcpy((char *) initVect, key + 8, 8);

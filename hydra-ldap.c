@@ -451,6 +451,10 @@ int32_t service_ldap_init(char *ip, int32_t sp, unsigned char options, char *mis
   // return codes:
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here
+  if (strlen(miscptr) > 220) {
+    fprintf(stderr, "[ERROR] the option string to this module may not be larger than 220 bytes\n");
+    return -1;
+  }
 
   return 0;
 }

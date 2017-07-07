@@ -91,7 +91,7 @@ int32_t start_adam6500(int32_t s, char *ip, int32_t port, unsigned char options,
 }
 
 void service_adam6500(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
-  int32_t run = 1, failc = 0, retry = 1, next_run = 1, sock = -1;
+  int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_ADAM6500, mysslport = PORT_ADAM6500_SSL;
 
   hydra_register_socket(sp);
@@ -102,9 +102,6 @@ void service_adam6500(char *ip, int32_t sp, unsigned char options, char *miscptr
     switch (run) {
     case 1:                    /* connect and service init function */
       {
-        unsigned char *buf2;
-        int32_t f = 0;
-
         if (sock >= 0)
           sock = hydra_disconnect(sock);
 //        usleepn(275);

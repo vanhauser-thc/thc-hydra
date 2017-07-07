@@ -1831,7 +1831,7 @@ static void process_rect(STREAM s, RECT_ORDER * os, uint32 present, BOOL delta) 
 
 /* Process a desktop save order */
 static void process_desksave(STREAM s, DESKSAVE_ORDER * os, uint32 present, BOOL delta) {
-  int32_t width, height;
+  //int32_t width, height;
 
   if (present & 0x01)
     in_uint32_le(s, os->offset);
@@ -1853,8 +1853,8 @@ static void process_desksave(STREAM s, DESKSAVE_ORDER * os, uint32 present, BOOL
 
   DEBUG(("DESKSAVE(l=%d,t=%d,r=%d,b=%d,off=%d,op=%d)\n", os->left, os->top, os->right, os->bottom, os->offset, os->action));
 
-  width = os->right - os->left + 1;
-  height = os->bottom - os->top + 1;
+  //width = os->right - os->left + 1;
+  //height = os->bottom - os->top + 1;
 }
 
 /* Process a memory blt order */
@@ -1999,13 +1999,13 @@ static void process_secondary_order(STREAM s) {
    * For very compact orders the length becomes negative
    * so a signed integer must be used. */
   uint16 length;
-  uint16 flags;
-  uint8 type;
+  //uint16 flags;
+  //uint8 type;
   uint8 *next_order;
 
   in_uint16_le(s, length);
-  in_uint16_le(s, flags);       /* used by bmpcache2 */
-  in_uint8(s, type);
+  //in_uint16_le(s, flags);       /* used by bmpcache2 */
+  //in_uint8(s, type);
 
   next_order = s->p + (sint16) length + 7;
 
@@ -2148,7 +2148,7 @@ void rdp_disconnect(void) {
 
 void rdp5_process(STREAM s) {
   uint16 length, count;
-  uint8 type, ctype;
+  uint8 type/*, ctype*/;
   uint8 *next;
 
   struct stream *ts;
@@ -2156,11 +2156,11 @@ void rdp5_process(STREAM s) {
   while (s->p < s->end) {
     in_uint8(s, type);
     if (type & RDP5_COMPRESSED) {
-      in_uint8(s, ctype);
+      //in_uint8(s, ctype);
       in_uint16_le(s, length);
       type ^= RDP5_COMPRESSED;
     } else {
-      ctype = 0;
+      //ctype = 0;
       in_uint16_le(s, length);
     }
     g_next_packet = next = s->p + length;
@@ -3178,14 +3178,14 @@ void process_disconnect_pdu(STREAM s, uint32 * ext_disc_reason) {
 /* Process data PDU */
 static BOOL process_data_pdu(STREAM s, uint32 * ext_disc_reason) {
   uint8 data_pdu_type;
-  uint8 ctype;
+  //uint8 ctype;
   uint16 clen;
-  uint32 len;
+  //uint32 len;
 
   in_uint8s(s, 6);              /* shareid, pad, streamid */
-  in_uint16_le(s, len);
+  //in_uint16_le(s, len);
   in_uint8(s, data_pdu_type);
-  in_uint8(s, ctype);
+  //in_uint8(s, ctype);
   in_uint16_le(s, clen);
   clen -= 18;
 

@@ -155,7 +155,7 @@
 
 #ifndef _WIN32
   int32_t sleepn(time_t seconds);
-  int32_t usleepn(int64_t useconds);
+  int32_t usleepn(uint64_t useconds);
 #else
   int32_t sleepn(uint32_t seconds);
   int32_t usleepn(uint32_t useconds);

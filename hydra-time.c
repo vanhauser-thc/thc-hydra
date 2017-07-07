@@ -9,7 +9,7 @@ int32_t sleepn(time_t seconds)
 	ts.tv_nsec = 0;
    return nanosleep(&ts, NULL);
 }
-int32_t usleepn(int64_t milisec) {
+int32_t usleepn(uint64_t milisec) {
 	struct timespec ts;
 	ts.tv_sec = milisec / 1000;
 	ts.tv_nsec = (milisec % 1000) * 1000000L;

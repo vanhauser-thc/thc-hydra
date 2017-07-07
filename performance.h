@@ -31,7 +31,7 @@ int32_t my_select(int32_t fd, fd_set * fdread, fd_set * fdwrite, fd_set * fdex, 
 ssize_t read_safe(int32_t fd, void *buffer, size_t len) {
   int32_t r = 0;
   int32_t total = 0;
-  int32_t toread = len;
+  uint32_t toread = len;
   fd_set fr;
   struct timeval tv;
   int32_t ret = 0;

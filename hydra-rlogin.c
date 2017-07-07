@@ -61,8 +61,7 @@ int32_t start_rlogin(int32_t s, char *ip, int32_t port, unsigned char options, c
     memset(buffer, 0, sizeof(buffer));
     ret = hydra_recv(s, buffer, sizeof(buffer));
     if (strcmp(buffer, "\r\n"))
-      ret = hydra_recv(s, buffer, sizeof(buffer) - 1);
-      if (ret >= 0)
+      if ((ret = hydra_recv(s, buffer, sizeof(buffer) - 1)) > 0)
         buffer[ret] = 0;
   }
   /* Authentication failure */

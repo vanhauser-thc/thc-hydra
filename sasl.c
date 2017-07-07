@@ -321,7 +321,7 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
     while ((array[i] != NULL) && (array[i][0] == ' ')) {
       char *tmp = strdup(array[i]);
 
-      memset(array[i], 0, sizeof(array[i]));
+      //memset(array[i], 0, sizeof(array[i]));
       strcpy(array[i], tmp + 1);
       free(tmp);
     }

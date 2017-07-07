@@ -412,7 +412,7 @@ static const struct {
   SERVICE3("firebird", firebird),
 #endif
   SERVICE(ftp),
-  { "ftps", service_ftp_init, service_ftps },
+  { "ftps", service_ftp_init, service_ftps, NULL },
   { "http-get", service_http_init, service_http_get, usage_http },
   { "http-get-form", service_http_form_init, service_http_get_form, usage_http_form },
   { "http-head", service_http_init, service_http_head, NULL },
@@ -472,7 +472,7 @@ static const struct {
   SERVICE3("snmp", snmp),
   SERVICE(socks5),
 #ifdef LIBSSH
-  { "ssh", NULL, service_ssh },
+  { "ssh", NULL, service_ssh, NULL },
   SERVICE3("sshkey", sshkey),
 #endif
 #ifdef LIBSVN
@@ -907,7 +907,7 @@ void hydra_restore_read() {
       hydra_targets[j]->pass_ptr = malloc(strlen(out) + 1);
       strcpy(hydra_targets[j]->pass_ptr, out);
     }
-    if (hydra_targets[j]->redo > 0)
+    if (hydra_targets[j]->redo > 0) {
       if (debug) printf("[DEBUG] target %d redo %d\n", j, hydra_targets[j]->redo);
       for (i = 0; i < hydra_targets[j]->redo; i++) {
         sck = fgets(out, sizeof(out), f);
@@ -921,6 +921,7 @@ void hydra_restore_read() {
         hydra_targets[j]->redo_pass[i] = malloc(strlen(out) + 1);
         strcpy(hydra_targets[j]->redo_pass[i], out);
       }
+    }
     if (hydra_targets[j]->skipcnt >= hydra_brains.countlogin)
       hydra_targets[j]->skipcnt = 0;
     if (hydra_targets[j]->skipcnt > 0)
@@ -1395,7 +1396,7 @@ void hydra_kill_head(int32_t head_no, int32_t killit, int32_t fail) {
 }
 
 void hydra_increase_fail_count(int32_t target_no, int32_t head_no) {
-  int32_t i, k, ok, maxfail = 0;
+  int32_t i, k, maxfail = 0;
 
   if (target_no < 0)
     return;
@@ -3947,7 +3948,7 @@ int32_t main(int32_t argc, char *argv[]) {
         bail("[BUG] Weird bug detected where more tests were performed than possible. Please rerun with -d command line switch and post all output plus command line here: https://github.com/vanhauser-thc/thc-hydra/issues/113 or send it in an email to vh@thc.org");
       }
 */
-      printf("[STATUS] %.2f tries/min, %llu tries in %02llu:%02lluh, %llu to do in %02lu:%02luh, %d active\n", (1.0 * hydra_brains.sent) / (((elapsed_status - starttime) * 1.0) / 60),     // tries/min
+      printf("[STATUS] %.2f tries/min, %llu tries in %02llu:%02lluh, %llu to do in %02llu:%02lluh, %d active\n", (1.0 * hydra_brains.sent) / (((elapsed_status - starttime) * 1.0) / 60),     // tries/min
              hydra_brains.sent, // tries
              (uint64_t) ((elapsed_status - starttime) / 3600), // hours
              (uint64_t) (((elapsed_status - starttime) % 3600) / 60),  // minutes

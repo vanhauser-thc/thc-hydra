@@ -51,7 +51,7 @@ static svn_error_t *my_simple_prompt_callback(svn_auth_cred_simple_t ** cred, vo
 }
 
 int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
-  int32_t ipv6 = 0;
+  //int32_t ipv6 = 0;
   char URL[1024];
   char URLBRANCH[256];
   const char *canonical;
@@ -71,8 +71,8 @@ int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char
   if (svn_cmdline_init("hydra", stderr) != EXIT_SUCCESS)
     return 4;
 
-  if (ip[0] == 16)
-    ipv6 = 1;
+  //if (ip[0] == 16)
+  //  ipv6 = 1;
 
   pool = svn_pool_create(NULL);
 

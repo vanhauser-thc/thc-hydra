@@ -317,7 +317,7 @@ int32_t internal__hydra_connect(char *host, int32_t port, int32_t protocol, int3
               hydra_report(stderr, "[ERROR] SOCKS5 proxy read failed (%zu/2)\n", cnt);
               err = 1;
             }
-            if ((uint32_t) buf[1] == SOCKS_NOMETHOD) {
+            if ((unsigned char) buf[1] == SOCKS_NOMETHOD) {
               hydra_report(stderr, "[ERROR] SOCKS5 proxy authentication method negotiation failed\n");
               err = 1;
             }
@@ -329,7 +329,7 @@ int32_t internal__hydra_connect(char *host, int32_t port, int32_t protocol, int3
                 char *login = strtok(proxy_authentication[selected_proxy], ":");
                 char *pass = strtok(NULL, ":");
 
-                snprintf(buf, sizeof(buf), "\x01%c%s%c%s", (char) strlen(login), login, (char) strlen(pass), pass);
+                snprintf(buf, 4096, "\x01%c%s%c%s", (char) strlen(login), login, (char) strlen(pass), pass);
 
                 cnt = hydra_send(s, buf, strlen(buf), 0);
                 if (cnt != strlen(buf)) {
@@ -584,7 +584,7 @@ int32_t internal__hydra_connect_ssl(char *host, int32_t port, int32_t protocol, 
 }
 #endif
 
-int32_t internal__hydra_recv(int32_t socket, char *buf, int32_t length) {
+int32_t internal__hydra_recv(int32_t socket, char *buf, uint32_t length) {
 #ifdef LIBOPENSSL
   if (use_ssl) {
     return SSL_read(ssl, buf, length);
@@ -593,7 +593,7 @@ int32_t internal__hydra_recv(int32_t socket, char *buf, int32_t length) {
     return recv(socket, buf, length, 0);
 }
 
-int32_t internal__hydra_send(int32_t socket, char *buf, int32_t size, int32_t options) {
+int32_t internal__hydra_send(int32_t socket, char *buf, uint32_t size, int32_t options) {
 #ifdef LIBOPENSSL
   if (use_ssl) {
     return SSL_write(ssl, buf, size);
@@ -708,7 +708,7 @@ void hydra_report_debug(FILE * st, char *format, ...) {
     for (i = 0; i < len; i++) {
       memset(temp, 0, 6);
       cTemp = (unsigned char) buf[i];
-      if ((cTemp < 32 && cTemp >= 0) || cTemp > 126) {
+      if (cTemp < 32 || cTemp > 126) {
         sprintf(temp, "[%02X]", cTemp);
       } else
         sprintf(temp, "%c", cTemp);
@@ -893,7 +893,7 @@ int32_t hydra_data_ready(int32_t socket) {
   return (hydra_data_ready_timed(socket, 0, 100));
 }
 
-int32_t hydra_recv(int32_t socket, char *buf, int32_t length) {
+int32_t hydra_recv(int32_t socket, char *buf, uint32_t length) {
   int32_t ret;
   char text[64];
 
@@ -906,7 +906,7 @@ int32_t hydra_recv(int32_t socket, char *buf, int32_t length) {
   return ret;
 }
 
-int32_t hydra_recv_nb(int32_t socket, char *buf, int32_t length) {
+int32_t hydra_recv_nb(int32_t socket, char *buf, uint32_t length) {
   int32_t ret = -1;
   char text[64];
 
@@ -1001,7 +1001,7 @@ char *hydra_receive_line(int32_t socket) {
   return buff;
 }
 
-int32_t hydra_send(int32_t socket, char *buf, int32_t size, int32_t options) {
+int32_t hydra_send(int32_t socket, char *buf, uint32_t size, int32_t options) {
   char text[64];
 
   if (debug) {
@@ -1102,15 +1102,15 @@ unsigned char hydra_conv64(unsigned char in) {
   }
 }
 
-void hydra_tobase64(unsigned char *buf, int32_t buflen, int32_t bufsize) {
+void hydra_tobase64(unsigned char *buf, uint32_t buflen, uint32_t bufsize) {
   unsigned char small[3] = { 0, 0, 0 };
   unsigned char big[5];
   unsigned char *ptr = buf;
-  int32_t i = bufsize;
+  uint32_t i = bufsize;
   uint32_t len = 0;
   unsigned char bof[i];
 
-  if (buf == NULL || strlen((char *) buf) == 0)
+  if (buf == NULL || strlen((char *) buf) == 0 || buflen == 0)
     return;
   bof[0] = 0;
   memset(big, 0, sizeof(big));

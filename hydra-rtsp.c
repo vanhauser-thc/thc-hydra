@@ -64,8 +64,6 @@ int32_t use_Digest_Auth(char *s) {
 
 
 void create_core_packet(int32_t control, char *ip, int32_t port) {
-
-  char buffer[500];
   char *target = hydra_address2string(ip);
 
   if (control == 0) {
@@ -125,8 +123,7 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
     }
 
     if (use_Digest_Auth(lresp) == 1) {
-      char *dbuf;
-      char dbuffer[500] = "";
+      char *dbuf = NULL;
       char aux[500] = "";
 
       char *pbuffer = hydra_strcasestr(lresp, "WWW-Authenticate: Digest ");
@@ -182,8 +179,7 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
 void service_rtsp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1;
-  int32_t myport = PORT_RTSP, mysslport = PORT_RTSP_SSL;
-  char *ptr, *ptr2;
+  int32_t myport = PORT_RTSP/*, mysslport = PORT_RTSP_SSL*/;
 
   hydra_register_socket(sp);
 

@@ -197,8 +197,7 @@ success:
  */
 int32_t add_or_update_cookie(ptr_cookie_node * ptr_cookie, char * cookie_expr)
 {
-	ptr_cookie_node cur_ptr = NULL, new_ptr = NULL;
-	char * cookie = strdup(cookie_expr);
+	ptr_cookie_node cur_ptr = NULL;
 	char * cookie_name = NULL,
 			* cookie_value = strstr(cookie_expr, "=");
 	if (cookie_value) {

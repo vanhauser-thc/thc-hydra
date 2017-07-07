@@ -45,6 +45,7 @@ static int32_t add_single_char(char ch, char flags, int32_t* crs_len) {
     bf_options.crs[*crs_len - 1] = ch;
     bf_options.crs[*crs_len] = '\0';
   }
+  return 0;
 }
 // return values : 0 on success, 1 on error
 //
