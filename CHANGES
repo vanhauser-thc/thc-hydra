@@ -2,6 +2,7 @@ Changelog for hydra
 -------------------
 
 Release 8.6-dev
+* smb module now checks if SMBv1 is supported by the server
 * http-form module now supports URLs up to 6000 bytes (thanks to petrock6@github for the patch)
 * Fix for SSL connections that failed with error:00000000:lib(0):func(0):reason(0) (thanks gaia@github for reporting)
 * Added new command line option:
