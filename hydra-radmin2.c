@@ -1,7 +1,9 @@
 #include "hydra-mod.h"
 #include <arpa/inet.h>
 #include <unistd.h>
+#ifdef HAVE_GCRYPT
 #include <gcrypt.h>
+#endif
 
 extern char *HYDRA_EXIT;
 
@@ -167,6 +169,7 @@ int start_radmin2(int s, char *ip, int port, unsigned char options, char *miscpt
 }
 
 void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+#ifdef HAVE_GCRYPT
   int sock = -1;
   int index;
   int bytecount;
@@ -341,6 +344,7 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
         hydra_child_exit(2);
     }
   }
+#endif
 }
 
 int service_radmin2_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {

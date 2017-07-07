@@ -57,7 +57,9 @@ extern void service_http_proxy_urlenum(char *ip, int sp, unsigned char options, 
 extern void service_s7_300(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern void service_rtsp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern void service_rpcap(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+#ifdef HAVE_GCRYPT
 extern void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+#endif
 
 // ADD NEW SERVICES HERE
 
@@ -148,7 +150,9 @@ extern int service_xmpp_init(char *ip, int sp, unsigned char options, char *misc
 extern int service_s7_300_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern int service_rtsp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
 extern int service_rpcap_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+#ifdef HAVE_GCRYPT
 extern int service_radmin2_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname);
+#endif
 
 // ADD NEW SERVICES HERE
 
@@ -1265,8 +1269,10 @@ void hydra_service_init(int target_no) {
     x = service_rtsp_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
   if (strcmp(hydra_options.service, "rpcap") == 0)
     x = service_rpcap_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+#ifdef HAVE_GCRYPT
   if (strcmp(hydra_options.service, "radmin2") == 0)
     x = service_radmin2_init(hydra_targets[target_no]->ip, -1, options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[target_no]->target);
+#endif
   // ADD NEW SERVICES HERE
 
 
@@ -1473,8 +1479,10 @@ int hydra_spawn_head(int head_no, int target_no) {
         service_rtsp(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
       if (strcmp(hydra_options.service, "rpcap") == 0)
         service_rpcap(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
+#ifdef HAVE_GCRYPT
       if (strcmp(hydra_options.service, "radmin2") == 0)
         service_radmin2(hydra_targets[target_no]->ip, hydra_heads[head_no]->sp[1], options, hydra_options.miscptr, hydra_brains.ofp, hydra_targets[target_no]->port, hydra_targets[hydra_heads[head_no]->target_no]->target);
+#endif
       // ADD NEW SERVICES HERE
 
 
@@ -3275,7 +3283,11 @@ int main(int argc, char *argv[]) {
       i = 1;
     }
     if (strcmp(hydra_options.service, "radmin2") == 0)
+#ifdef HAVE_GCRYPT
       i = 1;
+#else
+      bail("Compiled without gcrypt support");
+#endif
     // ADD NEW SERVICES HERE
 
 
