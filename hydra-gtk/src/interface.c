@@ -222,6 +222,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(cmbProtocol, "cmbProtocol");
   gtk_widget_show(cmbProtocol);
   gtk_table_attach(GTK_TABLE(table8), cmbProtocol, 1, 2, 4, 5, (GtkAttachOptions) (GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions) (GTK_EXPAND), 0, 0);
+  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "adam6500");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "afp");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "asterisk");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "cisco");
@@ -262,7 +263,9 @@ GtkWidget *create_wndMain(void) {
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "redis");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rexec");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rlogin");
+  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rpcap");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rsh");
+  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rtsp");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "s7-300");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "sapr3");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "sip");

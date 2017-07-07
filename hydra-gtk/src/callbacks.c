@@ -151,24 +151,24 @@ int hydra_get_options(char *options[]) {
     }
 
     /* get the pass, pass list, or generate */
-	/* The "generate" button was implemented by Petar Kaleychev <petar.kaleychev@gmail.com> */
+    /* The "generate" button was implemented by Petar Kaleychev <petar.kaleychev@gmail.com> */
     widget = lookup_widget(GTK_WIDGET(wndMain), "radioPass1");
     if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
       options[i++] = "-p";
       widget = lookup_widget(GTK_WIDGET(wndMain), "entPass");
       options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
-	}
-	widget = lookup_widget(GTK_WIDGET(wndMain), "radioPass2");
-	if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+    }
+    widget = lookup_widget(GTK_WIDGET(wndMain), "radioPass2");
+    if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
       options[i++] = "-P";
       widget = lookup_widget(GTK_WIDGET(wndMain), "entPassFile");
       options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
     }
-	widget = lookup_widget(GTK_WIDGET(wndMain), "radioGenerate");
-	if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
-		options[i++] = "-x";
-		widget = lookup_widget(GTK_WIDGET(wndMain), "entGeneration");
-		options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+    widget = lookup_widget(GTK_WIDGET(wndMain), "radioGenerate");
+    if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+      options[i++] = "-x";
+      widget = lookup_widget(GTK_WIDGET(wndMain), "entGeneration");
+      options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
     }
   }
 
@@ -297,7 +297,7 @@ int hydra_get_options(char *options[]) {
     }
     widget = lookup_widget(GTK_WIDGET(wndMain), "chkNTLM");
     if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
-        strcat(smbparm, "Hash");
+      strcat(smbparm, "Hash");
     }
     options[i++] = smbparm;
 
@@ -540,6 +540,7 @@ int *popen_re_unbuffered(char *command) {
   static int *pfd = NULL;
 
   char *options[128];
+
   hydra_pid = 0;
 
   update_statusbar();
@@ -562,6 +563,7 @@ int *popen_re_unbuffered(char *command) {
     return NULL;
   } else if (hydra_pid == 0) {  /* child */
     int k;
+
     if (setpgid(getpid(), getpid()) < 0)
       g_warning("popen_rw_unbuffered: setpgid() failed");
     if (close(p_r[0]) < 0)
@@ -585,7 +587,7 @@ int *popen_re_unbuffered(char *command) {
     execv(HYDRA_BIN, options);
 
     g_warning("%s %i: popen_rw_unbuffered: execv() returned", __FILE__, __LINE__);
-    
+
     for (k = 0; options[k] != NULL; k++) {
       g_warning("%s", options[k]);
     }
@@ -701,6 +703,7 @@ void on_btnSave_clicked(GtkButton * button, gpointer user_data) {
 
 void on_chkColon_toggled(GtkToggleButton * togglebutton, gpointer user_data) {
   GtkWidget *user, *pass;
+
   user = lookup_widget(GTK_WIDGET(wndMain), "frmUsername");;
   pass = lookup_widget(GTK_WIDGET(wndMain), "frmPass");
 
@@ -715,6 +718,7 @@ void on_chkColon_toggled(GtkToggleButton * togglebutton, gpointer user_data) {
 
 void on_chkDisUser_toggled(GtkToggleButton * togglebutton, gpointer user_data) {
   GtkWidget *radioUsername1, *radioUsername2, *entUsername, *entUsernameFile;
+
   radioUsername1 = lookup_widget(GTK_WIDGET(wndMain), "radioUsername1");;
   radioUsername2 = lookup_widget(GTK_WIDGET(wndMain), "radioUsername2");
   entUsername = lookup_widget(GTK_WIDGET(wndMain), "entUsername");

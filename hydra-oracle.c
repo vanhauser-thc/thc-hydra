@@ -40,7 +40,7 @@ void print_oracle_error(char *err) {
   }
 }
 
-int start_oracle(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_oracle(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass, buffer[200], sid[100];
 
@@ -132,9 +132,9 @@ int start_oracle(int s, char *ip, int port, unsigned char options, char *miscptr
   return 1;
 }
 
-void service_oracle(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_ORACLE;
+void service_oracle(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_ORACLE;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -158,7 +158,7 @@ void service_oracle(char *ip, int sp, unsigned char options, char *miscptr, FILE
 
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       next_run = 2;
@@ -183,7 +183,7 @@ void service_oracle(char *ip, int sp, unsigned char options, char *miscptr, FILE
 
 #endif
 
-int service_oracle_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_oracle_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
@@ -195,4 +195,8 @@ int service_oracle_init(char *ip, int sp, unsigned char options, char *miscptr, 
   //   -1  error, hydra will exit, so print a good error message here
 
   return 0;
+}
+
+void usage_oracle(const char* service) {
+  printf("Module oracle / ora is optionally taking the ORACLE SID, default is \"ORCL\"\n\n");
 }

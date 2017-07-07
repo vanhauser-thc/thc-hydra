@@ -75,24 +75,24 @@ typedef struct cookie_node {
 	struct cookie_node *next;
 } t_cookie_node, *ptr_cookie_node;
 
-int success_cond = 0;
-int getcookie = 1;
-int auth_flag = 0;
+int32_t success_cond = 0;
+int32_t getcookie = 1;
+int32_t auth_flag = 0;
 
 char cookie[4096] = "", cmiscptr[1024];
 
 extern char *webtarget;
 extern char *slash;
-int webport, freemischttpform = 0;
-char bufferurl[1024], cookieurl[1024] = "", userheader[1024] = "", *url, *variables, *optional1;
+int32_t webport, freemischttpform = 0;
+char bufferurl[6096+24], cookieurl[6096+24] = "", userheader[6096+24] = "", *url, *variables, *optional1;
 
 #define MAX_REDIRECT 				8
 #define MAX_CONTENT_LENGTH	20
 #define MAX_PROXY_LENGTH		2048    // sizeof(cookieurl) * 2
 
 char redirected_url_buff[2048] = "";
-int redirected_flag = 0;
-int redirected_cpt = MAX_REDIRECT;
+int32_t redirected_flag = 0;
+int32_t redirected_cpt = MAX_REDIRECT;
 
 char *cookie_request, *normal_request;  // Buffers for HTTP headers
 
@@ -114,7 +114,28 @@ ptr_header_node header_exists(ptr_header_node * ptr_head, char *header_name, cha
   return found_header;
 }
 
-int append_cookie(char *name, char *value, ptr_cookie_node *last_cookie)
+#if defined(__sun)
+/* Written by Kaveh R. Ghazi <ghazi@caip.rutgers.edu> */
+char *
+strndup (const char *s, size_t n)
+{
+  char *result;
+  size_t len = strlen (s);
+
+  if (n < len)
+    len = n;
+
+  result = (char *) malloc (len + 1);
+  if (!result)
+    return 0;
+
+  memcpy (result, s, len);
+  result[len] = '\0';
+  return(result);
+}
+#endif
+
+int32_t append_cookie(char *name, char *value, ptr_cookie_node *last_cookie)
 {
 	ptr_cookie_node new_ptr = (ptr_cookie_node) malloc(sizeof(t_cookie_node));
 	if (!new_ptr)
@@ -135,7 +156,7 @@ int append_cookie(char *name, char *value, ptr_cookie_node *last_cookie)
 char * stringify_cookies(ptr_cookie_node ptr_cookie)
 {
 	ptr_cookie_node cur_ptr = NULL;
-	unsigned int length = 1;
+	uint32_t length = 1;
 	char *cookie_hdr = (char *) malloc(length);
 
 	if (cookie_hdr) {
@@ -174,10 +195,9 @@ success:
  * 	                 +--------+
  * Returns 1 if success, or 0 otherwise.
  */
-int add_or_update_cookie(ptr_cookie_node * ptr_cookie, char * cookie_expr)
+int32_t add_or_update_cookie(ptr_cookie_node * ptr_cookie, char * cookie_expr)
 {
-	ptr_cookie_node cur_ptr = NULL, new_ptr = NULL;
-	char * cookie = strdup(cookie_expr);
+	ptr_cookie_node cur_ptr = NULL;
 	char * cookie_name = NULL,
 			* cookie_value = strstr(cookie_expr, "=");
 	if (cookie_value) {
@@ -206,11 +226,11 @@ int add_or_update_cookie(ptr_cookie_node * ptr_cookie, char * cookie_expr)
 	return 1;
 }
 
-int process_cookies(ptr_cookie_node * ptr_cookie, char * cookie_expr)
+int32_t process_cookies(ptr_cookie_node * ptr_cookie, char * cookie_expr)
 {
 	char *tok = NULL;
 	char *expr = strdup(cookie_expr);
-	int res = 0;
+	int32_t res = 0;
 
 	if (strstr(cookie_expr, ";")) {
 		tok = strtok(expr, ";");
@@ -236,7 +256,7 @@ int process_cookies(ptr_cookie_node * ptr_cookie, char * cookie_expr)
  *
  * 	Returns 1 if success, or 0 otherwise (out of memory).
  */
-int add_header(ptr_header_node * ptr_head, char *header, char *value, char type) {
+int32_t add_header(ptr_header_node * ptr_head, char *header, char *value, char type) {
   ptr_header_node cur_ptr = NULL;
   ptr_header_node existing_hdr, new_ptr;
 
@@ -322,7 +342,7 @@ void hdrrepv(ptr_header_node * ptr_head, char *hdrname, char *new_value) {
       if (cur_ptr->value)
         strcpy(cur_ptr->value, new_value);
       else {
-        hydra_report(stderr, "[ERROR] Out of memory (hdrrepv %lu)", strlen(new_value) + 1);
+        hydra_report(stderr, "[ERROR] Out of memory (hdrrepv %u)", strlen(new_value) + 1);
         hydra_child_exit(0);
       }
     }
@@ -348,7 +368,7 @@ void cleanup(ptr_header_node *ptr_head) {
 char *stringify_headers(ptr_header_node * ptr_head) {
   char *headers_str = NULL;
   ptr_header_node cur_ptr = *ptr_head;
-  int ttl_size = 0;
+  int32_t ttl_size = 0;
 
   for (; cur_ptr; cur_ptr = cur_ptr->next)
     ttl_size += strlen(cur_ptr->header) + strlen(cur_ptr->value) + 4;
@@ -370,7 +390,7 @@ char *stringify_headers(ptr_header_node * ptr_head) {
 
 
 char *prepare_http_request(char *type, char *path, char *params, char *headers) {
-  unsigned int reqlen = 0;
+  uint32_t reqlen = 0;
   char *http_request = NULL;
 
   if (type && path && headers) {
@@ -410,7 +430,7 @@ char *prepare_http_request(char *type, char *path, char *params, char *headers) 
   return http_request;
 }
 
-int strpos(char *str, char *target) {
+int32_t strpos(char *str, char *target) {
   char *res = strstr(str, target);
 
   if (res == NULL)
@@ -433,19 +453,22 @@ char *html_encode(char *string) {
     ret = hydra_strrep(ret, "&", "%26");
   if (index(ret, '#') != NULL)
     ret = hydra_strrep(ret, "#", "%23");
+  if (index(ret, '=') != NULL)
+    ret = hydra_strrep(ret, "=", "%3D");
 
   return ret;
 }
 
 
 /*
-int analyze_server_response(int socket)
+int32_t analyze_server_response(int32_t socket)
 return 0 or 1 when the cond regex is matched
 return -1 if no response from server
 */
-int analyze_server_response(int s) {
-  int runs = 0;
-
+int32_t analyze_server_response(int32_t s) {
+  int32_t runs = 0;
+  redirected_flag = 0;
+  auth_flag = 0;
   while ((buf = hydra_receive_line(s)) != NULL) {
     runs++;
     //check for http redirection
@@ -548,7 +571,7 @@ int analyze_server_response(int s) {
   return 0;
 }
 
-void hydra_reconnect(int s, char *ip, int port, unsigned char options, char *hostname) {
+void hydra_reconnect(int32_t s, char *ip, int32_t port, unsigned char options, char *hostname) {
   if (s >= 0)
     s = hydra_disconnect(s);
   if ((options & OPTION_SSL) == 0) {
@@ -558,13 +581,13 @@ void hydra_reconnect(int s, char *ip, int port, unsigned char options, char *hos
   }
 }
 
-int start_http_form(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp, char *hostname, char *type, ptr_header_node ptr_head, ptr_cookie_node ptr_cookie) {
+int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp, char *hostname, char *type, ptr_header_node ptr_head, ptr_cookie_node ptr_cookie) {
   char *empty = "";
   char *login, *pass, clogin[256], cpass[256];
   char header[8096], *upd3variables;
   char *cookie_header = NULL;
   char *http_request;
-  int found = !success_cond, i, j;
+  int32_t found = !success_cond, i, j;
   char content_length[MAX_CONTENT_LENGTH], proxy_string[MAX_PROXY_LENGTH];
 
   memset(header, 0, sizeof(header));
@@ -606,7 +629,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
     if (strcmp(type, "POST") == 0) {
       memset(proxy_string, 0, sizeof(proxy_string));
       snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s:%d%.600s", webtarget, webport, url);
-      snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int) strlen(upd3variables));
+      snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int32_t) strlen(upd3variables));
       if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
         hdrrepv(&ptr_head, "Content-Length", content_length);
       else
@@ -654,11 +677,11 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
       if (strcmp(type, "POST") == 0) {
         memset(proxy_string, 0, sizeof(proxy_string));
         snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s:%d%.600s", webtarget, webport, url);
-        snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int) strlen(upd3variables));
+        snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int32_t) strlen(upd3variables));
         if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
           hdrrepv(&ptr_head, "Content-Length", content_length);
-        else
-          add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
+	else
+	  add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
         if (!header_exists(&ptr_head, "Content-Type", HEADER_TYPE_DEFAULT))
           add_header(&ptr_head, "Content-Type", "application/x-www-form-urlencoded", HEADER_TYPE_DEFAULT);
         cookie_header = stringify_cookies(ptr_cookie);
@@ -700,7 +723,7 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
       }
       // now prepare for the "real" request
       if (strcmp(type, "POST") == 0) {
-        snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int) strlen(upd3variables));
+        snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int32_t) strlen(upd3variables));
         if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
           hdrrepv(&ptr_head, "Content-Length", content_length);
         else
@@ -825,6 +848,10 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
         str3[0] = '/';
       }
 
+      if(strrchr(url, ':') == NULL && port != 80) {
+        sprintf(str2, "%s:%d", str2, port);
+      }
+
       if (verbose)
         hydra_report(stderr, "[VERBOSE] Page redirected to http://%s%s\n", str2, str3);
 
@@ -877,9 +904,9 @@ int start_http_form(int s, char *ip, int port, unsigned char options, char *misc
   return 1;
 }
 
-void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname, char *type, ptr_header_node * ptr_head, ptr_cookie_node * ptr_cookie) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_HTTP, mysslport = PORT_HTTP_SSL;
+void service_http_form(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname, char *type, ptr_header_node * ptr_head, ptr_cookie_node * ptr_cookie) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_HTTP, mysslport = PORT_HTTP_SSL;
 
   // register our socket descriptor
   hydra_register_socket(sp);
@@ -917,7 +944,7 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
           port = mysslport;
         }
         if (sock < 0) {
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, cannot connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, cannot connect\n", (int32_t) getpid());
           if (freemischttpform)
             free(miscptr);
           freemischttpform = 0;
@@ -958,7 +985,7 @@ void service_http_form(char *ip, int sp, unsigned char options, char *miscptr, F
     free(miscptr);
 }
 
-void service_http_get_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+void service_http_get_form(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   ptr_cookie_node ptr_cookie = NULL;
 	ptr_header_node ptr_head = initialize(ip, options, miscptr);
 
@@ -970,7 +997,7 @@ void service_http_get_form(char *ip, int sp, unsigned char options, char *miscpt
   }
 }
 
-void service_http_post_form(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+void service_http_post_form(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   ptr_cookie_node ptr_cookie = NULL;
 	ptr_header_node ptr_head = initialize(ip, options, miscptr);
 
@@ -982,7 +1009,7 @@ void service_http_post_form(char *ip, int sp, unsigned char options, char *miscp
   }
 }
 
-int service_http_form_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_http_form_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
@@ -1035,7 +1062,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
   else
     webport = PORT_HTTP_SSL;
 
-  sprintf(bufferurl, "%.1000s", miscptr);
+  sprintf(bufferurl, "%.6096s", miscptr);
   url = bufferurl;
   ptr = url;
   while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
@@ -1141,14 +1168,15 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     case 'H':
       // add a new header, or replace an existing one's value
 			ptr = optional1 + 2;
-      while (*ptr != 0 && *ptr != ':')
-      	ptr++;
-			if (*(ptr - 1) == '\\')
-				*(ptr - 1) = 0;
-			if (*ptr != 0){
-				*ptr = 0;
-				ptr += 2;
-			}
+      while (*ptr != 0 && *ptr != ':') ptr++;
+
+      if (*(ptr - 1) == '\\')
+	*(ptr - 1) = 0;
+
+      if (*ptr != 0) {
+	*ptr = 0;
+        ptr += 2;
+      }
       ptr2 = ptr;
       while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
         ptr2++;
@@ -1214,4 +1242,41 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     }
   }
   return ptr_head;
+}
+
+void usage_http_form(const char* service) {
+  printf("Module %s requires the page and the parameters for the web form.\n\n"
+         "By default this module is configured to follow a maximum of 5 redirections in\n"
+         "a row. It always gathers a new cookie from the same URL without variables\n"
+         "The parameters take three \":\" separated values, plus optional values.\n"
+         "(Note: if you need a colon in the option string as value, escape it with \"\\:\", but do not escape a \"\\\" with \"\\\\\".)\n"
+         "\nSyntax:   <url>:<form parameters>:<condition string>[:<optional>[:<optional>]\n"
+         "First is the page on the server to GET or POST to (URL).\n"
+         "Second is the POST/GET variables (taken from either the browser, proxy, etc.\n"
+         " with usernames and passwords being replaced in the \"^USER^\" and \"^PASS^\"\n"
+         " placeholders (FORM PARAMETERS)\n"
+         "Third is the string that it checks for an *invalid* login (by default)\n"
+         " Invalid condition login check can be preceded by \"F=\", successful condition\n"
+         " login check must be preceded by \"S=\".\n"
+         " This is where most people get it wrong. You have to check the webapp what a\n"
+         " failed string looks like and put it in this parameter!\n"
+         "The following parameters are optional:\n"
+         " C=/page/uri     to define a different page to gather initial cookies from\n"
+         " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each request\n"
+         "                 ^USER^ and ^PASS^ can also be put into these headers!\n"
+         "                 Note: 'h' will add the user-defined header at the end\n"
+         "                 regardless it's already being sent by Hydra or not.\n"
+         "                 'H' will replace the value of that header if it exists, by the\n"
+         "                 one supplied by the user, or add the header at the end\n"
+         "Note that if you are going to put colons (:) in your headers you should escape them with a backslash (\\).\n"
+         " All colons that are not option separators should be escaped (see the examples above and below).\n"
+         " You can specify a header without escaping the colons, but that way you will not be able to put colons\n"
+         " in the header value itself, as they will be interpreted by hydra as option separators.\n"
+         "\nExamples:\n"
+         " \"/login.php:user=^USER^&pass=^PASS^:incorrect\"\n"
+         " \"/login.php:user=^USER^&pass=^PASS^&colon=colon\\:escape:S=authlog=.*success\"\n"
+         " \"/login.php:user=^USER^&pass=^PASS^&mid=123:authlog=.*failed\"\n"
+         " \"/:user=^USER&pass=^PASS^:failed:H=Authorization\\: Basic dT1w:H=Cookie\\: sessid=aaaa:h=X-User\\: ^USER^:H=User-Agent\\: wget\"\n"
+         " \"/exchweb/bin/auth/owaauth.dll:destination=http%%3A%%2F%%2F<target>%%2Fexchange&flags=0&username=<domain>%%5C^USER^&password=^PASS^&SubmitCreds=x&trusted=0:reason=:C=/exchweb\"\n",
+         service);
 }

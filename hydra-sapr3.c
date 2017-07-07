@@ -10,22 +10,22 @@ void dummy_sapr3() {
 #include <ctype.h>
 
 /* temporary workaround fix */
-const int *__ctype_tolower;
-const int *__ctype_toupper;
-const int *__ctype_b;
+const int32_t *__ctype_tolower;
+const int32_t *__ctype_toupper;
+const int32_t *__ctype_b;
 
 extern void flood();            /* for -lm */
 
 extern char *HYDRA_EXIT;
 RFC_ERROR_INFO_EX error_info;
 
-int start_sapr3(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_sapr3(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   RFC_HANDLE handle;
   char *empty = "";
   char *login, *pass, buffer[1024];
   char *buf;
-  int i;
-  int sysnr = port % 100;
+  int32_t i;
+  int32_t sysnr = port % 100;
   char opts[] = "RFCINI=N RFCTRACE=N BALANCE=N DEBUG=N TRACE=0 ABAP_DEBUG=0";
 
 //  char opts[] = "RFCINI=N RFCTRACE=Y BALANCE=N DEBUG=Y TRACE=Y ABAP_DEBUG=Y";
@@ -89,8 +89,8 @@ int start_sapr3(int s, char *ip, int port, unsigned char options, char *miscptr,
   return 1;
 }
 
-void service_sapr3(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
+void service_sapr3(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -117,7 +117,7 @@ void service_sapr3(char *ip, int sp, unsigned char options, char *miscptr, FILE 
 
 #endif
 
-int service_sapr3_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_sapr3_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
@@ -129,4 +129,8 @@ int service_sapr3_init(char *ip, int sp, unsigned char options, char *miscptr, F
   //   -1  error, hydra will exit, so print a good error message here
 
   return 0;
+}
+
+void usage_sapr3(const char* service) {
+  printf("Module sapr3 requires the client id, a number between 0 and 99\n\n");
 }

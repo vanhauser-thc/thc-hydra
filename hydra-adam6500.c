@@ -56,11 +56,11 @@ unsigned char adam6500_resp2[] = {
   0x00, 0x00, 0x00
 };
 
-int start_adam6500(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_adam6500(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *pass;
   unsigned char buffer[300];
-  int i;
+  int32_t i;
 
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
@@ -90,9 +90,9 @@ int start_adam6500(int s, char *ip, int port, unsigned char options, char *miscp
   return 1;
 }
 
-void service_adam6500(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, failc = 0, retry = 1, next_run = 1, sock = -1;
-  int myport = PORT_ADAM6500, mysslport = PORT_ADAM6500_SSL;
+void service_adam6500(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_ADAM6500, mysslport = PORT_ADAM6500_SSL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -102,9 +102,6 @@ void service_adam6500(char *ip, int sp, unsigned char options, char *miscptr, FI
     switch (run) {
     case 1:                    /* connect and service init function */
       {
-        unsigned char *buf2;
-        int f = 0;
-
         if (sock >= 0)
           sock = hydra_disconnect(sock);
 //        usleepn(275);
@@ -120,7 +117,7 @@ void service_adam6500(char *ip, int sp, unsigned char options, char *miscptr, FI
           port = mysslport;
         }
         if (sock < 0) {
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
           hydra_child_exit(1);
         }
 
@@ -148,7 +145,7 @@ void service_adam6500(char *ip, int sp, unsigned char options, char *miscptr, FI
   }
 }
 
-int service_adam6500_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_adam6500_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

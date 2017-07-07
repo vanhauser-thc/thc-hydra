@@ -27,7 +27,7 @@
 /*
  * Object ID is a fundamental type in Postgres.
  */
-typedef unsigned int Oid;
+typedef uint32_t Oid;
 
 #ifdef __cplusplus
 #define InvalidOid		(Oid(0))
@@ -43,7 +43,7 @@ typedef unsigned int Oid;
 /*
  * NAMEDATALEN is the max length for system identifiers (e.g. table names,
  * attribute names, function names, etc).  It must be a multiple of
- * sizeof(int) (typically 4).
+ * sizeof(int32_t) (typically 4).
  *
  * NOTE that databases with different NAMEDATALEN's cannot interoperate!
  */

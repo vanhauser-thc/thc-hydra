@@ -1,6 +1,13 @@
 #ifndef _HYDRA_H
 
 #include <stdio.h>
+#ifdef __sun
+  #include <sys/int_types.h>
+#elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX)
+  #include <inttypes.h>
+#else
+  #include <stdint.h>
+#endif
 #include <string.h>
 #include <stdarg.h>
 #include <unistd.h>
@@ -23,20 +30,20 @@
 #include <errno.h>
 
 #ifdef HAVE_OPENSSL
-#define HYDRA_SSL
+  #define HYDRA_SSL
 #endif
 #ifdef HAVE_SSL
-#ifndef HYDRA_SSL
-#define HYDRA_SSL
-#endif
+  #ifndef HYDRA_SSL
+    #define HYDRA_SSL
+  #endif
 #endif
 
 #ifdef LIBSSH
-#include <libssh/libssh.h>
+  #include <libssh/libssh.h>
 #endif
 
 #ifdef HAVE_ZLIB
-#include <zlib.h>
+  #include <zlib.h>
 #endif
 
 #define OPTION_SSL 1
@@ -142,21 +149,17 @@
 #define True  1
 
 #ifndef INET_ADDRSTRLEN
-#define INET_ADDRSTRLEN 16
+  #define INET_ADDRSTRLEN 16
 #endif
 
 #define MAX_PROXY_COUNT 64
 
 #ifndef _WIN32
-
-int sleepn(time_t seconds);
-int usleepn(long int useconds);
-
+  int32_t sleepn(time_t seconds);
+  int32_t usleepn(uint64_t useconds);
 #else
-
-int sleepn(unsigned int seconds);
-int usleepn(unsigned int useconds);
-
+  int32_t sleepn(uint32_t seconds);
+  int32_t usleepn(uint32_t useconds);
 #endif
 
 #define _HYDRA_H

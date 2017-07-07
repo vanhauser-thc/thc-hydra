@@ -1,4 +1,3 @@
-
 /*-
 *  COPYRIGHT (C) 1986 Gary S. Brown.  You may use this program, or
 *  code or tables extracted from it, as desired without restriction.
@@ -42,8 +41,15 @@
 */
 
 #include <sys/types.h>
+#ifdef __sun
+  #include <sys/int_types.h>
+#elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX)
+  #include <inttypes.h>
+#else
+  #include <stdint.h>
+#endif
 
-unsigned int crc32_tab[] = {
+uint32_t crc32_tab[] = {
   0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419, 0x706af48f,
   0xe963a535, 0x9e6495a3, 0x0edb8832, 0x79dcb8a4, 0xe0d5e91e, 0x97d2d988,
   0x09b64c2b, 0x7eb17cbd, 0xe7b82d07, 0x90bf1d91, 0x1db71064, 0x6ab020f2,
@@ -91,9 +97,9 @@ unsigned int crc32_tab[] = {
 
 #ifndef HAVE_ZLIB
 
-unsigned int crc32(const void *buf, unsigned int size) {
+uint32_t crc32(const void *buf, uint32_t size) {
   const unsigned char *p;
-  unsigned int crc;
+  uint32_t crc;
 
   p = buf;
   crc = ~0U;

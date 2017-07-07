@@ -33,12 +33,12 @@ struct team_speak {
   char login[29];
 };
 
-extern int hydra_data_ready_timed(int socket, long sec, long usec);
+extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
 extern char *HYDRA_EXIT;
 char *buf;
 
-int start_teamspeak(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_teamspeak(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass;
   char buf[100];
@@ -87,11 +87,11 @@ int start_teamspeak(int s, char *ip, int port, unsigned char options, char *misc
       hydra_completed_pair_found();
     }
     if (buf[0x4B] != 0) {
-      hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+      hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
       hydra_child_exit(1);
     }
   } else {
-    hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+    hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
     hydra_child_exit(1);
   }
 
@@ -102,9 +102,9 @@ int start_teamspeak(int s, char *ip, int port, unsigned char options, char *misc
   return 1;
 }
 
-void service_teamspeak(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_TEAMSPEAK;
+void service_teamspeak(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_TEAMSPEAK;
 
   hydra_register_socket(sp);
 
@@ -123,7 +123,7 @@ void service_teamspeak(char *ip, int sp, unsigned char options, char *miscptr, F
         sock = hydra_connect_udp(ip, myport);
         port = myport;
         if (sock < 0) {
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
           hydra_child_exit(1);
         }
       }
@@ -142,7 +142,7 @@ void service_teamspeak(char *ip, int sp, unsigned char options, char *miscptr, F
   }
 }
 
-int service_teamspeak_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_teamspeak_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

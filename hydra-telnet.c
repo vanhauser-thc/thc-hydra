@@ -3,12 +3,12 @@
 
 extern char *HYDRA_EXIT;
 char *buf;
-int no_line_mode;
+int32_t no_line_mode;
 
-int start_telnet(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass, buffer[300];
-  int i = 0;
+  int32_t i = 0;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -36,7 +36,7 @@ int start_telnet(int s, char *ip, int port, unsigned char options, char *miscptr
     if ((buf = hydra_receive_line(s)) == NULL)
       return 1;
 
-    if (index(buf, '/') != NULL || index(buf, '>') != NULL || index(buf, '%') != NULL || index(buf, '$') != NULL || index(buf, '#') != NULL || index(buf, '%') != NULL) {
+    if (index(buf, '/') != NULL || index(buf, '>') != NULL || index(buf, '%') != NULL || index(buf, '$') != NULL || index(buf, '#') != NULL) {
       hydra_report_found_host(port, ip, "telnet", fp);
       hydra_completed_pair_found();
       free(buf);
@@ -76,10 +76,10 @@ int start_telnet(int s, char *ip, int port, unsigned char options, char *miscptr
 
   /*win7 answering with do terminal type = 0xfd 0x18 */
   while ((buf = hydra_receive_line(s)) != NULL && make_to_lower(buf) && (strstr(buf, "login:") == NULL || strstr(buf, "last login:") != NULL) && strstr(buf, "sername:") == NULL) {
-    if ((miscptr != NULL && strstr(buf, miscptr) != NULL)
-        || (miscptr == NULL
-            && (index(buf, '/') != NULL || index(buf, '>') != NULL || index(buf, '%') != NULL || index(buf, '$') != NULL || index(buf, '#') != NULL
-                || (strstr(buf, " failed") == NULL && index(buf, '%') != NULL) || ((buf[1] == '\xfd') && (buf[2] == '\x18'))))) {
+    if ((miscptr != NULL && strstr(buf, miscptr) != NULL) || (miscptr == NULL &&
+          strstr(buf, "invalid") == NULL && strstr(buf, "failed") == NULL && strstr(buf, "bad ") == NULL &&
+          (index(buf, '/') != NULL || index(buf, '>') != NULL || index(buf, '$') != NULL || index(buf, '#') != NULL ||
+          index(buf, '%') != NULL || ((buf[1] == '\xfd') && (buf[2] == '\x18'))))) {
       hydra_report_found_host(port, ip, "telnet", fp);
       hydra_completed_pair_found();
       free(buf);
@@ -89,15 +89,16 @@ int start_telnet(int s, char *ip, int port, unsigned char options, char *miscptr
     }
     free(buf);
   }
+
   hydra_completed_pair();
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     return 3;
   return 2;
 }
 
-void service_telnet(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1, fck;
-  int myport = PORT_TELNET, mysslport = PORT_TELNET_SSL;
+void service_telnet(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1, fck;
+  int32_t myport = PORT_TELNET, mysslport = PORT_TELNET_SSL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -105,8 +106,8 @@ void service_telnet(char *ip, int sp, unsigned char options, char *miscptr, FILE
   if (miscptr != NULL)
     make_to_lower(miscptr);
   while (1) {
-    int first = 0;
-    int old_waittime = waittime;
+    int32_t first = 0;
+    int32_t old_waittime = waittime;
 
     switch (run) {
     case 1:                    /* connect and service init function */
@@ -127,7 +128,7 @@ void service_telnet(char *ip, int sp, unsigned char options, char *miscptr, FILE
         port = mysslport;
       }
       if (sock < 0) {
-        hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+        hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       if ((buf = hydra_receive_line(sock)) == NULL) {   /* check the first line */
@@ -203,7 +204,7 @@ void service_telnet(char *ip, int sp, unsigned char options, char *miscptr, FILE
   }
 }
 
-int service_telnet_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_telnet_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
@@ -215,4 +216,9 @@ int service_telnet_init(char *ip, int sp, unsigned char options, char *miscptr, 
   //   -1  error, hydra will exit, so print a good error message here
 
   return 0;
+}
+
+void usage_telnet(const char* service) {
+  printf("Module telnet is optionally taking the string which is displayed after\n"
+         "a successful login (case insensitive), use if the default in the telnet\n" "module produces too many false positives\n\n");
 }

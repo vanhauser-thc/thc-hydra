@@ -3,7 +3,7 @@
 extern char *HYDRA_EXIT;
 char *buf;
 
-int start_ftp(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_ftp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "\"\"";
   char *login, *pass, buffer[510];
 
@@ -74,9 +74,9 @@ int start_ftp(int s, char *ip, int port, unsigned char options, char *miscptr, F
   return 2;
 }
 
-void service_ftp_core(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname, int tls) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_FTP, mysslport = PORT_FTP_SSL;
+void service_ftp_core(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname, int32_t tls) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_FTP, mysslport = PORT_FTP_SSL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -100,7 +100,7 @@ void service_ftp_core(char *ip, int sp, unsigned char options, char *miscptr, FI
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       usleepn(250);
@@ -167,15 +167,15 @@ void service_ftp_core(char *ip, int sp, unsigned char options, char *miscptr, FI
   }
 }
 
-void service_ftp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+void service_ftp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   service_ftp_core(ip, sp, options, miscptr, fp, port, hostname, 0);
 }
 
-void service_ftps(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+void service_ftps(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   service_ftp_core(ip, sp, options, miscptr, fp, port, hostname, 1);
 }
 
-int service_ftp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_ftp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

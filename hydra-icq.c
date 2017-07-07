@@ -1,8 +1,8 @@
 #include "hydra-mod.h"
 
 extern char *HYDRA_EXIT;
-extern int child_head_no;
-int seq = 1;
+extern int32_t child_head_no;
+int32_t seq = 1;
 
 const unsigned char icq5_table[] = {
   0x59, 0x60, 0x37, 0x6B, 0x65, 0x62, 0x46, 0x48, 0x53, 0x61, 0x4C,
@@ -31,10 +31,10 @@ const unsigned char icq5_table[] = {
   0x5A, 0x00, 0x00
 };
 
-void fix_packet(char *buf, int len) {
+void fix_packet(char *buf, int32_t len) {
   unsigned long c1, c2;
   unsigned long r1, r2;
-  int pos, key, k;
+  int32_t pos, key, k;
 
   c1 = buf[8];
   c1 <<= 8;
@@ -83,10 +83,10 @@ void icq_header(char *buf, unsigned short cmd, unsigned long uin) {
   buf[9] = (uin >> 24) & 0xff;
 }
 
-int icq_login(int s, char *login, char *pass) {
+int32_t icq_login(int32_t s, char *login, char *pass) {
   unsigned long uin = strtoul(login, NULL, 10);
   char buf[256];
-  int len;
+  int32_t len;
 
   bzero(buf, sizeof(buf));
 
@@ -103,7 +103,7 @@ int icq_login(int s, char *login, char *pass) {
   return (hydra_send(s, buf, 43 + len, 0));
 }
 
-int icq_login_1(int s, char *login) {
+int32_t icq_login_1(int32_t s, char *login) {
   unsigned long uin = strtoul(login, NULL, 10);
   char buf[64];
 
@@ -111,7 +111,7 @@ int icq_login_1(int s, char *login) {
   return (hydra_send(s, buf, 10, 0));
 }
 
-int icq_disconnect(int s, char *login) {
+int32_t icq_disconnect(int32_t s, char *login) {
   unsigned long uin = strtoul(login, NULL, 10);
   char buf[64];
 
@@ -123,7 +123,7 @@ int icq_disconnect(int s, char *login) {
   return (hydra_send(s, buf, 34, 0));
 }
 
-int icq_ack(int s, char *login) {
+int32_t icq_ack(int32_t s, char *login) {
   unsigned long uin = strtoul(login, NULL, 10);
   char buf[64];
 
@@ -141,11 +141,11 @@ int icq_ack(int s, char *login) {
   return (hydra_send(s, buf, 10, 0));
 }
 
-int start_icq(int sock, char *ip, int port, FILE * output, char *miscptr, FILE * fp) {
+int32_t start_icq(int32_t sock, char *ip, int32_t port, FILE * output, char *miscptr, FILE * fp) {
   unsigned char buf[1024];
   char *login, *pass;
   char *empty = "";
-  int i, r;
+  int32_t i, r;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     return 2;
@@ -153,7 +153,7 @@ int start_icq(int sock, char *ip, int port, FILE * output, char *miscptr, FILE *
     pass = empty;
 
   for (i = 0; login[i]; i++)
-    if (!isdigit((int) login[i])) {
+    if (!isdigit((int32_t) login[i])) {
       fprintf(stderr, "[ERROR] Invalid UIN %s\n, ignoring.", login);
       hydra_completed_pair();
       return 2;
@@ -168,7 +168,7 @@ int start_icq(int sock, char *ip, int port, FILE * output, char *miscptr, FILE *
 
     if (r < 0) {
       if (verbose)
-        fprintf(stderr, "[ERROR] Process %d: Can not connect [unreachable]\n", (int) getpid());
+        fprintf(stderr, "[ERROR] Process %d: Can not connect [unreachable]\n", (int32_t) getpid());
       return 3;
     }
 
@@ -196,9 +196,9 @@ int start_icq(int sock, char *ip, int port, FILE * output, char *miscptr, FILE *
   return 1;
 }
 
-void service_icq(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_ICQ;
+void service_icq(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_ICQ;
 
   if (port)
     myport = port;
@@ -221,7 +221,7 @@ void service_icq(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
         sock = hydra_disconnect(sock);
       sock = hydra_connect_udp(ip, myport);
       if (sock < 0) {
-        if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+        if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       next_run = 2;
@@ -241,7 +241,7 @@ void service_icq(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
   }
 }
 
-int service_icq_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_icq_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

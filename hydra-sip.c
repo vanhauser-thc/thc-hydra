@@ -1,4 +1,3 @@
-
 /* simple sip digest auth (md5) module 2009/02/19 
  * written by gh0st 2005
  * modified by Jean-Baptiste Aviat <jba [at] hsc [dot] `french tld`> - should
@@ -13,30 +12,41 @@ void dummy_sip() {
 }
 #else
 
+#ifdef __sun
+  #include <sys/int_types.h>
+#elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX)
+  #include <inttypes.h>
+#else
+  #include <stdint.h>
+#endif
 #include "sasl.h"
 #include "hydra-mod.h"
 
-extern int hydra_data_ready_timed(int socket, long sec, long usec);
+extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
 char external_ip_addr[17] = "";
-char *get_iface_ip(unsigned long int ip);
-int cseq;
+char *get_iface_ip(uint64_t ip);
+int32_t cseq;
 extern char *HYDRA_EXIT;
 
 
 #define SIP_MAX_BUF	1024
 
-void empty_register(char *buf, char *host, char *lhost, int port, int lport, char *user) {
+void empty_register(char *buf, char *host, char *lhost, int32_t port, int32_t lport, char *user) {
   memset(buf, 0, SIP_MAX_BUF);
   snprintf(buf, SIP_MAX_BUF,
            "REGISTER sip:%s SIP/2.0\r\n"
            "Via: SIP/2.0/UDP %s:%i\r\n"
            "From: <sip:%s@%s>\r\n"
-           "To: <sip:%s@%s>\r\n" "Call-ID: 1337@%s\r\n" "CSeq: %i REGISTER\r\n" "Content-Length: 0\r\n\r\n", host, lhost, lport, user, host, user, host, host, cseq);
+           "To: <sip:%s@%s>\r\n"
+           "Call-ID: 1337@%s\r\n"
+           "CSeq: %i REGISTER\r\n"
+           "Content-Length: 0\r\n\r\n",
+           host, lhost, lport, user, host, user, host, host, cseq);
 }
 
-int get_sip_code(char *buf) {
-  int code;
+int32_t get_sip_code(char *buf) {
+  int32_t code;
   char tmpbuf[SIP_MAX_BUF], word[SIP_MAX_BUF];
 
   if (sscanf(buf, "%s %i %s", tmpbuf, &code, word) != 3)
@@ -44,13 +54,13 @@ int get_sip_code(char *buf) {
   return code;
 }
 
-int start_sip(int s, char *ip, char *lip, int port, int lport, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_sip(int32_t s, char *ip, char *lip, int32_t port, int32_t lport, unsigned char options, char *miscptr, FILE * fp) {
   char *login, *pass, *host, buffer[SIP_MAX_BUF];
-  int i;
+  int32_t i;
   char buf[SIP_MAX_BUF];
 
   if (strlen(login = hydra_get_next_login()) == 0)
-    login = NULL;
+    return 3;
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = NULL;
 
@@ -67,8 +77,8 @@ int start_sip(int s, char *ip, char *lip, int port, int lport, unsigned char opt
     return 3;
   }
 
-  int has_sip_cred = 0;
-  int try = 0;
+  int32_t has_sip_cred = 0;
+  int32_t try = 0;
 
   /* We have to check many times because server may begin to send "100 Trying"
    * before "401 Unauthorized" */
@@ -84,7 +94,7 @@ int start_sip(int s, char *ip, char *lip, int port, int lport, unsigned char opt
       }
       if (strncmp(buf, "SIP/2.0 606", 11) == 0) {
         char *ptr = NULL;
-        int i = 0;
+        int32_t i = 0;
 
         // if we already tried to connect, exit
         if (external_ip_addr[0]) {
@@ -146,8 +156,8 @@ int start_sip(int s, char *ip, char *lip, int port, int lport, unsigned char opt
     return 3;
   }
   try = 0;
-  int has_resp = 0;
-  int sip_code = 0;
+  int32_t has_resp = 0;
+  int32_t sip_code = 0;
 
   while (try < 2 && !has_resp) {
     try++;
@@ -176,11 +186,11 @@ int start_sip(int s, char *ip, char *lip, int port, int lport, unsigned char opt
   return 1;
 }
 
-void service_sip(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_SIP, mysslport = PORT_SIP_SSL;
+void service_sip(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_SIP, mysslport = PORT_SIP_SSL;
 
-  char *lip = get_iface_ip((int) *(&ip[1]));
+  char *lip = get_iface_ip((int32_t) *(&ip[1]));
 
   hydra_register_socket(sp);
 
@@ -193,7 +203,7 @@ void service_sip(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     run = 3;
 
-  int lport = 0;
+  int32_t lport = 0;
 
   while (1) {
     switch (run) {
@@ -218,7 +228,7 @@ void service_sip(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
 
         if (sock < 0) {
           if (verbose || debug)
-            hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+            hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
           free(lip);
           hydra_child_exit(1);
         }
@@ -246,8 +256,8 @@ void service_sip(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
   }
 }
 
-char *get_iface_ip(unsigned long int ip) {
-  int sfd;
+char *get_iface_ip(uint64_t ip) {
+  int32_t sfd;
 
   sfd = socket(AF_INET, SOCK_DGRAM, 0);
 
@@ -263,7 +273,7 @@ char *get_iface_ip(unsigned long int ip) {
     return NULL;
   }
   struct sockaddr_in *local = malloc(sizeof(struct sockaddr_in));
-  int size = sizeof(struct sockaddr_in);
+  int32_t size = sizeof(struct sockaddr_in);
 
   if (getsockname(sfd, (void *) local, (socklen_t *) & size)) {
     perror("getsockname");
@@ -289,7 +299,7 @@ char *get_iface_ip(unsigned long int ip) {
 
 #endif
 
-int service_sip_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_sip_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

@@ -10,10 +10,10 @@ extern char *HYDRA_EXIT;
 //RAdmin 2.x
 
 struct rmessage {
-  char magic; //Indicates version, probably?
-  unsigned int length; //Total message size of data.
-  unsigned int checksum; //Checksum from type to end of data.
-  char type; //Command type, table below.
+  uint8_t magic; //Indicates version, probably?
+  uint32_t length; //Total message size of data.
+  uint32_t checksum; //Checksum from type to end of data.
+  uint8_t type; //Command type, table below.
   unsigned char data[32]; //data to be sent.
 };
 
@@ -24,23 +24,23 @@ struct rmessage {
  * [01][00000021][0f43d461] sum([1b6e779a f37189bb c1b22982 c80d1f4d 66678ff9 4b10f0ce eabff6e8 f4fb8338 3b] + zeropad(3)])
  * Sum: is 0f43d461 (big endian)
  */
-unsigned int checksum(struct rmessage *msg) {
-  int blen;
-  unsigned char *stream;
-  unsigned int sum;
+uint32_t checksum(struct rmessage *msg) {
+  int32_t blen;
+  uint8_t *stream;
+  uint32_t sum;
   blen = msg->length; //Get the real length.
   blen += (4 - (blen % 4));
 
   //Allocate a worksapce.
-  stream = calloc(blen, sizeof(unsigned char));
-  memcpy(stream, &msg->type, sizeof(unsigned char));
+  stream = calloc(blen, sizeof(uint8_t));
+  memcpy(stream, &msg->type, sizeof(uint8_t));
   memcpy(stream+1, msg->data, blen-1);
 
   sum = 0;
-  for(blen -= sizeof(unsigned int); blen > 0; blen -= sizeof(unsigned int)) {
-    sum += *(unsigned int *)(stream + blen);
+  for(blen -= sizeof(uint32_t); blen > 0; blen -= sizeof(uint32_t)) {
+    sum += *(uint32_t *)(stream + blen);
   }
-  sum += *(unsigned int *)stream;
+  sum += *(uint32_t *)stream;
 
   //Free the workspace.
   free(stream);
@@ -127,10 +127,10 @@ struct rmessage *buffer2message(char *buffer) {
   //Start parsing...
   msg->magic = buffer[0];
   buffer += sizeof(char);
-  msg->length = ntohl(*((unsigned int *)(buffer)));
-  buffer += sizeof(unsigned int);
-  msg->checksum = ntohl(*((unsigned int *)(buffer)));
-  buffer += sizeof(unsigned int);
+  msg->length = ntohl(*((uint32_t *)(buffer)));
+  buffer += sizeof(uint32_t);
+  msg->checksum = ntohl(*((uint32_t *)(buffer)));
+  buffer += sizeof(uint32_t);
   msg->type = buffer[0];
   buffer += sizeof(char);
 
@@ -164,23 +164,23 @@ struct rmessage *buffer2message(char *buffer) {
 }
 
 
-int start_radmin2(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_radmin2(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   return 0;
 }
 
-void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+void service_radmin2(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
 #ifdef HAVE_GCRYPT
-  int sock = -1;
-  int index;
-  int bytecount;
+  int32_t sock = -1;
+  int32_t index;
+  int32_t bytecount;
   char *request;
   struct rmessage *msg;
-  int myport = PORT_RADMIN2;
+  int32_t myport = PORT_RADMIN2;
   char buffer[42];
   char password[101];
-  unsigned char rawkey[16];
-  unsigned char *IV = "\xFE\xDC\xBA\x98\x76\x54\x32\x10\xA3\x9D\x4A\x18\xF8\x5B\x4A\x52";
-  unsigned char encrypted[32];
+  uint8_t rawkey[16];
+  uint8_t *IV = "\xFE\xDC\xBA\x98\x76\x54\x32\x10\xA3\x9D\x4A\x18\xF8\x5B\x4A\x52";
+  uint8_t encrypted[32];
   gcry_error_t err;
   gcry_cipher_hd_t cipher;
   gcry_md_hd_t md;
@@ -347,7 +347,7 @@ void service_radmin2(char *ip, int sp, unsigned char options, char *miscptr, FIL
 #endif
 }
 
-int service_radmin2_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_radmin2_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

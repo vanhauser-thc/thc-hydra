@@ -33,7 +33,7 @@ struct pr_auth_args {
 
 /* Lets start ... */
 
-int start_pcnfs(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_pcnfs(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass, buffer[LEN_HDR_RPC + LEN_AUTH_UNIX + LEN_HDR_PCN_AUTH];
   char *ptr, *pkt = buffer;
@@ -136,8 +136,8 @@ int start_pcnfs(int s, char *ip, int port, unsigned char options, char *miscptr,
   return 1;
 }
 
-void service_pcnfs(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
+void service_pcnfs(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
 
   hydra_register_socket(sp);
   if (port == 0) {
@@ -161,7 +161,7 @@ void service_pcnfs(char *ip, int sp, unsigned char options, char *miscptr, FILE 
           sock = hydra_disconnect(sock);
 //        usleepn(275);
         if ((sock = hydra_connect_udp(ip, port)) < 0) {
-          if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
           hydra_child_exit(1);
         }
         next_run = 2;
@@ -183,7 +183,7 @@ void service_pcnfs(char *ip, int sp, unsigned char options, char *miscptr, FILE 
   }
 }
 
-int service_pcnfs_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_pcnfs_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

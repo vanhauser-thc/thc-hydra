@@ -549,6 +549,26 @@
 				  <property name="label" translatable="yes">xmpp</property>
 				</widget>
 			      </child>
+			      <child>
+				<widget class="GtkListItem" id="listitem2120">
+				  <property name="visible">True</property>
+				  <property name="can_focus">True</property>
+				  <property name="label" translatable="yes">adam6500</property>
+				</widget>
+			      </child>
+			      <child>
+				<widget class="GtkListItem" id="listitem2121">
+				  <property name="visible">True</property>
+				  <property name="can_focus">True</property>
+				  <property name="label" translatable="yes">rpcap</property>
+				</widget>
+			      </child>
+				<widget class="GtkListItem" id="listitem2122">
+				  <property name="visible">True</property>
+				  <property name="can_focus">True</property>
+				  <property name="label" translatable="yes">rtsp</property>
+				</widget>
+			      </child>
 
 			    </widget>
 			  </child>

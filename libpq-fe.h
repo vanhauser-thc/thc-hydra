@@ -119,7 +119,7 @@ extern "C" {
  */
   typedef struct pgNotify {
     char *relname;              /* notification condition name */
-    int be_pid;                 /* process ID of server process */
+    int32_t be_pid;                 /* process ID of server process */
     char *extra;                /* notification parameter */
   } PGnotify;
 
@@ -164,7 +164,7 @@ extern "C" {
                                  * Display entered value as is "*"
                                  * Password field - hide value "D"      Debug
                                  * option - don't show by default */
-    int dispsize;               /* Field size in characters for dialog  */
+    int32_t dispsize;               /* Field size in characters for dialog  */
   } PQconninfoOption;
 
 /* ----------------
@@ -172,11 +172,11 @@ extern "C" {
  * ----------------
  */
   typedef struct {
-    int len;
-    int isint;
+    int32_t len;
+    int32_t isint;
     union {
-      int *ptr;                 /* can't use void (dec compiler barfs)   */
-      int integer;
+      int32_t *ptr;                 /* can't use void (dec compiler barfs)   */
+      int32_t integer;
     } u;
   } PQArgBlock;
 
@@ -215,14 +215,14 @@ extern "C" {
  */
 
 /* Asynchronous (non-blocking) */
-  extern int PQresetStart(PGconn * conn);
+  extern int32_t PQresetStart(PGconn * conn);
   extern PostgresPollingStatusType PQresetPoll(PGconn * conn);
 
 /* Synchronous (blocking) */
   extern void PQreset(PGconn * conn);
 
 /* issue a cancel request */
-  extern int PQrequestCancel(PGconn * conn);
+  extern int32_t PQrequestCancel(PGconn * conn);
 
 /* Accessor functions for PGconn objects */
   extern char *PQdb(const PGconn * conn);
@@ -235,12 +235,12 @@ extern "C" {
   extern ConnStatusType PQstatus(const PGconn * conn);
   extern PGTransactionStatusType PQtransactionStatus(const PGconn * conn);
   extern const char *PQparameterStatus(const PGconn * conn, const char *paramName);
-  extern int PQprotocolVersion(const PGconn * conn);
+  extern int32_t PQprotocolVersion(const PGconn * conn);
   extern char *PQerrorMessage(const PGconn * conn);
-  extern int PQsocket(const PGconn * conn);
-  extern int PQbackendPID(const PGconn * conn);
-  extern int PQclientEncoding(const PGconn * conn);
-  extern int PQsetClientEncoding(PGconn * conn, const char *encoding);
+  extern int32_t PQsocket(const PGconn * conn);
+  extern int32_t PQbackendPID(const PGconn * conn);
+  extern int32_t PQclientEncoding(const PGconn * conn);
+  extern int32_t PQsetClientEncoding(PGconn * conn, const char *encoding);
 
 #ifdef USE_SSL
 
@@ -265,74 +265,74 @@ extern "C" {
   extern PGresult *PQexec(PGconn * conn, const char *query);
   extern PGresult *PQexecParams(PGconn * conn,
                                 const char *command,
-                                int nParams, const Oid * paramTypes, const char *const *paramValues, const int *paramLengths, const int *paramFormats, int resultFormat);
+                                int32_t nParams, const Oid * paramTypes, const char *const *paramValues, const int32_t *paramLengths, const int32_t *paramFormats, int32_t resultFormat);
   extern PGresult *PQexecPrepared(PGconn * conn,
-                                  const char *stmtName, int nParams, const char *const *paramValues, const int *paramLengths, const int *paramFormats, int resultFormat);
+                                  const char *stmtName, int32_t nParams, const char *const *paramValues, const int32_t *paramLengths, const int32_t *paramFormats, int32_t resultFormat);
 
 /* Interface for multiple-result or asynchronous queries */
-  extern int PQsendQuery(PGconn * conn, const char *query);
-  extern int PQsendQueryParams(PGconn * conn,
+  extern int32_t PQsendQuery(PGconn * conn, const char *query);
+  extern int32_t PQsendQueryParams(PGconn * conn,
                                const char *command,
-                               int nParams, const Oid * paramTypes, const char *const *paramValues, const int *paramLengths, const int *paramFormats, int resultFormat);
-  extern int PQsendQueryPrepared(PGconn * conn,
-                                 const char *stmtName, int nParams, const char *const *paramValues, const int *paramLengths, const int *paramFormats, int resultFormat);
+                               int32_t nParams, const Oid * paramTypes, const char *const *paramValues, const int32_t *paramLengths, const int32_t *paramFormats, int32_t resultFormat);
+  extern int32_t PQsendQueryPrepared(PGconn * conn,
+                                 const char *stmtName, int32_t nParams, const char *const *paramValues, const int32_t *paramLengths, const int32_t *paramFormats, int32_t resultFormat);
   extern PGresult *PQgetResult(PGconn * conn);
 
 /* Routines for managing an asynchronous query */
-  extern int PQisBusy(PGconn * conn);
-  extern int PQconsumeInput(PGconn * conn);
+  extern int32_t PQisBusy(PGconn * conn);
+  extern int32_t PQconsumeInput(PGconn * conn);
 
 /* LISTEN/NOTIFY support */
   extern PGnotify *PQnotifies(PGconn * conn);
 
 /* Routines for copy in/out */
-  extern int PQputCopyData(PGconn * conn, const char *buffer, int nbytes);
-  extern int PQputCopyEnd(PGconn * conn, const char *errormsg);
-  extern int PQgetCopyData(PGconn * conn, char **buffer, int async);
+  extern int32_t PQputCopyData(PGconn * conn, const char *buffer, int32_t nbytes);
+  extern int32_t PQputCopyEnd(PGconn * conn, const char *errormsg);
+  extern int32_t PQgetCopyData(PGconn * conn, char **buffer, int32_t async);
 
 /* Deprecated routines for copy in/out */
-  extern int PQgetline(PGconn * conn, char *string, int length);
-  extern int PQputline(PGconn * conn, const char *string);
-  extern int PQgetlineAsync(PGconn * conn, char *buffer, int bufsize);
-  extern int PQputnbytes(PGconn * conn, const char *buffer, int nbytes);
-  extern int PQendcopy(PGconn * conn);
+  extern int32_t PQgetline(PGconn * conn, char *string, int32_t length);
+  extern int32_t PQputline(PGconn * conn, const char *string);
+  extern int32_t PQgetlineAsync(PGconn * conn, char *buffer, int32_t bufsize);
+  extern int32_t PQputnbytes(PGconn * conn, const char *buffer, int32_t nbytes);
+  extern int32_t PQendcopy(PGconn * conn);
 
 /* Set blocking/nonblocking connection to the backend */
-  extern int PQsetnonblocking(PGconn * conn, int arg);
-  extern int PQisnonblocking(const PGconn * conn);
+  extern int32_t PQsetnonblocking(PGconn * conn, int32_t arg);
+  extern int32_t PQisnonblocking(const PGconn * conn);
 
 /* Force the write buffer to be written (or at least try) */
-  extern int PQflush(PGconn * conn);
+  extern int32_t PQflush(PGconn * conn);
 
 /*
  * "Fast path" interface --- not really recommended for application
  * use
  */
-  extern PGresult *PQfn(PGconn * conn, int fnid, int *result_buf, int *result_len, int result_is_int, const PQArgBlock * args, int nargs);
+  extern PGresult *PQfn(PGconn * conn, int32_t fnid, int32_t *result_buf, int32_t *result_len, int32_t result_is_int, const PQArgBlock * args, int32_t nargs);
 
 /* Accessor functions for PGresult objects */
   extern ExecStatusType PQresultStatus(const PGresult * res);
   extern char *PQresStatus(ExecStatusType status);
   extern char *PQresultErrorMessage(const PGresult * res);
-  extern char *PQresultErrorField(const PGresult * res, int fieldcode);
-  extern int PQntuples(const PGresult * res);
-  extern int PQnfields(const PGresult * res);
-  extern int PQbinaryTuples(const PGresult * res);
-  extern char *PQfname(const PGresult * res, int field_num);
-  extern int PQfnumber(const PGresult * res, const char *field_name);
-  extern Oid PQftable(const PGresult * res, int field_num);
-  extern int PQftablecol(const PGresult * res, int field_num);
-  extern int PQfformat(const PGresult * res, int field_num);
-  extern Oid PQftype(const PGresult * res, int field_num);
-  extern int PQfsize(const PGresult * res, int field_num);
-  extern int PQfmod(const PGresult * res, int field_num);
+  extern char *PQresultErrorField(const PGresult * res, int32_t fieldcode);
+  extern int32_t PQntuples(const PGresult * res);
+  extern int32_t PQnfields(const PGresult * res);
+  extern int32_t PQbinaryTuples(const PGresult * res);
+  extern char *PQfname(const PGresult * res, int32_t field_num);
+  extern int32_t PQfnumber(const PGresult * res, const char *field_name);
+  extern Oid PQftable(const PGresult * res, int32_t field_num);
+  extern int32_t PQftablecol(const PGresult * res, int32_t field_num);
+  extern int32_t PQfformat(const PGresult * res, int32_t field_num);
+  extern Oid PQftype(const PGresult * res, int32_t field_num);
+  extern int32_t PQfsize(const PGresult * res, int32_t field_num);
+  extern int32_t PQfmod(const PGresult * res, int32_t field_num);
   extern char *PQcmdStatus(PGresult * res);
   extern char *PQoidStatus(const PGresult * res);       /* old and ugly */
   extern Oid PQoidValue(const PGresult * res);  /* new and improved */
   extern char *PQcmdTuples(PGresult * res);
-  extern char *PQgetvalue(const PGresult * res, int tup_num, int field_num);
-  extern int PQgetlength(const PGresult * res, int tup_num, int field_num);
-  extern int PQgetisnull(const PGresult * res, int tup_num, int field_num);
+  extern char *PQgetvalue(const PGresult * res, int32_t tup_num, int32_t field_num);
+  extern int32_t PQgetlength(const PGresult * res, int32_t tup_num, int32_t field_num);
+  extern int32_t PQgetisnull(const PGresult * res, int32_t tup_num, int32_t field_num);
 
 /* Delete a PGresult */
   extern void PQclear(PGresult * res);
@@ -369,40 +369,40 @@ extern "C" {
  */
   extern void
     PQdisplayTuples(const PGresult * res, FILE * fp,    /* where to send the output */
-                    int fillAlign,      /* pad the fields with spaces */
+                    int32_t fillAlign,      /* pad the fields with spaces */
                     const char *fieldSep,       /* field separator */
-                    int printHeader,    /* display headers? */
-                    int quiet);
+                    int32_t printHeader,    /* display headers? */
+                    int32_t quiet);
 
   extern void
     PQprintTuples(const PGresult * res, FILE * fout,    /* output stream */
-                  int printAttName,     /* print attribute names */
-                  int terseOutput,      /* delimiter bars */
-                  int width);   /* width of column, if 0, use variable
+                  int32_t printAttName,     /* print attribute names */
+                  int32_t terseOutput,      /* delimiter bars */
+                  int32_t width);   /* width of column, if 0, use variable
                                  * width */
 
 
 /* === in fe-lobj.c === */
 
 /* Large-object access routines */
-  extern int lo_open(PGconn * conn, Oid lobjId, int mode);
-  extern int lo_close(PGconn * conn, int fd);
-  extern int lo_read(PGconn * conn, int fd, char *buf, size_t len);
-  extern int lo_write(PGconn * conn, int fd, char *buf, size_t len);
-  extern int lo_lseek(PGconn * conn, int fd, int offset, int whence);
-  extern Oid lo_creat(PGconn * conn, int mode);
-  extern int lo_tell(PGconn * conn, int fd);
-  extern int lo_unlink(PGconn * conn, Oid lobjId);
+  extern int32_t lo_open(PGconn * conn, Oid lobjId, int32_t mode);
+  extern int32_t lo_close(PGconn * conn, int32_t fd);
+  extern int32_t lo_read(PGconn * conn, int32_t fd, char *buf, size_t len);
+  extern int32_t lo_write(PGconn * conn, int32_t fd, char *buf, size_t len);
+  extern int32_t lo_lseek(PGconn * conn, int32_t fd, int32_t offset, int32_t whence);
+  extern Oid lo_creat(PGconn * conn, int32_t mode);
+  extern int32_t lo_tell(PGconn * conn, int32_t fd);
+  extern int32_t lo_unlink(PGconn * conn, Oid lobjId);
   extern Oid lo_import(PGconn * conn, const char *filename);
-  extern int lo_export(PGconn * conn, Oid lobjId, const char *filename);
+  extern int32_t lo_export(PGconn * conn, Oid lobjId, const char *filename);
 
 /* === in fe-misc.c === */
 
 /* Determine length of multibyte encoded char at *s */
-  extern int PQmblen(const unsigned char *s, int encoding);
+  extern int32_t PQmblen(const unsigned char *s, int32_t encoding);
 
 /* Get encoding id from environment variable PGCLIENTENCODING */
-  extern int PQenv2encoding(void);
+  extern int32_t PQenv2encoding(void);
 
 #ifdef __cplusplus
 }

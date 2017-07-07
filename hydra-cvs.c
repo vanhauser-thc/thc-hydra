@@ -1,14 +1,14 @@
 #include "hydra-mod.h"
 
-extern int hydra_data_ready_timed(int socket, long sec, long usec);
+extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
 extern char *HYDRA_EXIT;
 char *buf;
 
-int start_cvs(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_cvs(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass, buffer[1024], pass2[513];
-  int i;
+  int32_t i;
   char *directory = miscptr;
 
 /* evil cvs encryption sheme... 
@@ -85,9 +85,9 @@ int start_cvs(int s, char *ip, int port, unsigned char options, char *miscptr, F
   return 3;
 }
 
-void service_cvs(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_CVS, mysslport = PORT_CVS_SSL;
+void service_cvs(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_CVS, mysslport = PORT_CVS_SSL;
 
   hydra_register_socket(sp);
 
@@ -118,7 +118,7 @@ void service_cvs(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
       }
 
       if (sock < 0) {
-        hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+        hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
       next_run = start_cvs(sock, ip, port, options, miscptr, fp);
@@ -136,7 +136,7 @@ void service_cvs(char *ip, int sp, unsigned char options, char *miscptr, FILE * 
   }
 }
 
-int service_cvs_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_cvs_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
@@ -148,4 +148,8 @@ int service_cvs_init(char *ip, int sp, unsigned char options, char *miscptr, FIL
   //   -1  error, hydra will exit, so print a good error message here
 
   return 0;
+}
+
+void usage_cvs(const char* service) {
+  printf("Module cvs is optionally taking the repository name to attack, default is \"/root\"\n\n");
 }

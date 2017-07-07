@@ -30,7 +30,7 @@
 #include <windows.h>
 #include <winsock.h>
 #include <time.h>
-#define DIR int
+#define DIR int32_t
 #else
 #include <dirent.h>
 #include <sys/time.h>
@@ -142,7 +142,7 @@ typedef struct stream
 	unsigned char *p;
 	unsigned char *end;
 	unsigned char *data;
-	unsigned int size;
+	uint32_t size;
 
 	/* Offsets of various headers */
 	unsigned char *iso_hdr;
@@ -216,8 +216,8 @@ typedef unsigned char uint8;
 typedef signed char sint8;
 typedef unsigned short uint16;
 typedef signed short sint16;
-typedef unsigned int uint32;
-typedef signed int sint32;
+typedef uint32_t uint32;
+typedef int32_t sint32;
 
 typedef struct _BOUNDS
 {
@@ -579,14 +579,14 @@ enum RDP_UPDATE_PDU_TYPE
 #define RDP_INPUT_SCANCODE 4
 
 /* iso.c */
-STREAM iso_init(int length);
+STREAM iso_init(int32_t length);
 void iso_send(STREAM s);
 STREAM iso_recv(uint8 * rdpver);
 BOOL iso_connect(char *server, char *username, BOOL reconnect);
 void iso_disconnect(void);
 void iso_reset_state(void);
 /* mcs.c */
-STREAM mcs_init(int length);
+STREAM mcs_init(int32_t length);
 void mcs_send_to_channel(STREAM s, uint16 channel);
 void mcs_send(STREAM s);
 STREAM mcs_recv(uint16 * channel, uint8 * rdpver);
@@ -598,14 +598,14 @@ void process_orders(STREAM s, uint16 num_orders);
 void reset_order_state(void);
 /* rdesktop.c */
 void generate_random(uint8 * random);
-void *xmalloc(int size);
+void *xmalloc(int32_t size);
 void exit_if_null(void *ptr);
 char *xstrdup(const char *s);
 void *xrealloc(void *oldmem, size_t size);
 void error(char *format, ...);
 void warning(char *format, ...);
 void unimpl(char *format, ...);
-void hexdump(unsigned char *p, unsigned int len);
+void hexdump(unsigned char *p, uint32_t len);
 /* rdp.c */
 static void process_demand_active(STREAM s);
 static BOOL process_data_pdu(STREAM s, uint32 * ext_disc_reason);
@@ -613,10 +613,10 @@ static BOOL process_data_pdu(STREAM s, uint32 * ext_disc_reason);
 void sec_hash_48(uint8 * out, uint8 * in, uint8 * salt1, uint8 * salt2, uint8 salt);
 void sec_hash_16(uint8 * out, uint8 * in, uint8 * salt1, uint8 * salt2);
 void buf_out_uint32(uint8 * buffer, uint32 value);
-void sec_sign(uint8 * signature, int siglen, uint8 * session_key, int keylen, uint8 * data,
-	      int datalen);
-void sec_decrypt(uint8 * data, int length);
-STREAM sec_init(uint32 flags, int maxlen);
+void sec_sign(uint8 * signature, int32_t siglen, uint8 * session_key, int32_t keylen, uint8 * data,
+	      int32_t datalen);
+void sec_decrypt(uint8 * data, int32_t length);
+STREAM sec_init(uint32 flags, int32_t maxlen);
 void sec_send_to_channel(STREAM s, uint32 flags, uint16 channel);
 void sec_send(STREAM s, uint32 flags);
 void sec_process_mcs_data(STREAM s);

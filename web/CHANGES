@@ -1,11 +1,37 @@
 Changelog for hydra
 -------------------
 
-Release 8.4-dev
+Release 8.6-dev
+* ...
+
+
+Release 8.5
+* New command line option:
+   -b : format option for -o output file (json only so far, happy for patches supporting others :) ) - thanks to veggiespam for the patch
+* ./configure now honors the CC enviroment variable if present
+* Fix for the restore file crash on some x64 platforms (finally! thanks to lukas227!)
+* Changed the format of the restore file to detect cross platform copies
+* Fixed a bug in the NCP module
+* Favor strrchr() over rindex()
+* Added refactoring patch by diadlo
+* Updated man page with missing command line options
+
+
+Release 8.4
+! Reports came in that the rdp module is not working reliable sometimes, most likely against new Windows versions. please test, report and if possible send a fix
 * Proxy support re-implemented:
   - HYDRA_PROXY[_HTTP] environment can be a text file with up to 64 entries
   - HYDRA_PROXY_AUTH was deprecated, set login/password in HTTP_PROXY[_HTTP]
-* New command line option -y which disables -x 1aA interpretation, thanks to crondaemon for the patch
+* New protocol: adam6500 - this one is work in progress, please test and report
+* New protocol: rpcap - thanks to Petar Kaleychev <petar.kaleychev@gmail.com>
+* New command line options:
+   -y : disables -x 1aA interpretation, thanks to crondaemon for the patch
+   -I : ignore an existing hydra.restore file (dont wait for 10 seconds)
+* hydra-svn: works now with the current libsvn version
+* hydra-ssh: initial check for password auth support now uses login supplied
+* Fixed dpl4hydra to be able to update from the web again
+* Fixed crash when -U was used without any service (thanks to thecarterb for reporting)
+* Updated default password lists
 * The protocols vnc, xmpp, telnet, imap, nntp and pcanywhere got accidentially long sleep commands due a patch in 8.2, fixed
 * Added special error message for clueless users :)
 
@@ -19,7 +45,7 @@ Release 8.3
 
 Release 8.2
 * Added RTSP module, thanks to jjavi89 for supplying!
-* Added patch for ssh that fixes hyra stopping to connect, thanks to ShantonRU for the patch
+* Added patch for ssh that fixes hydra stopping to connect, thanks to ShantonRU for the patch
 * Added new -O option to hydra to support SSL servers that do not suport TLS
 * Added xhydra gtk patche by Petar Kaleychev to support modules that do not use usernames
 * Added patch to redis for initial service checking by Petar Kaleychev - thanks a lot!

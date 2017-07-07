@@ -2,11 +2,11 @@
 #include "sasl.h"
 
 extern char *HYDRA_EXIT;
-int smtp_auth_mechanism = AUTH_LOGIN;
+int32_t smtp_auth_mechanism = AUTH_LOGIN;
 
-char *smtp_read_server_capacity(int sock) {
+char *smtp_read_server_capacity(int32_t sock) {
   char *ptr = NULL;
-  int resp = 0;
+  int32_t resp = 0;
   char *buf = NULL;
 
   do {
@@ -14,20 +14,20 @@ char *smtp_read_server_capacity(int sock) {
       free(buf);
     ptr = buf = hydra_receive_line(sock);
     if (buf != NULL) {
-      if (isdigit((int) buf[0]) && buf[3] == ' ')
+      if (isdigit((int32_t) buf[0]) && buf[3] == ' ')
         resp = 1;
       else {
         if (buf[strlen(buf) - 1] == '\n')
           buf[strlen(buf) - 1] = 0;
         if (buf[strlen(buf) - 1] == '\r')
           buf[strlen(buf) - 1] = 0;
-#ifdef NO_RINDEX
-        if ((ptr = strrchr(buf, '\n')) != NULL) {
-#else
+#ifdef NO_STRRCHR
         if ((ptr = rindex(buf, '\n')) != NULL) {
+#else
+        if ((ptr = strrchr(buf, '\n')) != NULL) {
 #endif
           ptr++;
-          if (isdigit((int) *ptr) && *(ptr + 3) == ' ')
+          if (isdigit((int32_t) *ptr) && *(ptr + 3) == ' ')
             resp = 1;
         }
       }
@@ -36,7 +36,7 @@ char *smtp_read_server_capacity(int sock) {
   return buf;
 }
 
-int start_smtp(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_smtp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass, buffer[500], buffer2[500], *fooptr, *buf;
 
@@ -78,7 +78,7 @@ int start_smtp(int s, char *ip, int port, unsigned char options, char *miscptr, 
 
 #ifdef LIBOPENSSL
   case AUTH_CRAMMD5:{
-      int rc = 0;
+      int32_t rc = 0;
       char *preplogin;
 
       rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
@@ -254,9 +254,9 @@ int start_smtp(int s, char *ip, int port, unsigned char options, char *miscptr, 
   return 2;
 }
 
-void service_smtp(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, next_run = 1, sock = -1, i = 0;
-  int myport = PORT_SMTP, mysslport = PORT_SMTP_SSL, disable_tls = 1;
+void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1, i = 0;
+  int32_t myport = PORT_SMTP, mysslport = PORT_SMTP_SSL, disable_tls = 1;
   char *buf;
   char *buffer1 = "EHLO hydra\r\n";
   char *buffer2 = "HELO hydra\r\n";
@@ -282,7 +282,7 @@ void service_smtp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
         hydra_child_exit(1);
       }
 
@@ -310,7 +310,7 @@ void service_smtp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
 
       if ((miscptr != NULL) && (strlen(miscptr) > 0)) {
         for (i = 0; i < strlen(miscptr); i++)
-          miscptr[i] = (char) toupper((int) miscptr[i]);
+          miscptr[i] = (char) toupper((int32_t) miscptr[i]);
 
         if (strstr(miscptr, "TLS") || strstr(miscptr, "SSL") || strstr(miscptr, "STARTTLS")) {
           disable_tls = 0;
@@ -443,7 +443,7 @@ void service_smtp(char *ip, int sp, unsigned char options, char *miscptr, FILE *
   }
 }
 
-int service_smtp_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_smtp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
@@ -455,4 +455,10 @@ int service_smtp_init(char *ip, int sp, unsigned char options, char *miscptr, FI
   //   -1  error, hydra will exit, so print a good error message here
 
   return 0;
+}
+
+void usage_smtp(const char* service) {
+  printf("Module smtp is optionally taking one authentication type of:\n"
+         "  LOGIN (default), PLAIN, CRAM-MD5, DIGEST-MD5, NTLM\n\n"
+         "Additionally TLS encryption via STARTTLS can be enforced with the TLS option.\n\n" "Example: smtp://target/TLS:PLAIN\n");
 }

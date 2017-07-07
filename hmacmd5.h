@@ -29,6 +29,13 @@
 
 */
 
+#ifdef __sun
+  #include <sys/int_types.h>
+#elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX)
+  #include <inttypes.h>
+#else
+  #include <stdint.h>
+#endif
 #include <openssl/md5.h>
 #ifndef _HMAC_MD5_H
 
@@ -41,10 +48,10 @@ typedef struct {
 #endif /* _HMAC_MD5_H */
 
 
-void hmac_md5_init_rfc2104(const unsigned char *key, int key_len, HMACMD5Context *ctx);
-void hmac_md5_init_limK_to_64(const unsigned char* key, int key_len,HMACMD5Context *ctx);
-void hmac_md5_update(const unsigned char *text, int text_len, HMACMD5Context *ctx);
+void hmac_md5_init_rfc2104(const unsigned char *key, int32_t key_len, HMACMD5Context *ctx);
+void hmac_md5_init_limK_to_64(const unsigned char* key, int32_t key_len,HMACMD5Context *ctx);
+void hmac_md5_update(const unsigned char *text, int32_t text_len, HMACMD5Context *ctx);
 void hmac_md5_final(unsigned char *digest, HMACMD5Context *ctx);
-void hmac_md5( unsigned char key[16], unsigned char *data, int data_len, unsigned char *digest);
+void hmac_md5( unsigned char key[16], unsigned char *data, int32_t data_len, unsigned char *digest);
 
 

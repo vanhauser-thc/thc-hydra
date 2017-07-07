@@ -15,8 +15,12 @@ if [ "$1" = "-h" -o "$1" = "--help" ]; then
   echo "  --nostrip                  do not per default strip binaries before install"
   echo "  --debug                    show debug output to trace errors"
   echo "  --help                     this here"
+  echo
+  echo If the CC environment variable is set, this is used as the compiler for the configure tests. The default is \"gcc\" otherwise.
   exit 0
 fi
+
+test -z "$CC" && CC=gcc
 
 FHS=""
 SIXFOUR=""
@@ -983,37 +987,37 @@ fi
 
 echo "Checking for Android specialities ..."
 TMPC=comptest$$
-RINDEX=" not"
+STRRCHR=" not"
 echo '#include <stdio.h>' > $TMPC.c
 echo '#include <strings.h>' >> $TMPC.c
-echo "int main() { char *x = rindex(\"test\", 'e'); if (x == NULL) return 0; else return 1; }" >> $TMPC.c
-gcc -o $TMPC $TMPC.c > /dev/null 2>&1
-test -x $TMPC && RINDEX=""
+echo "int main() { char *x = strrchr(\"test\", 'e'); if (x == NULL) return 0; else return 1; }" >> $TMPC.c
+$CC -o $TMPC $TMPC.c > /dev/null 2>&1
+test -x $TMPC && STRRCHR=""
 rm -f $TMPC $TMPC.c
-echo "                                  ... rindex()$RINDEX found"
+echo "                                  ... strrchr()$STRRCHR found"
 if [ -n "$CRYPTO_PATH" ]; then
   RSA=" not"
   echo '#include <stdio.h>' > $TMPC.c
   echo '#include <openssl/rsa.h>' >> $TMPC.c
   echo "int main() { RSA *rsa = RSA_generate_key(1024, RSA_F4, NULL, NULL); if (rsa == NULL) return 0; else return 1; }" >> $TMPC.c
 #echo "int main() { RSA *rsa; RSA_generate_key_ex(rsa, 1024, 0, NULL); if (rsa == NULL) return 0; else return 1; }" >> $TMPC.c
-  gcc -o $TMPC $TMPC.c -lssl -lcrypto > /dev/null 2>&1
+  $CC -o $TMPC $TMPC.c -lssl -lcrypto > /dev/null 2>&1
   test -x $TMPC && RSA=""
   rm -f $TMPC $TMPC.c
   echo "                                  ... RSA_generate_key()$RSA found"
 fi
 
-echo "Checking for secure compile option support in gcc ..."
+echo "Checking for secure compile option support in $CC ..."
 GCCSEC="no"
 LDSEC="no"
 GCCSECOPT="-fstack-protector-all --param ssp-buffer-size=4 -D_FORTIFY_SOURCE=2"
 echo '#include <stdio.h>' > $TMPC.c
 echo 'int main() { printf(""); return 0; }' >> $TMPC.c
-gcc -pie -fPIE $GCCSEPOPT -o $TMPC $TMPC.c > /dev/null 2> $TMPC.c.err
+$CC -pie -fPIE $GCCSEPOPT -o $TMPC $TMPC.c > /dev/null 2> $TMPC.c.err
 test -x $TMPC && GCCSEC="yes"
 grep -q fPI $TMPC.c.err || GCCSECOPT="-pie -fPIE $GCCSECOPT"
 rm -f "$TMPC"
-gcc $GCCSECOPT -Wl,-z,now -Wl,-z,relro -o $TMPC $TMPC.c > /dev/null 2> $TMPC.c.err
+$CC $GCCSECOPT -Wl,-z,now -Wl,-z,relro -o $TMPC $TMPC.c > /dev/null 2> $TMPC.c.err
 test -x $TMPC && { LDSEC="yes" ; GCCSECOPT="$GCCSECOPT -Wl,-z,now -Wl,-z,relro" ; }
 rm -f $TMPC $TMPC.c $TMPC.c.err
 echo "                                                  Compiling... $GCCSEC"
@@ -1077,8 +1081,8 @@ fi
 if [ -n "$SSH_PATH" ]; then
     XDEFINES="$XDEFINES -DLIBSSH"
 fi
-if [ -n "$RINDEX" ]; then
-    XDEFINES="$XDEFINES -DNO_RINDEX"
+if [ -n "$STRRCHR" ]; then
+    XDEFINES="$XDEFINES -DNO_STRRCHR"
 fi
 if [ -n "$RSA" ]; then
     XDEFINES="$XDEFINES -DNO_RSA_LEGACY"
@@ -1244,6 +1248,10 @@ if [ "X" != "X$DEBUG" ]; then
    echo DEBUG: STRIP=$STRIP
 fi
 
+if [ "$SYSS" = "SunOS" ]; then
+   XLIBS="$XLIBS -lrt"
+fi
+
 echo "Writing Makefile.in ..."
 if [ "X" != "X$FHS" ]; then
   echo "MANDIR = /share/man/man1" >> Makefile.in
@@ -1287,7 +1295,7 @@ if [ "x$WINDRES" = "x" ]; then
   echo HYDRA_LOGO= >> Makefile
   echo PWI_LOGO= >> Makefile
 fi
-if [ "$GCCSEC" = "yes" ]; then
+if [ "$GCCSEC" = "yes" ] && [ "$SYSS" != "SunOS" ]; then
   echo "SEC=$GCCSECOPT" >> Makefile
 else
   echo "SEC=" >> Makefile

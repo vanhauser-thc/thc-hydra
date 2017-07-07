@@ -7,7 +7,7 @@
 extern char *HYDRA_EXIT;
 char *buf = NULL;
 
-int start_cisco(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_cisco(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *pass, buffer[300];
 
@@ -115,9 +115,9 @@ int start_cisco(int s, char *ip, int port, unsigned char options, char *miscptr,
   return 1;
 }
 
-void service_cisco(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
-  int run = 1, failc = 0, retry = 1, next_run = 1, sock = -1;
-  int myport = PORT_TELNET, mysslport = PORT_TELNET_SSL;
+void service_cisco(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+  int32_t run = 1, failc = 0, retry = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_TELNET, mysslport = PORT_TELNET_SSL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -128,7 +128,7 @@ void service_cisco(char *ip, int sp, unsigned char options, char *miscptr, FILE 
     case 1:                    /* connect and service init function */
       {
         unsigned char *buf2;
-        int f = 0;
+        int32_t f = 0;
 
         if (sock >= 0)
           sock = hydra_disconnect(sock);
@@ -147,7 +147,7 @@ void service_cisco(char *ip, int sp, unsigned char options, char *miscptr, FILE 
           port = mysslport;
         }
         if (sock < 0) {
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
           hydra_child_exit(1);
         }
         do {
@@ -159,11 +159,11 @@ void service_cisco(char *ip, int sp, unsigned char options, char *miscptr, FILE 
             if (failc < retry) {
               next_run = 1;
               failc++;
-              if (quiet != 1) hydra_report(stderr, "[ERROR] Child with pid %d was disconnected - retrying (%d of %d retries)\n", (int) getpid(), failc, retry);
+              if (quiet != 1) hydra_report(stderr, "[ERROR] Child with pid %d was disconnected - retrying (%d of %d retries)\n", (int32_t) getpid(), failc, retry);
               sleep(3);
               break;
             } else {
-              if (quiet != 1) hydra_report(stderr, "[ERROR] Child with pid %d was disconnected - exiting\n", (int) getpid());
+              if (quiet != 1) hydra_report(stderr, "[ERROR] Child with pid %d was disconnected - exiting\n", (int32_t) getpid());
               hydra_child_exit(0);
             }
           }
@@ -198,7 +198,7 @@ void service_cisco(char *ip, int sp, unsigned char options, char *miscptr, FILE 
   }
 }
 
-int service_cisco_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port, char *hostname) {
+int32_t service_cisco_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
@@ -210,4 +210,8 @@ int service_cisco_init(char *ip, int sp, unsigned char options, char *miscptr, F
   //   -1  error, hydra will exit, so print a good error message here
 
   return 0;
+}
+
+void usage_cisco(const char* service) {
+  printf("Module cisco is optionally taking the keyword ENTER, it then sends an initial\n" "ENTER when connecting to the service.\n");
 }

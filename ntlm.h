@@ -1,4 +1,3 @@
-
 /* $Id$
    Single file NTLM system to create and parse authentication messages.
 
@@ -52,8 +51,8 @@
 
    included bonus!!:
    Base64 code
-   int  from64tobits(char *out, const char *in);
-   void to64frombits(unsigned char *out, const unsigned char *in, int inlen);
+   int32_t  from64tobits(char *out, const char *in);
+   void to64frombits(unsigned char *out, const unsigned char *in, int32_t inlen);
 
 
 
@@ -66,8 +65,16 @@
  * These structures are byte-order dependant, and should not
  * be manipulated except by the use of the routines provided
  */
+#ifdef __sun
+  #include <sys/int_types.h>
+#elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX)
+  #include <inttypes.h>
+#else
+  #include <stdint.h>
+#endif
+
 typedef unsigned short uint16;
-typedef unsigned int uint32;
+typedef uint32_t uint32;
 typedef unsigned char uint8;
 
 typedef struct {
@@ -131,10 +138,10 @@ void buildAuthResponse(tSmbNtlmAuthChallenge * challenge, tSmbNtlmAuthResponse *
 //flags, host, and domain superseeds given by server. Leave 0 and NULL for server authentication
 
 /* Base64 code*/
-int from64tobits(char *out, const char *in);
-void to64frombits(unsigned char *out, const unsigned char *in, int inlen);
+int32_t from64tobits(char *out, const char *in);
+void to64frombits(unsigned char *out, const unsigned char *in, int32_t inlen);
 
-void xor(char *out, char *in1, char *in2, int n);
+void xor(char *out, char *in1, char *in2, int32_t n);
 
 // info functions
 void dumpAuthRequest(FILE * fp, tSmbNtlmAuthRequest * request);
