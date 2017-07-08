@@ -2136,6 +2136,10 @@ int32_t main(int32_t argc, char *argv[]) {
   SERVICES = hydra_string_replace(SERVICES, "firebird ", "");
   strcat(unsupported, "firebird ");
 #endif
+#ifndef HAVE_GCRYPT
+  SERVICES = hydra_string_replace(SERVICES, "radmin2 ", "");
+  strcat(unsupported, "radmin2 ");
+#endif
 #ifndef LIBAFP
   SERVICES = hydra_string_replace(SERVICES, "afp ", "");
   strcat(unsupported, "afp ");
@@ -3089,7 +3093,7 @@ int32_t main(int32_t argc, char *argv[]) {
 #ifdef HAVE_GCRYPT
       i = 1;
 #else
-      bail("hydra was not compiled with gcrypt support, radmin2 module can not be used");
+      bail("hydra was not compiled with gcrypt support, radmin2 module not available");
 #endif
     }
 

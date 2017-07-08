@@ -257,7 +257,7 @@ done
 if [ -n "$HAVE_GCRYPT" ]; then
    echo "                                        ... found"
 else
-   echo "                                        ... gcrypt not found, gcrypt support disabled"
+   echo "                                        ... gcrypt not found, radmin2 module disabled"
 fi
 
 
