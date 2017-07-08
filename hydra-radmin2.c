@@ -92,8 +92,8 @@ char *message2buffer(struct rmessage *msg) {
         hydra_child_exit(0);
       }
       memcpy(data, &msg->magic, sizeof(char));
-      *((int *)(data+1)) = htonl(msg->length);
-      *((int *)(data+5)) = htonl(msg->checksum);
+      *((int32_t *)(data+1)) = htonl(msg->length);
+      *((int32_t *)(data+5)) = htonl(msg->checksum);
       memcpy((data+9), &msg->type, sizeof(char));
       break;
     case 0x09:
@@ -103,8 +103,8 @@ char *message2buffer(struct rmessage *msg) {
         hydra_child_exit(0);
       }
       memcpy(data, &msg->magic, sizeof(char));
-      *((int *)(data+1)) = htonl(msg->length);
-      *((int *)(data+5)) = htonl(msg->checksum);
+      *((int32_t *)(data+1)) = htonl(msg->length);
+      *((int32_t *)(data+5)) = htonl(msg->checksum);
       memcpy((data+9), &msg->type, sizeof(char));
       memcpy((data+10), msg->data, sizeof(char) * 32);
       break;
@@ -211,7 +211,7 @@ void service_radmin2(char *ip, int32_t sp, unsigned char options, char *miscptr,
     // 0) Connect to the server
     sock = hydra_connect_tcp(ip, myport);
     if(sock < 0) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, can not connect\n", (int)getpid());
+      hydra_report(stderr, "Error: Child with pid %d terminating, can not connect\n", (int32_t)getpid());
       hydra_child_exit(1);
     }
 
@@ -228,7 +228,7 @@ void service_radmin2(char *ip, int32_t sp, unsigned char options, char *miscptr,
     while(index < 42) { //We're always expecting back a 42 byte buffer from a challenge request.
       switch(hydra_data_ready(sock)) {
         case -1:
-          hydra_report(stderr, "Error: Child with pid %d terminating, receive error\nerror:\t%s\n", (int)getpid(), strerror(errno));
+          hydra_report(stderr, "Error: Child with pid %d terminating, receive error\nerror:\t%s\n", (int32_t)getpid(), strerror(errno));
           hydra_child_exit(1);
           break;
         case 0:
@@ -237,7 +237,7 @@ void service_radmin2(char *ip, int32_t sp, unsigned char options, char *miscptr,
         default: 
           bytecount = hydra_recv(sock, buffer+index, 42 - index);
           if(bytecount < 0) {
-            hydra_report(stderr, "Error: Child with pid %d terminating, receive error\nerror:\t%s\n", (int)getpid(), strerror(errno));
+            hydra_report(stderr, "Error: Child with pid %d terminating, receive error\nerror:\t%s\n", (int32_t)getpid(), strerror(errno));
             hydra_child_exit(1);
           }
           index += bytecount;
@@ -255,13 +255,13 @@ void service_radmin2(char *ip, int32_t sp, unsigned char options, char *miscptr,
     //MD5 the password to generate the password key, this is used with twofish below.
     err = gcry_md_open(&md, GCRY_MD_MD5, 0);
     if(err) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_md_open error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_md_open error (%08x)\n%s/%s", (int32_t)getpid(), index, gcry_strsource(err), gcry_strerror(err));
       hydra_child_exit(1);
     }
     gcry_md_reset(md);
     gcry_md_write(md, password, 100);
     if(gcry_md_read(md, 0) == NULL) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_md_read error (%08x)\n", (int)getpid(), index);
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_md_read error (%08x)\n", (int32_t)getpid(), index);
       hydra_child_exit(1);
     }
     memcpy(rawkey, gcry_md_read(md, 0), 16);
@@ -273,25 +273,25 @@ void service_radmin2(char *ip, int32_t sp, unsigned char options, char *miscptr,
     //3.b) encrypt data received using pkey & known IV
     err= gcry_cipher_open(&cipher, GCRY_CIPHER_TWOFISH128, GCRY_CIPHER_MODE_CBC, 0);
     if(err) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_open error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_open error (%08x)\n%s/%s", (int32_t)getpid(), index, gcry_strsource(err), gcry_strerror(err));
       hydra_child_exit(1);
     }
 
     err = gcry_cipher_setiv(cipher, IV, 16);
     if(err) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_setiv error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_setiv error (%08x)\n%s/%s", (int32_t)getpid(), index, gcry_strsource(err), gcry_strerror(err));
       hydra_child_exit(1);
     }
 
     err = gcry_cipher_setkey(cipher, rawkey, 16);
     if(err) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_setkey error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_setkey error (%08x)\n%s/%s", (int32_t)getpid(), index, gcry_strsource(err), gcry_strerror(err));
       hydra_child_exit(1);
     }
 
     err = gcry_cipher_encrypt(cipher, encrypted, 32, msg->data, 32);
     if(err) {
-      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_encrypt error (%08x)\n%s/%s", (int)getpid(), index, gcry_strsource(err), gcry_strerror(err));
+      hydra_report(stderr, "Error: Child with pid %d terminating, gcry_cipher_encrypt error (%08x)\n%s/%s", (int32_t)getpid(), index, gcry_strsource(err), gcry_strerror(err));
       hydra_child_exit(1);
     }
 
@@ -315,7 +315,7 @@ void service_radmin2(char *ip, int32_t sp, unsigned char options, char *miscptr,
     while(index < 10) { //We're always expecting back a 42 byte buffer from a challenge request.
       switch(hydra_data_ready(sock)) {
         case -1:
-          hydra_report(stderr, "Error: Child with pid %d terminating, receive error\nerror:\t%s\n", (int)getpid(), strerror(errno));
+          hydra_report(stderr, "Error: Child with pid %d terminating, receive error\nerror:\t%s\n", (int32_t)getpid(), strerror(errno));
           hydra_child_exit(1);
           break;
         case 0:
@@ -324,7 +324,7 @@ void service_radmin2(char *ip, int32_t sp, unsigned char options, char *miscptr,
         default: 
           bytecount = hydra_recv(sock, buffer+index, 10 - index);
           if(bytecount < 0) {
-            hydra_report(stderr, "Error: Child with pid %d terminating, receive error\nerror:\t%s\n", (int)getpid(), strerror(errno));
+            hydra_report(stderr, "Error: Child with pid %d terminating, receive error\nerror:\t%s\n", (int32_t)getpid(), strerror(errno));
             hydra_child_exit(1);
           }
           index += bytecount;
@@ -340,7 +340,7 @@ void service_radmin2(char *ip, int32_t sp, unsigned char options, char *miscptr,
         hydra_disconnect(sock);
         break;
       default:
-        hydra_report(stderr, "Error: Child with pid %d terminating, protocol error\n", (int)getpid());
+        hydra_report(stderr, "Error: Child with pid %d terminating, protocol error\n", (int32_t)getpid());
         hydra_child_exit(2);
     }
   }
