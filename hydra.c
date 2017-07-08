@@ -2124,29 +2124,37 @@ int32_t main(int32_t argc, char *argv[]) {
   struct sockaddr_in *ipv4 = NULL;
 
   printf("%s %s (c) 2017 by %s - Please do not use in military or secret service organizations, or for illegal purposes.\n\n", PROGRAM, VERSION, AUTHOR);
-#ifndef LIBPOSTGRES
-  SERVICES = hydra_string_replace(SERVICES, "postgres ", "");
-  strcat(unsupported, "postgres ");
-#endif
-#ifndef LIBSAPR3
-  SERVICES = hydra_string_replace(SERVICES, "sapr3 ", "");
-  strcat(unsupported, "sapr3 ");
+#ifndef LIBAFP
+  SERVICES = hydra_string_replace(SERVICES, "afp ", "");
+  strcat(unsupported, "afp ");
 #endif
 #ifndef LIBFIREBIRD
   SERVICES = hydra_string_replace(SERVICES, "firebird ", "");
   strcat(unsupported, "firebird ");
 #endif
-#ifndef HAVE_GCRYPT
-  SERVICES = hydra_string_replace(SERVICES, "radmin2 ", "");
-  strcat(unsupported, "radmin2 ");
-#endif
-#ifndef LIBAFP
-  SERVICES = hydra_string_replace(SERVICES, "afp ", "");
-  strcat(unsupported, "afp ");
+#ifndef LIBMYSQLCLIENT
+  SERVICES = hydra_string_replace(SERVICES, "mysql ", "mysql(v4) ");
+  strcat(unsupported, "mysql5 ");
 #endif
 #ifndef LIBNCP
   SERVICES = hydra_string_replace(SERVICES, "ncp ", "");
   strcat(unsupported, "ncp ");
+#endif
+#ifndef LIBORACLE
+  SERVICES = hydra_string_replace(SERVICES, "oracle ", "");
+  strcat(unsupported, "oracle ");
+#endif
+#ifndef LIBPOSTGRES
+  SERVICES = hydra_string_replace(SERVICES, "postgres ", "");
+  strcat(unsupported, "postgres ");
+#endif
+#ifndef HAVE_GCRYPT
+  SERVICES = hydra_string_replace(SERVICES, "radmin2 ", "");
+  strcat(unsupported, "radmin2 ");
+#endif
+#ifndef LIBSAPR3
+  SERVICES = hydra_string_replace(SERVICES, "sapr3 ", "");
+  strcat(unsupported, "sapr3 ");
 #endif
 #ifndef LIBSSH
   SERVICES = hydra_string_replace(SERVICES, "ssh ", "");
@@ -2157,14 +2165,6 @@ int32_t main(int32_t argc, char *argv[]) {
 #ifndef LIBSVN
   SERVICES = hydra_string_replace(SERVICES, "svn ", "");
   strcat(unsupported, "svn ");
-#endif
-#ifndef LIBORACLE
-  SERVICES = hydra_string_replace(SERVICES, "oracle ", "");
-  strcat(unsupported, "oracle ");
-#endif
-#ifndef LIBMYSQLCLIENT
-  SERVICES = hydra_string_replace(SERVICES, "mysql ", "mysql(v4) ");
-  strcat(unsupported, "mysql5 ");
 #endif
 #ifndef LIBOPENSSL
   // for ftps
