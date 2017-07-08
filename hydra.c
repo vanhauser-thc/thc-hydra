@@ -142,6 +142,11 @@ extern int32_t service_svn_init(char *ip, int32_t sp, unsigned char options, cha
 extern void service_oracle(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 extern int32_t service_oracle_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
+#ifdef HAVE_GCRYPT
+extern void service_radmin2(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_radmin2_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+#endif
+
 
 extern int32_t service_adam6500_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 extern int32_t service_cisco_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
@@ -184,7 +189,7 @@ extern int32_t service_rpcap_init(char *ip, int32_t sp, unsigned char options, c
 
 // ADD NEW SERVICES HERE
 char *SERVICES =
-  "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp ftps http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
+  "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp ftps http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres radmin2 rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
 
 #define MAXBUF       520
 #define MAXLINESIZE  ( ( MAXBUF / 2 ) - 4 )
@@ -482,6 +487,9 @@ static const struct {
   SERVICE3("telnet", telnet),
   SERVICE(vmauthd),
   SERVICE(vnc),
+#ifdef HAVE_GCRYPT
+  SERVICE(radmin2),
+#endif
   { "xmpp", service_xmpp_init, NULL, usage_xmpp }
 };
 
@@ -1331,6 +1339,7 @@ int32_t hydra_lookup_port(char *service) {
     {"s7-300", PORT_S7_300, PORT_S7_300_SSL},
     {"rtsp", PORT_RTSP, PORT_RTSP_SSL},
     {"rpcap", PORT_RPCAP, PORT_RPCAP_SSL},
+    {"radmin2", PORT_RADMIN2, PORT_RADMIN2},
     // ADD NEW SERVICES HERE - add new port numbers to hydra.h
     {"", PORT_NOPORT, PORT_NOPORT}
   };
@@ -3076,6 +3085,14 @@ int32_t main(int32_t argc, char *argv[]) {
       printf("[WARNING] the rdp module is currently reported to be unreliable, most likely against new Windows version. Please test, report - and if possible, fix.\n");
       i = 1;
     }
+    if (strcmp(hydra_options.service, "radmin2") == 0) {
+#ifdef HAVE_GCRYPT
+      i = 1;
+#else
+      bail("hydra was not compiled with gcrypt support, radmin2 module can not be used");
+#endif
+    }
+
     // ADD NEW SERVICES HERE
 
 

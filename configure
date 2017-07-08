@@ -246,6 +246,22 @@ if [ "$SSL_IPATH" = "/usr/include" ]; then
     SSL_IPATH=""
 fi
 
+echo "Checking for gcrypt (libgcrypt.so) ..."
+for i in $LIBDIRS ; do
+    if [ "X" = "X$GCRYPT_PATH" ]; then
+        if [ -f "$i/libgcrypt.so" -o -f "$i/libgcrypt.dylib" -o -f "$i/libgcrypt.a" -o -f "$i/libgcrypt.dll.a" -o -f "$i/libgcrypt.la" ]; then
+	  HAVE_GCRYPT="y"
+        fi
+    fi
+done
+if [ -n "$HAVE_GCRYPT" ]; then
+   echo "                                        ... found"
+else
+   echo "                                        ... gcrypt not found, gcrypt support disabled"
+fi
+
+
+
 echo "Checking for idn (libidn.so) ..."
 for i in $LIBDIRS ; do
     if [ "X" = "X$IDN_PATH" ]; then
@@ -1073,6 +1089,10 @@ fi
 if [ -n "$HAVE_ZLIB" ]; then
     XDEFINES="$XDEFINES -DHAVE_ZLIB"
 fi
+if [ -n "$HAVE_GCRYPT" ]; then
+    XDEFINES="$XDEFINES -DHAVE_GCRYPT"
+fi
+
 
 OLDPATH=""
 for i in $SSL_PATH $FIREBIRD_PATH $WORACLE_LIB_PATH $PCRE_PATH $IDN_PATH $CRYPTO_PATH $SSH_PATH $NSL_PATH $SOCKET_PATH $RESOLV_PATH $SAPR3_PATH $POSTGRES_PATH $SVN_PATH $NCP_PATH $CURSES_PATH $ORACLE_PATH $AFP_PATH $MYSQL_PATH; do
@@ -1127,6 +1147,9 @@ if [ -n "$AFP_IPATH" ]; then
 fi
 if [ -n "$ORACLE_IPATH" ]; then
     XIPATHS="$XIPATHS -I$ORACLE_IPATH"
+fi
+if [ -n "$HAVE_GCRYPT" ]; then
+    XLIBS="$XLIBS -lgcrypt"
 fi
 if [ -n "$HAVE_ZLIB" ]; then
     XLIBS="$XLIBS -lz"

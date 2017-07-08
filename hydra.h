@@ -143,6 +143,7 @@
 #define PORT_RTSP_SSL  554
 #define PORT_RPCAP       2002
 #define PORT_RPCAP_SSL   2002
+#define PORT_RADMIN2    4899
 
 #define False 0
 #define True  1
