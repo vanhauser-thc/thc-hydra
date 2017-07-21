@@ -16,8 +16,8 @@
  A very fast network logon cracker which support many different services.
  See feature sets and services coverage <a href="network_password_cracker_comparison.html">page</a> - incl. a speed comparison against ncrack and medusa<br>
 </h4><h3>
- Current Version: 8.5
- Last update 2017-05-03
+ Current Version: 8.6
+ Last update 2017-07-21
 </h3>
 </pre>
 </td>
@@ -34,20 +34,20 @@
         Read below for Linux compilation notes.
 </b>        
 
-        CHANGELOG for 8.5
+        CHANGELOG for 8.6
         ===================
         ! Development moved to a public github repository: https://github.com/vanhauser-thc/thc-hydra
         
         ! Reports came in that the rdp module is not working reliable sometimes, most likely against new Windows versions. please test, report and if possible send a fix
-        * New command line option:
-          -b : format option for -o output file (json only so far, happy for patches supporting others :) ) - thanks to veggiespam for the patch
-        * ./configure now honors the CC enviroment variable if present
-        * Fix for the restore file crash on some x64 platforms (finally! thanks to lukas227!)
-        * Changed the format of the restore file to detect cross platform copies
-        * Fixed a bug in the NCP module
-        * Favor strrchr() over rindex()
-        * Added refactoring patch by diadlo
-        * Updated man page with missing command line options
+        * added radmin2 module by catatonic prime - great work!
+        * smb module now checks if SMBv1 is supported by the server and if signing is required
+        * http-form module now supports URLs up to 6000 bytes (thanks to petrock6@github for the patch)
+        * Fix for SSL connections that failed with error:00000000:lib(0):func(0):reason(0) (thanks gaia@github for reporting)
+        * Added new command line option:
+          -c TIME: seconds between login attempts (over all threads, so -t 1 is recommended)
+        * Options put after -R (for loading a restore file) are now honored (and were disallowed before)
+        * merged several patches by Diadlo@github to make the code easier readable. thanks for that!
+        * merged a patch by Diadlo@github that moves the help output to the invididual module
 
 	You can also take a look at the full <a href="CHANGES">CHANGES</a> file
 
@@ -132,7 +132,7 @@
  [0x05] The Art of Downloading: Source and Binaries
  
 	1. PRODUCTION/RELEASE VERSION:
-	   The source code of state-of-the-art Hydra: <a href="http://www.thc.org/releases/hydra-8.5.tar.gz">hydra-8.5.tar.gz</a>
+	   The source code of state-of-the-art Hydra: <a href="http://www.thc.org/releases/hydra-8.6.tar.gz">hydra-8.6.tar.gz</a>
 	   (compiles on all UNIX based platforms - even MacOS X, Cygwin on Windows, ARM-Linux, Android, iPhone, Blackberry 10, etc.)
 
         2. DEVELOPMENT VERSION:
