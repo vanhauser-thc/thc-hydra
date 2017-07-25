@@ -913,7 +913,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entTelnet, "entTelnet");
   gtk_widget_show(entTelnet);
   gtk_container_add(GTK_CONTAINER(alignment1), entTelnet);
-  gtk_tooltips_set_tip(tooltips, entTelnet, "Insert the return string for a succesfull login", NULL);
+  gtk_tooltips_set_tip(tooltips, entTelnet, "Insert the return string for a successful login", NULL);
 
   label36 = gtk_label_new("Telnet - Successful Login String");
   gtk_widget_set_name(label36, "label36");

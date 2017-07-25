@@ -466,6 +466,6 @@ void usage_ldap(const char* service) {
          "Special notes for Simple method has 3 operation modes: anonymous, (no user no pass),\n"
          "unauthenticated (user but no pass), user/pass authenticated (user and pass).\n"
          "So don't forget to set empty string as user/pass to test all modes.\n"
-         "Hint: to authenticate to a windows active directy ldap, this is usually\n"
+         "Hint: to authenticate to a windows active directory ldap, this is usually\n"
          " cn=^USER^,cn=users,dc=foo,dc=bar,dc=com for domain foo.bar.com\n\n", service);
 }

@@ -290,7 +290,7 @@ void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
       if ((buf = hydra_receive_line(sock)) == NULL)
         hydra_child_exit(2);
       if (strstr(buf, "220") == NULL) {
-        hydra_report(stderr, "[WARNING] SMTP does not allow to connect: %s\n", buf);
+        hydra_report(stderr, "[WARNING] SMTP does not allow connecting: %s\n", buf);
         free(buf);
         hydra_child_exit(2);
       }

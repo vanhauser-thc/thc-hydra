@@ -534,7 +534,7 @@ int32_t internal__hydra_connect_to_ssl(int32_t socket, char *hostname) {
 //    SSL_CTX_set_options(sslContext, SSL_OP_NO_SSLv2);
 //    SSL_CTX_set_options(sslContext, SSL_OP_NO_TLSv1);
 
-    /* we set the default verifiers and dont care for the results */
+    /* we set the default verifiers and don't care for the results */
     (void) SSL_CTX_set_default_verify_paths(sslContext);
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
     SSL_CTX_set_tmp_rsa_callback(sslContext, ssl_temp_rsa_cb);

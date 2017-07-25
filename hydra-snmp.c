@@ -301,7 +301,7 @@ int32_t start_snmp(int32_t s, char *ip, int32_t port, unsigned char options, cha
       i += 2;
     } else {
       buffer[i + 1] = 8;
-      memcpy(buffer + i + 2, salt, 8);  // uninitialized and we dont care
+      memcpy(buffer + i + 2, salt, 8);  // uninitialized and we don't care
       i += 10;
     }
 
