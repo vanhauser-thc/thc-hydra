@@ -36,7 +36,7 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
     sprintf(buffer2, "%.50s:%.50s", login, pass);
     hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
 
-    /* again: no snprintf to be portable. dont worry, buffer cant overflow */
+    /* again: no snprintf to be portable. don't worry, buffer cant overflow */
     if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL)
       sprintf(buffer, "%s http://%s:%d%.250s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\nAuthorization: Basic %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\n%s\r\n",
               type, webtarget, webport, miscptr, webtarget, buffer2, proxy_authentication[selected_proxy], header);

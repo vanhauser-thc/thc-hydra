@@ -1,7 +1,7 @@
 #!/bin/bash
 PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/opt/gnome/lib/pkgconfig
 export PKG_CONFIG_PATH
-echo "Trying to compile xhydra now (hydra gtk gui) - dont worry if this fails, this is really optional ..."
+echo "Trying to compile xhydra now (hydra gtk gui) - don't worry if this fails, this is really optional ..."
 ./configure > /dev/null 2> errors
 test -e Makefile || {
   echo "Error: configure wasnt happy. Analyse this:"

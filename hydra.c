@@ -516,7 +516,7 @@ void help(int32_t ext) {
                     "[service://server[:PORT][/OPT]]\n");
   PRINT_NORMAL(ext, "\nOptions:\n");
   PRINT_EXTEND(ext, "  -R        restore a previous aborted/crashed session\n"
-                    "  -I        ignore an existing restore file (dont wait 10 seconds)\n"
+                    "  -I        ignore an existing restore file (don't wait 10 seconds)\n"
 #ifdef LIBOPENSSL
                     "  -S        perform an SSL connect\n"
 #endif
@@ -2434,7 +2434,7 @@ int32_t main(int32_t argc, char *argv[]) {
 #endif
 
   if (debug)
-    printf("[DEBUG] Ouput color flag is %d\n", colored_output);
+    printf("[DEBUG] Output color flag is %d\n", colored_output);
 
   if (hydra_options.restore && argc > 2 + debug + verbose)
     fprintf(stderr, "[WARNING] options after -R are now honored (since v8.6)\n");
@@ -4037,7 +4037,7 @@ int32_t main(int32_t argc, char *argv[]) {
   }
 
   if (debug)
-    printf("[DEBUG] killing all remaining childs now that might be stuck\n");
+    printf("[DEBUG] killing all remaining children now that might be stuck\n");
   for (i = 0; i < hydra_options.max_use; i++)
     if (hydra_heads[i]->active == HEAD_ACTIVE && hydra_heads[i]->pid > 0)
       hydra_kill_head(i, 1, 3);

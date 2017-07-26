@@ -2340,7 +2340,7 @@ addresses and/or DNS names.</property>
 		      <child>
 			<widget class="GtkEntry" id="entTelnet">
 			  <property name="visible">True</property>
-			  <property name="tooltip" translatable="yes">Insert the return string for a succesfull login</property>
+			  <property name="tooltip" translatable="yes">Insert the return string for a successful login</property>
 			  <property name="can_focus">True</property>
 			  <property name="editable">True</property>
 			  <property name="visibility">True</property>

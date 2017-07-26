@@ -620,7 +620,7 @@ int32_t service_pop3_init(char *ip, int32_t sp, unsigned char options, char *mis
 #endif
 
   if (hydra_send(sock, quit_str, strlen(quit_str), 0) < 0) {
-    //we dont care if the server is not receiving the quit msg
+    //we don't care if the server is not receiving the quit msg
   }
   hydra_disconnect(sock);
 

@@ -1321,7 +1321,7 @@ void dumpAuthChallenge(FILE * fp, tSmbNtlmAuthChallenge * challenge) {
   fprintf(fp, "      Flags = %08x\n", IVAL(&challenge->flags, 0));
   fprintf(fp, "  Challenge = ");
   dumpRaw(fp, challenge->challengeData, 8);
-  fprintf(fp, "  Uncomplete!! parse optional parameters\n");
+  fprintf(fp, "  Incomplete!! parse optional parameters\n");
 }
 
 void dumpAuthResponse(FILE * fp, tSmbNtlmAuthResponse * response) {

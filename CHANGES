@@ -39,7 +39,7 @@ Release 8.4
 * New protocol: rpcap - thanks to Petar Kaleychev <petar.kaleychev@gmail.com>
 * New command line options:
    -y : disables -x 1aA interpretation, thanks to crondaemon for the patch
-   -I : ignore an existing hydra.restore file (dont wait for 10 seconds)
+   -I : ignore an existing hydra.restore file (don't wait for 10 seconds)
 * hydra-svn: works now with the current libsvn version
 * hydra-ssh: initial check for password auth support now uses login supplied
 * Fixed dpl4hydra to be able to update from the web again
