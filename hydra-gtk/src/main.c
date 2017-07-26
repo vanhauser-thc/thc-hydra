@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
   gtk_widget_show(wndMain);
 
 
-  /* if we cant use the new cool file chooser, the save button gets disabled */
+  /* if we can't use the new cool file chooser, the save button gets disabled */
 #ifndef GTK_TYPE_FILE_CHOOSER
   GtkWidget *btnSave;
 

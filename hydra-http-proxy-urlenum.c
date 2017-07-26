@@ -109,7 +109,7 @@ int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned cha
         buildAuthRequest((tSmbNtlmAuthRequest *) buf2, 0, NULL, NULL);
         to64frombits(buf1, buf2, SmbLength((tSmbNtlmAuthRequest *) buf2));
 
-        /* to be portable, no snprintf, buffer is big enough so it cant overflow */
+        /* to be portable, no snprintf, buffer is big enough so it can't overflow */
         //send the first..
         sprintf(buffer, "GET %s HTTP/1.0\r\n%sProxy-Authorization: NTLM %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nProxy-Connection: keep-alive\r\n%s\r\n", url, host, buf1,
                 header);

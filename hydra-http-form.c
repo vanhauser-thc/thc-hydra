@@ -612,7 +612,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
   hdrrep(&ptr_head, "^USER^", clogin);
   hdrrep(&ptr_head, "^PASS^", cpass);
 
-  /* again: no snprintf to be portable. don't worry, buffer cant overflow */
+  /* again: no snprintf to be portable. don't worry, buffer can't overflow */
   if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL) {
     if (getcookie) {
       memset(proxy_string, 0, sizeof(proxy_string));
@@ -1199,7 +1199,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     }
   }
 
-  /* again: no snprintf to be portable. don't worry, buffer cant overflow */
+  /* again: no snprintf to be portable. don't worry, buffer can't overflow */
   if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL) {
     // proxy with authentication
     add_header(&ptr_head, "Host", webtarget, HEADER_TYPE_DEFAULT);
