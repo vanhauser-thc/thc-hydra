@@ -259,6 +259,7 @@ GtkWidget *create_wndMain(void) {
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "pop3");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "pcanywhere");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "postgres");
+  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "radmin2");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rdp");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "redis");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rexec");
