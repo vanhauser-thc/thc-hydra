@@ -13,26 +13,25 @@ hydra \- a very fast network logon cracker which support many different services
 Hydra is a parallelized login cracker which supports numerous protocols
 to attack. New modules are easy to add, beside that, it is flexible and
 very fast.
-
+.LP
 This tool gives researchers and security consultants the possibility to
 show how easy it would be to gain unauthorized access from remote to a
 system.
-
+.TP
 Currently this tool supports:
- adam6500 afp asterisk cisco cisco-enable cvs firebird ftp ftps
- http[s]-{head|get|post} http[s]-{get|post}-form http-proxy
- http-proxy-urlenum icq imap[s] irc ldap2[s]
- ldap3[-{cram|digest}md5][s] mssql mysql(v4) mysql5 ncp nntp
- oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s]
- postgres rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip
- smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s]
- vmauthd vnc xmpp
-
- For most protocols SSL is supported (e.g. https-get, ftp-ssl, etc.).
- If not all necessary libraries are found during compile time, your
- available services will be less.
- Type "hydra" to see what is available.
-
+adam6500 afp asterisk cisco cisco-enable cvs firebird ftp ftps
+http[s]-{head|get|post} http[s]-{get|post}-form http-proxy
+http-proxy-urlenum icq imap[s] irc ldap2[s]
+ldap3[-{cram|digest}md5][s] mssql mysql(v4) mysql5 ncp nntp
+oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s]
+postgres rdp radmin2 redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip
+smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s]
+vmauthd vnc xmpp
+.LP
+For most protocols SSL is supported (e.g. https-get, ftp-ssl, etc.).
+If not all necessary libraries are found during compile time, your
+available services will be less.
+Type "hydra" to see what is available.
 .SH Options
 .TP
 .B target
@@ -141,7 +140,6 @@ Show summary of options.
 The programs are documented fully by van Hauser <vh@thc.org>
 .SH AUTHOR
 hydra was written by van Hauser / THC <vh@thc.org>
-
 .PP
 This manual page was written by Daniel Echeverry <epsilon77@gmail.com>,
 for the Debian project (and may be used by others).
