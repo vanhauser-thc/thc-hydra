@@ -224,5 +224,5 @@ int32_t service_irc_init(char *ip, int32_t sp, unsigned char options, char *misc
 }
 
 void usage_irc(const char* service) {
-  printf("Module irc is optionally taking the general server password, if the server is requiring one\n" "and none is passed the password from -p/-P will be used\n\n");
+  printf("Module irc is optionally taking the general server password, if the server is requiring one, and if none is passed the password from -p/-P will be used\n\n");
 }
