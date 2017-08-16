@@ -15,7 +15,7 @@ extern int32_t child_head_no;
 char snmpv3buf[1024], *snmpv3info = NULL;
 int32_t snmpv3infolen = 0, snmpversion = 1, snmpread = 1, hashtype = 1, enctype = 0;
 
-unsigned char snmpv3_init[] = { 0x30, 0x3e, 0x02, 0x01, 0x03, 0x30, 0x11, 0x02,
+char snmpv3_init[] = { 0x30, 0x3e, 0x02, 0x01, 0x03, 0x30, 0x11, 0x02,
   0x04, 0x08, 0x86, 0xdd, 0xf0, 0x02, 0x03, 0x00,
   0xff, 0xe3, 0x04, 0x01, 0x04, 0x02, 0x01, 0x03,
   0x04, 0x10, 0x30, 0x0e, 0x04, 0x00, 0x02, 0x01,
@@ -39,7 +39,7 @@ unsigned char snmpv3_get2[] = { 0x30, 0x2e, 0x04, 0x0c, 0x80, 0x00, 0x00,
   0x00
 };
 
-unsigned char snmpv3_nouser[] = { 0x04, 0x00, 0x04, 0x00, 0x04, 0x00 };
+char snmpv3_nouser[] = { 0x04, 0x00, 0x04, 0x00, 0x04, 0x00 };
 
 struct SNMPV1_A {
   char ID;
@@ -94,13 +94,13 @@ struct SNMPV1_W {
 };
 
 #ifdef LIBOPENSSL
-void password_to_key_md5(u_char * password,     /* IN */
+void password_to_key_md5(char * password,       /* IN */
                          u_int passwordlen,     /* IN */
-                         u_char * engineID,     /* IN  - pointer to snmpEngineID  */
+                         char * engineID,       /* IN  - pointer to snmpEngineID  */
                          u_int engineLength,    /* IN  - length of snmpEngineID */
-                         u_char * key) {        /* OUT - pointer to caller 16-octet buffer */
+                         char * key) {          /* OUT - pointer to caller 16-octet buffer */
   MD5_CTX MD;
-  u_char *cp, password_buf[80], *mypass = password, bpass[17];
+  char *cp, password_buf[80], *mypass = password, bpass[17];
   u_long password_index = 0, count = 0, i, mylen, myelen = engineLength;
 
   if (strlen(password) > passwordlen)
@@ -133,7 +133,7 @@ void password_to_key_md5(u_char * password,     /* IN */
     MD5_Update(&MD, password_buf, 64);
     count += 64;
   }
-  MD5_Final(key, &MD);          /* tell MD5 we're done */
+  MD5_Final((unsigned char *)key, &MD);          /* tell MD5 we're done */
   /* Now localize the key with the engineID and pass   */
   /* through MD5 to produce final key                  */
   /* May want to ensure that engineLength <= 32,       */
@@ -143,24 +143,24 @@ void password_to_key_md5(u_char * password,     /* IN */
   memcpy(password_buf + 16 + myelen, key, 16);
   MD5_Init(&MD);
   MD5_Update(&MD, password_buf, 32 + myelen);
-  MD5_Final(key, &MD);
+  MD5_Final((unsigned char *)key, &MD);
   return;
 }
 
-void password_to_key_sha(u_char * password,     /* IN */
+void password_to_key_sha(char * password,       /* IN */
                          u_int passwordlen,     /* IN */
-                         u_char * engineID,     /* IN  - pointer to snmpEngineID  */
+                         char * engineID,       /* IN  - pointer to snmpEngineID  */
                          u_int engineLength,    /* IN  - length of snmpEngineID */
-                         u_char * key) {        /* OUT - pointer to caller 20-octet buffer */
+                         char * key) {          /* OUT - pointer to caller 20-octet buffer */
   SHA_CTX SH;
-  u_char *cp, password_buf[80], *mypass = password, bpass[17];
+  char *cp, password_buf[80], *mypass = password, bpass[17];
   u_long password_index = 0, count = 0, i, mylen = passwordlen, myelen = engineLength;
 
   if (mylen < 8) {
     memset(bpass, 0, sizeof(bpass));
-    strcpy(bpass, password);
+    strcpy((char *)bpass, password);
     while (mylen < 8) {
-      strcat(bpass, password);
+      strcat((char *)bpass, password);
       mylen += passwordlen;
     }
     mypass = bpass;
@@ -181,7 +181,7 @@ void password_to_key_sha(u_char * password,     /* IN */
     SHA1_Update(&SH, password_buf, 64);
     count += 64;
   }
-  SHA1_Final(key, &SH);         /* tell SHA we're done */
+  SHA1_Final((unsigned char *)key, &SH);         /* tell SHA we're done */
   /* Now localize the key with the engineID and pass   */
   /* through SHA to produce final key                  */
   /* May want to ensure that engineLength <= 32,       */
@@ -191,7 +191,7 @@ void password_to_key_sha(u_char * password,     /* IN */
   memcpy(password_buf + 20 + myelen, key, 20);
   SHA1_Init(&SH);
   SHA1_Update(&SH, password_buf, 40 + myelen);
-  SHA1_Final(key, &SH);
+  SHA1_Final((unsigned char *)key, &SH);
   return;
 }
 #endif
@@ -336,7 +336,7 @@ int32_t start_snmp(int32_t s, char *ip, int32_t port, unsigned char options, cha
       for (i = 0; i < 8; i++)
         initVect[i] ^= privacy_params[i];
       DES_key_sched((const_DES_cblock *) key, &symcbc);
-      DES_ncbc_encrypt(snmpv3_get2 + 2, buf, sizeof(snmpv3_get2) - 2, &symcbc, (const_DES_cblock *) (initVect), DES_ENCRYPT);
+      DES_ncbc_encrypt(snmpv3_get2 + 2, (unsigned char *)buf, sizeof(snmpv3_get2) - 2, &symcbc, (const_DES_cblock *) (initVect), DES_ENCRYPT);
 
 #endif
 
@@ -367,10 +367,10 @@ int32_t start_snmp(int32_t s, char *ip, int32_t port, unsigned char options, cha
     i++;                        // just to conform with the snmpv1/2 code
 #ifdef LIBOPENSSL
     if (hashtype == 1) {
-      HMAC((EVP_MD *) EVP_md5(), key, 16, buffer, i - 1, hash, NULL);
+      HMAC((EVP_MD *) EVP_md5(), key, 16, (const unsigned char*)buffer, i - 1, (unsigned char *)hash, NULL);
       memcpy(buffer + off, hash, 12);
     } else if (hashtype == 2) {
-      HMAC((EVP_MD *) EVP_sha1(), key, 20, buffer, i - 1, hash, NULL);
+      HMAC((EVP_MD *) EVP_sha1(), key, 20, (const unsigned char *)buffer, i - 1, (unsigned char *)hash, NULL);
       memcpy(buffer + off, hash, 12);
     }
 #endif

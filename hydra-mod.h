@@ -31,7 +31,7 @@ extern int32_t hydra_send(int32_t socket, char *buf, uint32_t size, int32_t opti
 extern int32_t make_to_lower(char *buf);
 extern unsigned char hydra_conv64(unsigned char in);
 extern void hydra_tobase64(unsigned char *buf, uint32_t buflen, uint32_t bufsize);
-extern void hydra_dump_asciihex(unsigned char *string, int32_t length);
+extern void hydra_dump_asciihex(char *string, int32_t length);
 extern void hydra_set_srcport(int32_t port);
 extern char *hydra_address2string(char *address);
 extern char *hydra_address2string_beautiful(char *address);
