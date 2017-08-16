@@ -1499,7 +1499,7 @@ int32_t service_smb_init(char *ip, int32_t sp, unsigned char options, char *misc
     return -1;
   }
   
-  if (buf[15] & 16 == 16) {
+  if ((buf[15] & 16) == 16) {
     fprintf(stderr, "[ERROR] target smb://%s:%d/ requires signing which we do not support\n", hostname, port);
     return -1;
   }
