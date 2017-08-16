@@ -1189,7 +1189,7 @@ unsigned long SMBSessionSetup(int32_t s, char *szLogin, char *szPassword, char *
   hydra_send(s, (char *) buf, iOffset + iByteCount, 0);
 
   nReceiveBufferSize = hydra_recv(s, bufReceive, sizeof(bufReceive));
-  if (/*(bufReceive == NULL) ||*/ (nReceiveBufferSize == 0))
+  if (nReceiveBufferSize == 0)
     return -1;
 
   /* 41 - Action (Guest/Non-Guest Account) */
