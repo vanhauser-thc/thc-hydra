@@ -900,7 +900,7 @@ int32_t hydra_recv(int32_t socket, char *buf, uint32_t length) {
   ret = internal__hydra_recv(socket, buf, length);
   if (debug) {
     sprintf(text, "[DEBUG] RECV [pid:%d]", getpid());
-    hydra_dump_data(buf, ret, text);
+    hydra_dump_data((unsigned char *)buf, ret, text);
     //hydra_report_debug(stderr, "DEBUG_RECV_BEGIN|%s|END [pid:%d ret:%d]", buf, getpid(), ret);
   }
   return ret;
@@ -915,13 +915,13 @@ int32_t hydra_recv_nb(int32_t socket, char *buf, uint32_t length) {
       buf[0] = 0;
       if (debug) {
         sprintf(text, "[DEBUG] RECV [pid:%d]", getpid());
-        hydra_dump_data(buf, ret, text);
+        hydra_dump_data((unsigned char *)buf, ret, text);
       }
       return ret;
     }
     if (debug) {
       sprintf(text, "[DEBUG] RECV [pid:%d]", getpid());
-      hydra_dump_data(buf, ret, text);
+      hydra_dump_data((unsigned char *)buf, ret, text);
       //hydra_report_debug(stderr, "DEBUG_RECV_BEGIN|%s|END [pid:%d ret:%d]", buf, getpid(), ret);
     }
   }
@@ -954,7 +954,7 @@ char *hydra_receive_line(int32_t socket) {
   if (got < 0) {
     if (debug) {
       sprintf(text, "[DEBUG] RECV [pid:%d]", getpid());
-      hydra_dump_data("", -1, text);
+      hydra_dump_data((unsigned char *)"", -1, text);
       //hydra_report_debug(stderr, "DEBUG_RECV_BEGIN||END [pid:%d %d]", getpid(), i);
       perror("recv");
     }
@@ -991,7 +991,7 @@ char *hydra_receive_line(int32_t socket) {
 
   if (debug) {
     sprintf(text, "[DEBUG] RECV [pid:%d]", getpid());
-    hydra_dump_data(buff, got, text);
+    hydra_dump_data((unsigned char *)buff, got, text);
     //hydra_report_debug(stderr, "DEBUG_RECV_BEGIN [pid:%d len:%d]|%s|END", getpid(), got, buff);
   }
   if (got == 0) {
@@ -1006,7 +1006,7 @@ int32_t hydra_send(int32_t socket, char *buf, uint32_t size, int32_t options) {
 
   if (debug) {
     sprintf(text, "[DEBUG] SEND [pid:%d]", getpid());
-    hydra_dump_data(buf, size, text);
+    hydra_dump_data((unsigned char *)buf, size, text);
 
 /*    int32_t k;
     char *debugbuf = malloc(size + 1);
