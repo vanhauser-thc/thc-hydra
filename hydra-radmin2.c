@@ -179,7 +179,7 @@ void service_radmin2(char *ip, int32_t sp, unsigned char options, char *miscptr,
   char buffer[42];
   char password[101];
   uint8_t rawkey[16];
-  uint8_t *IV = "\xFE\xDC\xBA\x98\x76\x54\x32\x10\xA3\x9D\x4A\x18\xF8\x5B\x4A\x52";
+  char *IV = "\xFE\xDC\xBA\x98\x76\x54\x32\x10\xA3\x9D\x4A\x18\xF8\x5B\x4A\x52";
   uint8_t encrypted[32];
   gcry_error_t err;
   gcry_cipher_hd_t cipher;

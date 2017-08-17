@@ -119,7 +119,7 @@ static size_t UTF8_UTF16LE(unsigned char *in, int32_t insize, unsigned char *out
   uint64_t ch;
   if (debug) {
      hydra_report(stderr, "[DEBUG] UTF8_UTF16LE in:\n");
-     hydra_dump_asciihex(in, insize);
+     hydra_dump_asciihex((char *)in, insize);
   }
   for (i = 0; i <  insize; i++) {
       if (in[i] < 128) { // one byte
@@ -149,7 +149,7 @@ static size_t UTF8_UTF16LE(unsigned char *in, int32_t insize, unsigned char *out
   }
   if (debug) {
      hydra_report(stderr, "[DEBUG] UTF8_UTF16LE out:\n");
-     hydra_dump_asciihex(out,j);
+     hydra_dump_asciihex((char *)out,j);
   }
   return j;
 }
@@ -1189,7 +1189,7 @@ unsigned long SMBSessionSetup(int32_t s, char *szLogin, char *szPassword, char *
   hydra_send(s, (char *) buf, iOffset + iByteCount, 0);
 
   nReceiveBufferSize = hydra_recv(s, bufReceive, sizeof(bufReceive));
-  if (/*(bufReceive == NULL) ||*/ (nReceiveBufferSize == 0))
+  if (nReceiveBufferSize == 0)
     return -1;
 
   /* 41 - Action (Guest/Non-Guest Account) */
@@ -1499,7 +1499,7 @@ int32_t service_smb_init(char *ip, int32_t sp, unsigned char options, char *misc
     return -1;
   }
   
-  if (buf[15] & 16 == 16) {
+  if ((buf[15] & 16) == 16) {
     fprintf(stderr, "[ERROR] target smb://%s:%d/ requires signing which we do not support\n", hostname, port);
     return -1;
   }

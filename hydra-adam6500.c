@@ -70,11 +70,11 @@ int32_t start_adam6500(int32_t s, char *ip, int32_t port, unsigned char options,
   for (i = 0;  i < 8 && i < strlen(pass); i++)
     buffer[19 + i] = pass[i] ^ 0x3f;
 
-  if (hydra_send(s, buffer, sizeof(adam6500_req1), 0) < 0)
+  if (hydra_send(s, (char*)buffer, sizeof(adam6500_req1), 0) < 0)
     return 1;
   
   if (recv(s, buffer, sizeof(buffer), 0) == 12 && memcmp(buffer, adam6500_resp1, sizeof(adam6500_resp1)) == 0) {
-    if (hydra_send(s, adam6500_req2, sizeof(adam6500_req2), 0) < 0)
+    if (hydra_send(s, (char *)adam6500_req2, sizeof(adam6500_req2), 0) < 0)
       return 1;
     if (recv(s, buffer, sizeof(buffer), 0) == 259 && memcmp(buffer, adam6500_resp2, sizeof(adam6500_resp2)) == 0) {
       hydra_completed_pair();

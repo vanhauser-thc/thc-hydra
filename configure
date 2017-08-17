@@ -1266,7 +1266,8 @@ echo "XHYDRA_SUPPORT=$XHYDRA_SUPPORT" >> Makefile.in
 #fi
 echo "STRIP=$STRIP" >> Makefile.in
 echo >> Makefile.in
-cat Makefile.unix > Makefile
+echo "CC=$CC" > Makefile
+cat Makefile.unix >> Makefile
 cat Makefile.in >> Makefile
 # ignore errors if this uname call fails
 ### Current Cygwin is up to speed :-)
