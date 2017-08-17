@@ -119,7 +119,7 @@ static size_t UTF8_UTF16LE(unsigned char *in, int32_t insize, unsigned char *out
   uint64_t ch;
   if (debug) {
      hydra_report(stderr, "[DEBUG] UTF8_UTF16LE in:\n");
-     hydra_dump_asciihex(in, insize);
+     hydra_dump_asciihex((char *)in, insize);
   }
   for (i = 0; i <  insize; i++) {
       if (in[i] < 128) { // one byte
@@ -149,7 +149,7 @@ static size_t UTF8_UTF16LE(unsigned char *in, int32_t insize, unsigned char *out
   }
   if (debug) {
      hydra_report(stderr, "[DEBUG] UTF8_UTF16LE out:\n");
-     hydra_dump_asciihex(out,j);
+     hydra_dump_asciihex((char *)out,j);
   }
   return j;
 }

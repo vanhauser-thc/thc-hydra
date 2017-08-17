@@ -1151,7 +1151,7 @@ void hydra_tobase64(unsigned char *buf, uint32_t buflen, uint32_t bufsize) {
   strcpy((char *) buf, (char *) bof);   /* can not overflow */
 }
 
-void hydra_dump_asciihex(char *string, int32_t length) {
+void hydra_dump_asciihex(const char *string, int32_t length) {
   unsigned char *p = (unsigned char *) string;
   unsigned char lastrow_data[16];
   int32_t rows = length / HYDRA_DUMP_ROWS;

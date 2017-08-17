@@ -1,4 +1,4 @@
-CC?=gcc
+CC=clang
 STRIP=strip
 XDEFINES= -DHAVE_MYSQL_MYSQL_H -DLIBOPENSSL -DLIBNCURSES -DLIBIDN -DHAVE_PR29_H -DHAVE_PCRE -DLIBMYSQLCLIENT -DLIBSSH -DHAVE_ZLIB -DHAVE_GCRYPT -DHAVE_MATH_H
 XLIBS= -lgcrypt -lz -lcurses -lssl -lidn -lpcre -lmysqlclient -lssh -lcrypto
