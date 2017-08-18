@@ -954,7 +954,7 @@ char *hydra_receive_line(int32_t socket) {
   if (got < 0) {
     if (debug) {
       sprintf(text, "[DEBUG] RECV [pid:%d]", getpid());
-      hydra_dump_data("", -1, text);
+      hydra_dump_data((unsigned char*)"", -1, text);
       //hydra_report_debug(stderr, "DEBUG_RECV_BEGIN||END [pid:%d %d]", getpid(), i);
       perror("recv");
     }
