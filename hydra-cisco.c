@@ -127,7 +127,7 @@ void service_cisco(char *ip, int32_t sp, unsigned char options, char *miscptr, F
     switch (run) {
     case 1:                    /* connect and service init function */
       {
-        unsigned char *buf2;
+        unsigned char *buf2 = NULL;
         int32_t f = 0;
 
         if (sock >= 0)
@@ -151,9 +151,10 @@ void service_cisco(char *ip, int32_t sp, unsigned char options, char *miscptr, F
           hydra_child_exit(1);
         }
         do {
-          if (f != 0)
+          if (f != 0) {
             free(buf2);
-          else
+            buf2 = NULL;
+          } else
             f = 1;
           if ((buf2 = (unsigned char *) hydra_receive_line(sock)) == NULL) {
             if (failc < retry) {
@@ -169,7 +170,7 @@ void service_cisco(char *ip, int32_t sp, unsigned char options, char *miscptr, F
           }
           if (buf2 != NULL && hydra_strcasestr((char*)buf2, "ress ENTER") != NULL)
             hydra_send(sock, "\r\n", 2, 0);
-        } while (strstr((char *) buf2, "assw") == NULL);
+        } while (buf2 != NULL && strstr((char *) buf2, "assw") == NULL);
         free(buf2);
         if (next_run != 0)
           break;
