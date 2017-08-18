@@ -75,12 +75,12 @@ system,  get it from http://www.libssh.org, for ssh v1 support you also need
 to add "-DWITH_SSH1=On" option in the cmake command line.
 
 If you use Ubuntu/Debian, this will install supplementary libraries needed
-for a few optional modules:
+for a few optional modules (note that some might not be available on your distribution):
 
 ```
 apt-get install libssl-dev libssh-dev libidn11-dev libpcre3-dev \
                  libgtk2.0-dev libmysqlclient-dev libpq-dev libsvn-dev \
-                 firebird2.1-dev libncp-dev
+                 firebird-dev libncp-dev
 ```
 
 This enables all optional modules and features with the exception of Oracle,
@@ -96,8 +96,8 @@ and compile them manually.
 
 SUPPORTED PLATFORMS
 -------------------
-- All UNIX platforms (linux, *bsd, solaris, etc.)
-- MacOS
+- All UNIX platforms (Linux, *bsd, Solaris, etc.)
+- MacOS (basically a BSD clone)
 - Windows with Cygwin (both IPv4 and IPv6)
 - Mobile systems based on Linux, MacOS or QNX (e.g. Android, iPhone, Blackberry 10, Zaurus, iPaq)
 
@@ -117,12 +117,12 @@ For Linux users, a GTK gui is available, try `./xhydra`
 
 For the command line usage, the syntax is as follows:
  For attacking one target or a network, you can use the new "://" style:
-  hydra [some command line options] PROTOCOL://TARGET:PORT/OPTIONS
+  hydra [some command line options] PROTOCOL://TARGET:PORT/MODULE-OPTIONS
  The old mode can be used for these too, and additionally if you want to
  specify your targets from a text file, you *must* use this one:
 
 ```
-hydra [some command line options] [-s port] TARGET PROTOCOL OPTIONS
+hydra [some command line options] [-s PORT] TARGET PROTOCOL [MODULE-OPTIONS]
 ```
 
 Via the command line options you specify which logins to try, which passwords,
@@ -131,7 +131,7 @@ if SSL should be used, how many parallel tasks to use for attacking, etc.
 PROTOCOL is the protocol you want to use for attacking, e.g. ftp, smtp,
 http-get or many others are available
 TARGET is the target you want to attack
-OPTIONS are optional values which are special per PROTOCOL module
+MODULE-OPTIONS are optional values which are special per PROTOCOL module
 
 FIRST - select your target
  you have three options on how to specify the target you want to attack:
@@ -156,7 +156,7 @@ FOURTH - the destination port
 If you use "://" notation, you must use "[" "]" brackets if you want to supply
 IPv6 addresses or CIDR ("192.168.0.0/24") notations to attack:
   hydra [some command line options] ftp://[192.168.0.0/24]/
-  hydra [some command line options] -6 smtp://[2001:db8::1]/NTLM
+  hydra [some command line options] -6 smtps://[2001:db8::1]/NTLM
 
 Note that everything hydra does is IPv4 only!
 If you want to attack IPv6 addresses, you must add the "-6" command line option.
