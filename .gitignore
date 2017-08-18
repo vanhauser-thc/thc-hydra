@@ -11,5 +11,5 @@ hydra-gtk/errors
 hydra-gtk/src/.deps/
 hydra-gtk/stamp-h
 pw-inspector
-pw-inspector.exe
+pw-inspectot.exe
 hydra.restore
