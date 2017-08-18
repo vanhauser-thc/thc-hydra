@@ -34,6 +34,8 @@ It's particularly true on windows XP
 
 */
 
+#include <hydra-mod.h>
+
 #ifndef LIBOPENSSL
 #include <stdio.h>
 void dummy_rdp() {
