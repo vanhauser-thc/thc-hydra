@@ -894,7 +894,7 @@ void hydra_restore_read() {
   if (debug)
     printf("[DEBUG] reading restore file: Step 10 complete\n");
 
-  hydra_targets = malloc((hydra_brains.targets + 3) * sizeof(hydra_targets));
+  hydra_targets = (hydra_target **) malloc((hydra_brains.targets + 3) * sizeof(hydra_target*));
   for (j = 0; j < hydra_brains.targets; j++) {
     hydra_targets[j] = malloc(sizeof(hydra_target));
     fck = (int32_t) fread(hydra_targets[j], sizeof(hydra_target), 1, f);
@@ -3397,7 +3397,7 @@ int32_t main(int32_t argc, char *argv[]) {
       four_from = (addr4 & l);
       l = 1 << (32 - k);
       hydra_brains.targets = countservers = l;
-      hydra_targets = malloc(sizeof(hydra_target*) * (l + 2) + 8);
+      hydra_targets = (hydra_target**)malloc(sizeof(hydra_target*) * (l + 2) + 8);
       if (hydra_targets == NULL)
         bail("Could not allocate enough memory for target data");
       i = 0;
