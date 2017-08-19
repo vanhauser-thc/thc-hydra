@@ -135,8 +135,8 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
       return 3;
     return 1;
   default:
-    free(buf);
     hydra_report(stderr, "[ERROR] unknown VNC server security result %d\n", buf[3]);
+    free(buf);
     return 1;
   }
 

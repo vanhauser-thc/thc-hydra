@@ -86,7 +86,7 @@ char *message2buffer(struct rmessage *msg) {
 
   switch(msg->type) {
     case 0x1b: //Challenge request
-      data = calloc (10, sizeof(unsigned char));
+      data = (char *)calloc (10, sizeof(char));
       if(data == NULL) {
         hydra_report(stderr, "calloc failure\n");
         hydra_child_exit(0);
@@ -97,7 +97,7 @@ char *message2buffer(struct rmessage *msg) {
       memcpy((data+9), &msg->type, sizeof(char));
       break;
     case 0x09:
-      data = calloc (42, sizeof(unsigned char));
+      data = (char *)calloc (42, sizeof(char));
       if(data == NULL) {
         hydra_report(stderr, "calloc failure\n");
         hydra_child_exit(0);

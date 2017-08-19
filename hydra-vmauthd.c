@@ -108,8 +108,8 @@ void service_vmauthd(char *ip, int32_t sp, unsigned char options, char *miscptr,
         hydra_child_exit(2);
       }
       if ((strstr(buf, "Version 1.00") == NULL) && (strstr(buf, "Version 1.10") == NULL)) {
-        free(buf);
         hydra_report(stderr, "[ERROR] this vmware authd protocol is not supported, please report: %s\n", buf);
+        free(buf);
         hydra_child_exit(2);
       }
       //by default this service is waiting for ssl connections      

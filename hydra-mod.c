@@ -288,9 +288,9 @@ int32_t internal__hydra_connect(char *host, int32_t port, int32_t protocol, int3
           if (debug)
             printf("DEBUG_CONNECT_PROXY_OK\n");
         } else {
-          if (debug)
+          if (debug && tmpptr)
             printf("DEBUG_CONNECT_PROXY_FAILED (Code: %c%c%c)\n", *tmpptr, *(tmpptr + 1), *(tmpptr + 2));
-          if (verbose)
+          if (verbose && tmpptr)
             fprintf(stderr, "[ERROR] CONNECT call to proxy failed with code %c%c%c\n", *tmpptr, *(tmpptr + 1), *(tmpptr + 2));
           err = 1;
         }
@@ -948,7 +948,6 @@ char *hydra_receive_line(int32_t socket) {
   } else {
     if (debug)
       printf("[DEBUG] hydra_data_ready_timed: %d, waittime: %d, conwait: %d, socket: %d\n", i, waittime, conwait, socket);
-    i = 0;
   }
 
   if (got < 0) {
