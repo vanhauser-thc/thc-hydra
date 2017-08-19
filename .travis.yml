@@ -9,7 +9,7 @@ compiler:
   - gcc
 matrix:
 before_install:
-  - $CC --version
+  - if [ "$TRAVIS_OS_NAME" == "osx" ];then brew install libgcrypt; fi
 before_script:
   ./configure
 script:
