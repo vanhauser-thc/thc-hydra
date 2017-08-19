@@ -3,6 +3,14 @@
 
 #include "hydra.h"
 
+#ifdef __sun
+  #include <sys/int_types.h>
+#elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX)
+  #include <inttypes.h>
+#else
+  #include <stdint.h>
+#endif
+
 extern char quiet;
 
 extern void hydra_child_exit(int32_t code);

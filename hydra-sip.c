@@ -5,6 +5,9 @@
  *
  * 05042011 david: modified to use sasl lib
  */
+
+#include "hydra-mod.h"
+
 #ifndef LIBOPENSSL
 #include <stdio.h>
 void dummy_sip() {
@@ -12,15 +15,7 @@ void dummy_sip() {
 }
 #else
 
-#ifdef __sun
-  #include <sys/int_types.h>
-#elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX)
-  #include <inttypes.h>
-#else
-  #include <stdint.h>
-#endif
 #include "sasl.h"
-#include "hydra-mod.h"
 
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
