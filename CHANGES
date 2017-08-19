@@ -4,7 +4,7 @@ Changelog for hydra
 
 Release 8.7-dev
 * added patch from debian maintainers which fixes spellings
-* a few warning fixes by crondaemon
+* many warning fixes by crondaemon
 
 
 Release 8.6
