@@ -130,6 +130,12 @@ if [ "$SYSS" = "Linux" -o "$SYSS" = "OpenBSD" -o "$SYSS" = "FreeBSD" -o "$SYSS" 
     echo Detected 64 Bit $SYSS OS
   fi
 fi
+# On macOS /usr/include only exists if one has installed the Command Line Tools package.
+# If this is an Xcode-only system we need to look inside the SDK for headers.
+SDK_PATH=""
+if [ "$SYSS" = "Darwin" ] && [ ! -d "/usr/include" ]; then
+  SDK_PATH=`xcrun --show-sdk-path`
+fi
 LIBDIRS=`cat /etc/ld.so.conf /etc/ld.so.conf.d/* 2> /dev/null | grep -v '^#' | sort | uniq`
 if [ "$SIXFOUR" = "64" ]; then
   LIBDIRS="$LIBDIRS /lib64 /usr/lib64 /usr/local/lib64 /opt/local/lib64"
@@ -138,7 +144,7 @@ if [ -d "/Library/Developer/CommandLineTools/usr/lib" ]; then
   LIBDIRS="$LIBDIRS /Library/Developer/CommandLineTools/usr/lib /Library/Developer/CommandLineTools/lib"
 fi
 LIBDIRS="$LIBDIRS /lib /usr/lib /usr/local/lib /opt/local/lib"
-INCDIRS="/usr/include /usr/local/include /opt/include /opt/local/include"
+INCDIRS="$SDK_PATH/usr/include /usr/local/include /opt/include /opt/local/include"
 if [ -n "$PREFIX" ]; then
     if [ -d "$PREFIX/lib" ]; then
         LIBDIRS="$LIBDIRS $PREFIX/lib"
@@ -646,7 +652,7 @@ if [ "X" != "X$DEBUG" ]; then
    echo DEBUG: MYSQL_IPATH=$MYSQL_IPATH/mysql.h
 fi
 MATH=""
-if [ -f "/usr/include/math.h" ]; then
+if [ -f "$SDK_PATH/usr/include/math.h" ]; then
    MATH="-DHAVE_MATH_H"
    if [ -n "$MYSQL_PATH" -a -n "$MYSQL_IPATH" -a -n "$MATH" ]; then
       echo "                                                      ... found"
