@@ -3522,17 +3522,22 @@ int32_t main(int32_t argc, char *argv[]) {
   options = 0;
   if (hydra_options.ssl)
     options = options | OPTION_SSL;
-  if (hydra_options.colonfile != NULL)
-    printf("[DATA] max %d task%s per %d server%s, overall %d tasks, %lu login tr%s, ~%lu tr%s per task\n", hydra_options.tasks, hydra_options.tasks == 1 ? "" : "s",
-           hydra_brains.targets, hydra_brains.targets == 1 ? "" : "s", hydra_options.max_use, hydra_brains.todo, hydra_brains.todo == 1 ? "y" : "ies", math2,
-           math2 == 1 ? "y" : "ies");
-  else
-    printf("[DATA] max %d task%s per %d server%s, overall %d task%s, %lu login tr%s (l:%lu/p:%lu), ~%lu tr%s per task\n", hydra_options.tasks, hydra_options.tasks == 1 ? "" : "s",
-           hydra_brains.targets, hydra_brains.targets == 1 ? "" : "s",
-           hydra_options.max_use, hydra_options.max_use == 1 ? "" : "s",
-           hydra_brains.todo, hydra_brains.todo == 1 ? "y" : "ies",
+
+  printf("[DATA] max %d task%s per %d server%s, overall %d task%s, %lu login tr",
+         hydra_options.tasks, hydra_options.tasks == 1 ? "" : "s",
+         hydra_brains.targets, hydra_brains.targets == 1 ? "" : "s",
+         hydra_options.max_use, hydra_options.max_use == 1 ? "" : "s",
+         hydra_brains.todo);
+  printf("%s", hydra_brains.todo == 1 ? "y" : "ies");
+  if (hydra_options.colonfile == NULL) {
+    printf(" (l:%lu/p:%lu), ~%lu tr", 
            (uint64_t) hydra_brains.countlogin, (uint64_t) hydra_brains.countpass,
-           math2, math2 == 1 ? "y" : "ies");
+           math2);
+  } else {
+    printf(", ~%lu tr", math2);
+  }
+  printf("%s", math2 == 1 ? "y" : "ies");
+  printf(" per task\n");
 
   if (hydra_brains.targets == 1) {
     if (index(hydra_targets[0]->target, ':') == NULL)
@@ -4014,8 +4019,11 @@ int32_t main(int32_t argc, char *argv[]) {
       fprintf(stderr, "[ERROR] illegal target result value (%d=>%d)\n", i, hydra_targets[i]->done);
     }
 
-  printf("%d of %d target%s%scompleted, %lu valid password%s found\n", hydra_brains.targets - j - k - error, hydra_brains.targets, hydra_brains.targets == 1 ? " " : "s ",
-         hydra_brains.found > 0 ? "successfully " : "", hydra_brains.found, hydra_brains.found == 1 ? "" : "s");
+  printf("%d of %d target%s%scompleted, %lu valid password", 
+         hydra_brains.targets - j - k - error, hydra_brains.targets, hydra_brains.targets == 1 ? " " : "s ",
+         hydra_brains.found > 0 ? "successfully " : "", hydra_brains.found);
+  printf("%s", hydra_brains.found == 1 ? "" : "s");
+  printf(" found\n");
 
   error += j;
   k = 0;
