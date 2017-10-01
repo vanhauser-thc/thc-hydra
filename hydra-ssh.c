@@ -191,9 +191,15 @@ int32_t service_ssh_init(char *ip, int32_t sp, unsigned char options, char *misc
   ssh_finalize();
   ssh_free(session);
 
+  if (debug) printf("[DEBUG] SSH method check: %08x\n", method);
+
   if ((method & SSH_AUTH_METHOD_INTERACTIVE) || (method & SSH_AUTH_METHOD_PASSWORD)) {
     if (verbose || debug)
       printf("[INFO] Successful, password authentication is supported by ssh://%s:%d\n", hydra_address2string_beautiful(ip), port);
+    return 0;
+  } else if (method == 0) {
+    if (verbose || debug)
+      fprintf(stderr, "[WARNING] invalid SSH method reply from ssh://%s:%d, continuing anyway ... (check for empty password!)\n", hydra_address2string_beautiful(ip), port);
     return 0;
   }
 
