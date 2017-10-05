@@ -2105,7 +2105,7 @@ void process_proxy_line(int32_t type, char *string) {
   proxy_count++;
 }
 
-int32_t main(int32_t argc, char *argv[]) {
+int main(int argc, char *argv[]) {
   char *proxy_string = NULL, *device = NULL, *memcheck, *cmdtarget = NULL;
   char *outfile_format_tmp;
   FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL, *proxyfp;

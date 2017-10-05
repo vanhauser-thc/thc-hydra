@@ -36,7 +36,7 @@ void help() {
   exit(-1);
 }
 
-int32_t main(int32_t argc, char *argv[]) {
+int main(int argc, char *argv[]) {
   int32_t i, j, k;
   int32_t sets = 0, countsets = 0, minlen = 0, maxlen = MAXLENGTH, count = 0;
   int32_t set_low = 0, set_up = 0, set_no = 0, set_print = 0, set_other = 0;
