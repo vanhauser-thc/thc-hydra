@@ -654,7 +654,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
 			else
 				hdrrepv(&ptr_head, "Cookie", cookie_header);
     	normal_request = stringify_headers(&ptr_head);
-      http_request = prepare_http_request("GET", url, upd3variables, normal_request);
+      http_request = prepare_http_request("GET", proxy_string, upd3variables, normal_request);
       if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
         return 1;
     }
@@ -702,7 +702,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
 				else
 					hdrrepv(&ptr_head, "Cookie", cookie_header);
       	normal_request = stringify_headers(&ptr_head);
-        http_request = prepare_http_request("GET", url, upd3variables, normal_request);
+        http_request = prepare_http_request("GET", proxy_string, upd3variables, normal_request);
         if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
           return 1;
       }
