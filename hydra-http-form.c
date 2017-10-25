@@ -583,7 +583,7 @@ void hydra_reconnect(int32_t s, char *ip, int32_t port, unsigned char options, c
 
 int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp, char *hostname, char *type, ptr_header_node ptr_head, ptr_cookie_node ptr_cookie) {
   char *empty = "";
-  char *login, *pass, clogin[256], cpass[256];
+  char *login, *pass, clogin[256], cpass[256], b64login[345], b64pass[345];
   char header[8096], *upd3variables;
   char *cookie_header = NULL;
   char *http_request;
@@ -601,16 +601,24 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
     login = empty;
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
+  strcpy(b64login, login);
+  hydra_tobase64((unsigned char *)b64login, strlen(b64login), sizeof(b64login));
+  strcpy(b64pass, pass);
+  hydra_tobase64((unsigned char *)b64pass, strlen(b64pass), sizeof(b64pass));
   strncpy(clogin, html_encode(login), sizeof(clogin) - 1);
   clogin[sizeof(clogin) - 1] = 0;
   strncpy(cpass, html_encode(pass), sizeof(cpass) - 1);
   cpass[sizeof(cpass) - 1] = 0;
   upd3variables = hydra_strrep(variables, "^USER^", clogin);
   upd3variables = hydra_strrep(upd3variables, "^PASS^", cpass);
+  upd3variables = hydra_strrep(upd3variables, "^USER64^", b64login);
+  upd3variables = hydra_strrep(upd3variables, "^PASS64^", b64pass);
 
   // Replace the user/pass placeholders in the user-supplied headers
   hdrrep(&ptr_head, "^USER^", clogin);
   hdrrep(&ptr_head, "^PASS^", cpass);
+  hdrrep(&ptr_head, "^USER64^", b64login);
+  hdrrep(&ptr_head, "^PASS64^", b64pass);
 
   /* again: no snprintf to be portable. don't worry, buffer can't overflow */
   if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL) {
@@ -1253,8 +1261,8 @@ void usage_http_form(const char* service) {
          "\nSyntax:   <url>:<form parameters>:<condition string>[:<optional>[:<optional>]\n"
          "First is the page on the server to GET or POST to (URL).\n"
          "Second is the POST/GET variables (taken from either the browser, proxy, etc.\n"
-         " with usernames and passwords being replaced in the \"^USER^\" and \"^PASS^\"\n"
-         " placeholders (FORM PARAMETERS)\n"
+         " with url-encoded (resp. base64-encoded) usernames and passwords being replaced in the\n"
+         " \"^USER^\" (resp. \"^USER64^\") and \"^PASS^\" (resp. \"^PASS64^\") placeholders (FORM PARAMETERS)\n"
          "Third is the string that it checks for an *invalid* login (by default)\n"
          " Invalid condition login check can be preceded by \"F=\", successful condition\n"
          " login check must be preceded by \"S=\".\n"
@@ -1263,7 +1271,7 @@ void usage_http_form(const char* service) {
          "The following parameters are optional:\n"
          " C=/page/uri     to define a different page to gather initial cookies from\n"
          " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each request\n"
-         "                 ^USER^ and ^PASS^ can also be put into these headers!\n"
+         "                 ^USER[64]^ and ^PASS[64]^ can also be put into these headers!\n"
          "                 Note: 'h' will add the user-defined header at the end\n"
          "                 regardless it's already being sent by Hydra or not.\n"
          "                 'H' will replace the value of that header if it exists, by the\n"
@@ -1274,7 +1282,7 @@ void usage_http_form(const char* service) {
          " in the header value itself, as they will be interpreted by hydra as option separators.\n"
          "\nExamples:\n"
          " \"/login.php:user=^USER^&pass=^PASS^:incorrect\"\n"
-         " \"/login.php:user=^USER^&pass=^PASS^&colon=colon\\:escape:S=authlog=.*success\"\n"
+         " \"/login.php:user=^USER64^&pass=^PASS64^&colon=colon\\:escape:S=authlog=.*success\"\n"
          " \"/login.php:user=^USER^&pass=^PASS^&mid=123:authlog=.*failed\"\n"
          " \"/:user=^USER&pass=^PASS^:failed:H=Authorization\\: Basic dT1w:H=Cookie\\: sessid=aaaa:h=X-User\\: ^USER^:H=User-Agent\\: wget\"\n"
          " \"/exchweb/bin/auth/owaauth.dll:destination=http%%3A%%2F%%2F<target>%%2Fexchange&flags=0&username=<domain>%%5C^USER^&password=^PASS^&SubmitCreds=x&trusted=0:reason=:C=/exchweb\"\n",
