@@ -3037,8 +3037,8 @@ int main(int argc, char *argv[]) {
         variables = strtok(NULL, ":");
         cond = strtok(NULL, ":");
         optional1 = strtok(NULL, "\n");
-        if ((variables == NULL) || (strstr(variables, "^USER^") == NULL && strstr(variables, "^PASS^") == NULL)) {
-          fprintf(stderr, "[ERROR] the variables argument needs at least the strings ^USER^ or ^PASS^: %s\n", STR_NULL(variables));
+        if ((variables == NULL) || (strstr(variables, "^USER^") == NULL && strstr(variables, "^PASS^") == NULL && strstr(variables, "^USER64^") == NULL && strstr(variables, "^PASS64^") == NULL)) {
+          fprintf(stderr, "[ERROR] the variables argument needs at least the strings ^USER^, ^PASS^, ^USER64^ or ^PASS64^: %s\n", STR_NULL(variables));
           exit(-1);
         }
         if ((url == NULL) || (cond == NULL)) {
