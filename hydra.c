@@ -4100,7 +4100,7 @@ int main(int argc, char *argv[]) {
   }
 
   fflush(NULL);
-  if (error || j || exit_condition < 0)
+  if (error || j != 0 || exit_condition < 0)
     return -1;
   else
     return 0;
