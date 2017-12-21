@@ -3541,11 +3541,11 @@ int main(int argc, char *argv[]) {
 
   if (hydra_brains.targets == 1) {
     if (index(hydra_targets[0]->target, ':') == NULL)
-      printf("[DATA] attacking %s%s://%s:%d/%s\n", hydra_options.service, hydra_options.ssl == 1 ? "s" : "", hydra_targets[0]->target, port, hydra_options.miscptr != NULL ? hydra_options.miscptr : "");
+      printf("[DATA] attacking %s%s://%s:%d%s%s\n", hydra_options.service, hydra_options.ssl == 1 ? "s" : "", hydra_targets[0]->target, port, strstr(hydra_options.miscptr, "/") == hydra_options.miscptr ? "" : "/", hydra_options.miscptr != NULL ? hydra_options.miscptr : "");
     else
-      printf("[DATA] attacking %s%s://[%s]:%d/%s\n", hydra_options.service, hydra_options.ssl == 1 ? "s" : "", hydra_targets[0]->target, port, hydra_options.miscptr != NULL ? hydra_options.miscptr : "");
+      printf("[DATA] attacking %s%s://[%s]:%d%s%s\n", hydra_options.service, hydra_options.ssl == 1 ? "s" : "", hydra_targets[0]->target, port, strstr(hydra_options.miscptr, "/") == hydra_options.miscptr ? "" : "/", hydra_options.miscptr != NULL ? hydra_options.miscptr : "");
   } else
-    printf("[DATA] attacking %s%s://(%d targets):%d/%s\n", hydra_options.service, hydra_options.ssl == 1 ? "s" : "", hydra_brains.targets, port, hydra_options.miscptr != NULL ? hydra_options.miscptr : "");
+    printf("[DATA] attacking %s%s://(%d targets):%d%s%s\n", hydra_options.service, hydra_options.ssl == 1 ? "s" : "", hydra_brains.targets, port, strstr(hydra_options.miscptr, "/") == hydra_options.miscptr ? "" : "/", hydra_options.miscptr != NULL ? hydra_options.miscptr : "");
    //service %s on port %d%s\n", hydra_options.service, port, hydra_options.ssl == 1 ? " with SSL" : "");
 //  if (hydra_options.miscptr != NULL && hydra_options.miscptr[0] != 0)
 //    printf("[DATA] with additional data %s\n", hydra_options.miscptr);
