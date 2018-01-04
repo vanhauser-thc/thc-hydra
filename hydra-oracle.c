@@ -83,9 +83,7 @@ int32_t start_oracle(int32_t s, char *ip, int32_t port, unsigned char options, c
     return 4;
   }
 
-  // deprecated: if (OCILogon(o_environment, o_error, &o_servicecontext, (const OraText *) login, strlen(login), (const OraText *) pass, strlen(pass), (const OraText *) buffer, strlen(buffer))) {
-  if (oci_connect(login, pass, connect
-  o_environment, o_error, &o_servicecontext, (const OraText *) login, strlen(login), (const OraText *) pass, strlen(pass), (const OraText *) buffer, strlen(buffer))) {
+  if (OCILogon(o_environment, o_error, &o_servicecontext, (const OraText *) login, strlen(login), (const OraText *) pass, strlen(pass), (const OraText *) buffer, strlen(buffer))) {
     OCIErrorGet(o_error, 1, NULL, &o_errorcode, o_errormsg, sizeof(o_errormsg), OCI_HTYPE_ERROR);
     //database: oracle_error: ORA-01017: invalid username/password; logon denied
     //database: oracle_error: ORA-12514: TNS:listener does not currently know of service requested in connect descriptor
