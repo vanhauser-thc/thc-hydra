@@ -1,5 +1,5 @@
 /*
- * hydra (c) 2001-2017 by van Hauser / THC <vh@thc.org>
+ * hydra (c) 2001-2018 by van Hauser / THC <vh@thc.org>
  * http://www.thc.org
  *
  * Parallized network login hacker.
@@ -2123,7 +2123,7 @@ int main(int argc, char *argv[]) {
   struct sockaddr_in6 *ipv6 = NULL;
   struct sockaddr_in *ipv4 = NULL;
 
-  printf("%s %s (c) 2017 by %s - Please do not use in military or secret service organizations, or for illegal purposes.\n\n", PROGRAM, VERSION, AUTHOR);
+  printf("%s %s (c) 2018 by %s - Please do not use in military or secret service organizations, or for illegal purposes.\n\n", PROGRAM, VERSION, AUTHOR);
 #ifndef LIBAFP
   SERVICES = hydra_string_replace(SERVICES, "afp ", "");
   strcat(unsupported, "afp ");

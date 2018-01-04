@@ -1,5 +1,5 @@
 #
-# Makefile for Hydra - (c) 2001-2017 by van Hauser / THC <vh@thc.org>
+# Makefile for Hydra - (c) 2001-2018 by van Hauser / THC <vh@thc.org>
 #
 OPTS=-I. -O3
 # -Wall -g -pedantic
