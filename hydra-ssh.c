@@ -181,6 +181,7 @@ int32_t service_ssh_init(char *ip, int32_t sp, unsigned char options, char *misc
     ssh_options_set(session, SSH_OPTIONS_USER, "hydra");
   else
     ssh_options_set(session, SSH_OPTIONS_USER, miscptr);
+  ssh_options_set(session, SSH_OPTIONS_TIMEOUT, &hydra_options.waittime);
   ssh_options_set(session, SSH_OPTIONS_COMPRESSION_C_S, "none");
   ssh_options_set(session, SSH_OPTIONS_COMPRESSION_S_C, "none");
   if (ssh_connect(session) != 0) {
