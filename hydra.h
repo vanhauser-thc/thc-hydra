@@ -162,5 +162,55 @@
   int32_t usleepn(uint32_t useconds);
 #endif
 
+typedef enum {
+  MODE_PASSWORD_LIST = 1,
+  MODE_LOGIN_LIST = 2,
+  MODE_PASSWORD_BRUTE = 4,
+  MODE_PASSWORD_REVERSE = 8,
+  MODE_PASSWORD_NULL = 16,
+  MODE_PASSWORD_SAME = 32,
+  MODE_COLON_FILE = 64
+} hydra_mode_t;
+
+typedef enum {
+  FORMAT_PLAIN_TEXT,
+  FORMAT_JSONV1,
+  FORMAT_JSONV2,
+  FORMAT_XMLV1
+} output_format_t;
+
+typedef struct {
+  hydra_mode_t mode;
+  int32_t loop_mode;                // valid modes: 0 = password, 1 = user
+  int32_t ssl;
+  int32_t restore;
+  int32_t debug;                    // is external - for restore
+  int32_t verbose;                  // is external - for restore
+  int32_t showAttempt;
+  int32_t tasks;
+  int32_t try_null_password;
+  int32_t try_password_same_as_login;
+  int32_t try_password_reverse_login;
+  int32_t exit_found;
+  int32_t max_use;
+  int32_t cidr;
+  int32_t time_next_attempt;
+  output_format_t outfile_format;
+  char *login;
+  char *loginfile;
+  char *pass;
+  char *passfile;
+  char *outfile_ptr;
+  char *infile_ptr;
+  char *colonfile;
+  int32_t waittime;                 // is external - for restore
+  int32_t conwait;                  // is external - for restore
+  uint32_t port;            // is external - for restore
+  char *miscptr;
+  char *server;
+  char *service;
+  char bfg;
+} hydra_option;
+
 #define _HYDRA_H
 #endif

@@ -19,6 +19,7 @@ void dummy_ssh() {
 
 ssh_session session = NULL;
 
+extern hydra_option hydra_options;
 extern char *HYDRA_EXIT;
 int32_t new_session = 1;
 
@@ -43,6 +44,7 @@ int32_t start_ssh(int32_t s, char *ip, int32_t port, unsigned char options, char
     ssh_options_set(session, SSH_OPTIONS_PORT, &port);
     ssh_options_set(session, SSH_OPTIONS_HOST, hydra_address2string(ip));
     ssh_options_set(session, SSH_OPTIONS_USER, login);
+    ssh_options_set(session, SSH_OPTIONS_TIMEOUT, &hydra_options.waittime);
     ssh_options_set(session, SSH_OPTIONS_COMPRESSION_C_S, "none");
     ssh_options_set(session, SSH_OPTIONS_COMPRESSION_S_C, "none");
     if (ssh_connect(session) != 0) {
