@@ -283,6 +283,12 @@ int32_t internal__hydra_connect(char *host, int32_t port, int32_t protocol, int3
           snprintf(buf, 4096, "CONNECT %s:%d HTTP/1.0\r\nProxy-Authorization: Basic %s\r\n\r\n", hydra_address2string(host), port, proxy_authentication[selected_proxy]);
 
         send(s, buf, strlen(buf), 0);
+        if (debug) {
+          char *ptr = index(buf, '\r');
+          if (ptr != NULL)
+            *ptr = 0;
+          printf("DEBUG_CONNECT_PROXY_SENT: %s\n", buf);
+        }
         recv(s, buf, 4096, 0);
         if (strncmp("HTTP/", buf, 5) == 0 && (tmpptr = index(buf, ' ')) != NULL && *++tmpptr == '2') {
           if (debug)
