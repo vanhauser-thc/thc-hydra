@@ -3513,10 +3513,7 @@ int main(int argc, char *argv[]) {
       exit(-1);
     }
     if (hydra_options.outfile_format == FORMAT_JSONV1) {
-		sprintf(output,"%s", "{ \"generator\": {"
-              "\"software\": \"%s\", \"version\": \"%s\", \"built\": \"%s\","
-              "\"server\": \"%s\", \"service\": \"%s\", \"jsonoutputversion\": \"1.00\",\n"
-              "\"commandline\": \"%s");
+	  //sprintf(output, "{\"test\":\"test\"}");
       fprintf(hydra_brains.ofp, "{ \"generator\": {\n"
               "\t\"software\": \"%s\", \"version\": \"%s\", \"built\": \"%s\",\n"
               "\t\"server\": \"%s\", \"service\": \"%s\", \"jsonoutputversion\": \"1.00\",\n"
@@ -4062,8 +4059,7 @@ int main(int argc, char *argv[]) {
     } 
     fclose(hydra_brains.ofp);
   }
-  set("output", output);
-  printf("%d", output);
+  //set("output", output);
   redis_free();
   fflush(NULL);
   if (error || j != 0 || exit_condition < 0)
