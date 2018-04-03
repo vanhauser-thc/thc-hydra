@@ -28,6 +28,7 @@
 #include <sys/resource.h>
 #include <sys/wait.h>
 #include <errno.h>
+#include "output-redis.h"
 
 #ifdef HAVE_OPENSSL
   #define HYDRA_SSL

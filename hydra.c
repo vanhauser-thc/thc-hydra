@@ -9,6 +9,7 @@
  */
 #include "hydra.h"
 #include "bfg.h"
+#include "output-redis.h"
 
 #ifdef LIBNCURSES
 #include <curses.h>
@@ -2058,6 +2059,7 @@ void process_proxy_line(int32_t type, char *string) {
 int main(int argc, char *argv[]) {
   char *proxy_string = NULL, *device = NULL, *memcheck, *cmdtarget = NULL;
   char *outfile_format_tmp;
+  char *output;
   FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL, *proxyfp;
   size_t countinfile = 1, sizeinfile = 0;
   uint64_t math2;
@@ -3511,12 +3513,18 @@ int main(int argc, char *argv[]) {
       exit(-1);
     }
     if (hydra_options.outfile_format == FORMAT_JSONV1) {
+		sprintf(output,"%s", "{ \"generator\": {"
+              "\"software\": \"%s\", \"version\": \"%s\", \"built\": \"%s\","
+              "\"server\": \"%s\", \"service\": \"%s\", \"jsonoutputversion\": \"1.00\",\n"
+              "\"commandline\": \"%s");
       fprintf(hydra_brains.ofp, "{ \"generator\": {\n"
               "\t\"software\": \"%s\", \"version\": \"%s\", \"built\": \"%s\",\n"
               "\t\"server\": \"%s\", \"service\": \"%s\", \"jsonoutputversion\": \"1.00\",\n"
               "\t\"commandline\": \"%s",
             PROGRAM, VERSION, hydra_build_time(),
             hydra_options.server == NULL ? hydra_options.infile_ptr : hydra_options.server, hydra_options.service, prg);
+			set("a", "2");
+
       for (i = 1; i < argc; i++) {
         char *t = hydra_string_replace(argv[i],"\"","\\\"");
         fprintf(hydra_brains.ofp, " %s", t);
@@ -3787,6 +3795,7 @@ int main(int argc, char *argv[]) {
                             hydra_heads[head_no]->current_pass_ptr != NULL ?  hydra_string_replace(hydra_heads[head_no]->current_pass_ptr,"\"","\\\"") : ""
                     );
                   fflush(hydra_brains.ofp);
+				  set("a", "3");
                 } else if (hydra_options.outfile_ptr != NULL && hydra_brains.ofp != NULL) {  // else output format == 0 aka text
                   if (hydra_heads[head_no]->current_login_ptr == NULL || strlen(hydra_heads[head_no]->current_login_ptr) == 0) {
                     if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0)
@@ -4053,7 +4062,9 @@ int main(int argc, char *argv[]) {
     } 
     fclose(hydra_brains.ofp);
   }
-
+  set("output", output);
+  printf("%d", output);
+  redis_free();
   fflush(NULL);
   if (error || j != 0 || exit_condition < 0)
     return -1;

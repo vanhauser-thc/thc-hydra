@@ -1,0 +1,5 @@
+#rm -f output-redis 
+#gcc output-redis.c -o output-redis -L./lib/hiredis -lhiredis
+make clean
+./configure
+make

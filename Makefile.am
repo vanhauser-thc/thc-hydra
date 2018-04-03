@@ -9,7 +9,7 @@ MANDIR ?= /man/man1/
 DATADIR ?= /etc
 DESTDIR ?=
 
-SRC = hydra-vnc.c hydra-pcnfs.c hydra-rexec.c hydra-nntp.c hydra-socks5.c \
+SRC = output-redis.c hydra-vnc.c hydra-pcnfs.c hydra-rexec.c hydra-nntp.c hydra-socks5.c \
       hydra-telnet.c hydra-cisco.c hydra-http.c hydra-ftp.c hydra-imap.c \
       hydra-pop3.c hydra-smb.c hydra-icq.c hydra-cisco-enable.c hydra-ldap.c \
       hydra-mysql.c hydra-mssql.c hydra-xmpp.c hydra-http-proxy-urlenum.c \
@@ -22,7 +22,7 @@ SRC = hydra-vnc.c hydra-pcnfs.c hydra-rexec.c hydra-nntp.c hydra-socks5.c \
       hydra-s7-300.c hydra-redis.c hydra-adam6500.c hydra-rtsp.c \
       hydra-rpcap.c hydra-radmin2.c \
       hydra-time.c crc32.c d3des.c bfg.c ntlm.c sasl.c hmacmd5.c hydra-mod.c
-OBJ = hydra-vnc.o hydra-pcnfs.o hydra-rexec.o hydra-nntp.o hydra-socks5.o \
+OBJ = output-redis.o hydra-vnc.o hydra-pcnfs.o hydra-rexec.o hydra-nntp.o hydra-socks5.o \
       hydra-telnet.o hydra-cisco.o hydra-http.o hydra-ftp.o hydra-imap.o \
       hydra-pop3.o hydra-smb.o hydra-icq.o hydra-cisco-enable.o hydra-ldap.o \
       hydra-mysql.o hydra-mssql.o hydra-xmpp.o hydra-http-proxy-urlenum.o \
@@ -38,14 +38,14 @@ OBJ = hydra-vnc.o hydra-pcnfs.o hydra-rexec.o hydra-nntp.o hydra-socks5.o \
 BINS = hydra pw-inspector
 
 EXTRA_DIST = README README.arm README.palm CHANGES TODO INSTALL LICENSE \
-             hydra-mod.h hydra.h crc32.h d3des.h
+             hydra-mod.h output-redis.h hydra.h crc32.h d3des.h
 
 all:	pw-inspector hydra $(XHYDRA_SUPPORT) 
 	@echo
 	@echo Now type "make install"
 
 hydra:	hydra.c $(OBJ)
-	$(CC) $(OPTS) $(SEC) $(LIBS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o hydra $(HYDRA_LOGO) hydra.c $(OBJ) $(LIBS) $(XLIBS) $(XLIBPATHS) $(XIPATHS) $(XDEFINES)
+	$(CC) $(OPTS) $(SEC) $(LIBS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o hydra $(HYDRA_LOGO) hydra.c $(OBJ) $(LIBS) $(XLIBS) $(XLIBPATHS) $(XIPATHS) $(XDEFINES) -L./lib/hiredis -lhiredis
 	@echo
 	@echo If men could get pregnant, abortion would be a sacrament
 	@echo
@@ -54,10 +54,10 @@ xhydra:
 	-cd hydra-gtk && sh ./make_xhydra.sh
 
 pw-inspector: pw-inspector.c
-	-$(CC) $(OPTS) $(SEC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o pw-inspector $(PWI_LOGO) pw-inspector.c
+	-$(CC) $(OPTS) $(SEC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o pw-inspector $(PWI_LOGO) pw-inspector.c 
 
 .c.o:	
-	$(CC) $(OPTS) $(SEC) $(CFLAGS) $(CPPFLAGS) -c $< $(XDEFINES) $(XIPATHS)
+	cd ./lib/hiredis && make && cd ../../ && $(CC) $(OPTS) $(SEC) $(CFLAGS) $(CPPFLAGS) -c $< $(XDEFINES) $(XIPATHS) -L./lib/hiredis -lhiredis
 
 strip:	all
 	strip $(BINS)
@@ -75,6 +75,7 @@ install:	strip
 	-cp -f hydra.1 xhydra.1 pw-inspector.1 $(DESTDIR)$(PREFIX)$(MANDIR)
 
 clean:
+	cd ./lib/hiredis && make clean && cd ../../
 	rm -rf xhydra pw-inspector hydra *.o core *.core *.stackdump *~ Makefile.in Makefile dev_rfc hydra.restore arm/*.ipk arm/ipkg/usr/bin/* hydra-gtk/src/*.o hydra-gtk/src/xhydra hydra-gtk/stamp-h hydra-gtk/config.status hydra-gtk/errors hydra-gtk/config.log hydra-gtk/src/.deps hydra-gtk/src/Makefile hydra-gtk/Makefile
 	cp -f Makefile.orig Makefile
 
