@@ -2157,7 +2157,8 @@ int main(int argc, char *argv[]) {
     strcat(unsupported, "and ");
   strcat(unsupported, "regex support ");
 #endif
-
+  output = malloc(sizeof(char) * 4096);
+  memset(output, 0, sizeof(char) * 4096);
   (void) setvbuf(stdout, NULL, _IONBF, 0);
   (void) setvbuf(stderr, NULL, _IONBF, 0);
   // set defaults
