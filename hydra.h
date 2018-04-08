@@ -177,6 +177,7 @@ typedef enum {
   FORMAT_PLAIN_TEXT,
   FORMAT_JSONV1,
   FORMAT_JSONV2,
+  FORMAT_REDIS,
   FORMAT_XMLV1
 } output_format_t;
 
@@ -211,6 +212,8 @@ typedef struct {
   char *server;
   char *service;
   char bfg;
+  char *key;            //redis save key
+  char *map_key;            //redis save map key
 } hydra_option;
 
 #define _HYDRA_H
