@@ -484,7 +484,8 @@ void help(int32_t ext) {
   PRINT_NORMAL(ext, "  -C FILE   colon separated \"login:pass\" format, instead of -L/-P options\n"
 					"  -M FILE   list of servers to attack, one entry per line, ':' to specify port\n");
   PRINT_EXTEND(ext, "  -o FILE   write found login/password pairs to FILE instead of stdout\n"
-					"  -b FORMAT specify the format for the -o FILE: text(default), json, jsonv1\n"
+					"  -b FORMAT specify the format for the -o FILE: text(default), json, jsonv1, redis\n"
+					"  -k		save result to redis, use this key\n"
 					"  -f / -F   exit when a login/pass pair is found (-M: -f per host, -F global)\n");
   PRINT_NORMAL(ext, "  -t TASKS  run TASKS number of connects in parallel per target (default: %d)\n", TASKS);
   PRINT_EXTEND(ext, "  -T TASKS  run TASKS connects in parallel overall (for -M, default: %d)\n"
@@ -524,7 +525,8 @@ void help(int32_t ext) {
   PRINT_EXTEND(ext, "  hydra -L userlist.txt -p defaultpw imap://192.168.0.1/PLAIN\n"
 					"  hydra -C defaults.txt -6 pop3s://[2001:db8::1]:143/TLS:DIGEST-MD5\n"
 					"  hydra -l admin -p password ftp://[192.168.0.0/24]/\n"
-					"  hydra -L logins.txt -P pws.txt -M targets.txt ssh\n");
+					"  hydra -L logins.txt -P pws.txt -M targets.txt ssh\n"
+					"  hydra -L logins.txt -P pws.txt -M targets.txt ssh -b redis -k key\n");
   exit(-1);
 }
 
