@@ -15,7 +15,7 @@ void dummy_sshkey() {
 
 #include <libssh/libssh.h>
 
-#if LIBSSH_VERSION_MAJOR == 0 && LIBSSH_VERSION_MINOR >= 4
+#if LIBSSH_VERSION_MAJOR >= 0 && LIBSSH_VERSION_MINOR >= 4
 
 extern ssh_session session;
 extern char *HYDRA_EXIT;
@@ -147,7 +147,7 @@ void service_sshkey(char *ip, int32_t sp, unsigned char options, char *miscptr, 
   }
 }
 #else
-#error "You are not using v0.4.x. Download from http://www.libssh.org and add -DWITH_SSH1=On in cmake to enable SSH v1 support"
+#error "You are not using at least v0.4.x. Download from http://www.libssh.org and add -DWITH_SSH1=On in cmake to enable SSH v1 support"
 #endif
 #endif
 
