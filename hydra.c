@@ -185,9 +185,6 @@ extern int32_t service_rtsp_init(char *ip, int32_t sp, unsigned char options, ch
 extern int32_t service_rpcap_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 
 // ADD NEW SERVICES HERE
-
-
-// ADD NEW SERVICES HERE
 char *SERVICES =
   "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp ftps http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres radmin2 rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
 
@@ -1055,14 +1052,6 @@ void fill_mem(char *ptr, FILE * fd, int32_t colonmode) {
               fprintf(stderr, "[ERROR] invalid line in colon file (-C), missing colon in line: %s\n", tmp);
               exit(-1);
             } else {
-              //              if (tmp[0] == ':') {
-              //                *ptr = 0;
-              //                ptr++;
-              //              }
-              //              if (tmp[len - 1] == ':' && len > 1) {
-              //                len++;
-              //                tmp[len - 1] = 0;
-              //              }
               *ptr2 = 0;
             }
           }
@@ -3049,7 +3038,6 @@ int main(int argc, char *argv[]) {
 
     // ADD NEW SERVICES HERE
 
-
     if (i == 0) {
       fprintf(stderr, "[ERROR] Unknown service: %s\n", hydra_options.service);
       exit(-1);
@@ -3920,15 +3908,6 @@ int main(int argc, char *argv[]) {
       for (j = 0; j < hydra_options.max_use; j++)
         if (hydra_heads[j]->active >= HEAD_UNUSED)
           k++;
-/*	I think we don't need this anymore
-      if ((hydra_brains.todo_all + total_redo_count) < hydra_brains.sent) { //in case of overflow of unsigned "-1"
-        for (i = 0; i < hydra_options.max_use; i++)
-          if (hydra_heads[i]->active > 0 && hydra_heads[i]->pid > 0)
-            hydra_kill_head(i, 1, 3);
-        printf("[BUG] %lu + %d < %lu\n", hydra_brains.todo_all, total_redo_count, hydra_brains.sent);
-        bail("[BUG] Weird bug detected where more tests were performed than possible. Please rerun with -d command line switch and post all output plus command line here: https://github.com/vanhauser-thc/thc-hydra/issues/113 or send it in an email to vh@thc.org");
-      }
-*/
       printf("[STATUS] %.2f tries/min, %lu tries in %02lu:%02luh, %lu to do in %02lu:%02luh, %d active\n", (1.0 * hydra_brains.sent) / (((elapsed_status - starttime) * 1.0) / 60),     // tries/min
              hydra_brains.sent, // tries
              (uint64_t) ((elapsed_status - starttime) / 3600), // hours
