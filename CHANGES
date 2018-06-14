@@ -3,6 +3,7 @@ Changelog for hydra
 
 
 Release 8.7-dev
+* mysql module: a non-default port was not working, fixed
 * added -w timeout support to ssh module
 * fixed various memory leaks in http-form module
 * corrected hydra return code to be 0 on success

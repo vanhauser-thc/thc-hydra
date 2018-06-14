@@ -212,7 +212,7 @@ int32_t start_mysql(int32_t sock, char *ip, int32_t port, unsigned char options,
       }
     }
     /*mysql_options(&mysql,MYSQL_OPT_COMPRESS,0); */
-    if (!mysql_real_connect(mysql, hydra_address2string(ip), login, pass, database, 0, NULL, 0)) {
+    if (!mysql_real_connect(mysql, hydra_address2string(ip), login, pass, database, port, NULL, 0)) {
       int32_t my_errno = mysql_errno(mysql);
 
       if (debug)
