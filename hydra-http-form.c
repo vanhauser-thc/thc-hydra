@@ -396,6 +396,92 @@ char *stringify_headers(ptr_header_node *ptr_head) {
   return headers_str;
 }
 
+ptr_header_node parse_options(char *miscptr) {
+  ptr_header_node ptr_head = NULL;
+  char *ptr, *ptr2;
+
+  /*
+   * Parse the user-supplied options.
+   * Beware of the backslashes (\)!
+   */
+  while (*miscptr != 0) {
+    switch (miscptr[0]) {
+    case 'c':                  // fall through
+    case 'C':
+      ptr = miscptr + 2;
+      while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
+        ptr++;
+      if (*ptr != 0)
+        *ptr++ = 0;
+      sprintf(cookieurl, "%.1000s", hydra_strrep(miscptr + 2, "\\:", ":"));
+      miscptr = ptr;
+      break;
+    case 'h':
+      // add a new header at the end
+      ptr = miscptr + 2;
+      while (*ptr != 0 && *ptr != ':')
+        ptr++;
+      if (*(ptr - 1) == '\\')
+        *(ptr - 1) = 0;
+      if (*ptr != 0) {
+        *ptr = 0;
+        ptr += 2;
+      }
+      ptr2 = ptr;
+      while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
+        ptr2++;
+      if (*ptr2 != 0)
+        *ptr2++ = 0;
+      /*
+       * At this point:
+       *  - (optional1 + 2) contains the header's name
+       *  - ptr contains the header's value
+       */
+      if (add_header(&ptr_head, miscptr + 2, hydra_strrep(ptr, "\\:", ":"), HEADER_TYPE_USERHEADER)) {
+        // Success: break the switch and go ahead
+        miscptr = ptr2;
+        break;
+      }
+      // Error: abort execution
+      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (h).");
+      return NULL;
+    case 'H':
+      // add a new header, or replace an existing one's value
+      ptr = miscptr + 2;
+      while (*ptr != 0 && *ptr != ':')
+        ptr++;
+
+      if (*(ptr - 1) == '\\')
+        *(ptr - 1) = 0;
+
+      if (*ptr != 0) {
+        *ptr = 0;
+        ptr += 2;
+      }
+      ptr2 = ptr;
+      while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
+        ptr2++;
+      if (*ptr2 != 0)
+        *ptr2++ = 0;
+      /*
+       * At this point:
+       *  - (optional1 + 2) contains the header's name
+       *  - ptr contains the header's value
+       */
+      if (add_header(&ptr_head, miscptr + 2, hydra_strrep(ptr, "\\:", ":"), HEADER_TYPE_USERHEADER_REPL)) {
+        // Success: break the switch and go ahead
+        miscptr = ptr2;
+        break;
+      }
+      // Error: abort execution
+      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (H).");
+      return NULL;
+      // no default
+    }
+  }
+
+  return ptr_head;
+}
 
 char *prepare_http_request(char *type, char *path, char *params, char *headers) {
   uint32_t reqlen = 0;
@@ -1100,7 +1186,7 @@ int32_t service_http_form_init(char *ip, int32_t sp, unsigned char options, char
 }
 
 ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
-  ptr_header_node ptr_head = NULL;
+  ptr_header_node ptr_head;
   char *ptr, *ptr2, *proxy_string;
 
   if (use_proxy > 0 && proxy_count > 0)
@@ -1200,81 +1286,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
    * Parse the user-supplied options.
    * Beware of the backslashes (\)!
    */
-  while (*optional1 != 0) {
-    switch (optional1[0]) {
-    case 'c':                  // fall through
-    case 'C':
-      ptr = optional1 + 2;
-      while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
-        ptr++;
-      if (*ptr != 0)
-        *ptr++ = 0;
-      sprintf(cookieurl, "%.1000s", hydra_strrep(optional1 + 2, "\\:", ":"));
-      optional1 = ptr;
-      break;
-    case 'h':
-      // add a new header at the end
-      ptr = optional1 + 2;
-      while (*ptr != 0 && *ptr != ':')
-        ptr++;
-      if (*(ptr - 1) == '\\')
-        *(ptr - 1) = 0;
-      if (*ptr != 0) {
-        *ptr = 0;
-        ptr += 2;
-      }
-      ptr2 = ptr;
-      while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
-        ptr2++;
-      if (*ptr2 != 0)
-        *ptr2++ = 0;
-      /*
-       * At this point:
-       *  - (optional1 + 2) contains the header's name
-       *  - ptr contains the header's value
-       */
-      if (add_header(&ptr_head, optional1 + 2, hydra_strrep(ptr, "\\:", ":"), HEADER_TYPE_USERHEADER)) {
-        // Success: break the switch and go ahead
-        optional1 = ptr2;
-        break;
-      }
-      // Error: abort execution
-      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (h).");
-      return NULL;
-    case 'H':
-      // add a new header, or replace an existing one's value
-      ptr = optional1 + 2;
-      while (*ptr != 0 && *ptr != ':')
-        ptr++;
-
-      if (*(ptr - 1) == '\\')
-        *(ptr - 1) = 0;
-
-      if (*ptr != 0) {
-        *ptr = 0;
-        ptr += 2;
-      }
-      ptr2 = ptr;
-      while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
-        ptr2++;
-      if (*ptr2 != 0)
-        *ptr2++ = 0;
-      /*
-       * At this point:
-       *  - (optional1 + 2) contains the header's name
-       *  - ptr contains the header's value
-       */
-      if (add_header(&ptr_head, optional1 + 2, hydra_strrep(ptr, "\\:", ":"), HEADER_TYPE_USERHEADER_REPL)) {
-        // Success: break the switch and go ahead
-        optional1 = ptr2;
-        break;
-      }
-      // Error: abort execution
-      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (H).");
-      return NULL;
-      // no default
-    }
-  }
+  ptr_head = parse_options(optional1);
 
   /* again: no snprintf to be portable. don't worry, buffer can't overflow */
   if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL) {
