@@ -50,6 +50,7 @@ Added fail or success condition, getting cookies, and allow 5 redirections by da
 */
 
 #include "hydra-mod.h"
+#include "hydra-http.h"
 
 /*	HTTP Header Types	*/
 #define HEADER_TYPE_USERHEADER                  'h'
@@ -61,12 +62,12 @@ extern char *HYDRA_EXIT;
 char *buf;
 char *cond;
 
-typedef struct header_node {
+struct header_node {
   char *header;
   char *value;
   char type;
   struct header_node *next;
-} t_header_node, *ptr_header_node;
+};
 
 typedef struct cookie_node {
   char *name;
@@ -81,8 +82,6 @@ int32_t auth_flag = 0;
 
 char cookie[4096] = "", cmiscptr[1024];
 
-extern char *webtarget;
-extern char *slash;
 int32_t webport, freemischttpform = 0;
 char bufferurl[6096 + 24], cookieurl[6096 + 24] = "", userheader[6096 + 24] = "", *url, *variables, *optional1;
 
