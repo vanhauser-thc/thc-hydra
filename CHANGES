@@ -3,6 +3,7 @@ Changelog for hydra
 
 
 Release 8.7-dev
+* http-get/http-post: now supports H=/h= parameters same as http-form (thanks to mathewmarcus@github for the patch)
 * mysql module: a non-default port was not working, fixed
 * added -w timeout support to ssh module
 * fixed various memory leaks in http-form module
