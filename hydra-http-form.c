@@ -49,14 +49,7 @@ Added fail or success condition, getting cookies, and allow 5 redirections by da
 
 */
 
-#include "hydra-mod.h"
 #include "hydra-http.h"
-
-/*	HTTP Header Types	*/
-#define HEADER_TYPE_USERHEADER                  'h'
-#define HEADER_TYPE_USERHEADER_REPL             'H'
-#define HEADER_TYPE_DEFAULT                     'D'
-#define HEADER_TYPE_DEFAULT_REPL                'd'
 
 extern char *HYDRA_EXIT;
 char *buf;
