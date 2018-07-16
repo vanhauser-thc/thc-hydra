@@ -1,4 +1,3 @@
-#include "hydra-mod.h"
 #include "hydra-http.h"
 #include "sasl.h"
 
@@ -9,10 +8,10 @@ char *http_buf = NULL;
 int32_t webport, freemischttp = 0;
 int32_t http_auth_mechanism = AUTH_BASIC;
 
-int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp, char *type) {
+int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp, char *type, ptr_header_node ptr_head) {
   char *empty = "";
-  char *login, *pass, buffer[500], buffer2[500];
-  char header[64] = "Content-Length: 0\r\n";
+  char *login, *pass, *buffer, buffer2[500];
+  char *header;
   char *ptr, *fooptr;
   int32_t complete_line = 0;
   char tmpreplybuf[1024] = "", *tmpreplybufptr;
@@ -22,8 +21,15 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
 
-  if (strcmp(type, "POST") != 0)
-    header[0] = 0;
+  if (strcmp(type, "POST") == 0)
+    add_header(&ptr_head, "Content-Length", "0", HEADER_TYPE_DEFAULT);
+
+  header = stringify_headers(&ptr_head);
+
+  if(!(buffer = malloc(strlen(header) + 500))) {
+    free(header);
+    return 3;
+  }
 
   // we must reset this if buf is NULL and we do MD5 digest
   if (http_buf == NULL && http_auth_mechanism == AUTH_DIGESTMD5)
@@ -63,6 +69,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
       fooptr = buffer2;
       sasl_digest_md5(fooptr, login, pass, buffer, miscptr, type, webtarget, webport, header);
       if (fooptr == NULL) {
+	free(buffer);
+	free(header);
         return 3;
       }
 
@@ -98,8 +106,11 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
                   buf1, header);
       }
 
-      if (hydra_send(s, buffer, strlen(buffer), 0) < 0)
+      if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+	free(buffer);
+	free(header);
         return 1;
+      }
 
       //receive challenge
       if (http_buf != NULL)
@@ -110,8 +121,11 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
         http_buf = hydra_receive_line(s);
       }
 
-      if (http_buf == NULL)
+      if (http_buf == NULL) {
+	free(buffer);
+	free(header);
         return 1;
+      }
 
       if (pos != NULL) {
         char *str;
@@ -154,6 +168,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   }
 
   if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+    free(buffer);
+    free(header);
     return 1;
   }
 
@@ -190,6 +206,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   if (http_buf == NULL) {
     if (verbose)
       hydra_report(stderr, "[ERROR] Server did not answer\n");
+    free(buffer);
+    free(header);
     return 3;
   }
 
@@ -229,6 +247,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
       if (find_auth) {
 //        free(http_buf);
 //        http_buf = NULL;
+	free(buffer);
+	free(header);
         return 1;
       }
     }
@@ -236,6 +256,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   }
 //  free(http_buf);
 //  http_buf = NULL;
+  free(buffer);
+  free(header);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     return 3;
   return 1;
@@ -318,7 +340,7 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
         break;
       }
     case 2:                    /* run the cracking function */
-      next_run = start_http(sock, ip, port, options, miscptr, fp, type);
+      next_run = start_http(sock, ip, port, options, miscptr, fp, type, ptr_head);
       break;
     case 3:                    /* clean exit */
       if (sock >= 0)
@@ -365,5 +387,7 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
 
 void usage_http(const char* service) {
   printf("Module %s requires the page to authenticate.\n"
-         "For example:  \"/secret\" or \"http://bla.com/foo/bar\" or \"https://test.com:8080/members\"\n\n", service);
+         "The following parameters are optional:\n"
+         " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each request\n"
+         "For example:  \"/secret\" or \"http://bla.com/foo/bar:H=Cookie\\: sessid=aaaa\" or \"https://test.com:8080/members\"\n\n", service);
 }
