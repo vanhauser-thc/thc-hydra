@@ -388,8 +388,7 @@ char *stringify_headers(ptr_header_node *ptr_head) {
   return headers_str;
 }
 
-ptr_header_node parse_options(char *miscptr) {
-  ptr_header_node ptr_head = NULL;
+int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
   char *ptr, *ptr2;
 
   /*
@@ -429,14 +428,14 @@ ptr_header_node parse_options(char *miscptr) {
        *  - (optional1 + 2) contains the header's name
        *  - ptr contains the header's value
        */
-      if (add_header(&ptr_head, miscptr + 2, hydra_strrep(ptr, "\\:", ":"), HEADER_TYPE_USERHEADER)) {
+      if (add_header(ptr_head, miscptr + 2, hydra_strrep(ptr, "\\:", ":"), HEADER_TYPE_USERHEADER)) {
         // Success: break the switch and go ahead
         miscptr = ptr2;
         break;
       }
       // Error: abort execution
       hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (h).");
-      return NULL;
+      return 0;
     case 'H':
       // add a new header, or replace an existing one's value
       ptr = miscptr + 2;
@@ -460,19 +459,18 @@ ptr_header_node parse_options(char *miscptr) {
        *  - (optional1 + 2) contains the header's name
        *  - ptr contains the header's value
        */
-      if (add_header(&ptr_head, miscptr + 2, hydra_strrep(ptr, "\\:", ":"), HEADER_TYPE_USERHEADER_REPL)) {
+      if (add_header(ptr_head, miscptr + 2, hydra_strrep(ptr, "\\:", ":"), HEADER_TYPE_USERHEADER_REPL)) {
         // Success: break the switch and go ahead
         miscptr = ptr2;
         break;
       }
       // Error: abort execution
       hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (H).");
-      return NULL;
+      return 0;
       // no default
     }
   }
-
-  return ptr_head;
+  return 1;
 }
 
 char *prepare_http_request(char *type, char *path, char *params, char *headers) {
@@ -1178,7 +1176,7 @@ int32_t service_http_form_init(char *ip, int32_t sp, unsigned char options, char
 }
 
 ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
-  ptr_header_node ptr_head;
+  ptr_header_node ptr_head = NULL;
   char *ptr, *ptr2, *proxy_string;
 
   if (use_proxy > 0 && proxy_count > 0)
@@ -1278,7 +1276,8 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
    * Parse the user-supplied options.
    * Beware of the backslashes (\)!
    */
-  ptr_head = parse_options(optional1);
+  if (!parse_options(optional1, &ptr_head))
+    return NULL;
 
   /* again: no snprintf to be portable. don't worry, buffer can't overflow */
   if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL) {

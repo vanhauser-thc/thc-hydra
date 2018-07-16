@@ -267,7 +267,7 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
   int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_HTTP, mysslport = PORT_HTTP_SSL;
   char *ptr, *ptr2;
-  ptr_header_node ptr_head;
+  ptr_header_node ptr_head = NULL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -310,7 +310,8 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
     *ptr++ = 0;
   optional1 = ptr;
 
-  ptr_head = parse_options(optional1);
+  if (!parse_options(optional1, &ptr_head))
+    run = 4;
 
   while (1) {
     next_run = 0;
