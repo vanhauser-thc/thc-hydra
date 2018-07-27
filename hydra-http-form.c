@@ -997,6 +997,15 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
       if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
         hdrrepv(&ptr_head, "Content-Length", "0");
 
+      // re-use the above code to set cookies
+      if (cookie_header != NULL)
+        free(cookie_header);
+      cookie_header = stringify_cookies(ptr_cookie);
+      if (!header_exists(&ptr_head, "Cookie", HEADER_TYPE_DEFAULT))
+	add_header(&ptr_head, "Cookie", cookie_header, HEADER_TYPE_DEFAULT);
+      else
+	hdrrepv(&ptr_head, "Cookie", cookie_header);
+
       //re-use the code above to check for proxy use
       if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL) {
         // proxy with authentication
