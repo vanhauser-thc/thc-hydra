@@ -562,7 +562,7 @@ int32_t analyze_server_response(int32_t s) {
     } else if (strstr(buf, "HTTP/1.1 401") != NULL || strstr(buf, "HTTP/1.0 401") != NULL) {
       auth_flag = 1;
     } else if ((strstr(buf, "HTTP/1.1 403") != NULL) || (strstr(buf, "HTTP/1.1 404") != NULL) || (strstr(buf, "HTTP/1.0 403") != NULL) || (strstr(buf, "HTTP/1.0 404") != NULL)) {
-      return 0;
+      return -1;
     }
 
     if (hydra_strcasestr(buf, "Location: ") != NULL) {
@@ -899,7 +899,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
 
   found = analyze_server_response(s);
 
-  if (auth_flag) {              // we received a 401 error - user using wrong module
+  if (auth_flag) {              // we received a 401 error - user is using wrong module
     hydra_report(stderr, "[ERROR] the target is using HTTP auth, not a web form, received HTTP error code 401. Use module \"http%s-get\" instead.\n",
                  (options & OPTION_SSL) > 0 ? "s" : "");
     return 4;
