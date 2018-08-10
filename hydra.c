@@ -533,7 +533,7 @@ void help_bfg() {
          "             valid CHARSET values are: 'a' for lowercase letters,\n"
          "             'A' for uppercase letters, '1' for numbers, and for all others,\n"
          "             just add their real representation.\n"
-         "  -y         disable the use if the above letters as placeholders\n\n"
+         "  -y         disable the use of the above letters as placeholders\n\n"
          "Examples:\n"
          "   -x 3:5:a  generate passwords from length 3 to 5 with all lowercase letters\n"
          "   -x 5:8:A1 generate passwords from length 5 to 8 with uppercase and numbers\n"
