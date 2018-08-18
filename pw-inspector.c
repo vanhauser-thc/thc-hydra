@@ -8,7 +8,7 @@
 #define PROGRAM		"PW-Inspector"
 #define VERSION		"v0.2"
 #define EMAIL		"vh@thc.org"
-#define WEB		"http://www.thc.org"
+#define WEB		"https://github.com/vanhauser-thc/thc-hydra"
 
 #define MAXLENGTH	256
 

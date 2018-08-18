@@ -66,7 +66,7 @@ int32_t start_pcnfs(int32_t s, char *ip, int32_t port, unsigned char options, ch
   prh->len_passwd = htonl(63);
   prh->len_comments = htonl(254);
 
-  strcpy(prh->comments, " Hydra - THC password cracker - visit http://www.thc.org - use only allowed for legal purposes ");
+  strcpy(prh->comments, " Hydra - THC password cracker - visit https://github.com/vanhauser-thc/thc-hydra - use only allowed for legal purposes ");
   strcpy(prh->name, "localhost");
 
   ptr = prh->id;

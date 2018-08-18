@@ -2,7 +2,7 @@
 				  H Y D R A
 
                       (c) 2001-2018 by van Hauser / THC
-                       <vh@thc.org> http://www.thc.org
+             <vh@thc.org> https://github.com/vanhauser-thc/thc-hydra
        many modules were written by David (dot) Maciejak @ gmail (dot) com
                  BFG code by Jan Dlabal <dlabaljan@gmail.com>
 
@@ -49,7 +49,7 @@ Your help in writing, enhancing or fixing modules is highly appreciated!! :-)
 WHERE TO GET
 ------------
 You can always find the newest release/production version of hydra at its
-project page at https://www.thc.org/thc-hydra 
+project page at https://github.com/vanhauser-thc/thc-hydra/releases
 If you are interested in the current development state, the public development
 repository is at Github:
   svn co https://github.com/vanhauser-thc/thc-hydra

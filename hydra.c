@@ -1,6 +1,6 @@
 /*
  * hydra (c) 2001-2018 by van Hauser / THC <vh@thc.org>
- * http://www.thc.org
+ * https://github.com/vanhauser-thc/thc-hydra
  *
  * Parallized network login hacker.
  * Don't use in military or secret service organizations, or for illegal purposes.
@@ -207,7 +207,7 @@ char *SERVICES =
 #define VERSION   "v8.7-dev"
 #define AUTHOR    "van Hauser/THC"
 #define EMAIL     "<vh@thc.org>"
-#define RESOURCE  "http://www.thc.org/thc-hydra"
+#define RESOURCE  "https://github.com/vanhauser-thc/thc-hydra"
 
 extern char *hydra_strcasestr(const char *haystack, const char *needle);
 extern void hydra_tobase64(unsigned char *buf, int32_t buflen, int32_t bufsize);
