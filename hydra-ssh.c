@@ -206,7 +206,7 @@ int32_t service_ssh_init(char *ip, int32_t sp, unsigned char options, char *misc
     return 0;
   }
 
-  fprintf(stderr, "[ERROR] target ssh://%s:%d/ does not support password authentication.\n", hydra_address2string_beautiful(ip), port);
+  fprintf(stderr, "[ERROR] target ssh://%s:%d/ does not support password authentication (method reply %d).\n", hydra_address2string_beautiful(ip), port, method);
   return 1;
 #else
   return 0;
