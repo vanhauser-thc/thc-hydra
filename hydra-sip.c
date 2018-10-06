@@ -15,6 +15,7 @@ void dummy_sip() {
 }
 #else
 
+#include <stdint.h>
 #include "sasl.h"
 
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
