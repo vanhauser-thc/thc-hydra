@@ -3290,6 +3290,9 @@ int main(int argc, char *argv[]) {
           tmpptr++;
         tmpptr++;
       }
+    } else if (hydra_options.server == NULL) {
+      fprintf(stderr, "Error: no target server given, nor -M option used\n");
+      exit(-1);
     } else if (index(hydra_options.server, '/') != NULL) {
      if (cmdtarget == NULL)
        bail("You seem to mix up \"service://target:port/options\" syntax with \"target service options\" syntax. Read the README on how to use hydra correctly!");
