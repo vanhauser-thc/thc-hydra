@@ -33,6 +33,7 @@ int32_t start_ssh(int32_t s, char *ip, int32_t port, unsigned char options, char
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
 
+
   if (new_session) {
     if (session) {
       ssh_disconnect(session);
@@ -40,6 +41,7 @@ int32_t start_ssh(int32_t s, char *ip, int32_t port, unsigned char options, char
       ssh_free(session);
     }
 
+    ssh_init();
     session = ssh_new();
     ssh_options_set(session, SSH_OPTIONS_PORT, &port);
     ssh_options_set(session, SSH_OPTIONS_HOST, hydra_address2string(ip));
