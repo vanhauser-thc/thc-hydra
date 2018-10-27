@@ -1,12 +1,12 @@
 
-				  H Y D R A
+                  H Y D R A
 
                       (c) 2001-2018 by van Hauser / THC
              <vh@thc.org> https://github.com/vanhauser-thc/thc-hydra
        many modules were written by David (dot) Maciejak @ gmail (dot) com
                  BFG code by Jan Dlabal <dlabaljan@gmail.com>
 
-  		    Licensed under AGPLv3 (see LICENSE file)
+              Licensed under AGPLv3 (see LICENSE file)
 
            Please do not use in military or secret service organizations,
                           or for illegal purposes.
@@ -23,25 +23,25 @@ access from remote to a system.
 
 THIS TOOL IS FOR LEGAL PURPOSES ONLY!
 
-There are already several login hacker tools available, however none does
-either support more than one protocol to attack or support parallized
+There are already several login hacker tools available, however, none does
+either supports more than one protocol to attack or support paralyzed
 connects.
 
 It was tested to compile cleanly on Linux, Windows/Cygwin, Solaris,
 FreeBSD/OpenBSD, QNX (Blackberry 10) and MacOS.
 
-Currently this tool supports the following protocols:
+Currently, this tool supports the following protocols:
  Asterisk, AFP, Cisco AAA, Cisco auth, Cisco enable, CVS, Firebird, FTP,
  HTTP-FORM-GET, HTTP-FORM-POST, HTTP-GET, HTTP-HEAD, HTTP-POST, HTTP-PROXY,
  HTTPS-FORM-GET, HTTPS-FORM-POST, HTTPS-GET, HTTPS-HEAD, HTTPS-POST,
  HTTP-Proxy, ICQ, IMAP, IRC, LDAP, MS-SQL, MYSQL, NCP, NNTP, Oracle Listener,
  Oracle SID, Oracle, PC-Anywhere, PCNFS, POP3, POSTGRES, RDP, Rexec, Rlogin,
- Rsh, RTSP, SAP/R3, SIP, SMB, SMTP, SMTP Enum, SNMP v1+v2+v3, SOCKS5,
+ Rush, RTSP, SAP/R3, SIP, SMB, SMTP, SMTP Enum, SNMP v1+v2+v3, SOCKS5,
  SSH (v1 and v2), SSHKEY, Subversion, Teamspeak (TS2), Telnet, VMware-Auth,
  VNC and XMPP.
 
-However the module engine for new services is very easy so it won't take a
-long time until even more services are supported.
+However, the module engine for new services is very easy so it won't take a
+long time until even more services is supported.
 Your help in writing, enhancing or fixing modules is highly appreciated!! :-)
 
 
@@ -51,7 +51,7 @@ WHERE TO GET
 You can always find the newest release/production version of hydra at its
 project page at https://github.com/vanhauser-thc/thc-hydra/releases
 If you are interested in the current development state, the public development
-repository is at Github:
+the repository is at Github:
   svn co https://github.com/vanhauser-thc/thc-hydra
  or
   git clone https://github.com/vanhauser-thc/thc-hydra
@@ -72,7 +72,7 @@ make install
 
 If you want the ssh module, you have to setup libssh (not libssh2!) on your
 system,  get it from http://www.libssh.org, for ssh v1 support you also need
-to add "-DWITH_SSH1=On" option in the cmake command line.
+to add "-DWITH_SSH1=On" option in the make command line.
 
 If you use Ubuntu/Debian, this will install supplementary libraries needed
 for a few optional modules (note that some might not be available on your distribution):
@@ -85,18 +85,18 @@ apt-get install libssl-dev libssh-dev libidn11-dev libpcre3-dev \
 
 This enables all optional modules and features with the exception of Oracle,
 SAP R/3 and the apple filing protocol - which you will need to download and
-install from the vendor's web sites.
+install from the vendor's websites.
 
 For all other Linux derivates and BSD based systems, use the system
-software installer and look for similar named libraries like in the
-command above. In all other cases you have to download all source libraries
+software installer and look for similarly named libraries like in the
+command above. In all other cases, you have to download all source libraries
 and compile them manually.
 
 
 
 SUPPORTED PLATFORMS
 -------------------
-- All UNIX platforms (Linux, *bsd, Solaris, etc.)
+- All UNIX platforms (Linux, *BSD, Solaris, etc.)
 - MacOS (basically a BSD clone)
 - Windows with Cygwin (both IPv4 and IPv6)
 - Mobile systems based on Linux, MacOS or QNX (e.g. Android, iPhone, Blackberry 10, Zaurus, iPaq)
@@ -113,12 +113,12 @@ Note that NO login/password file is included. Generate them yourself.
 A default password list is however present, use "dpl4hydra.sh" to generate
 a list.
 
-For Linux users, a GTK gui is available, try `./xhydra`
+For Linux users, a GTK GUI is available, try `./xhydra`
 
 For the command line usage, the syntax is as follows:
  For attacking one target or a network, you can use the new "://" style:
-  hydra [some command line options] PROTOCOL://TARGET:PORT/MODULE-OPTIONS
- The old mode can be used for these too, and additionally if you want to
+  hydra [some command line options] PROTOCOL://TARGET: PORT/MODULE-OPTIONS
+ The old model can be used for these two, and additionally, if you want to
  specify your targets from a text file, you *must* use this one:
 
 ```
@@ -128,8 +128,8 @@ hydra [some command line options] [-s PORT] TARGET PROTOCOL [MODULE-OPTIONS]
 Via the command line options you specify which logins to try, which passwords,
 if SSL should be used, how many parallel tasks to use for attacking, etc.
 
-PROTOCOL is the protocol you want to use for attacking, e.g. ftp, smtp,
-http-get or many others are available
+PROTOCOL is the protocol you want to use for attacking, e.g. FTP, SMTP,
+HTTP-get or many others are available
 TARGET is the target you want to attack
 MODULE-OPTIONS are optional values which are special per PROTOCOL module
 
@@ -147,8 +147,7 @@ THIRD - check if the module has optional parameters
  hydra -U PROTOCOL
  e.g. hydra -U smtp
 
-FOURTH - the destination port
- this is optional! if no port is supplied the default common port for the
+FOURTH - the destination port this is optional! if no port is supplied the default common port for the
  PROTOCOL is used.
  If you specify SSL to use ("-S" option), the SSL common port is used by default.
 
@@ -162,10 +161,10 @@ Note that everything hydra does is IPv4 only!
 If you want to attack IPv6 addresses, you must add the "-6" command line option.
 All attacks are then IPv6 only!
 
-If you want to supply your targets via a text file, you can not use the ://
+If you want to supply your targets via a text file, you can not use the://
 notation but use the old style and just supply the protocol (and module options):
   hydra [some command line options] -M targets.txt ftp
-You can supply also port for each target entry by adding ":<port>" after a
+You can supply also the port for each target entry by adding ":<port>" after a
 target entry in the file, e.g.:
 
 ```
@@ -192,9 +191,9 @@ target.com:21
 LOGINS AND PASSWORDS
 --------------------
 You have many options on how to attack with logins and passwords
-With -l for login and -p for password you tell hydra that this is the only
+With -l for login and -p for the password you tell hydra that this is the only
 login and/or password to try.
-With -L for logins and -P for passwords you supply text files with entries.
+With -L for logins and -P for passwords, you supply text files with entries.
 e.g.:
 
 ```
@@ -221,9 +220,9 @@ You can use text file which where a login and password pair is separated by a co
 e.g.:
 
 ```
-admin:password
+admin: password
 test:test
-foo:bar
+foo: bar
 ```
 
 This is a common default account style listing, that is also generated by the
@@ -236,7 +235,7 @@ Example:
 hydra -C default_accounts.txt ftp://localhost/
 ```
 
-And finally, there is a bruteforce mode with the -x option (which you can not
+And finally, there is a brute force mode with the -x option (which you can not
 use with -p/-P/-C):
 
 ```
@@ -248,9 +247,9 @@ the charset definition is `a` for lowercase letters, `A` for uppercase letters,
 Examples:
 
 ```
--x 1:3:a generate passwords from length 1 to 3 with all lowercase letters
+-x 1:3: a generate passwords from length 1 to 3 with all lowercase letters
 -x 2:5:/ generate passwords from length 2 to 5 containing only slashes
--x 5:8:A1 generate passwords from length 5 to 8 with uppercase and numbers
+-x 5:8: A1 generate passwords from length 5 to 8 with uppercase and numbers
 ```
 
 Example:
@@ -261,7 +260,7 @@ hydra -l ftp -x 3:3:a ftp://localhost/
 
 SPECIAL OPTIONS FOR MODULES
 ---------------------------
-Via the third command line parameter (TARGET SERVICE OPTIONAL) or the -m
+Via the third command line parameter (TARGET SERVICE OPTIONAL) or them
 command line option, you can pass one option to a module.
 Many modules use this, a few require it!
 
@@ -287,15 +286,15 @@ Examples (they are all equal):
 RESTORING AN ABORTED/CRASHED SESSION
 ------------------------------------
 When hydra is aborted with Control-C, killed or crashes, it leaves a
-"hydra.restore" file behind which contains all necessary information to
+"hydra. restore" file behind which contains all necessary information to
 restore the session. This session file is written every 5 minutes.
-NOTE: the hydra.restore file can NOT be copied to a different platform (e.g.
-from little endian to big endian, or from solaris to aix)
+NOTE: the hydra. restore file can NOT be copied to a different platform (e.g.
+from little endian to big endian, or from Solaris to mix)
 
 HOW TO SCAN/CRACK OVER A PROXY
 ------------------------------
 The environment variable HYDRA_PROXY_HTTP defines the web proxy (this works
-just for the http services!).
+just for the HTTP services!).
 The following syntax is valid:
 
 ```
@@ -326,10 +325,10 @@ ADDITIONAL HINTS
 ----------------
 * sort your password files by likelihood and use the -u option to find
   passwords much faster!
-* uniq your dictionary files! this can save you a lot of time :-)
-    cat words.txt | sort | uniq > dictionary.txt
+* unique your dictionary files! this can save you a lot of time :-)
+    cat words.txt | sort | unique > dictionary.txt
 * if you know that the target is using a password policy (allowing users
-  only to choose password with a minimum length of 6, containing a least one
+  only to choose a password with a minimum length of 6, containing a least one
   letter and one number, etc. use the tool pw-inspector which comes along
   with the hydra package to reduce the password list:
     cat dictionary.txt | pw-inspector -m 6 -c 2 -n > passlist.txt
@@ -338,7 +337,7 @@ ADDITIONAL HINTS
 RESULTS OUTPUT
 --------------
 
-The results are output to stdio along with the other information.  Via the -o
+The results are output to study along with the other information.  Via the -o
 command line option, the results can also be written to a file.  Using -b,
 the format of the output can be specified.  Currently, these are supported:
 
@@ -355,18 +354,15 @@ JSON Schema
 -----------
 Here is an example of the JSON output.  Notes on some of the fields:
 
-* `errormessages` - an array of zero or more strings that are normally printed
+* `error messages` - an array of zero or more strings that are normally printed
    to stderr at the end of the Hydra's run.  The text is very free form.
 * `success` - indication if Hydra ran correctly without error (**NOT** if
    passwords were detected).  This parameter is either the JSON value `true`
    or `false` depending on completion.  
-* `quantityfound` - How many username+password combinations discovered.
+* `quantity found` - How many username+password combinations discovered.
 * `jsonoutputversion` - Version of the schema, 1.00, 1.01, 1.11, 2.00,
-   2.03, etc.  Hydra will make second tuple of the version to always be two
-   digits to make it easier for downstream processors (as opposed to v1.1 vs
-   v1.10).  The minor-level versions are additive, so 1.02 will contain more
-   fields than version 1.00 and will be backward compatible.  Version 2.x will
-   break something from version 1.x output.  
+   2.03, etc.  Hydra will make the second tuple of the version to always be two digits to make it easier for downstream processors (as opposed to v1.1 vs
+   v1.10).  The minor-level versions are additive, so 1.02 will contain more fields than version 1.00 and will be backward compatible.  Version 2.x will break something from version 1.x output.  
 
 Version 1.00 example:
 ```
@@ -410,7 +406,7 @@ Version 1.00 example:
 SPEED
 -----
 through the parallelizing feature, this password cracker tool can be very
-fast, however it depends on the protocol. The fastest are generally POP3
+fast, however, it depends on the protocol. The fastest are generally POP3
 and FTP.
 Experiment with the task option (-t) to speed things up! The higher - the
 faster ;-) (but too high - and it disables the service)
@@ -424,13 +420,13 @@ Run against a SuSE Linux 7.2 on localhost with a "-C FILE" containing
 times (only for "1 task" just once), and the average noted down.
 
 ```
-			P A R A L L E L    T A S K S
-SERVICE	1	4	8	16	32	50	64	100	128
+            P A R A L L E L    T A S K S
+SERVICE    1    4    8    16    32    50    64    100    128
 ------- --------------------------------------------------------------------
-telnet	23:20	5:58	2:58	1:34	1:05	0:33	0:45*	0:25*	0:55*
-ftp	45:54	11:51	5:54	3:06	1:25	0:58	0:46	0:29	0:32
-pop3	92:10	27:16	13:56	6:42	2:55	1:57	1:24	1:14	0:50
-imap	31:05	7:41	3:51	1:58	1:01	0:39	0:32	0:25	0:21
+telnet    23:20    5:58    2:58    1:34    1:05    0:33    0:45*    0:25*    0:55*
+ftp    45:54    11:51    5:54    3:06    1:25    0:58    0:46    0:29    0:32
+pop3    92:10    27:16    13:56    6:42    2:55    1:57    1:24    1:14    0:50
+imap    31:05    7:41    3:51    1:58    1:01    0:39    0:32    0:25    0:21
 ```
 
 (*)
@@ -439,15 +435,15 @@ Note: telnet timings can be VERY different for 64 to 128 tasks! e.g. with
 The reason for this is unknown...
 
 guesses per task (rounded up):
-	
-  295	74	38	19	10	6	5	3	3
+    
+  295    74    38    19    10    6    5    3    3
 
 guesses possible per connect (depends on the server software and config):
-	
-  telnet	4
-	ftp	6
-	pop3	1
-	imap	3
+    
+  telnet    4
+    ftp    6
+    pop3    1
+    imap    3
 
 
 
