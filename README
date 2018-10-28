@@ -23,7 +23,7 @@ access from remote to a system.
 
 THIS TOOL IS FOR LEGAL PURPOSES ONLY!
 
-There are already several login hacker tools available, however none does
+There are already several login hacker tools available, however, none does
 either support more than one protocol to attack or support parallized
 connects.
 
@@ -88,15 +88,15 @@ SAP R/3 and the apple filing protocol - which you will need to download and
 install from the vendor's web sites.
 
 For all other Linux derivates and BSD based systems, use the system
-software installer and look for similar named libraries like in the
-command above. In all other cases you have to download all source libraries
+software installer and look for similarly named libraries like in the
+command above. In all other cases, you have to download all source libraries
 and compile them manually.
 
 
 
 SUPPORTED PLATFORMS
 -------------------
-- All UNIX platforms (Linux, *bsd, Solaris, etc.)
+- All UNIX platforms (Linux, *BSD, Solaris, etc.)
 - MacOS (basically a BSD clone)
 - Windows with Cygwin (both IPv4 and IPv6)
 - Mobile systems based on Linux, MacOS or QNX (e.g. Android, iPhone, Blackberry 10, Zaurus, iPaq)
@@ -113,7 +113,7 @@ Note that NO login/password file is included. Generate them yourself.
 A default password list is however present, use "dpl4hydra.sh" to generate
 a list.
 
-For Linux users, a GTK gui is available, try `./xhydra`
+For Linux users, a GTK GUI is available, try `./xhydra`
 
 For the command line usage, the syntax is as follows:
  For attacking one target or a network, you can use the new "://" style:
@@ -165,7 +165,7 @@ All attacks are then IPv6 only!
 If you want to supply your targets via a text file, you can not use the ://
 notation but use the old style and just supply the protocol (and module options):
   hydra [some command line options] -M targets.txt ftp
-You can supply also port for each target entry by adding ":<port>" after a
+You can supply also the port for each target entry by adding ":<port>" after a
 target entry in the file, e.g.:
 
 ```
@@ -290,7 +290,7 @@ When hydra is aborted with Control-C, killed or crashes, it leaves a
 "hydra.restore" file behind which contains all necessary information to
 restore the session. This session file is written every 5 minutes.
 NOTE: the hydra.restore file can NOT be copied to a different platform (e.g.
-from little endian to big endian, or from solaris to aix)
+from little endian to big endian, or from Solaris to AIX)
 
 HOW TO SCAN/CRACK OVER A PROXY
 ------------------------------
@@ -329,7 +329,7 @@ ADDITIONAL HINTS
 * uniq your dictionary files! this can save you a lot of time :-)
     cat words.txt | sort | uniq > dictionary.txt
 * if you know that the target is using a password policy (allowing users
-  only to choose password with a minimum length of 6, containing a least one
+  only to choose a password with a minimum length of 6, containing a least one
   letter and one number, etc. use the tool pw-inspector which comes along
   with the hydra package to reduce the password list:
     cat dictionary.txt | pw-inspector -m 6 -c 2 -n > passlist.txt
