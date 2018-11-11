@@ -80,7 +80,7 @@ for a few optional modules (note that some might not be available on your distri
 ```
 apt-get install libssl-dev libssh-dev libidn11-dev libpcre3-dev \
                  libgtk2.0-dev libmysqlclient-dev libpq-dev libsvn-dev \
-                 firebird-dev libncp-dev
+                 firebird-dev
 ```
 
 This enables all optional modules and features with the exception of Oracle,
