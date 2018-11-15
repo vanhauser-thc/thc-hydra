@@ -955,8 +955,8 @@ void killed_childs(int32_t signo) {
 }
 
 void killed_childs_report(int32_t signo) {
-  if (debug)
-    printf("[DEBUG] children crashed! (%d)\n", child_head_no);
+  //if (debug)
+    printf("[ERROR] children crashed! (%d)\n", child_head_no);
   fck = write(child_socket, "E", 1);
   _exit(-1);
 }
