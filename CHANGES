@@ -4,6 +4,7 @@ Changelog for hydra
 
 Release 8.7-dev
 * New web page: https://github.com/vanhauser-thc/thc-hydra
+* ldap: fixed a dumb strlen on a potential null pointer
 * http-get/http-post:
    - now supports H=/h= parameters same as http-form (thanks to mathewmarcus@github for the patch)
    - 403/404 errors are now always registered as failed attempts
