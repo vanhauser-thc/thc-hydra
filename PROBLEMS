@@ -1,0 +1,7 @@
+List of known issues:
+=====================
+
+* Cygwin: more than 30 tasks (-t 31 or more) will lead to a stack smash
+* OS X: brew installed modules are not compiled correctly and will crash hydra
+* RDP module: disabled as it does not support the current protocol. Help needed!
+
