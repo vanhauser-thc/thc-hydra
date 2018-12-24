@@ -376,6 +376,7 @@ static const struct {
   SERVICE(icq),
   SERVICE3("imap", imap),
   SERVICE3("irc", irc),
+  { "ldap", service_ldap_init, service_ldap2, usage_ldap },
   { "ldap2", service_ldap_init, service_ldap2, usage_ldap },
   { "ldap3", service_ldap_init, service_ldap3, usage_ldap },
   { "ldap3-crammd5", service_ldap_init, service_ldap3_cram_md5, usage_ldap },
