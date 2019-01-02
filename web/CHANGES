@@ -2,8 +2,11 @@ Changelog for hydra
 -------------------
 
 
-Release 8.7-dev
+Release 8.8
 * New web page: https://github.com/vanhauser-thc/thc-hydra
+* added PROBLEMS file with known issues
+* rdp: disabled the module as it does not support the current protocol. If you want to add it contact me
+* ldap: fixed a dumb strlen on a potential null pointer
 * http-get/http-post:
    - now supports H=/h= parameters same as http-form (thanks to mathewmarcus@github for the patch)
    - 403/404 errors are now always registered as failed attempts

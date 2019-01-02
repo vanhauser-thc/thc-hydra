@@ -2,7 +2,7 @@ Changelog for hydra
 -------------------
 
 
-Release 8.7-dev
+Release 8.8
 * New web page: https://github.com/vanhauser-thc/thc-hydra
 * added PROBLEMS file with known issues
 * rdp: disabled the module as it does not support the current protocol. If you want to add it contact me
