@@ -153,7 +153,7 @@ int32_t service_rpcap_init(char *ip, int32_t sp, unsigned char options, char *mi
 
   buf = hydra_receive_line(sock);
 
-  if (strstr(buf, "NULL autentication not permitted") == NULL) {
+  if (strstr(buf, "NULL authentication not permitted") == NULL) {
     hydra_report(stderr, "[!] rpcap error or no need of authentication!\n");
     free(buf);
     return 1;
