@@ -2046,7 +2046,7 @@ void process_proxy_line(int32_t type, char *string) {
 }
 
 int main(int argc, char *argv[]) {
-  char *proxy_string = NULL, *device = NULL, *memcheck, *cmdtarget = NULL;
+  char *proxy_string = NULL, *device = NULL, *memcheck;
   char *outfile_format_tmp;
   FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL, *proxyfp;
   size_t countinfile = 1, sizeinfile = 0;
@@ -2425,7 +2425,7 @@ int main(int argc, char *argv[]) {
       // check if targetdef follow syntax <service-name>://<target>[:<port-number>][/<parameters>] or it's a syntax error
       char *targetdef = strdup(argv[optind]);
       char *service_pos, *target_pos, *port_pos = NULL, *param_pos = NULL;
-      cmdtarget = argv[optind];
+      cmdlinetarget = argv[optind];
 
       if ((targetdef != NULL) && (strstr(targetdef, "://") != NULL)) {
         service_pos = strstr(targetdef, "://");
@@ -2478,7 +2478,7 @@ int main(int argc, char *argv[]) {
           printf("[DEBUG] opt:%d argc:%d mod:%s tgt:%s port:%u misc:%s\n", optind, argc, hydra_options.service, hydra_options.server, hydra_options.port, hydra_options.miscptr);
       } else {
        hydra_options.server = NULL;
-        hydra_options.service = NULL;
+       hydra_options.service = NULL;
 
         if (modusage) {
           hydra_options.service = targetdef;
@@ -3296,9 +3296,9 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "Error: no target server given, nor -M option used\n");
       exit(-1);
     } else if (index(hydra_options.server, '/') != NULL) {
-     if (cmdtarget == NULL)
+     if (cmdlinetarget == NULL)
        bail("You seem to mix up \"service://target:port/options\" syntax with \"target service options\" syntax. Read the README on how to use hydra correctly!");
-     if (strstr(cmdtarget, "://") != NULL) {
+     if (strstr(cmdlinetarget, "://") != NULL) {
        tmpptr = index(hydra_options.server, '/');
        if (tmpptr != NULL)
          *tmpptr = 0;
