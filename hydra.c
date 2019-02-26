@@ -3026,7 +3026,7 @@ int main(int argc, char *argv[]) {
       //if (conwait == 0)
       //  hydra_options.conwait = conwait = 1;
       //printf("[WARNING] the rdp module is currently reported to be unreliable, most likely against new Windows version. Please test, report - and if possible, fix.\n");
-      printf("[ERROR] the rdp module does not support the current protocol, hence it is disabled. If you want to add it, please contact vh@thc.org\n");
+      printf("[ERROR] the rdp module does not support the current protocol, hence it is disabled. If you want to develop it, please contact vh@thc.org\n");
       exit(-1);
       i = 1;
     }
