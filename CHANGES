@@ -1,6 +1,10 @@
 Changelog for hydra
 -------------------
 
+Release 8.9-dev
+* your patch? :)
+
+
 Release 8.9.1
 * Clarification for rdp error message
 * CIDR notation (hydra -l test -p test 192.168.0.0/24 ftp) was not detected, fixed
