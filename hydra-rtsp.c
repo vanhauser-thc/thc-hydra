@@ -95,7 +95,7 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
   lresp = hydra_receive_line(s);
 
   if (lresp == NULL) {
-    fprintf(stderr, "[ERROR] no server reply");
+    fprintf(stderr, "[ERROR] no server reply\n");
     return 1;
   }
 
