@@ -216,8 +216,8 @@ void service_smtp_enum(char *ip, int32_t sp, unsigned char options, char *miscpt
           smtp_enum_cmd = RCPT;
       }
       if (debug) {
+        hydra_report(stdout, "[VERBOSE] ");
         switch (smtp_enum_cmd) {
-          hydra_report(stdout, "[VERBOSE] ");
         case VRFY:
           hydra_report(stdout, "using SMTP VRFY command\n");
           break;
