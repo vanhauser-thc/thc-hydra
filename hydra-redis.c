@@ -15,7 +15,7 @@ int32_t start_redis(int32_t s, char *ip, int32_t port, unsigned char options, ch
   snprintf(pass_num, 50, "%d", pass_len);
 
   memset(buffer, 0, sizeof(buffer));
-  sprintf(buffer, "*2\r\n$4\r\nAUTH\r\n$%.250s\r\n%.250s\r\n", pass_num, pass);
+  sprintf(buffer, "*2\r\n$4\r\nAUTH\r\n$%.50s\r\n%.250s\r\n", pass_num, pass);
 
   if (debug)
     hydra_report(stderr, "[DEBUG] Auth:\n %s\n", buffer);
