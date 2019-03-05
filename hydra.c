@@ -648,7 +648,7 @@ void hydra_restore_write(int32_t print_msg) {
   }
 
   if ((f = fopen(RESTOREFILE, "w")) == NULL) {
-    fprintf(stderr, "[ERROR] Can not create restore file (%s) - \n", RESTOREFILE);
+    fprintf(stderr, "[ERROR] Can not create restore file (%s) - ", RESTOREFILE);
     perror("");
     process_restore = 0;
     return;
