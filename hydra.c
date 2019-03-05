@@ -186,7 +186,7 @@ extern int32_t service_rpcap_init(char *ip, int32_t sp, unsigned char options, c
 
 // ADD NEW SERVICES HERE
 char *SERVICES =
-  "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp ftps http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres radmin2 rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
+  "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp[s] http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres radmin2 rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
 
 #define MAXBUF       520
 #define MAXLINESIZE  ( ( MAXBUF / 2 ) - 4 )
@@ -2108,7 +2108,7 @@ int main(int argc, char *argv[]) {
 #endif
 #ifndef LIBOPENSSL
   // for ftps
-  SERVICES = hydra_string_replace(SERVICES, " ftps", "");
+  SERVICES = hydra_string_replace(SERVICES, "ftp[s]", "ftp");
   // for pop3
   SERVICES = hydra_string_replace(SERVICES, "pop3[s]", "pop3");
   // for imap
