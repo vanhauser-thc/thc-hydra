@@ -78,7 +78,7 @@ void create_core_packet(int32_t control, char *ip, int32_t port) {
 }
 int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
-  char *login, *pass, buffer[500], buffer2[500];
+  char *login, *pass, buffer[1030], buffer2[500];
 
   char *lresp;
 
@@ -112,10 +112,10 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
     if (use_Basic_Auth(lresp) == 1) {
 
-      sprintf(buffer2, "%.260s:%.260s", login, pass);
+      sprintf(buffer2, "%.249s:%.249s", login, pass);
       hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
 
-      sprintf(buffer, "%sAuthorization: : Basic %s\r\n\r\n", packet2, buffer2);
+      sprintf(buffer, "%.500sAuthorization: : Basic %.500s\r\n\r\n", packet2, buffer2);
 
       if (debug) {
         hydra_report(stderr, "C:%s\n", buffer);
@@ -128,7 +128,7 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
       char *pbuffer = hydra_strcasestr(lresp, "WWW-Authenticate: Digest ");
 
-      strncpy(aux, pbuffer + strlen("WWW-Authenticate: Digest "), sizeof(buffer));
+      strncpy(aux, pbuffer + strlen("WWW-Authenticate: Digest "), sizeof(aux));
       aux[sizeof(aux) - 1] = '\0';
 #ifdef LIBOPENSSL
       sasl_digest_md5(dbuf, login, pass, aux, miscptr, "rtsp", hydra_address2string(ip), port, "");
@@ -141,7 +141,7 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
         fprintf(stderr, "[ERROR] digest generation failed\n");
         return 3;
       }
-      sprintf(buffer, "%sAuthorization: Digest %s\r\n\r\n", packet2, dbuf);
+      sprintf(buffer, "%.500sAuthorization: Digest %.500s\r\n\r\n", packet2, dbuf);
 
       if (debug) {
         hydra_report(stderr, "C:%s\n", buffer);
