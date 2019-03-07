@@ -78,17 +78,19 @@ int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char
 
   err = svn_config_ensure(NULL, pool);
   if (err) {
+    svn_pool_destroy(pool);
     svn_handle_error2(err, stderr, FALSE, "hydra: ");
     return 4;
   }
 
-  //if ((err = svn_client_create_context(&ctx, pool))) {
   if ((err = svn_client_create_context2(&ctx, NULL, pool))) {
+    svn_pool_destroy(pool);
     svn_handle_error2(err, stderr, FALSE, "hydra: ");
     return 4;
   }
 
   if ((err = svn_config_get_config(&(ctx->config), NULL, pool))) {
+    svn_pool_destroy(pool);
     svn_handle_error2(err, stderr, FALSE, "hydra: ");
     return 4;
   }
@@ -106,10 +108,8 @@ int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char
   snprintf(URL, sizeof(URL), "svn://%s:%d/%s", hydra_address2string_beautiful(ip), port, URLBRANCH);
   dirents = SVN_DIRENT_KIND;
   canonical = svn_uri_canonicalize(URL, pool);
-  //err = svn_client_list2(canonical, &revision, &revision, svn_depth_unknown, dirents, FALSE, print_dirdummy, NULL, ctx, pool);
   err = svn_client_list3(canonical, &revision, &revision, svn_depth_unknown, dirents, FALSE, FALSE, (svn_client_list_func2_t) print_dirdummy, NULL, ctx, pool);
 
-  svn_pool_clear(pool);
   svn_pool_destroy(pool);
 
   if (err) {
