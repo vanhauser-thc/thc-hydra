@@ -248,6 +248,7 @@ GtkWidget *create_wndMain(void) {
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "ldap3");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "ldap3-crammd5");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "ldap3-digestmd5");
+  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "memcached");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "mssql");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "mysql");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "ncp");

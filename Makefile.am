@@ -12,11 +12,11 @@ DESTDIR ?=
 SRC = hydra-vnc.c hydra-pcnfs.c hydra-rexec.c hydra-nntp.c hydra-socks5.c \
       hydra-telnet.c hydra-cisco.c hydra-http.c hydra-ftp.c hydra-imap.c \
       hydra-pop3.c hydra-smb.c hydra-icq.c hydra-cisco-enable.c hydra-ldap.c \
-      hydra-mysql.c hydra-mssql.c hydra-xmpp.c hydra-http-proxy-urlenum.c \
-      hydra-snmp.c hydra-cvs.c hydra-smtp.c hydra-smtp-enum.c hydra-sapr3.c \
-      hydra-ssh.c hydra-sshkey.c hydra-teamspeak.c hydra-postgres.c \
-      hydra-rsh.c hydra-rlogin.c hydra-oracle-listener.c hydra-svn.c \
-      hydra-pcanywhere.c hydra-sip.c hydra-oracle.c hydra-vmauthd.c \
+      hydra-memcached.c hydra-mysql.c hydra-mssql.c hydra-xmpp.c \
+      hydra-http-proxy-urlenum.c hydra-snmp.c hydra-cvs.c hydra-smtp.c \
+      hydra-smtp-enum.c hydra-sapr3.c hydra-ssh.c hydra-sshkey.c hydra-teamspeak.c \
+      hydra-postgres.c hydra-rsh.c hydra-rlogin.c hydra-oracle-listener.c \
+      hydra-svn.c hydra-pcanywhere.c hydra-sip.c hydra-oracle.c hydra-vmauthd.c \
       hydra-asterisk.c hydra-firebird.c hydra-afp.c hydra-ncp.c hydra-rdp.c \
       hydra-oracle-sid.c hydra-http-proxy.c hydra-http-form.c hydra-irc.c \
       hydra-s7-300.c hydra-redis.c hydra-adam6500.c hydra-rtsp.c \
@@ -25,11 +25,11 @@ SRC = hydra-vnc.c hydra-pcnfs.c hydra-rexec.c hydra-nntp.c hydra-socks5.c \
 OBJ = hydra-vnc.o hydra-pcnfs.o hydra-rexec.o hydra-nntp.o hydra-socks5.o \
       hydra-telnet.o hydra-cisco.o hydra-http.o hydra-ftp.o hydra-imap.o \
       hydra-pop3.o hydra-smb.o hydra-icq.o hydra-cisco-enable.o hydra-ldap.o \
-      hydra-mysql.o hydra-mssql.o hydra-xmpp.o hydra-http-proxy-urlenum.o \
-      hydra-snmp.o hydra-cvs.o hydra-smtp.o hydra-smtp-enum.o hydra-sapr3.o \
-      hydra-ssh.o hydra-sshkey.o hydra-teamspeak.o hydra-postgres.o \
-      hydra-rsh.o hydra-rlogin.o hydra-oracle-listener.o hydra-svn.o \
-      hydra-pcanywhere.o hydra-sip.o hydra-oracle-sid.o hydra-oracle.o \
+      hydra-memcached.o hydra-mysql.o hydra-mssql.o hydra-xmpp.o \
+      hydra-http-proxy-urlenum.o hydra-snmp.o hydra-cvs.o hydra-smtp.o \
+      hydra-smtp-enum.o hydra-sapr3.o hydra-ssh.o hydra-sshkey.o hydra-teamspeak.o \
+      hydra-postgres.o hydra-rsh.o hydra-rlogin.o hydra-oracle-listener.o \
+      hydra-svn.o hydra-pcanywhere.o hydra-sip.o hydra-oracle-sid.o hydra-oracle.o \
       hydra-vmauthd.o hydra-asterisk.o hydra-firebird.o hydra-afp.o \
       hydra-ncp.o hydra-http-proxy.o hydra-http-form.o hydra-irc.o \
       hydra-redis.o hydra-rdp.o hydra-s7-300.c hydra-adam6500.o hydra-rtsp.o \

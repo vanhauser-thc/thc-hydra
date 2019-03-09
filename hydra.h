@@ -144,6 +144,8 @@
 #define PORT_RPCAP       2002
 #define PORT_RPCAP_SSL   2002
 #define PORT_RADMIN2    4899
+#define PORT_MCACHED    11211
+#define PORT_MCACHED_SSL    11211
 
 #define False 0
 #define True  1

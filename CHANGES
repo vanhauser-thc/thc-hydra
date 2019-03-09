@@ -3,8 +3,9 @@ Changelog for hydra
 
 Release 8.9-dev
 * your patch? :)
-* Fix svn module memory leaks
-* Fix rtsp module potential buffer overflow
+* Fixed svn module memory leaks
+* Fixed rtsp module potential buffer overflow
+* Added memcached module
 
 
 Release 8.9.1

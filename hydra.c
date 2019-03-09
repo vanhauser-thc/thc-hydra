@@ -146,7 +146,10 @@ extern int32_t service_oracle_init(char *ip, int32_t sp, unsigned char options, 
 extern void service_radmin2(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 extern int32_t service_radmin2_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
-
+#ifdef LIBMCACHED
+extern void service_mcached(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_mcached_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+#endif
 
 extern int32_t service_adam6500_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 extern int32_t service_cisco_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
@@ -186,7 +189,7 @@ extern int32_t service_rpcap_init(char *ip, int32_t sp, unsigned char options, c
 
 // ADD NEW SERVICES HERE
 char *SERVICES =
-  "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp[s] http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres radmin2 rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
+  "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp[s] http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] memcached mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres radmin2 rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
 
 #define MAXBUF       520
 #define MAXLINESIZE  ( ( MAXBUF / 2 ) - 4 )
@@ -381,6 +384,9 @@ static const struct {
   { "ldap3", service_ldap_init, service_ldap3, usage_ldap },
   { "ldap3-crammd5", service_ldap_init, service_ldap3_cram_md5, usage_ldap },
   { "ldap3-digestmd5", service_ldap_init, service_ldap3_digest_md5, usage_ldap },
+#ifdef LIBMCACHED
+  {"memcached", service_mcached_init, service_mcached, NULL},
+#endif
   SERVICE(mssql),
 #ifdef HAVE_MATH_H
   SERVICE3("mysql", mysql),
@@ -1239,6 +1245,7 @@ int32_t hydra_lookup_port(char *service) {
     {"oracle-listener", PORT_ORACLE, PORT_ORACLE_SSL},
     {"oracle-sid", PORT_ORACLE, PORT_ORACLE_SSL},
     {"oracle", PORT_ORACLE, PORT_ORACLE_SSL},
+    {"memcached", PORT_MCACHED, PORT_MCACHED_SSL},
     {"mssql", PORT_MSSQL, PORT_MSSQL_SSL},
     {"mysql", PORT_MYSQL, PORT_MYSQL_SSL},
     {"postgres", PORT_POSTGRES, PORT_POSTGRES_SSL},
@@ -2072,6 +2079,10 @@ int main(int argc, char *argv[]) {
   SERVICES = hydra_string_replace(SERVICES, "firebird ", "");
   strcat(unsupported, "firebird ");
 #endif
+#ifndef LIBMCACHED
+  SERVICES = hydra_string_replace(SERVICES, "memcached ", "");
+  strcat(unsupported, "memcached ");
+#endif
 #ifndef LIBMYSQLCLIENT
   SERVICES = hydra_string_replace(SERVICES, "mysql ", "mysql(v4) ");
   strcat(unsupported, "mysql5 ");
@@ -2106,6 +2117,7 @@ int main(int argc, char *argv[]) {
   SERVICES = hydra_string_replace(SERVICES, "svn ", "");
   strcat(unsupported, "svn ");
 #endif
+
 #ifndef LIBOPENSSL
   // for ftps
   SERVICES = hydra_string_replace(SERVICES, "ftp[s]", "ftp");
@@ -2527,7 +2539,7 @@ int main(int argc, char *argv[]) {
       if (strcmp(hydra_options.service, "afp") == 0 || strcmp(hydra_options.service, "firebird") == 0 || strncmp(hydra_options.service, "mysql", 5) == 0 ||
           strcmp(hydra_options.service, "ncp") == 0 || strcmp(hydra_options.service, "oracle") == 0 || strcmp(hydra_options.service, "postgres") == 0 ||
           strncmp(hydra_options.service, "ssh", 3) == 0 || strcmp(hydra_options.service, "sshkey") == 0 || strcmp(hydra_options.service, "svn") == 0 ||
-          strcmp(hydra_options.service, "sapr3") == 0) {
+          strcmp(hydra_options.service, "sapr3") == 0 || strcmp(hydra_options.service, "memcached") == 0) {
         fprintf(stderr, "[WARNING] module %s does not support HYDRA_PROXY* !\n", hydra_options.service);
         proxy_string = NULL;
       }
@@ -2604,6 +2616,13 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "[WARNING] The icq module is not working with the modern protocol version! (somebody else will need to fix this as I don't care for icq)\n");
       i = 1;
     }
+    if (strcmp(hydra_options.service, "memcached") == 0)
+#ifdef LIBMCACHED
+      i = 1;
+#else
+      bail("Compiled without LIBMCACHED support, module not available!");
+#endif
+
     if (strcmp(hydra_options.service, "mysql") == 0) {
       i = 1;
       if (hydra_options.tasks > 4) {
@@ -2660,6 +2679,7 @@ int main(int argc, char *argv[]) {
 #else
       bail("Compiled without LIBNCP support, module not available!");
 #endif
+
     if (strcmp(hydra_options.service, "pcanywhere") == 0)
       i = 1;
     if (strcmp(hydra_options.service, "http-proxy") == 0) {

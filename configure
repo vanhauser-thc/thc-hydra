@@ -48,6 +48,8 @@ FIREBIRD_PATH=""
 FIREBIRD_IPATH=""
 MYSQL_PATH=""
 MYSQL_IPATH=""
+MCACHED_PATH=""
+MCACHED_IPATH=""
 AFP_PATH=""
 AFP_IPATH=""
 NCP_PATH=""
@@ -940,6 +942,55 @@ if [ "X" = "X$ORACLE_PATH" -o "X" = "X$ORACLE_IPATH" ]; then
     ORACLE_IPATH=""
 fi
 
+echo "Checking for Memcached (libmemcached.so, memcached.h) ..."
+
+  for i in $LIBDIRS ; do
+    if [ "X" = "X$MCACHED_PATH" ]; then
+        if [ -f "$i/libmemcached.so" -o -f "$i/libmemcached.dylib" -o -f "$i/libmemcached.a" ]; then
+            MCACHED_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$MCACHED_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libmemcached.so* 2> /dev/null | grep memcached`
+        if [ -n "$TMP_LIB" ]; then
+          MCACHED_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$MCACHED_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libmemcached.dll* 2> /dev/null | grep memcached`
+        if [ -n "$TMP_LIB" ]; then
+          MCACHED_PATH="$i"
+        fi
+    fi
+  done
+
+  MCACHED_IPATH=
+  for i in $INCDIRS ; do
+    if [ "X" = "X$MCACHED_IPATH" ]; then
+        if [ -f "$i/memcached.h" ]; then
+            MCACHED_IPATH="$i"
+        fi
+        if [ -f "$i/libmemcached/memcached.h" ]; then
+            MCACHED_IPATH="$i/libmemcached"
+        fi
+        if [ -f "$i/libmemcached-1.0/memcached.h" ]; then
+            MCACHED_IPATH="$i/libmemcached-1.0"
+        fi
+    fi
+  done
+
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: MCACHED_PATH=$MCACHED_PATH/libmemcached
+   echo DEBUG: MCACHED_IPATH=$MCACHED_IPATH/memcached.h
+fi
+  if [ -n "$MCACHED_PATH" -a -n "$MCACHED_IPATH" ]; then
+    echo "                                             ... found"
+  fi
+  if [ "X" = "X$MCACHED_PATH" -o "X" = "X$MCACHED_IPATH" ]; then
+    echo "                                             ... NOT found, module memcached disabled"
+    MCACHED_PATH=""
+    MCACHED_IPATH=""
+  fi
 
 if [ "X" = "X$XHYDRA_SUPPORT" ]; then
     echo "Checking for GUI req's (pkg-config, gtk+-2.0) ..."
@@ -1034,7 +1085,7 @@ XLIBS=""
 XLIBPATHS=""
 XIPATHS=""
 
-if [ -n "$FIREBIRD_PATH" -o -n "$PCRE_PATH" -o -n "$IDN_PATH" -o -n "$SSL_PATH" -o -n "$CRYPTO_PATH" -o -n "$NSL_PATH" -o -n "$SOCKET_PATH" -o -n "$RESOLV_PATH" -o -n "$SAPR3_PATH" -o -n "$SSH_PATH" -o -n "$POSTGRES_PATH" -o -n "$SVN_PATH" -o -n "$NCP_PATH" -o -n "$CURSES_PATH" -o -n "$ORACLE_PATH" -o -n "$AFP_PATH" -o -n "$MYSQL_PATH" ]; then
+if [ -n "$FIREBIRD_PATH" -o -n "$PCRE_PATH" -o -n "$IDN_PATH" -o -n "$SSL_PATH" -o -n "$CRYPTO_PATH" -o -n "$NSL_PATH" -o -n "$SOCKET_PATH" -o -n "$RESOLV_PATH" -o -n "$SAPR3_PATH" -o -n "$SSH_PATH" -o -n "$POSTGRES_PATH" -o -n "$SVN_PATH" -o -n "$NCP_PATH" -o -n "$CURSES_PATH" -o -n "$ORACLE_PATH" -o -n "$AFP_PATH" -o -n "$MYSQL_PATH" -o -n "$MCACHED_PATH" ]; then
     XLIBPATHS="-L/usr/lib -L/usr/local/lib -L/lib"
 fi
 if [ -n "$MYSQL_IPATH" ]; then
@@ -1098,10 +1149,13 @@ fi
 if [ -n "$HAVE_GCRYPT" ]; then
     XDEFINES="$XDEFINES -DHAVE_GCRYPT"
 fi
+if [ -n "$MCACHED_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBMCACHED"
+fi
 
 
 OLDPATH=""
-for i in $SSL_PATH $FIREBIRD_PATH $WORACLE_LIB_PATH $PCRE_PATH $IDN_PATH $CRYPTO_PATH $SSH_PATH $NSL_PATH $SOCKET_PATH $RESOLV_PATH $SAPR3_PATH $POSTGRES_PATH $SVN_PATH $NCP_PATH $CURSES_PATH $ORACLE_PATH $AFP_PATH $MYSQL_PATH; do
+for i in $SSL_PATH $FIREBIRD_PATH $WORACLE_LIB_PATH $PCRE_PATH $IDN_PATH $CRYPTO_PATH $SSH_PATH $NSL_PATH $SOCKET_PATH $RESOLV_PATH $SAPR3_PATH $POSTGRES_PATH $SVN_PATH $NCP_PATH $CURSES_PATH $ORACLE_PATH $AFP_PATH $MYSQL_PATH $MCACHED_PATH; do
     if [ "$OLDPATH" = "$i" ]; then
       OLDPATH="$i"
     else
@@ -1153,6 +1207,9 @@ if [ -n "$AFP_IPATH" ]; then
 fi
 if [ -n "$ORACLE_IPATH" ]; then
     XIPATHS="$XIPATHS -I$ORACLE_IPATH"
+fi
+if [ -n "$MCACHED_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$MCACHED_IPATH"
 fi
 if [ -n "$HAVE_GCRYPT" ]; then
     XLIBS="$XLIBS -lgcrypt"
@@ -1217,7 +1274,9 @@ fi
 if [ -n "$RESOLV_PATH" ]; then
     XLIBS="$XLIBS -lresolv"
 fi
-
+if [ -n "$MCACHED_PATH" ]; then
+    XLIBS="$XLIBS -lmemcached"
+fi
 if [ -d /usr/kerberos/include ]; then
   XIPATHS="$XIPATHS -I/usr/kerberos/include"
 fi
