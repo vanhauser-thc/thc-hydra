@@ -148,8 +148,9 @@ void service_mcached(char *ip, int32_t sp, unsigned char options, char *miscptr,
             mcached_send_com_quit(sock);
             if (sock >= 0)
               sock = hydra_disconnect(sock);
-            hydra_report(stderr, "[ERROR] Memcached server does not need any authentication\n");
-            return;
+            hydra_report(stderr, "[ERROR] Memcached server does not require any authentication\n");
+            next_run = 3;
+            break;
          }
          free(buf);
       }
