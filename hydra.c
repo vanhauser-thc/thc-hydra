@@ -3985,8 +3985,8 @@ int main(int argc, char *argv[]) {
 
   error += j;
   k = 0;
-  for (j = 0; j < hydra_options.max_use; j++)
-    if (hydra_heads[j]->active == HEAD_ACTIVE)
+  for (i = 0; i < hydra_options.max_use; i++)
+    if (hydra_heads[i]->active == HEAD_ACTIVE)
       k++;
 
   if (error == 0 && k == 0) {
