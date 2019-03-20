@@ -6,6 +6,7 @@ Release 8.9-dev
 * Fixed svn module memory leaks
 * Fixed rtsp module potential buffer overflow
 * Added memcached module
+* Added mongodb module
 
 
 Release 8.9.1

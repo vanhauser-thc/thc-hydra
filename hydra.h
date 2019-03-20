@@ -146,6 +146,7 @@
 #define PORT_RADMIN2    4899
 #define PORT_MCACHED    11211
 #define PORT_MCACHED_SSL    11211
+#define PORT_MONGODB    27017
 
 #define False 0
 #define True  1

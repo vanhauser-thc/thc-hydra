@@ -41,6 +41,7 @@ LOCAL_SRC_FILES:= \
 	hydra-ldap.c\
 	hydra-mod.c\
 	hydra-memcached.c\
+	hydra-mongodb.c\
 	hydra-mssql.c\
 	hydra-mysql.c\
 	hydra-ncp.c\
