@@ -5,6 +5,7 @@ Release 8.9-dev
 * your patch? :)
 * Fixed svn module memory leaks
 * Fixed rtsp module potential buffer overflow
+* Fixed http module DIGEST-MD5 mode
 * Added memcached module
 * Added mongodb module
 

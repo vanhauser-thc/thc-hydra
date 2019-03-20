@@ -13,7 +13,7 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   char *login, *pass, *buffer, buffer2[500];
   char *header;
   char *ptr, *fooptr;
-  int32_t complete_line = 0;
+  int32_t complete_line = 0, buffer_size;
   char tmpreplybuf[1024] = "", *tmpreplybufptr;
 
   if (strlen(login = hydra_get_next_login()) == 0)
@@ -26,7 +26,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
   header = stringify_headers(&ptr_head);
 
-  if(!(buffer = malloc(strlen(header) + 500))) {
+  buffer_size = strlen(header) + 500;
+  if(!(buffer = malloc(buffer_size))) {
     free(header);
     return 3;
   }
@@ -63,8 +64,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
       char *pbuffer;
 
       pbuffer = hydra_strcasestr(http_buf, "WWW-Authenticate: Digest ");
-      strncpy(buffer, pbuffer + strlen("WWW-Authenticate: Digest "), sizeof(buffer));
-      buffer[sizeof(buffer) - 1] = '\0';
+      strncpy(buffer, pbuffer + strlen("WWW-Authenticate: Digest "), buffer_size - 1);
+      buffer[buffer_size - 1] = '\0';
 
       fooptr = buffer2;
       sasl_digest_md5(fooptr, login, pass, buffer, miscptr, type, webtarget, webport, header);
