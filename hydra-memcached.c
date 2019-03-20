@@ -134,8 +134,6 @@ void service_mcached(char *ip, int32_t sp, unsigned char options, char *miscptr,
   }
 }
 
-#endif
-
 int32_t service_mcached_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
@@ -177,3 +175,5 @@ int32_t service_mcached_init(char *ip, int32_t sp, unsigned char options, char *
     sock = hydra_disconnect(sock);
   return 0;
 }
+
+#endif
