@@ -9,7 +9,7 @@
 #include "hydra-mod.h"
 
 #ifndef LIBMONGODB
-void dummy_mcached() {
+void dummy_mongodb() {
   printf("\n");
 }
 #else
