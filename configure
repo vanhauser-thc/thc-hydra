@@ -69,6 +69,8 @@ NSL_PATH=""
 SOCKET_PATH=""
 MANDIR=""
 XHYDRA_SUPPORT=""
+FREERDP2_PATH=""
+WINPR2_PATH=""
 
 if [ '!' "X" = "X$*" ]; then
   while [ $# -gt 0 ] ; do
@@ -997,6 +999,78 @@ fi
   fi
 
 
+echo "Checking for Freerdp2 (libfreerdp2.so, freerdp/*.h, libwinpr2.so, winpr/*.h) ..."
+
+  for i in $LIBDIRS ; do
+    if [ "X" = "X$FREERDP2_PATH" ]; then
+        if [ -f "$i/libfreerdp2.so" -o -f "$i/libfreerdp2.dylib" -o -f "$i/libfreerdp2.a" ]; then
+            FREERDP2_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$FREERDP2_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libfreerdp2*.so* 2> /dev/null | grep libfreerdp2`
+        if [ -n "$TMP_LIB" ]; then
+          FREERDP2_PATH="$i"
+        fi
+    fi
+  done
+
+  FREERDP2_IPATH=
+  for i in $INCDIRS ; do
+    if [ "X" = "X$FREERDP2_IPATH" ]; then
+        if [ -f "$i/freerdp/freerdp.h" ]; then
+            FREERDP2_IPATH="$i/freerdp2"
+        fi
+        if [ -f "$i/freerdp2/freerdp/freerdp.h" ]; then
+            FREERDP2_IPATH="$i/freerdp2"
+        fi
+    fi
+  done
+
+ for i in $LIBDIRS ; do
+    if [ "X" = "X$WINPR2_PATH" ]; then
+        if [ -f "$i/libwinpr2.so" -o -f "$i/libwinpr2.dylib" -o -f "$i/libwinpr2.a" ]; then
+            WINPR2_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$WINPR2_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/winpr.dll* 2> /dev/null | grep winpr`
+        if [ -n "$TMP_LIB" ]; then
+          WINPR2_PATH="$i"
+        fi
+    fi
+  done
+
+  WINPR2_IPATH=
+  for i in $INCDIRS ; do
+    if [ "X" = "X$WINPR2_IPATH" ]; then
+        if [ -f "$i/winpr.h" ]; then
+            WINPR2_IPATH="$i"
+        fi
+        if [ -f "$i/winpr2/winpr/winpr.h" ]; then
+            WINPR2_IPATH="$i/winpr2"
+        fi
+    fi
+  done
+
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: FREERDP2_PATH=$FREERDP2_PATH/
+   echo DEBUG: FREERDP2_IPATH=$FREERDP2_IPATH/
+   echo DEBUG: WINPR2_PATH=$WINPR2_PATH/
+   echo DEBUG: WINPR2_IPATH=$WINPR2_IPATH/
+fi
+
+  if [ -n "$FREERDP2_PATH" -a -n "$FREERDP2_IPATH" -a -n "$WINPR2_PATH" -a -n "$WINPR2_IPATH" ]; then
+    echo "                                             ... found"
+  fi
+  if [ "X" = "X$FREERDP2_PATH" -o "X" = "X$FREERDP2_IPATH" -o "X" = "X$WINPR2_PATH" -o "X" = "X$WINPR2_IPATH" ]; then
+    echo "                                             ... NOT found, module rdp disabled"
+    FREERDP2_PATH=""
+    FREERDP2_IPATH=""
+    WINPR2_PATH=""
+    WINPR2_IPATH=""
+  fi
+
 echo "Checking for Mongodb (libmongoc-1.0.so, mongoc.h, libbson-1.0.so, bson.h) ..."
 
   for i in $LIBDIRS ; do
@@ -1180,7 +1254,7 @@ XLIBS=""
 XLIBPATHS=""
 XIPATHS=""
 
-if [ -n "$FIREBIRD_PATH" -o -n "$PCRE_PATH" -o -n "$IDN_PATH" -o -n "$SSL_PATH" -o -n "$CRYPTO_PATH" -o -n "$NSL_PATH" -o -n "$SOCKET_PATH" -o -n "$RESOLV_PATH" -o -n "$SAPR3_PATH" -o -n "$SSH_PATH" -o -n "$POSTGRES_PATH" -o -n "$SVN_PATH" -o -n "$NCP_PATH" -o -n "$CURSES_PATH" -o -n "$ORACLE_PATH" -o -n "$AFP_PATH" -o -n "$MYSQL_PATH" -o -n "$MCACHED_PATH" -o -n "$MONGOD_PATH" ]; then
+if [ -n "$FIREBIRD_PATH" -o -n "$PCRE_PATH" -o -n "$IDN_PATH" -o -n "$SSL_PATH" -o -n "$CRYPTO_PATH" -o -n "$NSL_PATH" -o -n "$SOCKET_PATH" -o -n "$RESOLV_PATH" -o -n "$SAPR3_PATH" -o -n "$SSH_PATH" -o -n "$POSTGRES_PATH" -o -n "$SVN_PATH" -o -n "$NCP_PATH" -o -n "$CURSES_PATH" -o -n "$ORACLE_PATH" -o -n "$AFP_PATH" -o -n "$MYSQL_PATH" -o -n "$MCACHED_PATH" -o -n "$MONGOD_PATH" -o -n "$FREERDP2_PATH" -o -n "$WINPR2_PATH" ]; then
     XLIBPATHS="-L/usr/lib -L/usr/local/lib -L/lib"
 fi
 if [ -n "$MYSQL_IPATH" ]; then
@@ -1253,9 +1327,15 @@ fi
 if [ -n "$BSON_PATH" ]; then
     XDEFINES="$XDEFINES -DLIBBSON"
 fi
+if [ -n "$FREERDP2_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBFREERDP2"
+fi
+if [ -n "$WINPR2_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBWINPR2"
+fi
 
 OLDPATH=""
-for i in $SSL_PATH $FIREBIRD_PATH $WORACLE_LIB_PATH $PCRE_PATH $IDN_PATH $CRYPTO_PATH $SSH_PATH $NSL_PATH $SOCKET_PATH $RESOLV_PATH $SAPR3_PATH $POSTGRES_PATH $SVN_PATH $NCP_PATH $CURSES_PATH $ORACLE_PATH $AFP_PATH $MYSQL_PATH $MCACHED_PATH $MONGODB_PATH $BSON_PATH; do
+for i in $SSL_PATH $FIREBIRD_PATH $WORACLE_LIB_PATH $PCRE_PATH $IDN_PATH $CRYPTO_PATH $SSH_PATH $NSL_PATH $SOCKET_PATH $RESOLV_PATH $SAPR3_PATH $POSTGRES_PATH $SVN_PATH $NCP_PATH $CURSES_PATH $ORACLE_PATH $AFP_PATH $MYSQL_PATH $MCACHED_PATH $MONGODB_PATH $BSON_PATH $FREERDP2_PATH $WINPR2_PATH; do
     if [ "$OLDPATH" = "$i" ]; then
       OLDPATH="$i"
     else
@@ -1313,6 +1393,9 @@ if [ -n "$MCACHED_IPATH" ]; then
 fi
 if [ -n "$MONGODB_IPATH" ]; then
     XIPATHS="$XIPATHS -I$MONGODB_IPATH -I$BSON_IPATH"
+fi
+if [ -n "$FREERDP2_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$FREERDP2_IPATH -I$WINPR2_IPATH"
 fi
 if [ -n "$HAVE_GCRYPT" ]; then
     XLIBS="$XLIBS -lgcrypt"
@@ -1385,6 +1468,12 @@ if [ -n "$MONGODB_PATH" ]; then
 fi
 if [ -n "$BSON_PATH" ]; then
     XLIBS="$XLIBS -lbson-1.0"
+fi
+if [ -n "$FREERDP2_PATH" ]; then
+    XLIBS="$XLIBS -lfreerdp2"
+fi
+if [ -n "$WINPR2_PATH" ]; then
+    XLIBS="$XLIBS -lwinpr2"
 fi
 if [ -d /usr/kerberos/include ]; then
   XIPATHS="$XIPATHS -I/usr/kerberos/include"
