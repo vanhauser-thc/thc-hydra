@@ -110,6 +110,8 @@ extern void service_oracle_sid(char *ip, int32_t sp, unsigned char options, char
 extern int32_t service_oracle_sid_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 extern void service_sip(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 extern int32_t service_sip_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+#endif
+#ifdef LIBFREERDP2
 extern void service_rdp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 extern int32_t service_rdp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
@@ -418,7 +420,7 @@ SERVICE3("mongodb", mongodb),
 #endif
   SERVICE(redis),
   SERVICE(rexec),
-#ifdef LIBOPENSSL
+#ifdef LIBFREERDP2
   SERVICE3("rdp", rdp),
 #endif
   SERVICE(rlogin),
@@ -2150,8 +2152,6 @@ int main(int argc, char *argv[]) {
   SERVICES = hydra_string_replace(SERVICES, "[-{cram|digest}md5]", "");
   // for sip
   SERVICES = hydra_string_replace(SERVICES, " sip", "");
-  // for rdp
-  SERVICES = hydra_string_replace(SERVICES, " rdp", "");
   // for oracle-listener
   SERVICES = hydra_string_replace(SERVICES, " oracle-listener", "");
   // general
@@ -2160,6 +2160,12 @@ int main(int argc, char *argv[]) {
   SERVICES = hydra_string_replace(SERVICES, " oracle-sid", "");
   strcat(unsupported, "SSL-services (ftps, sip, rdp, oracle-services, ...) ");
 #endif
+
+#ifndef LIBFREERDP2
+  // for rdp
+  SERVICES = hydra_string_replace(SERVICES, " rdp", "");
+#endif
+
 #ifndef HAVE_MATH_H
   if (strlen(unsupported) > 0)
     strcat(unsupported, "and ");
@@ -2759,10 +2765,15 @@ int main(int argc, char *argv[]) {
 #endif
     }
     if ((strcmp(hydra_options.service, "smb") == 0) || (strcmp(hydra_options.service, "smbnt") == 0) ||
-        (strcmp(hydra_options.service, "sip") == 0) || (strcmp(hydra_options.service, "rdp") == 0) ||
+        (strcmp(hydra_options.service, "sip") == 0) ||
         (strcmp(hydra_options.service, "oracle-listener") == 0) || (strcmp(hydra_options.service, "oracle-sid") == 0)) {
 #ifndef LIBOPENSSL
       bail("Compiled without OPENSSL support, module not available!");
+#endif
+    }
+    if (strcmp(hydra_options.service, "rdp") == 0){
+#ifndef LIBFREERDP2
+      bail("Compiled without FREERDP2 support, module not available!");
 #endif
     }
     if (strcmp(hydra_options.service, "pcnfs") == 0) {
@@ -3061,17 +3072,16 @@ int main(int argc, char *argv[]) {
     if (strcmp(hydra_options.service, "irc") == 0)
       i = 1;
     if (strcmp(hydra_options.service, "rdp") == 0) {
-      //if (hydra_options.tasks > 4)
-      //  fprintf(stderr, "[WARNING] rdp servers often don't like many connections, use -t 1 or -t 4 to reduce the number of parallel connections and -W 1 or -W 3 to wait between connection to allow the server to recover\n");
-      //if (hydra_options.tasks > 4) {
-      //  fprintf(stderr, "[INFO] Reduced number of tasks to 4 (rdp does not like many parallel connections)\n");
-      //  hydra_options.tasks = 4;
-      //}
-      //if (conwait == 0)
-      //  hydra_options.conwait = conwait = 1;
-      //printf("[WARNING] the rdp module is currently reported to be unreliable, most likely against new Windows version. Please test, report - and if possible, fix.\n");
-      printf("[ERROR] the rdp module does not support the current protocol, hence it is disabled. If you want to develop it, please contact vh@thc.org\n");
-      exit(-1);
+      if (hydra_options.tasks > 4)
+       fprintf(stderr, "[WARNING] rdp servers often don't like many connections, use -t 1 or -t 4 to reduce the number of parallel connections and -W 1 or -W 3 to wait between connection to allow the server to recover\n");
+      if (hydra_options.tasks > 4) {
+       fprintf(stderr, "[INFO] Reduced number of tasks to 4 (rdp does not like many parallel connections)\n");
+       hydra_options.tasks = 4;
+      }
+      if (conwait == 0)
+       hydra_options.conwait = conwait = 1;
+      printf("[WARNING] the rdp module is experimental. Please test, report - and if possible, fix.\n");
+      i = 1;
     }
     if (strcmp(hydra_options.service, "radmin2") == 0) {
 #ifdef HAVE_GCRYPT
