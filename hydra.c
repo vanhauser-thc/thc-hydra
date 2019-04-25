@@ -3552,11 +3552,11 @@ int main(int argc, char *argv[]) {
 //    printf("[DATA] with additional data %s\n", hydra_options.miscptr);
 
   if (hydra_options.outfile_ptr != NULL) {
-    if ((hydra_brains.ofp = fopen(hydra_options.outfile_ptr, "a+")) == NULL) {
-      perror("[ERROR] Error creating outputfile");
-      exit(-1);
-    }
     if (hydra_options.outfile_format == FORMAT_JSONV1) {
+      if ((hydra_brains.ofp = fopen(hydra_options.outfile_ptr, "w")) == NULL) {
+            perror("[ERROR] Error creating outputfile");
+            exit(-1);
+      }
       fprintf(hydra_brains.ofp, "{ \"generator\": {\n"
               "\t\"software\": \"%s\", \"version\": \"%s\", \"built\": \"%s\",\n"
               "\t\"server\": \"%s\", \"service\": \"%s\", \"jsonoutputversion\": \"1.00\",\n"
@@ -3570,6 +3570,10 @@ int main(int argc, char *argv[]) {
       }
       fprintf(hydra_brains.ofp, "\"\n\t},\n\"results\": [");
     } else { // else default is plain text aka == 0
+      if ((hydra_brains.ofp = fopen(hydra_options.outfile_ptr, "a+")) == NULL) {
+            perror("[ERROR] Error creating outputfile");
+            exit(-1);
+      }
       fprintf(hydra_brains.ofp, "# %s %s run at %s on %s %s (%s", PROGRAM, VERSION, hydra_build_time(),
             hydra_options.server == NULL ? hydra_options.infile_ptr : hydra_options.server, hydra_options.service, prg);
       for (i = 1; i < argc; i++)
