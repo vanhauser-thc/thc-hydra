@@ -3552,11 +3552,15 @@ int main(int argc, char *argv[]) {
 //    printf("[DATA] with additional data %s\n", hydra_options.miscptr);
 
   if (hydra_options.outfile_ptr != NULL) {
-    if ((hydra_brains.ofp = fopen(hydra_options.outfile_ptr, "a+")) == NULL) {
+    char outfile_open_type[] = "a+"; //Default open in a+ mode
+    if (hydra_options.outfile_format == FORMAT_JSONV1 && hydra_options.restore != 1) {
+      outfile_open_type[0] = 'w'; //Creat new outfile, if using JSON output and not using -R. The open mode should be "w+".
+    }
+    if ((hydra_brains.ofp = fopen(hydra_options.outfile_ptr, outfile_open_type)) == NULL) {
       perror("[ERROR] Error creating outputfile");
       exit(-1);
     }
-    if (hydra_options.outfile_format == FORMAT_JSONV1) {
+    if (hydra_options.outfile_format == FORMAT_JSONV1 && hydra_options.restore != 1) { // No JSON head while using -R
       fprintf(hydra_brains.ofp, "{ \"generator\": {\n"
               "\t\"software\": \"%s\", \"version\": \"%s\", \"built\": \"%s\",\n"
               "\t\"server\": \"%s\", \"service\": \"%s\", \"jsonoutputversion\": \"1.00\",\n"
