@@ -468,7 +468,7 @@ RSA *ssl_temp_rsa_cb(SSL * ssl, int32_t export, int32_t keylength) {
 #if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10100000L
   BIGNUM *n;
   n = BN_new();
-  RSA_get0_key(rsa, &n, NULL, NULL);
+  RSA_get0_key(rsa, (const struct bignum_st **)&n, NULL, NULL);
   ok = BN_zero(n);
 #else
   if (rsa->n == 0)
