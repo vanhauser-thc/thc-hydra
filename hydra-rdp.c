@@ -99,7 +99,7 @@ void service_rdp(char *ip, int32_t sp, unsigned char options, char *miscptr, FIL
     next_run = 0;
     switch (run) {
     case 1:                    /* run the cracking function */
-      next_run = start_rdp(ip, port, options, miscptr, fp);
+      next_run = start_rdp(ip, myport, options, miscptr, fp);
       break;
     case 2:                    /* clean exit */
       freerdp_disconnect(instance);
