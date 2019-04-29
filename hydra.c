@@ -2397,6 +2397,9 @@ int main(int argc, char *argv[]) {
     if (!setupterm(NULL, 1, NULL) && (tigetnum("colors") <= 0)) {
       colored_output = 0;
     }
+    if (cur_term) {
+      del_curterm(cur_term);
+    }
   }
 #else
   //don't want border line effect so disabling color output
