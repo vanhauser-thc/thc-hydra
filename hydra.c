@@ -2296,11 +2296,11 @@ int main(int argc, char *argv[]) {
       break;
     case 'b':
       outfile_format_tmp = optarg;
-      if (0==strcasecmp(outfile_format_tmp,"text"))
+      if (strcasecmp(outfile_format_tmp,"text") == 0)
           hydra_options.outfile_format = FORMAT_PLAIN_TEXT;
-      else if (0==strcasecmp(outfile_format_tmp,"json")) // latest json formatting.
+      else if (strcasecmp(outfile_format_tmp,"json") == 0) // latest json formatting.
           hydra_options.outfile_format = FORMAT_JSONV1;
-      else if (0==strcasecmp(outfile_format_tmp,"jsonv1"))
+      else if (strcasecmp(outfile_format_tmp,"jsonv1") == 0)
           hydra_options.outfile_format = FORMAT_JSONV1;
       else {
         fprintf(stderr, "[ERROR] Output file format must be (text, json, jsonv1)\n");
