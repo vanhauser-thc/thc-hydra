@@ -85,7 +85,7 @@ void interrupt() {
 
 /* ----------------- internal functions ----------------- */
 
-int32_t internal__hydra_connect(char *host, int32_t port, int32_t protocol, int32_t type) {
+int32_t internal__hydra_connect(char *host, int32_t port, int32_t type, int32_t protocol) {
   int32_t s, ret = -1, ipv6 = 0, reset_selected = 0;
 
 #ifdef AF_INET6
@@ -111,10 +111,10 @@ int32_t internal__hydra_connect(char *host, int32_t port, int32_t protocol, int3
 
 #ifdef AF_INET6
   if (ipv6)
-    s = socket(AF_INET6, protocol, type);
+    s = socket(AF_INET6, type, protocol);
   else
 #endif
-    s = socket(PF_INET, protocol, type);
+    s = socket(PF_INET, type, protocol);
   if (s >= 0) {
     if (src_port != 0) {
       int32_t bind_ok = 0;
@@ -580,10 +580,10 @@ int32_t internal__hydra_connect_to_ssl(int32_t socket, char *hostname) {
   return socket;
 }
 
-int32_t internal__hydra_connect_ssl(char *host, int32_t port, int32_t protocol, int32_t type, char *hostname) {
+int32_t internal__hydra_connect_ssl(char *host, int32_t port, int32_t type, int32_t protocol, char *hostname) {
   int32_t socket;
 
-  if ((socket = internal__hydra_connect(host, port, protocol, type)) < 0)
+  if ((socket = internal__hydra_connect(host, port, type, protocol)) < 0)
     return -1;
 
   return internal__hydra_connect_to_ssl(socket, hostname);
