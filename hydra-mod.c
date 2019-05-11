@@ -935,74 +935,73 @@ int32_t hydra_recv_nb(int32_t socket, char *buf, uint32_t length) {
 }
 
 char *hydra_receive_line(int32_t socket) {
-  char buf[1024], *buff, *buff2, text[64];
-  int32_t i, j = 1, k, got = 0;
+  char buf[1024], *buff, *buff2, pid[64];
+  int32_t i, j, k, got = 0;
 
   if ((buff = malloc(sizeof(buf))) == NULL) {
     fprintf(stderr, "[ERROR] could not malloc\n");
     return NULL;
   }
+
   memset(buff, 0, sizeof(buf));
+
   if (debug)
     printf("[DEBUG] hydra_receive_line: waittime: %d, conwait: %d, socket: %d, pid: %d\n", waittime, conwait, socket, getpid());
 
   if ((i = hydra_data_ready_timed(socket, (long) waittime, 0)) > 0) {
-    if ((got = internal__hydra_recv(socket, buff, sizeof(buf) - 1)) < 0) {
+    do {
+      j = internal__hydra_recv(socket, buf, sizeof(buf) - 1);
+      if (j > 0) {
+        for (k = 0; k < j; k++)
+          if (buf[k] == 0)
+            buf[k] = 32;
+
+        buf[j] = 0;
+
+        if ((buff2 = realloc(buff, got + j + 1)) == NULL) {
+          free(buff);
+          return NULL;
+        }
+
+        buff = buff2;
+        memcpy(buff + got, &buf, j + 1);
+        got += j;
+        buff[got] = 0;
+      } else if (j < 0) {
+        // some error occured
+        got = -1;
+      }
+    } while (hydra_data_ready(socket) > 0 && j > 0
+#ifdef LIBOPENSSL
+       || use_ssl && SSL_pending(ssl)
+#endif
+        );
+
+    if (got > 0) {
+      if (debug) {
+        sprintf(pid, "[DEBUG] RECV [pid:%d]", getpid());
+        hydra_dump_data(buff, got, pid);
+        //hydra_report_debug(stderr, "DEBUG_RECV_BEGIN [pid:%d len:%d]|%s|END", getpid(), got, buff);
+      }
+    } else {
+      if (got < 0) {
+        if (debug) {
+          sprintf(pid, "[DEBUG] RECV [pid:%d]", getpid());
+          hydra_dump_data((unsigned char*)"", -1, pid);
+          //hydra_report_debug(stderr, "DEBUG_RECV_BEGIN||END [pid:%d %d]", getpid(), i);
+          perror("recv");
+        }
+      }
       free(buff);
       return NULL;
     }
+
+    usleepn(100);
   } else {
     if (debug)
       printf("[DEBUG] hydra_data_ready_timed: %d, waittime: %d, conwait: %d, socket: %d\n", i, waittime, conwait, socket);
   }
 
-  if (got < 0) {
-    if (debug) {
-      sprintf(text, "[DEBUG] RECV [pid:%d]", getpid());
-      hydra_dump_data((unsigned char*)"", -1, text);
-      //hydra_report_debug(stderr, "DEBUG_RECV_BEGIN||END [pid:%d %d]", getpid(), i);
-      perror("recv");
-    }
-    free(buff);
-    return NULL;
-  } else {
-    if (got > 0) {
-      for (k = 0; k < got; k++)
-        if (buff[k] == 0)
-          buff[k] = 32;
-      buff[got] = 0;
-      usleepn(100);
-    }
-  }
-
-  while (hydra_data_ready(socket) > 0 && j > 0) {
-    j = internal__hydra_recv(socket, buf, sizeof(buf) - 1);
-    if (j > 0) {
-      for (k = 0; k < j; k++)
-        if (buf[k] == 0)
-          buf[k] = 32;
-      buf[j] = 0;
-      if ((buff2 = realloc(buff, got + j + 1)) == NULL) {
-        free(buff);
-        return NULL;
-      } else
-        buff = buff2;
-      memcpy(buff + got, &buf, j + 1);
-      got += j;
-      buff[got] = 0;
-    }
-    usleepn(100);
-  }
-
-  if (debug) {
-    sprintf(text, "[DEBUG] RECV [pid:%d]", getpid());
-    hydra_dump_data(buff, got, text);
-    //hydra_report_debug(stderr, "DEBUG_RECV_BEGIN [pid:%d len:%d]|%s|END", getpid(), got, buff);
-  }
-  if (got == 0) {
-    free(buff);
-    return NULL;
-  }
   return buff;
 }
 
