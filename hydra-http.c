@@ -70,8 +70,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
       fooptr = buffer2;
       sasl_digest_md5(fooptr, login, pass, buffer, miscptr, type, webtarget, webport, header);
       if (fooptr == NULL) {
-	free(buffer);
-	free(header);
+        free(buffer);
+        free(header);
         return 3;
       }
 
@@ -96,38 +96,37 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
       //send the first..
       if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL)
         sprintf(buffer,
-                "%s http://%s:%d%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\nAuthorization: NTLM %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
+                "%s http://%s:%d%s HTTP/1.1\r\nHost: %s\r\nAuthorization: NTLM %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\n%s\r\n",
                 type, webtarget, webport, miscptr, webtarget, buf1, proxy_authentication[selected_proxy], header);
       else {
         if (use_proxy == 1)
-          sprintf(buffer, "%s http://%s:%d%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\nAuthorization: NTLM %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
+          sprintf(buffer, "%s http://%s:%d%s HTTP/1.1\r\nHost: %s\r\nAuthorization: NTLM %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\n%s\r\n",
                   type, webtarget, webport, miscptr, webtarget, buf1, header);
         else
-          sprintf(buffer, "%s %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\nAuthorization: NTLM %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n", type, miscptr, webtarget,
+          sprintf(buffer, "%s %s HTTP/1.1\r\nHost: %s\r\nAuthorization: NTLM %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\n%s\r\n", type, miscptr, webtarget,
                   buf1, header);
       }
 
       if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
-	free(buffer);
-	free(header);
+        free(buffer);
+        free(header);
         return 1;
       }
 
       //receive challenge
       if (http_buf != NULL)
         free(http_buf);
+
       http_buf = hydra_receive_line(s);
-      while (http_buf != NULL && (pos = hydra_strcasestr(http_buf, "WWW-Authenticate: NTLM ")) == NULL) {
-        free(http_buf);
-        http_buf = hydra_receive_line(s);
-      }
-
       if (http_buf == NULL) {
-	free(buffer);
-	free(header);
-        return 1;
+        if (verbose)
+          hydra_report(stderr, "[ERROR] Server did not answer\n");
+        free(buffer);
+        free(header);
+        return 3;
       }
 
+      pos = hydra_strcasestr(http_buf, "WWW-Authenticate: NTLM ");
       if (pos != NULL) {
         char *str;
 
@@ -138,7 +137,11 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
         if ((str = strchr(pos, '\n')) != NULL) {
           pos[str - pos] = 0;
         }
+      } else {
+        hydra_report(stderr, "[ERROR] It is not NTLM authentication type\n");
+        return 3;
       }
+
       //recover challenge
       from64tobits((char *) buf1, pos);
       free(http_buf);
@@ -151,14 +154,14 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
       //create the auth response
       if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL)
         sprintf(buffer,
-                "%s http://%s:%d%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\nAuthorization: NTLM %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
+                "%s http://%s:%d%s HTTP/1.1\r\nHost: %s\r\nAuthorization: NTLM %s\r\nProxy-Authorization: Basic %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\n%s\r\n",
                 type, webtarget, webport, miscptr, webtarget, buf1, proxy_authentication[selected_proxy], header);
       else {
         if (use_proxy == 1)
-          sprintf(buffer, "%s http://%s:%d%s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\nAuthorization: NTLM %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n",
+          sprintf(buffer, "%s http://%s:%d%s HTTP/1.1\r\nHost: %s\r\nAuthorization: NTLM %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\n%s\r\n",
                   type, webtarget, webport, miscptr, webtarget, buf1, header);
         else
-          sprintf(buffer, "%s %s HTTP/1.1\r\nHost: %s\r\nConnection: close\r\nAuthorization: NTLM %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\nConnection: keep-alive\r\n%s\r\n", type, miscptr, webtarget,
+          sprintf(buffer, "%s %s HTTP/1.1\r\nHost: %s\r\nAuthorization: NTLM %s\r\nUser-Agent: Mozilla/4.0 (Hydra)\r\n%s\r\n", type, miscptr, webtarget,
                   buf1, header);
       }
 
@@ -231,7 +234,7 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
     //the first authentication type failed, check the type from server header
     if ((hydra_strcasestr(http_buf, "WWW-Authenticate: Basic") == NULL) && (http_auth_mechanism == AUTH_BASIC)) {
-      //seems the auth supported is not Basic shceme so testing further
+      //seems the auth supported is not Basic scheme so testing further
       int32_t find_auth = 0;
 
       if (hydra_strcasestr(http_buf, "WWW-Authenticate: NTLM") != NULL) {
@@ -248,8 +251,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
       if (find_auth) {
 //        free(http_buf);
 //        http_buf = NULL;
-	free(buffer);
-	free(header);
+        free(buffer);
+        free(header);
         return 1;
       }
     }
