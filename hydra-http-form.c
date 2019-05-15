@@ -323,7 +323,7 @@ void hdrrep(ptr_header_node *ptr_head, char *oldvalue, char *newvalue) {
       if (cur_ptr->value)
         strcpy(cur_ptr->value, newvalue);
       else {
-        hydra_report(stderr, "[ERROR] Out of memory (hddrep).");
+        hydra_report(stderr, "[ERROR] Out of memory (hddrep).\n");
         hydra_child_exit(0);
       }
     }
@@ -342,7 +342,7 @@ void hdrrepv(ptr_header_node *ptr_head, char *hdrname, char *new_value) {
       if (cur_ptr->value)
         strcpy(cur_ptr->value, new_value);
       else {
-        hydra_report(stderr, "[ERROR] Out of memory (hdrrepv %lu)", strlen(new_value) + 1);
+        hydra_report(stderr, "[ERROR] Out of memory (hdrrepv %lu)\n", strlen(new_value) + 1);
         hydra_child_exit(0);
       }
     }
@@ -416,7 +416,7 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
         *(ptr - 1) = 0;
       if (*ptr != 0) {
         *ptr = 0;
-        ptr += 2;
+        ptr += 1;
       }
       ptr2 = ptr;
       while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
@@ -434,7 +434,7 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
         break;
       }
       // Error: abort execution
-      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (h).");
+      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (h).\n");
       return 0;
     case 'H':
       // add a new header, or replace an existing one's value
@@ -447,7 +447,7 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
 
       if (*ptr != 0) {
         *ptr = 0;
-        ptr += 2;
+        ptr += 1;
       }
       ptr2 = ptr;
       while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
@@ -465,7 +465,7 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
         break;
       }
       // Error: abort execution
-      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (H).");
+      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (H).\n");
       return 0;
       // no default
     }
@@ -1299,7 +1299,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
       strncat(proxy_string, proxy_authentication[selected_proxy], strlen(proxy_authentication[selected_proxy]) - 6);
       add_header(&ptr_head, "Proxy-Authorization", proxy_string, HEADER_TYPE_DEFAULT);
     } else {
-      hydra_report(stderr, "Out of memory for \"Proxy-Authorization\" header.");
+      hydra_report(stderr, "Out of memory for \"Proxy-Authorization\" header.\n");
       return NULL;
     }
     if (getcookie) {
@@ -1362,7 +1362,7 @@ void usage_http_form(const char *service) {
          " This is where most people get it wrong. You have to check the webapp what a\n"
          " failed string looks like and put it in this parameter!\n"
          "The following parameters are optional:\n"
-         " C=/page/uri     to define a different page to gather initial cookies from\n"
+         " (c|C)=/page/uri     to define a different page to gather initial cookies from\n"
          " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each request\n"
          "                 ^USER[64]^ and ^PASS[64]^ can also be put into these headers!\n"
          "                 Note: 'h' will add the user-defined header at the end\n"
