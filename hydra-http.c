@@ -6,7 +6,7 @@ char *webtarget = NULL;
 char *slash = "/";
 char *http_buf = NULL;
 int32_t webport, freemischttp = 0;
-int32_t http_auth_mechanism = AUTH_BASIC;
+int32_t http_auth_type = AUTH_BASIC;
 
 int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp, char *type, ptr_header_node ptr_head) {
   char *empty = "";
@@ -33,13 +33,13 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   }
 
   // we must reset this if buf is NULL and we do MD5 digest
-  if (http_buf == NULL && http_auth_mechanism == AUTH_DIGESTMD5)
-    http_auth_mechanism = AUTH_BASIC;
+  if (http_buf == NULL && http_auth_type == AUTH_DIGESTMD5)
+    http_auth_type = AUTH_BASIC;
 
   if (use_proxy > 0 && proxy_count > 0)
     selected_proxy = random() % proxy_count;
 
-  switch (http_auth_mechanism) {
+  switch (http_auth_type) {
   case AUTH_BASIC:
     sprintf(buffer2, "%.50s:%.50s", login, pass);
     hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
@@ -233,17 +233,17 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
       fprintf(stderr, "[WARNING] Unusual return code: %.3s for %s:%s\n", (char *) ptr, login, pass);
 
     //the first authentication type failed, check the type from server header
-    if ((hydra_strcasestr(http_buf, "WWW-Authenticate: Basic") == NULL) && (http_auth_mechanism == AUTH_BASIC)) {
+    if ((hydra_strcasestr(http_buf, "WWW-Authenticate: Basic") == NULL) && (http_auth_type == AUTH_BASIC)) {
       //seems the auth supported is not Basic scheme so testing further
       int32_t find_auth = 0;
 
       if (hydra_strcasestr(http_buf, "WWW-Authenticate: NTLM") != NULL) {
-        http_auth_mechanism = AUTH_NTLM;
+        http_auth_type = AUTH_NTLM;
         find_auth = 1;
       }
 #ifdef LIBOPENSSL
       if (hydra_strcasestr(http_buf, "WWW-Authenticate: Digest") != NULL) {
-        http_auth_mechanism = AUTH_DIGESTMD5;
+        http_auth_type = AUTH_DIGESTMD5;
         find_auth = 1;
       }
 #endif
@@ -393,6 +393,7 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
 void usage_http(const char* service) {
   printf("Module %s requires the page to authenticate.\n"
          "The following parameters are optional:\n"
+         " (a|A)=type           to use one of the following authentication types: Basic, Digest, NTLM\n"
          " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each request\n"
          "For example:  \"/secret\" or \"http://bla.com/foo/bar:H=Cookie\\: sessid=aaaa\" or \"https://test.com:8080/members\"\n\n", service);
 }

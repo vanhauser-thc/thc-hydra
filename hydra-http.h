@@ -14,6 +14,7 @@ typedef struct header_node t_header_node, *ptr_header_node;
 extern char *webtarget;
 extern char *slash;
 extern char *optional1;
+extern int32_t http_auth_type;
 
 extern int32_t parse_options(char *miscptr, ptr_header_node * ptr_head);
 extern int32_t add_header(ptr_header_node * ptr_head, char *header, char *value, char type);

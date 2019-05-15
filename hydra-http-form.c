@@ -50,6 +50,7 @@ Added fail or success condition, getting cookies, and allow 5 redirections by da
 */
 
 #include "hydra-http.h"
+#include "sasl.h"
 
 extern char *HYDRA_EXIT;
 char *buf;
@@ -397,6 +398,36 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
    */
   while (*miscptr != 0) {
     switch (miscptr[0]) {
+    case 'a':
+    case 'A':
+      // grab the value
+      ptr = miscptr + 2;
+
+      // and make it lowercase
+      while (*ptr != 0 && *ptr != ':') {
+        *ptr = tolower(*ptr);
+        ptr++;
+      }
+
+      if (*ptr != 0) {
+        *ptr = 0;
+        ptr += 1;
+      }
+
+      // AUTH_BASIC is a default value of http_auth_type variable defined in hydra-http.c, it could be skipped here
+      if (strcmp(miscptr + 2, "basic") == 0)
+        http_auth_type = AUTH_BASIC;
+      else if (strcmp(miscptr + 2, "ntlm") == 0)
+        http_auth_type = AUTH_NTLM;
+      else if (strcmp(miscptr + 2, "digest") == 0)
+        http_auth_type = AUTH_DIGESTMD5;
+      else {
+        hydra_report(stderr, "[ERROR] Incorrect authentication type is provided.\n");
+        return 0;
+      }
+
+      miscptr = ptr;
+      break;
     case 'c':                  // fall through
     case 'C':
       ptr = miscptr + 2;
