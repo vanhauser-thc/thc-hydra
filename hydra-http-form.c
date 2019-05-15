@@ -416,7 +416,7 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
         *(ptr - 1) = 0;
       if (*ptr != 0) {
         *ptr = 0;
-        ptr += 2;
+        ptr += 1;
       }
       ptr2 = ptr;
       while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
@@ -447,7 +447,7 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
 
       if (*ptr != 0) {
         *ptr = 0;
-        ptr += 2;
+        ptr += 1;
       }
       ptr2 = ptr;
       while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
