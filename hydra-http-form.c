@@ -402,14 +402,25 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
     case 'a':                  // fall through
     case 'A':                  // only for http, not http-form!
       ptr = miscptr + 2;
-      if (strncasecmp(miscptr, "NTML", 4) == 0)
+
+      if (strncasecmp(ptr, "NTLM", 4) == 0)
         http_auth_mechanism = AUTH_NTLM;
-      else if (strncasecmp(miscptr, "MD5", 3) == 0 || strncasecmp(miscptr, "DIGEST", 6) == 0)
+      else if (strncasecmp(ptr, "MD5", 3) == 0 || strncasecmp(ptr, "DIGEST", 6) == 0)
         http_auth_mechanism = AUTH_DIGESTMD5;
-      else if (strncasecmp(miscptr, "BASIC", 4) == 0)
+      else if (strncasecmp(ptr, "BASIC", 4) == 0)
         http_auth_mechanism = AUTH_BASIC;
       else
-        fprintf(stderr, "[WARNING] unknown http auth type: %s\n", miscptr);
+        fprintf(stderr, "[WARNING] unknown http auth type: %s\n", ptr);
+
+      while (*ptr != 0 && *ptr != ':')
+        ptr++;
+
+      if (*ptr != 0) {
+        *ptr = 0;
+        ptr += 1;
+      }
+
+      miscptr = ptr;
       break;
     case 'c':                  // fall through
     case 'C':
