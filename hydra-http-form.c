@@ -50,10 +50,12 @@ Added fail or success condition, getting cookies, and allow 5 redirections by da
 */
 
 #include "hydra-http.h"
+#include "sasl.h"
 
 extern char *HYDRA_EXIT;
 char *buf;
 char *cond;
+extern int32_t http_auth_mechanism;
 
 struct header_node {
   char *header;
@@ -397,6 +399,18 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
    */
   while (*miscptr != 0) {
     switch (miscptr[0]) {
+    case 'a':                  // fall through
+    case 'A':                  // only for http, not http-form!
+      ptr = miscptr + 2;
+      if (strncasecmp(miscptr, "NTML", 4) == 0)
+        http_auth_mechanism = AUTH_NTLM;
+      else if (strncasecmp(miscptr, "MD5", 3) == 0 || strncasecmp(miscptr, "DIGEST", 6) == 0)
+        http_auth_mechanism = AUTH_DIGESTMD5;
+      else if (strncasecmp(miscptr, "BASIC", 4) == 0)
+        http_auth_mechanism = AUTH_BASIC;
+      else
+        fprintf(stderr, "[WARNING] unknown http auth type: %s\n", miscptr);
+      break;
     case 'c':                  // fall through
     case 'C':
       ptr = miscptr + 2;

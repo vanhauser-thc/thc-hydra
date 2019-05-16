@@ -6,7 +6,7 @@ char *webtarget = NULL;
 char *slash = "/";
 char *http_buf = NULL;
 int32_t webport, freemischttp = 0;
-int32_t http_auth_mechanism = AUTH_BASIC;
+int32_t http_auth_mechanism = AUTH_UNASSIGNED;
 
 int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp, char *type, ptr_header_node ptr_head) {
   char *empty = "";
@@ -314,8 +314,11 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
     *ptr++ = 0;
   optional1 = ptr;
 
-  if (!parse_options(optional1, &ptr_head))
+  if (!parse_options(optional1, &ptr_head)) // this function is in hydra-http-form.c !!
     run = 4;
+
+  if (http_auth_mechanism == AUTH_UNASSIGNED)
+    http_auth_mechanism = AUTH_BASIC;
 
   while (1) {
     next_run = 0;
@@ -393,6 +396,7 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
 void usage_http(const char* service) {
   printf("Module %s requires the page to authenticate.\n"
          "The following parameters are optional:\n"
+         " (a|A)=auth-type   specify authentication mechanism to use: BASIC, NTLM or MD5\n"
          " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each request\n"
-         "For example:  \"/secret\" or \"http://bla.com/foo/bar:H=Cookie\\: sessid=aaaa\" or \"https://test.com:8080/members\"\n\n", service);
+         "For example:  \"/secret\" or \"http://bla.com/foo/bar:H=Cookie\\: sessid=aaaa\" or \"https://test.com:8080/members:A=NTLM\"\n\n", service);
 }

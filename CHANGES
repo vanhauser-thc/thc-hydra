@@ -3,7 +3,8 @@ Changelog for hydra
 
 Release 8.9-dev
 * your patch? :)
-* Revamped rdp module to use FreeRDP library (thanks to loianhtuan@github for the patch!)
+* http: http module now supports a= option to select http authentication type
+* rdp: Revamped rdp module to use FreeRDP library (thanks to loianhtuan@github for the patch!)
 * JSON output does now truncate the file if exists. Beware when using -R
 * Fixed svn module memory leaks
 * Fixed rtsp module potential buffer overflow
