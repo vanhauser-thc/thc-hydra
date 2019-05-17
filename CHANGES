@@ -1,16 +1,15 @@
 Changelog for hydra
 -------------------
 
-Release 8.9-dev
-* your patch? :)
-* http: http module now supports a= option to select http authentication type
+Release 9.0
 * rdp: Revamped rdp module to use FreeRDP library (thanks to loianhtuan@github for the patch!)
-* JSON output does now truncate the file if exists. Beware when using -R
+* Added memcached module
+* Added mongodb module
+* http: http module now supports a= option to select http authentication type
+* JSON output does now truncate the file if exists.
 * Fixed svn module memory leaks
 * Fixed rtsp module potential buffer overflow
 * Fixed http module DIGEST-MD5 mode
-* Added memcached module
-* Added mongodb module
 
 
 Release 8.9.1
