@@ -1,6 +1,10 @@
 Changelog for hydra
 -------------------
 
+Release 9.1-dev
+* your patch? :)
+
+
 Release 9.0
 * rdp: Revamped rdp module to use FreeRDP library (thanks to loianhtuan@github for the patch!)
 * Added memcached module
