@@ -557,6 +557,10 @@ for i in $INCDIRS ; do
         fi
     fi  
 done
+SYS_PARAM=""
+if [ -f "$SDK_PATH/usr/include/sys/param.h" ]; then
+  SYS_PARAM=-DHAVE_SYS_PARAM_H
+fi
 if [ "X" != "X$DEBUG" ]; then
    echo DEBUG: SVN_PATH=$SVN_PATH/libsvn_client-1
    echo DEBUG: APR_PATH=$APR_PATH/libapr
@@ -1501,7 +1505,7 @@ else
 fi
 
 if [ "X" != "X$DEBUG" ]; then
-   echo DEBUG: XDEFINES=$XDEFINES $MATH
+   echo DEBUG: XDEFINES=$XDEFINES $MATH $SYS_PARAM
    echo DEBUG: XLIBS=$XLIBS
    echo DEBUG: XLIBPATHS=$XLIBPATHS
    echo DEBUG: XIPATHS=$XIPATHS
@@ -1519,7 +1523,7 @@ if [ "X" != "X$FHS" ]; then
   echo "MANDIR = /share/man/man1" >> Makefile.in
   echo "DATADIR = /share/hydra" >> Makefile.in
 fi
-echo "XDEFINES=$XDEFINES $MATH" >> Makefile.in
+echo "XDEFINES=$XDEFINES $MATH $SYS_PARAM" >> Makefile.in
 echo "XLIBS=$XLIBS" >> Makefile.in
 echo "XLIBPATHS=$XLIBPATHS" >> Makefile.in
 echo "XIPATHS=$XIPATHS" >> Makefile.in

@@ -6,6 +6,10 @@
 /* needed on openSUSE */
 #define _GNU_SOURCE
 
+#if !defined PATH_MAX && defined HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
+
 #include <svn_client.h>
 #include <svn_cmdline.h>
 #include <svn_pools.h>
