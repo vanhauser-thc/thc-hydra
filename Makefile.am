@@ -1,7 +1,7 @@
 #
 # Makefile for Hydra - (c) 2001-2019 by van Hauser / THC <vh@thc.org>
 #
-OPTS=-I. -O3
+OPTS=-I. -O3 -march=native -flto
 # -Wall -g -pedantic
 LIBS=-lm
 BINDIR = /bin
