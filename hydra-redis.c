@@ -167,7 +167,7 @@ int32_t service_redis_init(char *ip, int32_t sp, unsigned char options, char *mi
     printf("[DEBUG] buf = %s\n", buf);
   // authentication test
   if (strstr(buf, "+PONG") != NULL) { // the server does not require password
-    hydra_report(stderr, "[!] The server does not require password.\n");
+    hydra_report(stderr, "[!] The server %s does not require password.\n", hostname);
     free(buf);
     return 1;
   }
