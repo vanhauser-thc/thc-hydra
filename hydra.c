@@ -475,7 +475,7 @@ void help(int32_t ext) {
 #ifdef HAVE_MATH_H
                     " [-x MIN:MAX:CHARSET]"
 #endif
-                    " [-c TIME] [-ISOuvVd46] "
+                    " [-c TIME] [-ISOuvVd46] [-m MODULE_OPT] "
                     //"[server service [OPT]]|"
                     "[service://server[:PORT][/OPT]]\n");
   PRINT_NORMAL(ext, "\nOptions:\n");
@@ -512,6 +512,7 @@ void help(int32_t ext) {
                MAXTASKS, WAITTIME, conwait
                );
   PRINT_NORMAL(ext, "  -U        service module usage details\n"
+                    "  -m OPT    options specific for a module, see -U output for information\n"
                     "  -h        more command line options (COMPLETE HELP)\n"
                     "  server    the target: DNS, IP or 192.168.0.0/24 (this OR the -M option)\n"
                     "  service   the service to crack (see below for supported protocols)\n"
