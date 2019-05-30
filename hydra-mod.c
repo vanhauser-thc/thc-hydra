@@ -102,6 +102,8 @@ int32_t internal__hydra_connect(char *host, int32_t port, int32_t type, int32_t 
     selected_proxy = random() % proxy_count;
   }    
 
+  memset(&target, 0, sizeof(target));
+  memset(&sin, 0, sizeof(sin));
 #ifdef AF_INET6
   memset(&target6, 0, sizeof(target6));
   memset(&sin6, 0, sizeof(sin6));
