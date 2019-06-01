@@ -33,7 +33,7 @@ int32_t do_retry = 1;
 int32_t module_auth_type = -1;
 int32_t intern_socket, extern_socket;
 char pair[260];
-char HYDRA_EXIT[5] = "\x00\xff\x00\xff\x00";
+char *HYDRA_EXIT = "\x00\xff\x00\xff\x00";
 char *HYDRA_EMPTY = "\x00\x00\x00\x00";
 char *fe80 = "\xfe\x80\x00";
 int32_t fail = 0;

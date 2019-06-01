@@ -305,7 +305,7 @@ typedef struct {
 } hydra_portlist;
 
 // external vars
-extern char HYDRA_EXIT[5];
+extern char *HYDRA_EXIT;
 #if !defined(ANDROID) && !defined(__BIONIC__)
 extern int32_t errno;
 #endif
