@@ -111,7 +111,7 @@ void password_to_key_md5(u_char * password,     /* IN */
 
   if (mylen < 8) {
     memset(bpass, 0, sizeof(bpass));
-    strcpy(bpass, password);
+    strncpy(bpass, password, sizeof(bpass) - 1);
     while (mylen < 8) {
       strcat(bpass, password);
       mylen += passwordlen;
