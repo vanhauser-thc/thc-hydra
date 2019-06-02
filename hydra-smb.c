@@ -1212,7 +1212,7 @@ int32_t start_smb(int32_t s, char *ip, int32_t port, unsigned char options, char
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
 
-  strcpy(ipaddr_str, hydra_address2string(ip));
+  strncpy(ipaddr_str, hydra_address2string(ip), sizeof(ipaddr_str) - 1);
 
   SMBSessionRet = SMBSessionSetup(s, login, pass, miscptr);
   if (SMBSessionRet == -1)
