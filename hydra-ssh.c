@@ -126,6 +126,7 @@ void service_ssh(char *ip, int32_t sp, unsigned char options, char *miscptr, FIL
       ssh_finalize();
       ssh_free(session);
       hydra_child_exit(0);
+      break;
     case 3:
       ssh_disconnect(session);
       ssh_finalize();
@@ -133,12 +134,14 @@ void service_ssh(char *ip, int32_t sp, unsigned char options, char *miscptr, FIL
       if (verbose)
         fprintf(stderr, "[ERROR] ssh protocol error\n");
       hydra_child_exit(2);
+      break;
     case 4:
       ssh_disconnect(session);
       ssh_finalize();
       ssh_free(session);
       fprintf(stderr, "[ERROR] ssh target does not support password auth\n");
       hydra_child_exit(2);
+      break;
     default:
       ssh_disconnect(session);
       ssh_finalize();

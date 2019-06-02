@@ -236,6 +236,7 @@ void service_icq(char *ip, int32_t sp, unsigned char options, char *miscptr, FIL
     default:
       fprintf(stderr, "[ERROR] Caught unknown return code, exiting!\n");
       hydra_child_exit(2);
+      break;
     }
     run = next_run;
   }

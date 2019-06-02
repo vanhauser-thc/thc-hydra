@@ -77,6 +77,7 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
   case 0x0:
     hydra_report(stderr, "[ERROR] VNC server told us to quit %c\n", buf[3]);
     hydra_child_exit(0);
+    break;
   case 0x1:
     hydra_report(fp, "VNC server does not require authentication.\n");
     if (fp != stdout)
@@ -84,6 +85,7 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
     hydra_report_found_host(port, ip, "vnc", fp);
     hydra_completed_pair_found();
     hydra_child_exit(2);
+    break;
   case 0x2:
     //VNC security type supported is the only type supported for now
     if (vnc_client_version == RFB37) {
