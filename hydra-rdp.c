@@ -48,7 +48,7 @@ int32_t start_rdp(char *ip, int32_t port, unsigned char options, char *miscptr, 
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
 
-  strcpy(server, hydra_address2string(ip));
+  strncpy(server, hydra_address2string(ip), sizeof(server) - 1);
 
   if ((miscptr != NULL) && (strlen(miscptr) > 0)) {
     strncpy(domain, miscptr, sizeof(domain) - 1);
