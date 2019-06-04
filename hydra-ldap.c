@@ -393,6 +393,7 @@ void service_ldap(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
 
         if ((buf[0] != 0 && buf[9] == 0) || (buf[0] != 32 && buf[9] == 32)) {
           /* TLS option negociation goes well, now trying to connect */
+          free(buf);
           if ((hydra_connect_to_ssl(sock, hostname) == -1) && verbose) {
             hydra_report(stderr, "[ERROR] Can't use TLS\n");
             hydra_child_exit(1);
@@ -403,6 +404,7 @@ void service_ldap(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
           }
         } else {
           hydra_report(stderr, "[ERROR] Can't use TLS %s\n", buf);
+          free(buf);
           hydra_child_exit(1);
         }
       }
