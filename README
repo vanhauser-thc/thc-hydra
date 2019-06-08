@@ -24,7 +24,7 @@ access from remote to a system.
 THIS TOOL IS FOR LEGAL PURPOSES ONLY!
 
 There are already several login hacker tools available, however, none does
-either support more than one protocol to attack or support parallized
+either support more than one protocol to attack or support parallelized
 connects.
 
 It was tested to compile cleanly on Linux, Windows/Cygwin, Solaris,
