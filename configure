@@ -38,6 +38,7 @@ WSSL_LIB_PATH=""
 CURSES_PATH=""
 CURSES_IPATH=""
 CRYPTO_PATH=""
+GPGERROR_IPATH=""
 IDN_PATH=""
 IDN_IPATH=""
 PR29_IPATH=""
@@ -125,6 +126,7 @@ echo "Starting hydra auto configuration ..."
 rm -f Makefile.in
 SYSS=`uname -s 2> /dev/null`
 SYSO=`uname -o 2> /dev/null`
+SYSM=`uname -m 2> /dev/null`
 if [ "$SYSS" = "Linux" -o "$SYSS" = "OpenBSD" -o "$SYSS" = "FreeBSD" -o "$SYSS" = "NetBSD" -o "$SYSS" = "Darwin" ]; then
   SF=`uname -m | grep 64`
   if [ `uname -m` = "s390x" ]; then
@@ -260,21 +262,32 @@ if [ "$SSL_IPATH" = "/usr/include" ]; then
     SSL_IPATH=""
 fi
 
-echo "Checking for gcrypt (libgcrypt.so) ..."
+echo "Checking for gcrypt (libgcrypt.so, gpg-error.h) ..."
 for i in $LIBDIRS ; do
-    if [ "X" = "X$GCRYPT_PATH" ]; then
-        if [ -f "$i/libgcrypt.so" -o -f "$i/libgcrypt.dylib" -o -f "$i/libgcrypt.a" -o -f "$i/libgcrypt.dll.a" -o -f "$i/libgcrypt.la" ]; then
+    if [ -f "$i/libgcrypt.so" -o -f "$i/libgcrypt.dylib" -o -f "$i/libgcrypt.a" -o -f "$i/libgcrypt.dll.a" -o -f "$i/libgcrypt.la" ]; then
 	  HAVE_GCRYPT="y"
+    fi
+done
+
+for i in $INCDIRS ; do
+    if [ "X" = "X$GPGERROR_IPATH" ]; then
+        TMP_PATH=`/bin/ls $i/$SYSM*/gpg-error.h 2> /dev/null`
+        if [ -n "$TMP_PATH" ]; then
+            GPGERROR_IPATH="$i"
+        else
+            if [ -f "$i/gpg-error.h" ]; then
+                GPGERROR_IPATH="$i"
+            fi
         fi
     fi
 done
-if [ -n "$HAVE_GCRYPT" ]; then
-   echo "                                        ... found"
+
+if [ -n "$HAVE_GCRYPT" -a "X" != "X$GPGERROR_IPATH" ]; then
+    echo "                                        ... found"
 else
-   echo "                                        ... gcrypt not found, radmin2 module disabled"
+    echo "                                        ... gcrypt not found, radmin2 module disabled"
+    HAVE_GCRYPT=""
 fi
-
-
 
 echo "Checking for idn (libidn.so) ..."
 for i in $LIBDIRS ; do
