@@ -129,7 +129,7 @@ int32_t service_redis_init(char *ip, int32_t sp, unsigned char options, char *mi
   // performed once only.
   // return codes:
   // 0 - when the server is redis and it requires password
-  // 1 - when the server is not redis or when the server does not require password
+  // n - when the server is not redis or when the server does not require password
 
   int32_t sock = -1;
   int32_t myport = PORT_REDIS, mysslport = PORT_REDIS_SSL;
@@ -151,7 +151,7 @@ int32_t service_redis_init(char *ip, int32_t sp, unsigned char options, char *mi
     printf("[VERBOSE] Initial redis password authentication test and response test ...\n");
   if (sock < 0) {
     hydra_report(stderr, "[ERROR] Can not connect to port %d on the target\n", myport);
-    hydra_child_exit(1);
+    return 3;
   }
   // generating ping request as redis-cli
   if (debug)
@@ -161,7 +161,7 @@ int32_t service_redis_init(char *ip, int32_t sp, unsigned char options, char *mi
     //    $4
     //    ping
   if (hydra_send(sock, buffer, strlen(buffer), 0) < 0) {
-    return 1;
+    return 2;
   }
   buf = hydra_receive_line(sock);
   if (debug)
@@ -170,13 +170,13 @@ int32_t service_redis_init(char *ip, int32_t sp, unsigned char options, char *mi
   if (strstr(buf, "+PONG") != NULL) { // the server does not require password
     hydra_report(stderr, "[!] The server %s does not require password.\n", hostname);
     free(buf);
-    return 1;
+    return 2;
   }
   // server response test
   if (strstr(buf, "-NOAUTH Authentication required") == NULL && strstr(buf, "-ERR operation not permitted") == NULL) {
     hydra_report(stderr, "[ERROR] The server is not redis, exit.\n");
     free(buf);
-    return 1;
+    return 2;
   }
   if (verbose)
     printf("[VERBOSE] The redis server requires password.\n");

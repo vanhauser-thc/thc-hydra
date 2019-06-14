@@ -1127,8 +1127,17 @@ void hydra_service_init(int32_t target_no) {
     else
       hydra_targets[target_no]->done = TARGET_ERROR;
     hydra_brains.finished++;
-    if (hydra_brains.targets == 1)
+    if (hydra_brains.targets == 1) {
+      if (hydra_brains.ofp != NULL && hydra_brains.ofp != stdout) {
+        if (hydra_options.outfile_format == FORMAT_JSONV1) {
+          char json_error[120];
+          snprintf(json_error, sizeof(json_error), "[ERROR] unexpected result connecting to target %s port %d", hydra_address2string_beautiful(t->ip), t->port);
+          fprintf(hydra_brains.ofp, "\n\t],\n\"success\": false,\n\"errormessages\": [ \"%s\" ],\n\"quantityfound\": %lu   }\n", json_error, hydra_brains.found);
+        }
+        fclose(hydra_brains.ofp);
+      }
       exit(-1);
+    }
   }
 }
 
@@ -3741,7 +3750,7 @@ int main(int argc, char *argv[]) {
     for (head_no = 0; head_no < hydra_options.max_use; head_no++) {
       if (debug > 1 && hydra_heads[head_no]->active != HEAD_DISABLED)
         printf("[DEBUG] head_no[%d] to target_no %d active %d\n", head_no, hydra_heads[head_no]->target_no, hydra_heads[head_no]->active);
-       
+
       switch (hydra_heads[head_no]->active) {
       case HEAD_DISABLED:
         break;
