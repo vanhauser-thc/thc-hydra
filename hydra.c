@@ -4033,7 +4033,7 @@ int main(int argc, char *argv[]) {
   printf("%d of %d target%s%scompleted, %lu valid password", 
          hydra_brains.targets - j - k - error, hydra_brains.targets, hydra_brains.targets == 1 ? " " : "s ",
          hydra_brains.found > 0 ? "successfully " : "", hydra_brains.found);
-  printf("%s", hydra_brains.found == 1 ? "" : "s");
+  printf("%s", hydra_brains.found < 1 ? "" : "s");
   printf(" found\n");
 
   error += j;
@@ -4090,7 +4090,7 @@ int main(int argc, char *argv[]) {
     error = 1;
   }
   if (error) {
-    snprintf(tmp_str, STRMAX, "[ERROR] %d target%s did not complete", j, j == 1 ? "" : "s");
+    snprintf(tmp_str, STRMAX, "[ERROR] %d target%s did not complete", j, j < 1 ? "" : "s");
     fprintf(stderr, "%s\n", tmp_str);
     if (*json_error) {
       strncat(json_error,", ", STRMAX);
