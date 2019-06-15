@@ -4084,10 +4084,6 @@ int main(int argc, char *argv[]) {
     strncat(json_error,tmp_str,STRMAX);
     strncat(json_error,"\"",STRMAX);
     error = 1;
-    if (*json_error) {
-      strncat(json_error,", ", STRMAX);
-    }
-    error = 1;
   }
   if (error) {
     snprintf(tmp_str, STRMAX, "[ERROR] %d target%s did not complete", j, j < 1 ? "" : "s");
