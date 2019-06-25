@@ -213,6 +213,7 @@ typedef struct {
   char *server;
   char *service;
   char bfg;
+  int32_t skip_redo;
 } hydra_option;
 
 #define _HYDRA_H

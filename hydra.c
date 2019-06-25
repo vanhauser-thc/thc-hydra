@@ -508,6 +508,7 @@ void help(int32_t ext) {
                     "  -4 / -6   use IPv4 (default) / IPv6 addresses (put always in [] also in -M)\n"
                     "  -v / -V / -d  verbose mode / show login+pass for each attempt / debug mode \n"
                     "  -O        use old SSL v2 and v3\n"
+                    "  -K        do not redo failed attempts (good for -M mass scanning)\n"
                     "  -q        do not print messages about connection errors\n",
                MAXTASKS, WAITTIME, conwait
                );
@@ -1397,6 +1398,7 @@ void hydra_increase_fail_count(int32_t target_no, int32_t head_no) {
     if (k <= 1) {
       // we need to put this in a list, otherwise we fail one login+pw test
       if (hydra_targets[target_no]->done == TARGET_ACTIVE
+          && hydra_options.skip_redo == 0
           && hydra_targets[target_no]->redo <= hydra_options.max_use * 2
           && ((hydra_heads[head_no]->current_login_ptr != empty_login && hydra_heads[head_no]->current_pass_ptr != empty_login)
               || (hydra_heads[head_no]->current_login_ptr != NULL && hydra_heads[head_no]->current_pass_ptr != NULL))) {
@@ -1429,6 +1431,7 @@ void hydra_increase_fail_count(int32_t target_no, int32_t head_no) {
     } else {
       // we need to put this in a list, otherwise we fail one login+pw test
       if (hydra_targets[target_no]->done == TARGET_ACTIVE
+          && hydra_options.skip_redo == 0
           && hydra_targets[target_no]->redo <= hydra_options.max_use * 2
           && ((hydra_heads[head_no]->current_login_ptr != empty_login && hydra_heads[head_no]->current_pass_ptr != empty_login)
               || (hydra_heads[head_no]->current_login_ptr != NULL && hydra_heads[head_no]->current_pass_ptr != NULL))) {
@@ -2220,13 +2223,16 @@ int main(int argc, char *argv[]) {
     help(1);
   if (argc < 2)
     help(0);
-  while ((i = getopt(argc, argv, "hIq64Rde:vVl:fFg:L:p:OP:o:b:M:C:t:T:m:w:W:s:SUux:yc:")) >= 0) {
+  while ((i = getopt(argc, argv, "hIq64Rde:vVl:fFg:L:p:OP:o:b:M:C:t:T:m:w:W:s:SUux:yc:K")) >= 0) {
     switch (i) {
     case 'h':
       help(1);
       break;
     case 'q':
       quiet = 1;
+      break;
+    case 'K':
+      hydra_options.skip_redo = 1;
       break;
     case 'O':
       old_ssl = 1;
