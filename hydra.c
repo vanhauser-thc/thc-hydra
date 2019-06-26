@@ -1376,7 +1376,7 @@ void hydra_kill_head(int32_t head_no, int32_t killit, int32_t fail) {
 void hydra_increase_fail_count(int32_t target_no, int32_t head_no) {
   int32_t i, k, maxfail = 0;
 
-  if (target_no < 0)
+  if (target_no < 0 || hydra_options.skip_redo)
     return;
 
   if (hydra_targets[target_no]->ok) {
