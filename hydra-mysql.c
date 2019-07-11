@@ -180,19 +180,13 @@ int32_t start_mysql(int32_t sock, char *ip, int32_t port, unsigned char options,
   char *response = NULL, *login = NULL, *pass = NULL;
   unsigned long response_len;
   char res = 0;
-  char database[256];
+  char *database = NULL;
 
   login = hydra_get_next_login();
   pass = hydra_get_next_password();
 
   if (miscptr)
-    strncpy(database, miscptr, sizeof(database) - 1);
-  else {
-    strncpy(database, DEFAULT_DB, sizeof(database) - 1);
-    if (verbose)
-      hydra_report(stderr, "[VERBOSE] using default db 'mysql'\n");
-  }
-  database[sizeof(database) - 1] = 0;
+    database = miscptr;
 
   /* read server greeting */
   res = hydra_mysql_init(sock);
