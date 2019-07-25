@@ -150,7 +150,7 @@ THIRD - check if the module has optional parameters
  e.g. hydra -U smtp
 
 FOURTH - the destination port
- this is optional! if no port is supplied the default common port for the
+ this is optional, if no port is supplied the default common port for the
  PROTOCOL is used.
  If you specify SSL to use ("-S" option), the SSL common port is used by default.
 
@@ -167,7 +167,7 @@ All attacks are then IPv6 only!
 If you want to supply your targets via a text file, you can not use the ://
 notation but use the old style and just supply the protocol (and module options):
   hydra [some command line options] -M targets.txt ftp
-You can supply also the port for each target entry by adding ":<port>" after a
+You can also supply the port for each target entry by adding ":<port>" after a
 target entry in the file, e.g.:
 
 ```
