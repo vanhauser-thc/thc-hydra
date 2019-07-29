@@ -1,10 +1,17 @@
 #include "hydra-http.h"
 #include "sasl.h"
 
+
+
 extern char *HYDRA_EXIT;
 char *webtarget = NULL;
 char *slash = "/";
 char *http_buf = NULL;
+
+#define END_CONDITION_MAX_LEN 100
+static char end_condition[END_CONDITION_MAX_LEN];
+int end_condition_type=-1;
+
 int32_t webport, freemischttp = 0;
 int32_t http_auth_mechanism = AUTH_UNASSIGNED;
 
@@ -23,6 +30,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
   if (strcmp(type, "POST") == 0)
     add_header(&ptr_head, "Content-Length", "0", HEADER_TYPE_DEFAULT);
+    
+    
 
   header = stringify_headers(&ptr_head);
 
@@ -215,15 +224,28 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
     return 3;
   }
 
+
+
   if (debug)
     hydra_report(stderr, "S:%s\n", http_buf);
+    
+    
 
   ptr = ((char *) index(http_buf, ' '));
   if (ptr != NULL)
     ptr++;
   if (ptr != NULL && (*ptr == '2' || *ptr == '3' || strncmp(ptr, "403", 3) == 0 || strncmp(ptr, "404", 3) == 0)) {
-    hydra_report_found_host(port, ip, "www", fp);
-    hydra_completed_pair_found();
+
+        if(end_condition_type>=0 && hydra_string_match(http_buf,end_condition)!=end_condition_type){
+		if (debug)
+                        hydra_report(stderr, "End condition not match continue.\n");
+		hydra_completed_pair();
+	}else{
+            hydra_report(stderr, "END condition %s match.\n",end_condition);
+	    hydra_report_found_host(port, ip, "www", fp);
+	    hydra_completed_pair_found();
+	}
+    
     if (http_buf != NULL) {
       free(http_buf);
       http_buf = NULL;
@@ -260,10 +282,14 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   }
 //  free(http_buf);
 //  http_buf = NULL;
+
+
+
   free(buffer);
   free(header);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     return 3;
+    
   return 1;
 }
 
@@ -319,6 +345,10 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
 
   if (http_auth_mechanism == AUTH_UNASSIGNED)
     http_auth_mechanism = AUTH_BASIC;
+    
+    
+
+        
 
   while (1) {
     next_run = 0;
@@ -390,6 +420,43 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here
 
+
+        
+    /*POU CODE */
+    char * start=strstr(miscptr, "F=");
+    if(start==NULL)
+        start=strstr(miscptr, "S=");
+
+    if (start !=NULL){
+                if(start[0]=='F')
+                    end_condition_type=0;
+                else
+                    end_condition_type=1;
+
+                int condition_len=strlen(start);
+                memset(end_condition,0,END_CONDITION_MAX_LEN);
+                if(condition_len>=END_CONDITION_MAX_LEN){
+                    hydra_report(stderr,"Condition string cannot be bigger than %u.",END_CONDITION_MAX_LEN);
+                    return -1;
+                }
+                //copy condition witout starting string (F= or S=  2char)
+                strncpy(end_condition, start+2,condition_len-2);
+                if(debug)
+                    hydra_report(stderr, "End condition is %s, mod is %d\n",end_condition,end_condition_type);
+
+                if(*(start-1)==' ')
+                    start--;
+                memset(start,'\0',condition_len);
+                if (debug)
+                    hydra_report(stderr, "Modificated options:%s\n",miscptr);
+    }else{
+        if (debug)
+            hydra_report(stderr, "Condition not found\n");
+    }
+    
+        
+
+
   return 0;
 }
 
@@ -398,5 +465,7 @@ void usage_http(const char* service) {
          "The following parameters are optional:\n"
          " (a|A)=auth-type   specify authentication mechanism to use: BASIC, NTLM or MD5\n"
          " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each request\n"
+         " (F|S)=Invalid condition login check can be preceded by \"F=\", successful condition\n"
+         " login check must be preceded by \"S=\". IMPORTANT this option must by last option.\n"
          "For example:  \"/secret\" or \"http://bla.com/foo/bar:H=Cookie\\: sessid=aaaa\" or \"https://test.com:8080/members:A=NTLM\"\n\n", service);
 }
