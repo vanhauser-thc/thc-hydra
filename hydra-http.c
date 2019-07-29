@@ -441,7 +441,8 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
                 }
                 //copy condition witout starting string (F= or S=  2char)
                 strncpy(end_condition, start+2,condition_len-2);
-                hydra_report(stderr, "End condition is %s, mod is %d\n",end_condition,end_condition_type);
+                if(debug)
+                    hydra_report(stderr, "End condition is %s, mod is %d\n",end_condition,end_condition_type);
 
                 if(*(start-1)==' ')
                     start--;
