@@ -2,7 +2,7 @@ Changelog for hydra
 -------------------
 
 Release 9.1-dev
-* your patch? :)
+* http module now supports F=/S= string matching conditions (thanks to poucz@github)
 * changed mysql module not to use mysql db as a default. if the user has not access to this db auth fails ...
 * added -K command line switch to disable redo attempts (good for mass scanning)
 * forgot to have the -m option in the hydra help output

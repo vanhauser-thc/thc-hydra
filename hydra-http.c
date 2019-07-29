@@ -30,8 +30,6 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
   if (strcmp(type, "POST") == 0)
     add_header(&ptr_head, "Content-Length", "0", HEADER_TYPE_DEFAULT);
-    
-    
 
   header = stringify_headers(&ptr_head);
 
@@ -224,28 +222,21 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
     return 3;
   }
 
-
-
   if (debug)
     hydra_report(stderr, "S:%s\n", http_buf);
-    
-    
 
   ptr = ((char *) index(http_buf, ' '));
   if (ptr != NULL)
     ptr++;
   if (ptr != NULL && (*ptr == '2' || *ptr == '3' || strncmp(ptr, "403", 3) == 0 || strncmp(ptr, "404", 3) == 0)) {
-
-        if(end_condition_type>=0 && hydra_string_match(http_buf,end_condition)!=end_condition_type){
-		if (debug)
-                        hydra_report(stderr, "End condition not match continue.\n");
-		hydra_completed_pair();
-	}else{
-            hydra_report(stderr, "END condition %s match.\n",end_condition);
-	    hydra_report_found_host(port, ip, "www", fp);
-	    hydra_completed_pair_found();
-	}
-    
+    if (end_condition_type>=0 && hydra_string_match(http_buf,end_condition)!=end_condition_type) {
+      if (debug) hydra_report(stderr, "End condition not match continue.\n");
+      hydra_completed_pair();
+    } else {
+      if (debug) hydra_report(stderr, "END condition %s match.\n",end_condition);
+      hydra_report_found_host(port, ip, "www", fp);
+      hydra_completed_pair_found();
+    }
     if (http_buf != NULL) {
       free(http_buf);
       http_buf = NULL;
@@ -282,8 +273,6 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   }
 //  free(http_buf);
 //  http_buf = NULL;
-
-
 
   free(buffer);
   free(header);
@@ -346,10 +335,6 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
   if (http_auth_mechanism == AUTH_UNASSIGNED)
     http_auth_mechanism = AUTH_BASIC;
     
-    
-
-        
-
   while (1) {
     next_run = 0;
     switch (run) {
@@ -465,7 +450,8 @@ void usage_http(const char* service) {
          "The following parameters are optional:\n"
          " (a|A)=auth-type   specify authentication mechanism to use: BASIC, NTLM or MD5\n"
          " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each request\n"
-         " (F|S)=Invalid condition login check can be preceded by \"F=\", successful condition\n"
-         " login check must be preceded by \"S=\". IMPORTANT this option must by last option.\n"
+         " (F|S)=check for text in the HTTP reply. S= means if this text is found, a\n"
+         "       valid account has been found, F= means if this string is present the\n"
+         "       combination is invalid. Note: this must be the last option supplied.\n"
          "For example:  \"/secret\" or \"http://bla.com/foo/bar:H=Cookie\\: sessid=aaaa\" or \"https://test.com:8080/members:A=NTLM\"\n\n", service);
 }
