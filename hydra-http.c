@@ -229,7 +229,11 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   if (ptr != NULL)
     ptr++;
   if (ptr != NULL && (*ptr == '2' || *ptr == '3' || strncmp(ptr, "403", 3) == 0 || strncmp(ptr, "404", 3) == 0)) {
-    if (end_condition_type>=0 && hydra_string_match(http_buf,end_condition)!=end_condition_type) {
+#ifdef HAVE_PCRE
+    if (end_condition_type >= 0 && hydra_string_match(http_buf, end_condition)!=end_condition_type) {
+#else
+    if (end_condition_type >= 0 && (strstr(http_buf, end_condition) == NULL ? 0 : 1) != end_condition_type) {
+#endif    
       if (debug) hydra_report(stderr, "End condition not match continue.\n");
       hydra_completed_pair();
     } else {
