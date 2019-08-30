@@ -217,6 +217,8 @@ char *SERVICES =
 #define VERSION   "v9.1-dev"
 #define AUTHOR    "van Hauser/THC"
 #define EMAIL     "<vh@thc.org>"
+#define AUTHOR2   "David Maciejak"
+#define EMAIL2    "<david.maciejak@gmail.com>"
 #define RESOURCE  "https://github.com/vanhauser-thc/thc-hydra"
 
 extern char *hydra_strcasestr(const char *haystack, const char *needle);
@@ -2094,7 +2096,7 @@ int main(int argc, char *argv[]) {
   struct sockaddr_in6 *ipv6 = NULL;
   struct sockaddr_in *ipv4 = NULL;
 
-  printf("%s %s (c) 2019 by %s - Please do not use in military or secret service organizations, or for illegal purposes.\n\n", PROGRAM, VERSION, AUTHOR);
+  printf("%s %s (c) 2019 by %s & %s - Please do not use in military or secret service organizations, or for illegal purposes.\n\n", PROGRAM, VERSION, AUTHOR, AUTHOR2);
 #ifndef LIBAFP
   SERVICES = hydra_string_replace(SERVICES, "afp ", "");
   strcat(unsupported, "afp ");
