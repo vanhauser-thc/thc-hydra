@@ -1046,15 +1046,17 @@ void fill_mem(char *ptr, FILE * fd, int32_t colonmode) {
   char tmp[MAXBUF + 4] = "", *ptr2;
   uint32_t len;
   int32_t only_one_empty_line = 0;
+
+int read_flag = 0;
 #ifdef HAVE_ZLIB
   gzFile fp = gzdopen(fileno(fd), "r");
 
-  while (!gzeof(fp)) {
+  while (!gzeof(fp) && !read_flag) {
     if (gzgets(fp, tmp, MAXLINESIZE) != NULL) {
 #else
   FILE *fp = fd;
 
-  while (!feof(fp)) {
+  while (!feof(fp) && !read_flag) {
     if (fgets(tmp, MAXLINESIZE, fp) != NULL) {
 #endif
       if (tmp[0] != 0) {
@@ -1082,6 +1084,8 @@ void fill_mem(char *ptr, FILE * fd, int32_t colonmode) {
           ptr++;
         }
       }
+    } else {
+      read_flag = 1;
     }
   }
 #ifdef HAVE_ZLIB
