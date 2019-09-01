@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# uname -s = Linux | OpenBSD | FreeBSD
+# uname -s = Linux | OpenBSD | FreeBSD | Darwin
 # uname -m = i636 or x86_64
 
 if [ "$1" = "-h" -o "$1" = "--help" ]; then
@@ -1272,7 +1272,16 @@ XLIBPATHS=""
 XIPATHS=""
 
 if [ -n "$FIREBIRD_PATH" -o -n "$PCRE_PATH" -o -n "$IDN_PATH" -o -n "$SSL_PATH" -o -n "$CRYPTO_PATH" -o -n "$NSL_PATH" -o -n "$SOCKET_PATH" -o -n "$RESOLV_PATH" -o -n "$SAPR3_PATH" -o -n "$SSH_PATH" -o -n "$POSTGRES_PATH" -o -n "$SVN_PATH" -o -n "$NCP_PATH" -o -n "$CURSES_PATH" -o -n "$ORACLE_PATH" -o -n "$AFP_PATH" -o -n "$MYSQL_PATH" -o -n "$MCACHED_PATH" -o -n "$MONGOD_PATH" -o -n "$FREERDP2_PATH" -o -n "$WINPR2_PATH" ]; then
-    XLIBPATHS="-L/usr/lib -L/usr/local/lib -L/lib"
+    if [ "$SYSS" = "Darwin" ] && [ ! -d "/lib" ]; then
+        #for libraries installed with MacPorts
+        if [ -d "/opt/local/lib" ]; then
+            XLIBPATHS="-L/usr/lib -L/usr/local/lib -L/opt/local/lib"
+        else
+            XLIBPATHS="-L/usr/lib -L/usr/local/lib"
+        fi
+    else
+        XLIBPATHS="-L/usr/lib -L/usr/local/lib -L/lib"
+    fi
 fi
 if [ -n "$MYSQL_IPATH" ]; then
     XIPATHS="$XIPATHS -I$MYSQL_IPATH"
@@ -1574,7 +1583,7 @@ if [ "x$WINDRES" = "x" ]; then
   echo HYDRA_LOGO= >> Makefile
   echo PWI_LOGO= >> Makefile
 fi
-if [ "$GCCSEC" = "yes" ] && [ "$SYSS" != "SunOS" ]; then
+if [ "$GCCSEC" = "yes" ] && [ "$SYSS" != "SunOS" ] && [ "$SYSS" != "Darwin" ]; then
   echo "SEC=$GCCSECOPT" >> Makefile
 else
   echo "SEC=" >> Makefile
