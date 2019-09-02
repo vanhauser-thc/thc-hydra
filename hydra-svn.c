@@ -227,12 +227,14 @@ int32_t service_svn_init(char *ip, int32_t sp, unsigned char options, char *misc
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here
 
+#ifdef LIBSVN
   if (verbose)
     hydra_report(stderr, "[VERBOSE] detected subversion library v%d.%d\n", SVN_VER_MAJOR, SVN_VER_MINOR);
   if (SVN_VER_MAJOR != 1 && SVN_VER_MINOR >= 5) {
     hydra_report(stderr, "[ERROR] unsupported subversion library v%d.%d, exiting!\n", SVN_VER_MAJOR, SVN_VER_MINOR);
     return -1;
   }
+#endif
   return 0;
 }
 
