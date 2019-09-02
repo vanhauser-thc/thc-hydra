@@ -10,12 +10,15 @@
 #include <sys/param.h>
 #endif
 
+#include <svn_version.h>
 #include <svn_client.h>
 #include <svn_cmdline.h>
 #include <svn_pools.h>
 #include <svn_config.h>
 #include <svn_fs.h>
+#if SVN_VER_MINOR > 7
 #include <svn_path.h>
+#endif
 
 #endif
 
@@ -58,7 +61,9 @@ int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char
   //int32_t ipv6 = 0;
   char URL[1024];
   char URLBRANCH[256];
+  #if SVN_VER_MINOR > 7
   const char *canonical;
+  #endif
   apr_pool_t *pool;
   svn_error_t *err;
   svn_opt_revision_t revision;
@@ -87,7 +92,11 @@ int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char
     return 4;
   }
 
+#if SVN_VER_MINOR > 7
   if ((err = svn_client_create_context2(&ctx, NULL, pool))) {
+#else
+  if ((err = svn_client_create_context(&ctx, pool))) {
+#endif    
     svn_pool_destroy(pool);
     svn_handle_error2(err, stderr, FALSE, "hydra: ");
     return 4;
@@ -111,8 +120,15 @@ int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char
   revision.kind = svn_opt_revision_head;
   snprintf(URL, sizeof(URL), "svn://%s:%d/%s", hydra_address2string_beautiful(ip), port, URLBRANCH);
   dirents = SVN_DIRENT_KIND;
+  #if SVN_VER_MINOR > 9
+  canonical = svn_uri_canonicalize(URL, pool);
+  err = svn_client_list4(canonical, &revision, &revision, NULL, svn_depth_unknown, dirents, FALSE, FALSE, (svn_client_list_func2_t) print_dirdummy, NULL, ctx, pool);
+  #elif SVN_VER_MINOR > 7
   canonical = svn_uri_canonicalize(URL, pool);
   err = svn_client_list3(canonical, &revision, &revision, svn_depth_unknown, dirents, FALSE, FALSE, (svn_client_list_func2_t) print_dirdummy, NULL, ctx, pool);
+  #else
+  err = svn_client_list2(URL, &revision, &revision, svn_depth_unknown, dirents, FALSE, print_dirdummy, NULL, ctx, pool);
+  #endif
 
   svn_pool_destroy(pool);
 
@@ -211,6 +227,12 @@ int32_t service_svn_init(char *ip, int32_t sp, unsigned char options, char *misc
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here
 
+  if (verbose)
+    hydra_report(stderr, "[VERBOSE] detected subversion library v%d.%d\n", SVN_VER_MAJOR, SVN_VER_MINOR);
+  if (SVN_VER_MAJOR != 1 && SVN_VER_MINOR >= 5) {
+    hydra_report(stderr, "[ERROR] unsupported subversion library v%d.%d, exiting!\n", SVN_VER_MAJOR, SVN_VER_MINOR);
+    return -1;
+  }
   return 0;
 }
 
