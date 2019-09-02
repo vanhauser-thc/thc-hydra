@@ -3,11 +3,18 @@
 #include <stdio.h>
 #ifdef __sun
   #include <sys/int_types.h>
-#elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX)
+#elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX) || defined(__APPLE__)
   #include <inttypes.h>
 #else
   #include <stdint.h>
 #endif
+
+#if defined(_INTTYPES_H) || defined(__CLANG_INTTYPES_H)
+  #define hPRIu64 PRIu64
+#else
+  #define hPRIu64 "lu"
+#endif
+
 #include <string.h>
 #include <stdarg.h>
 #include <unistd.h>
