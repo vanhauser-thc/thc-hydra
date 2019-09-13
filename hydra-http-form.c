@@ -1104,6 +1104,7 @@ void service_http_form(char *ip, int32_t sp, unsigned char options, char *miscpt
    *    - 3 -> Disconnect and end with success.
    *    - 4 -> Disconnect and end with error.
    */
+
   while (1) {
     if (run == 2) {
       if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0) {
@@ -1260,11 +1261,18 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     ptr++;
   if (*ptr != 0)
     *ptr++ = 0;
-  cond = ptr;
+
+  if ((ptr2 = rindex(ptr, ':')) != NULL) {
+    cond = ptr2 + 1;
+    *ptr2 = 0;
+  } else
+    cond = ptr;
+/*
   while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
     ptr++;
   if (*ptr != 0)
     *ptr++ = 0;
+*/
   optional1 = ptr;
   if (strstr(url, "\\:") != NULL) {
     if ((ptr = malloc(strlen(url))) != NULL) {
@@ -1305,6 +1313,8 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     //by default condition is a fail
     success_cond = 0;
   }
+
+  //printf("miscptr: %s, url=%s, variables=%s, ptr=%s, optional1: %s, cond: %s (%d)\n", miscptr, url, variables, ptr, optional1, cond, success_cond);
 
   /*
    * Parse the user-supplied options.
