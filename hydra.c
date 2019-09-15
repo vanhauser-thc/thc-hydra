@@ -4055,7 +4055,7 @@ int main(int argc, char *argv[]) {
   printf("%d of %d target%s%scompleted, %" hPRIu64 " valid password",
          hydra_brains.targets - j - k - error, hydra_brains.targets, hydra_brains.targets == 1 ? " " : "s ",
          hydra_brains.found > 0 ? "successfully " : "", hydra_brains.found);
-  printf("%s", hydra_brains.found < 1 ? "" : "s");
+  printf("%s", hydra_brains.found < 2 ? "" : "s");
   printf(" found\n");
 
   error += j;
