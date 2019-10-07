@@ -41,6 +41,7 @@ typedef struct {
   char *crs;                    /* internal representation of charset */
   char *ptr;                    /* ptr to the last generated password */
   uint32_t disable_symbols;
+  unsigned long rain;
 } bf_option;
 
 extern bf_option bf_options;
@@ -48,7 +49,7 @@ extern bf_option bf_options;
 #ifdef HAVE_MATH_H
 extern uint64_t bf_get_pcount();
 extern int32_t bf_init(char *arg);
-extern char *bf_next();
+extern char *bf_next(_Bool rainy);
 #endif
 
 #endif

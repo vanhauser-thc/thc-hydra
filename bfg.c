@@ -52,6 +52,7 @@ static int32_t add_single_char(char ch, char flags, int32_t* crs_len) {
 // note that we check for -x .:.:ab but not for -x .:.:ba
 //
 int32_t bf_init(char *arg) {
+  bf_options.rain = 0;
   int32_t i = 0;
   int32_t crs_len = 0;
   char flags = 0;
@@ -189,8 +190,17 @@ uint64_t bf_get_pcount() {
   return foo;
 }
 
+int accu(int value)
+{
+	int sum = 0;
+	for(int i=1; i<=value; ++i)
+	{
+		sum+=i;
+	}
+	return sum;
+}
 
-char *bf_next() {
+char *bf_next(_Bool rainy) {
   int32_t i, pos = bf_options.current - 1;
 
   if (bf_options.current > bf_options.to)
@@ -200,9 +210,25 @@ char *bf_next() {
     fprintf(stderr, "Error: Can not allocate memory for -x data!\n");
     return NULL;
   }
+  
+  if(rainy)
+  {
+	for (i = 0; i < bf_options.current; i++){
+	  bf_options.ptr[i] = bf_options.crs[(bf_options.state[i]+bf_options.rain)%bf_options.crs_len];
+	  bf_options.rain += i+1;
+	}
+    if(bf_options.crs_len%10 == 0)
+	  bf_options.rain-=accu(bf_options.current)-2;
+    else if(bf_options.crs_len%2 == 0)
+	  bf_options.rain-=accu(bf_options.current)-4;
+    else if(bf_options.crs_len%2)
+	  bf_options.rain-=accu(bf_options.current)-1;
 
-  for (i = 0; i < bf_options.current; i++)
-    bf_options.ptr[i] = bf_options.crs[bf_options.state[i]];
+  }
+  else
+    for (i = 0; i < bf_options.current; i++)
+	  bf_options.ptr[i] = bf_options.crs[bf_options.state[i]];
+		
   bf_options.ptr[bf_options.current] = 0;
 
   if (debug) {
