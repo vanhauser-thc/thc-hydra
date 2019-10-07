@@ -208,6 +208,7 @@ typedef struct {
   char bfg;
   _Bool rainy;
   int32_t skip_redo;
+  _Bool rainy;
 } hydra_option;
 
 #define _HYDRA_H
