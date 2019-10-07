@@ -210,6 +210,7 @@ typedef struct {
   char *server;
   char *service;
   char bfg;
+  _Bool rainy;
 } hydra_option;
 
 #define _HYDRA_H
