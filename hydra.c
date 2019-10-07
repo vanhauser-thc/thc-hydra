@@ -2180,7 +2180,7 @@ int main(int argc, char *argv[]) {
     help(1);
   if (argc < 2)
     help(0);
-  while ((i = getopt(argc, argv, "hIq64Rde:vVl:fFg:L:p:OP:o:b:M:C:t:T:m:w:W:s:SUux:yc:")) >= 0) {
+  while ((i = getopt(argc, argv, "hIq64Rrde:vVl:fFg:L:p:OP:o:b:M:C:t:T:m:w:W:s:SUux:yc:")) >= 0) {
     switch (i) {
     case 'h':
       help(1);
