@@ -195,7 +195,7 @@ int accu(int value)
   int i = 0;
   for(int a=1; a<=value; ++a)
   {
-  	i+=a+1;
+  	i+=a;
   }
   return i;
 }
