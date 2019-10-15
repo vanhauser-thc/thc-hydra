@@ -2173,7 +2173,7 @@ int main(int argc, char *argv[]) {
   hydra_brains.ofp = stdout;
   hydra_brains.targets = 1;
   hydra_options.waittime = waittime = WAITTIME;
-  hydra_options.rainy = false;
+  hydra_options.rainy = 0;
   bf_options.disable_symbols = 0;
 
   // command line processing
@@ -2206,7 +2206,7 @@ int main(int argc, char *argv[]) {
       hydra_restore_read();
       break;
     case 'r':
-      hydra_options.rainy = true;
+      hydra_options.rainy = 1;
       break;
     case 'I':
       ignore_restore = 1; // this is not to be saved in hydra_options!
