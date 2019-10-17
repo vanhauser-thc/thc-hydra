@@ -54,7 +54,7 @@ static int32_t server_subconnect(struct afp_url url) {
 
   if (strlen(url.uamname) > 0) {
     if ((conn_req->uam_mask = find_uam_by_name(url.uamname)) == 0) {
-      fprintf(stderr, "[ERROR] Unknown UAM: %s", url.uamname);
+      fprintf(stderr, "[ERROR] Unknown UAM: %s\n", url.uamname);
       FREE(conn_req);
       FREE(server);
       return -1;

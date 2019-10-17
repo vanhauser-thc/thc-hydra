@@ -8,7 +8,7 @@ char *http_proxy_buf = NULL;
 int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp, char *hostname) {
   char *empty = "";
   char *login, *pass, buffer[500], buffer2[500];
-  char url[210], host[30];
+  char url[210], host[60];
   char *header = "";            /* XXX TODO */
   char *ptr, *fooptr;
 
@@ -23,7 +23,7 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
   } else {
     sprintf(url, "%.200s", miscptr);
     ptr = strstr(miscptr, "://");       // :// check is in hydra.c
-    sprintf(host, "Host: %.200s", ptr + 3);
+    sprintf(host, "Host: %.50s", ptr + 3);
     if ((ptr = index(host, '/')) != NULL)
       *ptr = 0;
     if ((ptr = index(host + 6, ':')) != NULL && host[0] != '[')

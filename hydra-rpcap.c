@@ -111,6 +111,7 @@ void service_rpcap(char *ip, int32_t sp, unsigned char options, char *miscptr, F
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       hydra_child_exit(0);
+      break;
     default:
       hydra_report(stderr, "[ERROR] Caught unknown return code, exiting!\n");
       hydra_child_exit(2);
@@ -153,7 +154,7 @@ int32_t service_rpcap_init(char *ip, int32_t sp, unsigned char options, char *mi
 
   buf = hydra_receive_line(sock);
 
-  if (strstr(buf, "NULL autentication not permitted") == NULL) {
+  if (strstr(buf, "NULL authentication not permitted") == NULL) {
     hydra_report(stderr, "[!] rpcap error or no need of authentication!\n");
     free(buf);
     return 1;

@@ -28,7 +28,7 @@ void help() {
   printf("  -u         upcase characters (A,B,C,D, etc.)\n");
   printf("  -n         numbers (1,2,3,4, etc.)\n");
   printf("  -p         printable characters (which are not -l/-n/-p, e.g. $,!,/,(,*, etc.)\n");
-  printf("  -s         special characters - all others not withint the sets above\n");
+  printf("  -s         special characters - all others not within the sets above\n");
   printf("\n%s reads passwords in and prints those which meet the requirements.\n", PROGRAM);
   printf("The return code is the number of valid passwords found, 0 if none was found.\n");
   printf("Use for security: check passwords, if 0 is returned, reject password choice.\n");

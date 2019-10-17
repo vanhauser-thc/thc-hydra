@@ -523,6 +523,7 @@ int32_t service_pop3_init(char *ip, int32_t sp, unsigned char options, char *mis
 
   p.pop3_auth_mechanism = AUTH_CLEAR;
   p.disable_tls = 1;
+  p.next = NULL;
   memcpy(p.ip, ip, 36);
 
   if ((options & OPTION_SSL) == 0) {

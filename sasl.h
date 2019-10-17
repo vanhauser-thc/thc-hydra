@@ -19,6 +19,7 @@
 #define AUTH_BASIC 11
 #define AUTH_LM 12
 #define AUTH_LMv2 13
+#define AUTH_UNASSIGNED 14
 
 #if LIBIDN
 #include <stringprep.h>

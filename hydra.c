@@ -30,6 +30,7 @@ void usage_svn(const char* service);
 void usage_ncp(const char* service);
 void usage_firebird(const char* service);
 void usage_mysql(const char* service);
+void usage_mongodb(const char* service);
 void usage_irc(const char* service);
 void usage_postgres(const char* service);
 void usage_telnet(const char* service);
@@ -109,6 +110,8 @@ extern void service_oracle_sid(char *ip, int32_t sp, unsigned char options, char
 extern int32_t service_oracle_sid_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 extern void service_sip(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 extern int32_t service_sip_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+#endif
+#ifdef LIBFREERDP2
 extern void service_rdp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 extern int32_t service_rdp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
@@ -146,7 +149,14 @@ extern int32_t service_oracle_init(char *ip, int32_t sp, unsigned char options, 
 extern void service_radmin2(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 extern int32_t service_radmin2_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 #endif
-
+#ifdef LIBMCACHED
+extern void service_mcached(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_mcached_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+#endif
+#ifdef LIBMONGODB
+extern void service_mongodb(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern int32_t service_mongodb_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+#endif
 
 extern int32_t service_adam6500_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
 extern int32_t service_cisco_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
@@ -186,7 +196,7 @@ extern int32_t service_rpcap_init(char *ip, int32_t sp, unsigned char options, c
 
 // ADD NEW SERVICES HERE
 char *SERVICES =
-  "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp ftps http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres radmin2 rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
+  "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp[s] http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] memcached mongodb mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres radmin2 rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
 
 #define MAXBUF       520
 #define MAXLINESIZE  ( ( MAXBUF / 2 ) - 4 )
@@ -204,9 +214,11 @@ char *SERVICES =
 #define RESTOREFILE "./hydra.restore"
 
 #define PROGRAM   "Hydra"
-#define VERSION   "v8.8"
+#define VERSION   "v9.1-dev"
 #define AUTHOR    "van Hauser/THC"
 #define EMAIL     "<vh@thc.org>"
+#define AUTHOR2   "David Maciejak"
+#define EMAIL2    "<david.maciejak@gmail.com>"
 #define RESOURCE  "https://github.com/vanhauser-thc/thc-hydra"
 
 extern char *hydra_strcasestr(const char *haystack, const char *needle);
@@ -295,7 +307,7 @@ typedef struct {
 } hydra_portlist;
 
 // external vars
-extern char HYDRA_EXIT[5];
+extern char *HYDRA_EXIT;
 #if !defined(ANDROID) && !defined(__BIONIC__)
 extern int32_t errno;
 #endif
@@ -381,7 +393,13 @@ static const struct {
   { "ldap3", service_ldap_init, service_ldap3, usage_ldap },
   { "ldap3-crammd5", service_ldap_init, service_ldap3_cram_md5, usage_ldap },
   { "ldap3-digestmd5", service_ldap_init, service_ldap3_digest_md5, usage_ldap },
+#ifdef LIBMCACHED
+  {"memcached", service_mcached_init, service_mcached, NULL},
+#endif
   SERVICE(mssql),
+#ifdef LIBMONGODB
+SERVICE3("mongodb", mongodb),
+#endif
 #ifdef HAVE_MATH_H
   SERVICE3("mysql", mysql),
 #endif
@@ -404,7 +422,7 @@ static const struct {
 #endif
   SERVICE(redis),
   SERVICE(rexec),
-#ifdef LIBOPENSSL
+#ifdef LIBFREERDP2
   SERVICE3("rdp", rdp),
 #endif
   SERVICE(rlogin),
@@ -459,7 +477,7 @@ void help(int32_t ext) {
 #ifdef HAVE_MATH_H
                     " [-x MIN:MAX:CHARSET]"
 #endif
-                    " [-c TIME] [-ISOuvVd46] "
+                    " [-c TIME] [-ISOuvVd46] [-m MODULE_OPT] "
                     //"[server service [OPT]]|"
                     "[service://server[:PORT][/OPT]]\n");
   PRINT_NORMAL(ext, "\nOptions:\n");
@@ -493,10 +511,12 @@ void help(int32_t ext) {
                     "  -4 / -6   use IPv4 (default) / IPv6 addresses (put always in [] also in -M)\n"
                     "  -v / -V / -d  verbose mode / show login+pass for each attempt / debug mode \n"
                     "  -O        use old SSL v2 and v3\n"
+                    "  -K        do not redo failed attempts (good for -M mass scanning)\n"
                     "  -q        do not print messages about connection errors\n",
                MAXTASKS, WAITTIME, conwait
                );
   PRINT_NORMAL(ext, "  -U        service module usage details\n"
+                    "  -m OPT    options specific for a module, see -U output for information\n"
                     "  -h        more command line options (COMPLETE HELP)\n"
                     "  server    the target: DNS, IP or 192.168.0.0/24 (this OR the -M option)\n"
                     "  service   the service to crack (see below for supported protocols)\n"
@@ -575,7 +595,7 @@ void hydra_debug(int32_t force, char *string) {
   if (!debug && !force)
     return;
 
-  printf("[DEBUG] Code: %s   Time: %lu\n", string, (uint64_t) time(NULL));
+  printf("[DEBUG] Code: %s   Time: %" hPRIu64 "\n", string, (uint64_t) time(NULL));
   printf("[DEBUG] Options: mode %d  ssl %d  restore %d  showAttempt %d  tasks %d  max_use %d tnp %d  tpsal %d  tprl %d  exit_found %d  miscptr %s  service %s\n",
          hydra_options.mode,        hydra_options.ssl,   hydra_options.restore,
          hydra_options.showAttempt, hydra_options.tasks, hydra_options.max_use,
@@ -583,7 +603,7 @@ void hydra_debug(int32_t force, char *string) {
          hydra_options.try_password_reverse_login, hydra_options.exit_found,
          STR_NULL(hydra_options.miscptr),          hydra_options.service);
 
-  printf("[DEBUG] Brains: active %d  targets %d  finished %d  todo_all %lu  todo %lu  sent %lu  found %lu  countlogin %lu  sizelogin %lu  countpass %lu  sizepass %lu\n",
+  printf("[DEBUG] Brains: active %d  targets %d  finished %d  todo_all %" hPRIu64 "  todo %" hPRIu64 "  sent %" hPRIu64 "  found %" hPRIu64 "  countlogin %" hPRIu64 "  sizelogin %" hPRIu64 "  countpass %" hPRIu64 "  sizepass %" hPRIu64 "\n",
          hydra_brains.active, hydra_brains.targets, hydra_brains.finished,
          hydra_brains.todo_all + total_redo_count,  hydra_brains.todo,
          hydra_brains.sent, hydra_brains.found,
@@ -595,7 +615,7 @@ void hydra_debug(int32_t force, char *string) {
   for (i = 0; i < hydra_brains.targets; i++) {
     hydra_target* target = hydra_targets[i];
     printf
-      ("[DEBUG] Target %d - target %s  ip %s  login_no %lu  pass_no %lu  sent %lu  pass_state %d  redo_state %d (%d redos)  use_count %d  failed %d  done %d  fail_count %d  login_ptr %s  pass_ptr %s\n",
+      ("[DEBUG] Target %d - target %s  ip %s  login_no %" hPRIu64 "  pass_no %" hPRIu64 "  sent %" hPRIu64 "  pass_state %d  redo_state %d (%d redos)  use_count %d  failed %d  done %d  fail_count %d  login_ptr %s  pass_ptr %s\n",
        i, STR_NULL(target->target), hydra_address2string_beautiful(target->ip),
        target->login_no,   target->pass_no,    target->sent,
        target->pass_state, target->redo_state, target->redo,
@@ -649,7 +669,7 @@ void hydra_restore_write(int32_t print_msg) {
   }
 
   if ((f = fopen(RESTOREFILE, "w")) == NULL) {
-    fprintf(stderr, "[ERROR] Can not create restore file (%s) - \n", RESTOREFILE);
+    fprintf(stderr, "[ERROR] Can not create restore file (%s) - ", RESTOREFILE);
     perror("");
     process_restore = 0;
     return;
@@ -1027,15 +1047,17 @@ void fill_mem(char *ptr, FILE * fd, int32_t colonmode) {
   char tmp[MAXBUF + 4] = "", *ptr2;
   uint32_t len;
   int32_t only_one_empty_line = 0;
+
+int read_flag = 0;
 #ifdef HAVE_ZLIB
   gzFile fp = gzdopen(fileno(fd), "r");
 
-  while (!gzeof(fp)) {
+  while (!gzeof(fp) && !read_flag) {
     if (gzgets(fp, tmp, MAXLINESIZE) != NULL) {
 #else
   FILE *fp = fd;
 
-  while (!feof(fp)) {
+  while (!feof(fp) && !read_flag) {
     if (fgets(tmp, MAXLINESIZE, fp) != NULL) {
 #endif
       if (tmp[0] != 0) {
@@ -1063,6 +1085,8 @@ void fill_mem(char *ptr, FILE * fd, int32_t colonmode) {
           ptr++;
         }
       }
+    } else {
+      read_flag = 1;
     }
   }
 #ifdef HAVE_ZLIB
@@ -1111,8 +1135,17 @@ void hydra_service_init(int32_t target_no) {
     else
       hydra_targets[target_no]->done = TARGET_ERROR;
     hydra_brains.finished++;
-    if (hydra_brains.targets == 1)
+    if (hydra_brains.targets == 1) {
+      if (hydra_brains.ofp != NULL && hydra_brains.ofp != stdout) {
+        if (hydra_options.outfile_format == FORMAT_JSONV1) {
+          char json_error[120];
+          snprintf(json_error, sizeof(json_error), "[ERROR] unexpected result connecting to target %s port %d", hydra_address2string_beautiful(t->ip), t->port);
+          fprintf(hydra_brains.ofp, "\n\t],\n\"success\": false,\n\"errormessages\": [ \"%s\" ],\n\"quantityfound\": %" hPRIu64 "   }\n", json_error, hydra_brains.found);
+        }
+        fclose(hydra_brains.ofp);
+      }
       exit(-1);
+    }
   }
 }
 
@@ -1240,6 +1273,8 @@ int32_t hydra_lookup_port(char *service) {
     {"oracle-listener", PORT_ORACLE, PORT_ORACLE_SSL},
     {"oracle-sid", PORT_ORACLE, PORT_ORACLE_SSL},
     {"oracle", PORT_ORACLE, PORT_ORACLE_SSL},
+    {"memcached", PORT_MCACHED, PORT_MCACHED_SSL},
+    {"mongodb", PORT_MONGODB, PORT_MONGODB},
     {"mssql", PORT_MSSQL, PORT_MSSQL_SSL},
     {"mysql", PORT_MYSQL, PORT_MYSQL_SSL},
     {"postgres", PORT_POSTGRES, PORT_POSTGRES_SSL},
@@ -1348,7 +1383,7 @@ void hydra_kill_head(int32_t head_no, int32_t killit, int32_t fail) {
 void hydra_increase_fail_count(int32_t target_no, int32_t head_no) {
   int32_t i, k, maxfail = 0;
 
-  if (target_no < 0)
+  if (target_no < 0 || hydra_options.skip_redo)
     return;
 
   if (hydra_targets[target_no]->ok) {
@@ -1370,6 +1405,7 @@ void hydra_increase_fail_count(int32_t target_no, int32_t head_no) {
     if (k <= 1) {
       // we need to put this in a list, otherwise we fail one login+pw test
       if (hydra_targets[target_no]->done == TARGET_ACTIVE
+          && hydra_options.skip_redo == 0
           && hydra_targets[target_no]->redo <= hydra_options.max_use * 2
           && ((hydra_heads[head_no]->current_login_ptr != empty_login && hydra_heads[head_no]->current_pass_ptr != empty_login)
               || (hydra_heads[head_no]->current_login_ptr != NULL && hydra_heads[head_no]->current_pass_ptr != NULL))) {
@@ -1402,6 +1438,7 @@ void hydra_increase_fail_count(int32_t target_no, int32_t head_no) {
     } else {
       // we need to put this in a list, otherwise we fail one login+pw test
       if (hydra_targets[target_no]->done == TARGET_ACTIVE
+          && hydra_options.skip_redo == 0
           && hydra_targets[target_no]->redo <= hydra_options.max_use * 2
           && ((hydra_heads[head_no]->current_login_ptr != empty_login && hydra_heads[head_no]->current_pass_ptr != empty_login)
               || (hydra_heads[head_no]->current_login_ptr != NULL && hydra_heads[head_no]->current_pass_ptr != NULL))) {
@@ -1508,14 +1545,14 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
 
   if (debug)
     printf
-      ("[DEBUG] send_next_pair_init target %d, head %d, redo %d, redo_state %d, pass_state %d. loop_mode %d, curlogin %s, curpass %s, tlogin %s, tpass %s, logincnt %lu/%lu, passcnt %lu/%lu, loop_cnt %d\n",
+      ("[DEBUG] send_next_pair_init target %d, head %d, redo %d, redo_state %d, pass_state %d. loop_mode %d, curlogin %s, curpass %s, tlogin %s, tpass %s, logincnt %" hPRIu64 "/%" hPRIu64 ", passcnt %" hPRIu64 "/%" hPRIu64 ", loop_cnt %d\n",
        target_no, head_no, hydra_targets[target_no]->redo, hydra_targets[target_no]->redo_state, hydra_targets[target_no]->pass_state, hydra_options.loop_mode,
        hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr, hydra_targets[target_no]->login_ptr, hydra_targets[target_no]->pass_ptr,
        hydra_targets[target_no]->login_no, hydra_brains.countlogin, hydra_targets[target_no]->pass_no, hydra_brains.countpass, loop_cnt);
 
   if (loop_cnt > (hydra_brains.countlogin * 2) + 1 && loop_cnt > (hydra_brains.countpass * 2) + 1) {
     if (debug)
-      printf("[DEBUG] too many loops in send_next_pair, returning -1 (loop_cnt %d, sent %lu, todo %lu)\n", loop_cnt, hydra_targets[target_no]->sent, hydra_brains.todo);
+      printf("[DEBUG] too many loops in send_next_pair, returning -1 (loop_cnt %d, sent %" hPRIu64 ", todo %" hPRIu64 ")\n", loop_cnt, hydra_targets[target_no]->sent, hydra_brains.todo);
     return -1;
   }
 
@@ -1525,7 +1562,7 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
     snpdone = 1;
   } else {
     if (debug && (hydra_heads[head_no]->current_login_ptr != NULL || hydra_heads[head_no]->current_pass_ptr != NULL))
-      printf("[COMPLETED] target %s - login \"%s\" - pass \"%s\" - child %d - %lu of %lu\n",
+      printf("[COMPLETED] target %s - login \"%s\" - pass \"%s\" - child %d - %" hPRIu64 " of %" hPRIu64 "\n",
              hydra_targets[target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr, head_no,
              hydra_targets[target_no]->sent, hydra_brains.todo + hydra_targets[target_no]->redo);
     hydra_heads[head_no]->redo = 0;
@@ -1835,7 +1872,7 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
       return 0;                 // not prevent disabling it, if its needed its already done in the above line
     }
     if (debug || hydra_options.showAttempt) {
-      printf("[%sATTEMPT] target %s - login \"%s\" - pass \"%s\" - %lu of %lu [child %d] (%d/%d)\n",
+      printf("[%sATTEMPT] target %s - login \"%s\" - pass \"%s\" - %" hPRIu64 " of %" hPRIu64 " [child %d] (%d/%d)\n",
              hydra_targets[target_no]->redo_state ? "REDO-" : snp_is_redo ? "RE-" : "", hydra_targets[target_no]->target, hydra_heads[head_no]->current_login_ptr,
              hydra_heads[head_no]->current_pass_ptr, hydra_targets[target_no]->sent, hydra_brains.todo + hydra_targets[target_no]->redo, head_no, hydra_targets[target_no]->redo_state ? hydra_targets[target_no]->redo_state - 1 : 0, hydra_targets[target_no]->redo);
     }
@@ -2047,7 +2084,7 @@ void process_proxy_line(int32_t type, char *string) {
 }
 
 int main(int argc, char *argv[]) {
-  char *proxy_string = NULL, *device = NULL, *memcheck, *cmdtarget = NULL;
+  char *proxy_string = NULL, *device = NULL, *memcheck;
   char *outfile_format_tmp;
   FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL, *proxyfp;
   size_t countinfile = 1, sizeinfile = 0;
@@ -2064,7 +2101,7 @@ int main(int argc, char *argv[]) {
   struct sockaddr_in6 *ipv6 = NULL;
   struct sockaddr_in *ipv4 = NULL;
 
-  printf("%s %s (c) 2019 by %s - Please do not use in military or secret service organizations, or for illegal purposes.\n\n", PROGRAM, VERSION, AUTHOR);
+  printf("%s %s (c) 2019 by %s & %s - Please do not use in military or secret service organizations, or for illegal purposes.\n\n", PROGRAM, VERSION, AUTHOR, AUTHOR2);
 #ifndef LIBAFP
   SERVICES = hydra_string_replace(SERVICES, "afp ", "");
   strcat(unsupported, "afp ");
@@ -2072,6 +2109,14 @@ int main(int argc, char *argv[]) {
 #ifndef LIBFIREBIRD
   SERVICES = hydra_string_replace(SERVICES, "firebird ", "");
   strcat(unsupported, "firebird ");
+#endif
+#ifndef LIBMCACHED
+  SERVICES = hydra_string_replace(SERVICES, "memcached ", "");
+  strcat(unsupported, "memcached ");
+#endif
+#ifndef LIBMONGODB
+  SERVICES = hydra_string_replace(SERVICES, "mongodb ", "");
+  strcat(unsupported, "mongodb ");
 #endif
 #ifndef LIBMYSQLCLIENT
   SERVICES = hydra_string_replace(SERVICES, "mysql ", "mysql(v4) ");
@@ -2107,9 +2152,10 @@ int main(int argc, char *argv[]) {
   SERVICES = hydra_string_replace(SERVICES, "svn ", "");
   strcat(unsupported, "svn ");
 #endif
+
 #ifndef LIBOPENSSL
   // for ftps
-  SERVICES = hydra_string_replace(SERVICES, " ftps", "");
+  SERVICES = hydra_string_replace(SERVICES, "ftp[s]", "ftp");
   // for pop3
   SERVICES = hydra_string_replace(SERVICES, "pop3[s]", "pop3");
   // for imap
@@ -2126,8 +2172,6 @@ int main(int argc, char *argv[]) {
   SERVICES = hydra_string_replace(SERVICES, "[-{cram|digest}md5]", "");
   // for sip
   SERVICES = hydra_string_replace(SERVICES, " sip", "");
-  // for rdp
-  SERVICES = hydra_string_replace(SERVICES, " rdp", "");
   // for oracle-listener
   SERVICES = hydra_string_replace(SERVICES, " oracle-listener", "");
   // general
@@ -2136,6 +2180,12 @@ int main(int argc, char *argv[]) {
   SERVICES = hydra_string_replace(SERVICES, " oracle-sid", "");
   strcat(unsupported, "SSL-services (ftps, sip, rdp, oracle-services, ...) ");
 #endif
+
+#ifndef LIBFREERDP2
+  // for rdp
+  SERVICES = hydra_string_replace(SERVICES, " rdp", "");
+#endif
+
 #ifndef HAVE_MATH_H
   if (strlen(unsupported) > 0)
     strcat(unsupported, "and ");
@@ -2181,13 +2231,16 @@ int main(int argc, char *argv[]) {
     help(1);
   if (argc < 2)
     help(0);
-  while ((i = getopt(argc, argv, "hIq64Rrde:vVl:fFg:L:p:OP:o:b:M:C:t:T:m:w:W:s:SUux:yc:")) >= 0) {
+  while ((i = getopt(argc, argv, "hIq64Rrde:vVl:fFg:L:p:OP:o:b:M:C:t:T:m:w:W:s:SUux:yc:K")) >= 0) {
     switch (i) {
     case 'h':
       help(1);
       break;
     case 'q':
       quiet = 1;
+      break;
+    case 'K':
+      hydra_options.skip_redo = 1;
       break;
     case 'O':
       old_ssl = 1;
@@ -2270,11 +2323,11 @@ int main(int argc, char *argv[]) {
       break;
     case 'b':
       outfile_format_tmp = optarg;
-      if (0==strcasecmp(outfile_format_tmp,"text"))
+      if (strcasecmp(outfile_format_tmp,"text") == 0)
           hydra_options.outfile_format = FORMAT_PLAIN_TEXT;
-      else if (0==strcasecmp(outfile_format_tmp,"json")) // latest json formatting.
+      else if (strcasecmp(outfile_format_tmp,"json") == 0) // latest json formatting.
           hydra_options.outfile_format = FORMAT_JSONV1;
-      else if (0==strcasecmp(outfile_format_tmp,"jsonv1"))
+      else if (strcasecmp(outfile_format_tmp,"jsonv1") == 0)
           hydra_options.outfile_format = FORMAT_JSONV1;
       else {
         fprintf(stderr, "[ERROR] Output file format must be (text, json, jsonv1)\n");
@@ -2371,6 +2424,9 @@ int main(int argc, char *argv[]) {
     if (!setupterm(NULL, 1, NULL) && (tigetnum("colors") <= 0)) {
       colored_output = 0;
     }
+    if (cur_term) {
+      del_curterm(cur_term);
+    }
   }
 #else
   //don't want border line effect so disabling color output
@@ -2430,7 +2486,7 @@ int main(int argc, char *argv[]) {
       // check if targetdef follow syntax <service-name>://<target>[:<port-number>][/<parameters>] or it's a syntax error
       char *targetdef = strdup(argv[optind]);
       char *service_pos, *target_pos, *port_pos = NULL, *param_pos = NULL;
-      cmdtarget = argv[optind];
+      cmdlinetarget = argv[optind];
 
       if ((targetdef != NULL) && (strstr(targetdef, "://") != NULL)) {
         service_pos = strstr(targetdef, "://");
@@ -2483,7 +2539,7 @@ int main(int argc, char *argv[]) {
           printf("[DEBUG] opt:%d argc:%d mod:%s tgt:%s port:%u misc:%s\n", optind, argc, hydra_options.service, hydra_options.server, hydra_options.port, hydra_options.miscptr);
       } else {
        hydra_options.server = NULL;
-        hydra_options.service = NULL;
+       hydra_options.service = NULL;
 
         if (modusage) {
           hydra_options.service = targetdef;
@@ -2532,7 +2588,7 @@ int main(int argc, char *argv[]) {
       if (strcmp(hydra_options.service, "afp") == 0 || strcmp(hydra_options.service, "firebird") == 0 || strncmp(hydra_options.service, "mysql", 5) == 0 ||
           strcmp(hydra_options.service, "ncp") == 0 || strcmp(hydra_options.service, "oracle") == 0 || strcmp(hydra_options.service, "postgres") == 0 ||
           strncmp(hydra_options.service, "ssh", 3) == 0 || strcmp(hydra_options.service, "sshkey") == 0 || strcmp(hydra_options.service, "svn") == 0 ||
-          strcmp(hydra_options.service, "sapr3") == 0) {
+          strcmp(hydra_options.service, "sapr3") == 0 || strcmp(hydra_options.service, "memcached") == 0 || strcmp(hydra_options.service, "mongodb") == 0) {
         fprintf(stderr, "[WARNING] module %s does not support HYDRA_PROXY* !\n", hydra_options.service);
         proxy_string = NULL;
       }
@@ -2609,6 +2665,24 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "[WARNING] The icq module is not working with the modern protocol version! (somebody else will need to fix this as I don't care for icq)\n");
       i = 1;
     }
+    if (strcmp(hydra_options.service, "memcached") == 0)
+#ifdef LIBMCACHED
+      i = 1;
+#else
+      bail("Compiled without LIBMCACHED support, module not available!");
+#endif
+
+    if (strcmp(hydra_options.service, "mongodb") == 0)
+#ifdef LIBMONGODB
+    { 
+      i = 1;
+      if (hydra_options.miscptr == NULL || (strlen(hydra_options.miscptr) == 0))
+        fprintf(stderr, "[INFO] The mongodb db wasn't passed so using admin by default\n");
+    }
+#else
+      bail("Compiled without LIBMONGODB support, module not available!");
+#endif
+
     if (strcmp(hydra_options.service, "mysql") == 0) {
       i = 1;
       if (hydra_options.tasks > 4) {
@@ -2665,6 +2739,7 @@ int main(int argc, char *argv[]) {
 #else
       bail("Compiled without LIBNCP support, module not available!");
 #endif
+
     if (strcmp(hydra_options.service, "pcanywhere") == 0)
       i = 1;
     if (strcmp(hydra_options.service, "http-proxy") == 0) {
@@ -2720,10 +2795,15 @@ int main(int argc, char *argv[]) {
 #endif
     }
     if ((strcmp(hydra_options.service, "smb") == 0) || (strcmp(hydra_options.service, "smbnt") == 0) ||
-        (strcmp(hydra_options.service, "sip") == 0) || (strcmp(hydra_options.service, "rdp") == 0) ||
+        (strcmp(hydra_options.service, "sip") == 0) ||
         (strcmp(hydra_options.service, "oracle-listener") == 0) || (strcmp(hydra_options.service, "oracle-sid") == 0)) {
 #ifndef LIBOPENSSL
       bail("Compiled without OPENSSL support, module not available!");
+#endif
+    }
+    if (strcmp(hydra_options.service, "rdp") == 0){
+#ifndef LIBFREERDP2
+      bail("Compiled without FREERDP2 support, module not available!");
 #endif
     }
     if (strcmp(hydra_options.service, "pcnfs") == 0) {
@@ -3022,17 +3102,15 @@ int main(int argc, char *argv[]) {
     if (strcmp(hydra_options.service, "irc") == 0)
       i = 1;
     if (strcmp(hydra_options.service, "rdp") == 0) {
-      //if (hydra_options.tasks > 4)
-      //  fprintf(stderr, "[WARNING] rdp servers often don't like many connections, use -t 1 or -t 4 to reduce the number of parallel connections and -W 1 or -W 3 to wait between connection to allow the server to recover\n");
-      //if (hydra_options.tasks > 4) {
-      //  fprintf(stderr, "[INFO] Reduced number of tasks to 4 (rdp does not like many parallel connections)\n");
-      //  hydra_options.tasks = 4;
-      //}
-      //if (conwait == 0)
-      //  hydra_options.conwait = conwait = 1;
-      //printf("[WARNING] the rdp module is currently reported to be unreliable, most likely against new Windows version. Please test, report - and if possible, fix.\n");
-      printf("[ERROR] the rdp module does not support the current protocol, hence it is disabled. If you want to add it, please contact vh@thc.org\n");
-      exit(-1);
+      if (hydra_options.tasks > 4)
+       fprintf(stderr, "[WARNING] rdp servers often don't like many connections, use -t 1 or -t 4 to reduce the number of parallel connections and -W 1 or -W 3 to wait between connection to allow the server to recover\n");
+      if (hydra_options.tasks > 4) {
+       fprintf(stderr, "[INFO] Reduced number of tasks to 4 (rdp does not like many parallel connections)\n");
+       hydra_options.tasks = 4;
+      }
+      if (conwait == 0)
+       hydra_options.conwait = conwait = 1;
+      printf("[WARNING] the rdp module is experimental. Please test, report - and if possible, fix.\n");
       i = 1;
     }
     if (strcmp(hydra_options.service, "radmin2") == 0) {
@@ -3117,9 +3195,19 @@ int main(int argc, char *argv[]) {
       hydra_options.max_use = MAXTASKS;
     }
     // script kiddie patch
-    if (hydra_options.server != NULL && (hydra_strcasestr(hydra_options.server, "gmail.") != NULL || hydra_strcasestr(hydra_options.server, "googlemail.") != NULL))
-      fprintf(stderr, "[WARNING] Google Mail has bruteforce detection and sends false positives. You are not doing anything illegal right?!\n");
-
+    if (hydra_options.server != NULL && (
+        hydra_strcasestr(hydra_options.server, ".outlook.com") != NULL || 
+        hydra_strcasestr(hydra_options.server, ".hotmail.com") != NULL || 
+        hydra_strcasestr(hydra_options.server, ".yahoo.") != NULL || 
+        hydra_strcasestr(hydra_options.server, ".gmx.") != NULL || 
+        hydra_strcasestr(hydra_options.server, ".web.de") != NULL || 
+        hydra_strcasestr(hydra_options.server, ".gmail.") != NULL || 
+        hydra_strcasestr(hydra_options.server, "googlemail.") != NULL
+       )) {
+      fprintf(stderr, "[WARNING] Google Mail and others have bruteforce and hydra detection and sends false positives. You are not doing anything illegal right?!\n");
+      fprintf(stderr, "[WARNING] !read the above!\n");
+      sleep(5);
+    }
     if (hydra_options.colonfile == NULL) {
       if (hydra_options.loginfile != NULL) {
         if ((lfp = fopen(hydra_options.loginfile, "r")) == NULL) {
@@ -3133,11 +3221,11 @@ int main(int argc, char *argv[]) {
           exit(-1);
         }
         if (hydra_brains.countlogin > MAX_LINES) {
-          fprintf(stderr, "[ERROR] Maximum number of logins is %d, this file has %lu entries.\n", MAX_LINES, hydra_brains.countlogin);
+          fprintf(stderr, "[ERROR] Maximum number of logins is %d, this file has %" hPRIu64 " entries.\n", MAX_LINES, hydra_brains.countlogin);
           exit(-1);
         }
         if (hydra_brains.sizelogin > MAX_BYTES) {
-          fprintf(stderr, "[ERROR] Maximum size of the login file is %d, this file has %lu bytes.\n", MAX_BYTES, (uint64_t) hydra_brains.sizelogin);
+          fprintf(stderr, "[ERROR] Maximum size of the login file is %d, this file has %" hPRIu64 " bytes.\n", MAX_BYTES, (uint64_t) hydra_brains.sizelogin);
           exit(-1);
         }
         login_ptr = malloc(hydra_brains.sizelogin + hydra_brains.countlogin + 8);
@@ -3162,11 +3250,11 @@ int main(int argc, char *argv[]) {
           exit(-1);
         }
         if (hydra_brains.countpass > MAX_LINES) {
-          fprintf(stderr, "[ERROR] Maximum number of passwords is %d, this file has %lu entries.\n", MAX_LINES, hydra_brains.countpass);
+          fprintf(stderr, "[ERROR] Maximum number of passwords is %d, this file has %" hPRIu64 " entries.\n", MAX_LINES, hydra_brains.countpass);
           exit(-1);
         }
         if (hydra_brains.sizepass > MAX_BYTES) {
-          fprintf(stderr, "[ERROR] Maximum size of the password file is %d, this file has %lu bytes.\n", MAX_BYTES, (uint64_t) hydra_brains.sizepass);
+          fprintf(stderr, "[ERROR] Maximum size of the password file is %d, this file has %" hPRIu64 " bytes.\n", MAX_BYTES, (uint64_t) hydra_brains.sizepass);
           exit(-1);
         }
         pass_ptr = malloc(hydra_brains.sizepass + hydra_brains.countpass + 8);
@@ -3209,11 +3297,11 @@ int main(int argc, char *argv[]) {
         exit(-1);
       }
       if (hydra_brains.countlogin > MAX_LINES / 2) {
-        fprintf(stderr, "[ERROR] Maximum number of colon file entries is %d, this file has %lu entries.\n", MAX_LINES / 2, hydra_brains.countlogin);
+        fprintf(stderr, "[ERROR] Maximum number of colon file entries is %d, this file has %" hPRIu64 " entries.\n", MAX_LINES / 2, hydra_brains.countlogin);
         exit(-1);
       }
       if (hydra_brains.sizelogin > MAX_BYTES / 2) {
-        fprintf(stderr, "[ERROR] Maximum size of the colon file is %d, this file has %lu bytes.\n", MAX_BYTES / 2, (uint64_t) hydra_brains.sizelogin);
+        fprintf(stderr, "[ERROR] Maximum size of the colon file is %d, this file has %" hPRIu64 " bytes.\n", MAX_BYTES / 2, (uint64_t) hydra_brains.sizelogin);
         exit(-1);
       }
       csv_ptr = malloc(hydra_brains.sizelogin + 2 * hydra_brains.countlogin + 8);
@@ -3301,9 +3389,9 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "Error: no target server given, nor -M option used\n");
       exit(-1);
     } else if (index(hydra_options.server, '/') != NULL) {
-     if (cmdtarget == NULL)
+     if (cmdlinetarget == NULL)
        bail("You seem to mix up \"service://target:port/options\" syntax with \"target service options\" syntax. Read the README on how to use hydra correctly!");
-     if (strstr(cmdtarget, "://") != NULL) {
+     if (strstr(cmdlinetarget, "://") != NULL) {
        tmpptr = index(hydra_options.server, '/');
        if (tmpptr != NULL)
          *tmpptr = 0;
@@ -3436,7 +3524,7 @@ int main(int argc, char *argv[]) {
       bail("No login/password combination given!");
     if (hydra_brains.todo < hydra_options.tasks) {
       if (verbose && hydra_options.tasks != TASKS)
-        printf("[VERBOSE] More tasks defined than login/pass pairs exist. Tasks reduced to %lu\n", hydra_brains.todo);
+        printf("[VERBOSE] More tasks defined than login/pass pairs exist. Tasks reduced to %" hPRIu64 "\n", hydra_brains.todo);
       hydra_options.tasks = hydra_brains.todo;
     }
   }
@@ -3471,18 +3559,18 @@ int main(int argc, char *argv[]) {
   if (hydra_options.ssl)
     options = options | OPTION_SSL;
 
-  printf("[DATA] max %d task%s per %d server%s, overall %d task%s, %lu login tr",
+  printf("[DATA] max %d task%s per %d server%s, overall %d task%s, %" hPRIu64 " login tr",
          hydra_options.tasks, hydra_options.tasks == 1 ? "" : "s",
          hydra_brains.targets, hydra_brains.targets == 1 ? "" : "s",
          hydra_options.max_use, hydra_options.max_use == 1 ? "" : "s",
          hydra_brains.todo);
   printf("%s", hydra_brains.todo == 1 ? "y" : "ies");
   if (hydra_options.colonfile == NULL) {
-    printf(" (l:%lu/p:%lu), ~%lu tr", 
+    printf(" (l:%" hPRIu64 "/p:%" hPRIu64 "), ~%" hPRIu64 " tr",
            (uint64_t) hydra_brains.countlogin, (uint64_t) hydra_brains.countpass,
            math2);
   } else {
-    printf(", ~%lu tr", math2);
+    printf(", ~%" hPRIu64 " tr", math2);
   }
   printf("%s", math2 == 1 ? "y" : "ies");
   printf(" per task\n");
@@ -3504,23 +3592,29 @@ int main(int argc, char *argv[]) {
 //    printf("[DATA] with additional data %s\n", hydra_options.miscptr);
 
   if (hydra_options.outfile_ptr != NULL) {
-    if ((hydra_brains.ofp = fopen(hydra_options.outfile_ptr, "a+")) == NULL) {
+    char outfile_open_type[] = "a+"; //Default open in a+ mode
+    if (hydra_options.outfile_format == FORMAT_JSONV1 && hydra_options.restore != 1) {
+      outfile_open_type[0] = 'w'; //Creat new outfile, if using JSON output and not using -R. The open mode should be "w+".
+    }
+    if ((hydra_brains.ofp = fopen(hydra_options.outfile_ptr, outfile_open_type)) == NULL) {
       perror("[ERROR] Error creating outputfile");
       exit(-1);
     }
     if (hydra_options.outfile_format == FORMAT_JSONV1) {
-      fprintf(hydra_brains.ofp, "{ \"generator\": {\n"
+      if (hydra_options.restore != 1) { // No JSON head while using -R
+        fprintf(hydra_brains.ofp, "{ \"generator\": {\n"
               "\t\"software\": \"%s\", \"version\": \"%s\", \"built\": \"%s\",\n"
               "\t\"server\": \"%s\", \"service\": \"%s\", \"jsonoutputversion\": \"1.00\",\n"
               "\t\"commandline\": \"%s",
             PROGRAM, VERSION, hydra_build_time(),
             hydra_options.server == NULL ? hydra_options.infile_ptr : hydra_options.server, hydra_options.service, prg);
-      for (i = 1; i < argc; i++) {
-        char *t = hydra_string_replace(argv[i],"\"","\\\"");
-        fprintf(hydra_brains.ofp, " %s", t);
-        free(t);
+        for (i = 1; i < argc; i++) {
+          char *t = hydra_string_replace(argv[i],"\"","\\\"");
+          fprintf(hydra_brains.ofp, " %s", t);
+          free(t);
+        }
+        fprintf(hydra_brains.ofp, "\"\n\t},\n\"results\": [");
       }
-      fprintf(hydra_brains.ofp, "\"\n\t},\n\"results\": [");
     } else { // else default is plain text aka == 0
       fprintf(hydra_brains.ofp, "# %s %s run at %s on %s %s (%s", PROGRAM, VERSION, hydra_build_time(),
             hydra_options.server == NULL ? hydra_options.infile_ptr : hydra_options.server, hydra_options.service, prg);
@@ -3683,7 +3777,7 @@ int main(int argc, char *argv[]) {
     for (head_no = 0; head_no < hydra_options.max_use; head_no++) {
       if (debug > 1 && hydra_heads[head_no]->active != HEAD_DISABLED)
         printf("[DEBUG] head_no[%d] to target_no %d active %d\n", head_no, hydra_heads[head_no]->target_no, hydra_heads[head_no]->active);
-       
+
       switch (hydra_heads[head_no]->active) {
       case HEAD_DISABLED:
         break;
@@ -3839,7 +3933,7 @@ int main(int argc, char *argv[]) {
               case 'C':          // head reports connect error
                 fck = write(hydra_heads[head_no]->sp[0], "Q", 1);
                 if (debug) {
-                  printf("[ATTEMPT-ERROR] target %s - login \"%s\" - pass \"%s\" - child %d - %lu of %lu\n",
+                  printf("[ATTEMPT-ERROR] target %s - login \"%s\" - pass \"%s\" - child %d - %" hPRIu64 " of %" hPRIu64 "\n",
                          hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr, head_no,
                          hydra_targets[hydra_heads[head_no]->target_no]->sent, hydra_brains.todo);
                 }
@@ -3918,7 +4012,7 @@ int main(int argc, char *argv[]) {
       for (j = 0; j < hydra_options.max_use; j++)
         if (hydra_heads[j]->active >= HEAD_UNUSED)
           k++;
-      printf("[STATUS] %.2f tries/min, %lu tries in %02lu:%02luh, %lu to do in %02lu:%02luh, %d active\n", (1.0 * hydra_brains.sent) / (((elapsed_status - starttime) * 1.0) / 60),     // tries/min
+      printf("[STATUS] %.2f tries/min, %" hPRIu64 " tries in %02" hPRIu64 ":%02" hPRIu64 "h, %" hPRIu64 " to do in %02" hPRIu64 ":%02" hPRIu64 "h, %d active\n", (1.0 * hydra_brains.sent) / (((elapsed_status - starttime) * 1.0) / 60),     // tries/min
              hydra_brains.sent, // tries
              (uint64_t) ((elapsed_status - starttime) / 3600), // hours
              (uint64_t) (((elapsed_status - starttime) % 3600) / 60),  // minutes
@@ -3963,16 +4057,16 @@ int main(int argc, char *argv[]) {
       fprintf(stderr, "[ERROR] illegal target result value (%d=>%d)\n", i, hydra_targets[i]->done);
     }
 
-  printf("%d of %d target%s%scompleted, %lu valid password", 
+  printf("%d of %d target%s%scompleted, %" hPRIu64 " valid password",
          hydra_brains.targets - j - k - error, hydra_brains.targets, hydra_brains.targets == 1 ? " " : "s ",
          hydra_brains.found > 0 ? "successfully " : "", hydra_brains.found);
-  printf("%s", hydra_brains.found == 1 ? "" : "s");
+  printf("%s", hydra_brains.found < 2 ? "" : "s");
   printf(" found\n");
 
   error += j;
   k = 0;
-  for (j = 0; j < hydra_options.max_use; j++)
-    if (hydra_heads[j]->active == HEAD_ACTIVE)
+  for (i = 0; i < hydra_options.max_use; i++)
+    if (hydra_heads[i]->active == HEAD_ACTIVE)
       k++;
 
   if (error == 0 && k == 0) {
@@ -4017,13 +4111,9 @@ int main(int argc, char *argv[]) {
     strncat(json_error,tmp_str,STRMAX);
     strncat(json_error,"\"",STRMAX);
     error = 1;
-    if (*json_error) {
-      strncat(json_error,", ", STRMAX);
-    }
-    error = 1;
   }
   if (error) {
-    snprintf(tmp_str, STRMAX, "[ERROR] %d target%s did not complete", j, j == 1 ? "" : "s");
+    snprintf(tmp_str, STRMAX, "[ERROR] %d target%s did not complete", j, j < 1 ? "" : "s");
     fprintf(stderr, "%s\n", tmp_str);
     if (*json_error) {
       strncat(json_error,", ", STRMAX);
@@ -4037,7 +4127,7 @@ int main(int argc, char *argv[]) {
   printf("%s (%s) finished at %s\n", PROGRAM, RESOURCE, hydra_build_time());
   if (hydra_brains.ofp != NULL && hydra_brains.ofp != stdout) {
     if (hydra_options.outfile_format == FORMAT_JSONV1) {
-      fprintf(hydra_brains.ofp, "\n\t],\n\"success\": %s,\n\"errormessages\": [ %s ],\n\"quantityfound\": %lu   }\n",
+      fprintf(hydra_brains.ofp, "\n\t],\n\"success\": %s,\n\"errormessages\": [ %s ],\n\"quantityfound\": %" hPRIu64 "   }\n",
               (error ? "false" : "true"), json_error, hydra_brains.found);
     } 
     fclose(hydra_brains.ofp);

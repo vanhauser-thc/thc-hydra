@@ -40,6 +40,8 @@ LOCAL_SRC_FILES:= \
 	hydra-irc.c\
 	hydra-ldap.c\
 	hydra-mod.c\
+	hydra-memcached.c\
+	hydra-mongodb.c\
 	hydra-mssql.c\
 	hydra-mysql.c\
 	hydra-ncp.c\
@@ -90,7 +92,8 @@ LOCAL_STATIC_LIBRARIES := \
 	libiconv\
 	libneon\
 	libssl_static\
-	libcrypto_static
+	libcrypto_static\
+	libmemcached
 						
 LOCAL_SHARED_LIBRARIES := \
 	libsqlite\

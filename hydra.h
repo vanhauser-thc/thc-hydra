@@ -3,11 +3,18 @@
 #include <stdio.h>
 #ifdef __sun
   #include <sys/int_types.h>
-#elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX)
+#elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX) || defined(__APPLE__)
   #include <inttypes.h>
 #else
   #include <stdint.h>
 #endif
+
+#if defined(_INTTYPES_H) || defined(__CLANG_INTTYPES_H)
+  #define hPRIu64 PRIu64
+#else
+  #define hPRIu64 "lu"
+#endif
+
 #include <string.h>
 #include <stdarg.h>
 #include <unistd.h>
@@ -144,6 +151,9 @@
 #define PORT_RPCAP       2002
 #define PORT_RPCAP_SSL   2002
 #define PORT_RADMIN2    4899
+#define PORT_MCACHED    11211
+#define PORT_MCACHED_SSL    11211
+#define PORT_MONGODB    27017
 
 #define False 0
 #define True  1
@@ -211,6 +221,7 @@ typedef struct {
   char *service;
   char bfg;
   _Bool rainy;
+  int32_t skip_redo;
 } hydra_option;
 
 #define _HYDRA_H

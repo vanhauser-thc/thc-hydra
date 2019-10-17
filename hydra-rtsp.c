@@ -78,9 +78,11 @@ void create_core_packet(int32_t control, char *ip, int32_t port) {
 }
 int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
-  char *login, *pass, buffer[500], buffer2[500];
-
+  char *login, *pass, buffer[1030], buffer2[500];
   char *lresp;
+
+  memset(buffer, 0, sizeof(buffer));
+  memset(buffer2, 0, sizeof(buffer2));
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -95,12 +97,13 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
   lresp = hydra_receive_line(s);
 
   if (lresp == NULL) {
-    fprintf(stderr, "[ERROR] no server reply");
+    hydra_report(stderr, "[ERROR] no server reply\n");
     return 1;
   }
 
   if (is_NotFound(lresp)) {
-    printf("[INFO] Server does not need credentials\n");
+    free(lresp);
+    hydra_report(stderr, "[INFO] Server does not need credentials\n");
     hydra_completed_pair_found();
     if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0) {
       return 3;
@@ -112,40 +115,47 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
     if (use_Basic_Auth(lresp) == 1) {
 
-      sprintf(buffer2, "%.260s:%.260s", login, pass);
+      free(lresp);
+      sprintf(buffer2, "%.249s:%.249s", login, pass);
       hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
 
-      sprintf(buffer, "%sAuthorization: : Basic %s\r\n\r\n", packet2, buffer2);
+      sprintf(buffer, "%.500sAuthorization: : Basic %.500s\r\n\r\n", packet2, buffer2);
 
       if (debug) {
         hydra_report(stderr, "C:%s\n", buffer);
       }
     }
+    else {
+      if (use_Digest_Auth(lresp) == 1) {
+        char *dbuf = NULL;
+        char aux[500] = "";
+        char *pbuffer = hydra_strcasestr(lresp, "WWW-Authenticate: Digest ");
 
-    if (use_Digest_Auth(lresp) == 1) {
-      char *dbuf = NULL;
-      char aux[500] = "";
-
-      char *pbuffer = hydra_strcasestr(lresp, "WWW-Authenticate: Digest ");
-
-      strncpy(aux, pbuffer + strlen("WWW-Authenticate: Digest "), sizeof(buffer));
-      aux[sizeof(aux) - 1] = '\0';
+        strncpy(aux, pbuffer + strlen("WWW-Authenticate: Digest "), sizeof(aux));
+        aux[sizeof(aux) - 1] = '\0';
+        free(lresp);
 #ifdef LIBOPENSSL
-      sasl_digest_md5(dbuf, login, pass, aux, miscptr, "rtsp", hydra_address2string(ip), port, "");
+        sasl_digest_md5(dbuf, login, pass, aux, miscptr, "rtsp", hydra_address2string(ip), port, "");
 #else
-      printf("[ERROR] Digest auth required but compiled without OpenSSL/MD5 support\n");
-      return 3;
+        hydra_report(stderr, "[ERROR] Digest auth required but compiled without OpenSSL/MD5 support\n");
+        return 3;
 #endif
 
-      if (dbuf == NULL) {
-        fprintf(stderr, "[ERROR] digest generation failed\n");
-        return 3;
-      }
-      sprintf(buffer, "%sAuthorization: Digest %s\r\n\r\n", packet2, dbuf);
+        if (dbuf == NULL) {
+          hydra_report(stderr, "[ERROR] digest generation failed\n");
+          return 3;
+        }
+        sprintf(buffer, "%.500sAuthorization: Digest %.500s\r\n\r\n", packet2, dbuf);
 
-      if (debug) {
-        hydra_report(stderr, "C:%s\n", buffer);
+        if (debug) {
+          hydra_report(stderr, "C:%s\n", buffer);
+        }
       }
+    }
+
+    if (strlen(buffer) == 0) {
+      hydra_report(stderr, "[ERROR] could not identify HTTP authentication used\n");
+      return 1;
     }
 
     if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
@@ -153,11 +163,15 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
     }
 
     lresp = NULL;
-
     lresp = hydra_receive_line(s);
+  
+    if (lresp == NULL) {
+      hydra_report(stderr, "[ERROR] no server reply\n");
+      return 1;
+    }
 
     if ((is_NotFound(lresp))) {
-
+      free(lresp);
       hydra_completed_pair_found();
 
       if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0) {
@@ -165,8 +179,8 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
       }
       return 1;
 
-
     }
+    free(lresp);
     hydra_completed_pair();
   }
 

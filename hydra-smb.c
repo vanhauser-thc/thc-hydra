@@ -1212,7 +1212,7 @@ int32_t start_smb(int32_t s, char *ip, int32_t port, unsigned char options, char
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
 
-  strcpy(ipaddr_str, hydra_address2string(ip));
+  strncpy(ipaddr_str, hydra_address2string(ip), sizeof(ipaddr_str) - 1);
 
   SMBSessionRet = SMBSessionSetup(s, login, pass, miscptr);
   if (SMBSessionRet == -1)
@@ -1240,38 +1240,32 @@ int32_t start_smb(int32_t s, char *ip, int32_t port, unsigned char options, char
     hydra_report(stderr, "[ERROR] Invalid parameter status received, either the account or the method used are not valid\n");
     hydra_completed_pair_skip();
   } else if (SMBerr == 0x00006E) {      /* Valid password, GPO Disabling Remote Connections Using NULL Passwords */
-    if (verbose)
-      hydra_report(stderr, "[VERBOSE] Valid password, GPO Disabling Remote Connections Using NULL Passwords\n");
+    hydra_report(stdout, "[%d][smb] Host: %s Account: %s Valid password, GPO Disabling Remote Connections Using NULL Passwords\n", port, ipaddr_str, login);
     hydra_report_found_host(port, ip, "smb", fp);
     hydra_completed_pair_found();
   } else if (SMBerr == 0x00015B) {      /* Valid password, GPO "Deny access to this computer from the network" */
-    if (verbose)
-      hydra_report(stderr, "[VERBOSE] Valid password, GPO Deny access to this computer from the network\n");
+    hydra_report(stdout, "[%d][smb] Host: %s Account: %s Valid password, GPO Deny access to this computer from the network\n", port, ipaddr_str, login);
     hydra_report_found_host(port, ip, "smb", fp);
     hydra_completed_pair_found();
   } else if (SMBerr == 0x000193) {      /* Valid password, account expired  */
-    if (verbose)
-      hydra_report(stderr, "[VERBOSE] Valid password, account expired\n");
+    hydra_report(stdout, "[%d][smb] Host: %s Account: %s Valid password, account expired\n", port, ipaddr_str, login);
     hydra_report_found_host(port, ip, "smb", fp);
     hydra_completed_pair_found();
   } else if ((SMBerr == 0x000224) || (SMBerr == 0xC20002)) {    /* Valid password, account expired  */
-    if (verbose)
-      hydra_report(stderr, "[VERBOSE] Valid password, password expired and must be changed on next logon\n");
+    hydra_report(stdout, "[%d][smb] Host: %s Account: %s Valid password, password expired and must be changed on next logon\n", port, ipaddr_str, login);
     hydra_report_found_host(port, ip, "smb", fp);
     hydra_completed_pair_found();
   } else if ((SMBerr == 0x00006F) || (SMBerr == 0xC10002)) {    /* Invalid logon hours  */
-    if (verbose)
-      hydra_report(stderr, "[VERBOSE] Valid password, but logon hours invalid\n");
+    hydra_report(stdout, "[%d][smb] Host: %s Account: %s Valid password, but logon hours invalid\n", port, ipaddr_str, login);
     hydra_report_found_host(port, ip, "smb", fp);
     hydra_completed_pair_found();
   } else if (SMBerr == 0x050001) {      /* AS/400 -- Incorrect password */
-    if (verbose)
-      fprintf(stderr, "[%d][smb] Host: %s Account: %s Error: Incorrect password or account disabled\n", port, ipaddr_str, login);
+    hydra_report(stdout, "[%d][smb] Host: %s Account: %s Error: Incorrect password or account disabled\n", port, ipaddr_str, login);
     if ((miscptr) && (strstr(miscptr, "LM")))
       hydra_report(stderr, "[INFO] LM dialect may be disabled, try LMV2 instead\n");
     hydra_completed_pair_skip();
   } else if (SMBerr == 0x000024) {      /* change password on next login [success] */
-    fprintf(stderr, "[%d][smb] Host: %s Account: %s Error: ACCOUNT_CHANGE_PASSWORD\n", port, ipaddr_str, login);
+    hydra_report(stdout, "[%d][smb] Host: %s Account: %s Error: ACCOUNT_CHANGE_PASSWORD\n", port, ipaddr_str, login);
     hydra_completed_pair_found();
   } else if (SMBerr == 0x00006D) {      /* STATUS_LOGON_FAILURE */
     hydra_completed_pair();

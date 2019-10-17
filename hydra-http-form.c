@@ -50,10 +50,12 @@ Added fail or success condition, getting cookies, and allow 5 redirections by da
 */
 
 #include "hydra-http.h"
+#include "sasl.h"
 
 extern char *HYDRA_EXIT;
 char *buf;
 char *cond;
+extern int32_t http_auth_mechanism;
 
 struct header_node {
   char *header;
@@ -323,7 +325,7 @@ void hdrrep(ptr_header_node *ptr_head, char *oldvalue, char *newvalue) {
       if (cur_ptr->value)
         strcpy(cur_ptr->value, newvalue);
       else {
-        hydra_report(stderr, "[ERROR] Out of memory (hddrep).");
+        hydra_report(stderr, "[ERROR] Out of memory (hddrep).\n");
         hydra_child_exit(0);
       }
     }
@@ -342,7 +344,7 @@ void hdrrepv(ptr_header_node *ptr_head, char *hdrname, char *new_value) {
       if (cur_ptr->value)
         strcpy(cur_ptr->value, new_value);
       else {
-        hydra_report(stderr, "[ERROR] Out of memory (hdrrepv %lu)", strlen(new_value) + 1);
+        hydra_report(stderr, "[ERROR] Out of memory (hdrrepv %lu)\n", strlen(new_value) + 1);
         hydra_child_exit(0);
       }
     }
@@ -397,6 +399,29 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
    */
   while (*miscptr != 0) {
     switch (miscptr[0]) {
+    case 'a':                  // fall through
+    case 'A':                  // only for http, not http-form!
+      ptr = miscptr + 2;
+
+      if (strncasecmp(ptr, "NTLM", 4) == 0)
+        http_auth_mechanism = AUTH_NTLM;
+      else if (strncasecmp(ptr, "MD5", 3) == 0 || strncasecmp(ptr, "DIGEST", 6) == 0)
+        http_auth_mechanism = AUTH_DIGESTMD5;
+      else if (strncasecmp(ptr, "BASIC", 4) == 0)
+        http_auth_mechanism = AUTH_BASIC;
+      else
+        fprintf(stderr, "[WARNING] unknown http auth type: %s\n", ptr);
+
+      while (*ptr != 0 && *ptr != ':')
+        ptr++;
+
+      if (*ptr != 0) {
+        *ptr = 0;
+        ptr += 1;
+      }
+
+      miscptr = ptr;
+      break;
     case 'c':                  // fall through
     case 'C':
       ptr = miscptr + 2;
@@ -416,7 +441,7 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
         *(ptr - 1) = 0;
       if (*ptr != 0) {
         *ptr = 0;
-        ptr += 2;
+        ptr += 1;
       }
       ptr2 = ptr;
       while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
@@ -434,7 +459,7 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
         break;
       }
       // Error: abort execution
-      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (h).");
+      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (h).\n");
       return 0;
     case 'H':
       // add a new header, or replace an existing one's value
@@ -447,7 +472,7 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
 
       if (*ptr != 0) {
         *ptr = 0;
-        ptr += 2;
+        ptr += 1;
       }
       ptr2 = ptr;
       while (*ptr2 != 0 && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
@@ -465,7 +490,7 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
         break;
       }
       // Error: abort execution
-      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (H).");
+      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (H).\n");
       return 0;
       // no default
     }
@@ -1079,6 +1104,7 @@ void service_http_form(char *ip, int32_t sp, unsigned char options, char *miscpt
    *    - 3 -> Disconnect and end with success.
    *    - 4 -> Disconnect and end with error.
    */
+
   while (1) {
     if (run == 2) {
       if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0) {
@@ -1235,11 +1261,18 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     ptr++;
   if (*ptr != 0)
     *ptr++ = 0;
-  cond = ptr;
+
+  if ((ptr2 = rindex(ptr, ':')) != NULL) {
+    cond = ptr2 + 1;
+    *ptr2 = 0;
+  } else
+    cond = ptr;
+/*
   while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
     ptr++;
   if (*ptr != 0)
     *ptr++ = 0;
+*/
   optional1 = ptr;
   if (strstr(url, "\\:") != NULL) {
     if ((ptr = malloc(strlen(url))) != NULL) {
@@ -1281,6 +1314,8 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     success_cond = 0;
   }
 
+  //printf("miscptr: %s, url=%s, variables=%s, ptr=%s, optional1: %s, cond: %s (%d)\n", miscptr, url, variables, ptr, optional1, cond, success_cond);
+
   /*
    * Parse the user-supplied options.
    * Beware of the backslashes (\)!
@@ -1299,7 +1334,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
       strncat(proxy_string, proxy_authentication[selected_proxy], strlen(proxy_authentication[selected_proxy]) - 6);
       add_header(&ptr_head, "Proxy-Authorization", proxy_string, HEADER_TYPE_DEFAULT);
     } else {
-      hydra_report(stderr, "Out of memory for \"Proxy-Authorization\" header.");
+      hydra_report(stderr, "Out of memory for \"Proxy-Authorization\" header.\n");
       return NULL;
     }
     if (getcookie) {
@@ -1362,7 +1397,7 @@ void usage_http_form(const char *service) {
          " This is where most people get it wrong. You have to check the webapp what a\n"
          " failed string looks like and put it in this parameter!\n"
          "The following parameters are optional:\n"
-         " C=/page/uri     to define a different page to gather initial cookies from\n"
+         " (c|C)=/page/uri     to define a different page to gather initial cookies from\n"
          " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each request\n"
          "                 ^USER[64]^ and ^PASS[64]^ can also be put into these headers!\n"
          "                 Note: 'h' will add the user-defined header at the end\n"

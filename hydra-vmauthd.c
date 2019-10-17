@@ -134,6 +134,7 @@ void service_vmauthd(char *ip, int32_t sp, unsigned char options, char *miscptr,
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       hydra_child_exit(0);
+      break;
     default:
       hydra_report(stderr, "[ERROR] Caught unknown return code, exiting!\n");
       hydra_child_exit(2);

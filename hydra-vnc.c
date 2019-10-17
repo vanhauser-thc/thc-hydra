@@ -77,6 +77,7 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
   case 0x0:
     hydra_report(stderr, "[ERROR] VNC server told us to quit %c\n", buf[3]);
     hydra_child_exit(0);
+    break;
   case 0x1:
     hydra_report(fp, "VNC server does not require authentication.\n");
     if (fp != stdout)
@@ -84,6 +85,7 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
     hydra_report_found_host(port, ip, "vnc", fp);
     hydra_completed_pair_found();
     hydra_child_exit(2);
+    break;
   case 0x2:
     //VNC security type supported is the only type supported for now
     if (vnc_client_version == RFB37) {
@@ -108,7 +110,7 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
     }
     break;
   default:
-    hydra_report(stderr, "[ERROR] unknown VNC security type\n");
+    hydra_report(stderr, "[ERROR] unknown VNC security type 0x%x\n", buf2[3]);
     hydra_child_exit(2);
   }
 
@@ -194,8 +196,8 @@ void service_vnc(char *ip, int32_t sp, unsigned char options, char *miscptr, FIL
       }
       if (verbose)
         hydra_report(stderr, "[VERBOSE] Server banner is %s\n", buf);
-      if (((strstr(buf, "RFB 004.001") != NULL) || (strstr(buf, "RFB 003.007") != NULL) || (strstr(buf, "RFB 003.008") != NULL))) {
-        //using proto version 003.008 to talk to server 004.001 same for 3.7 and 3.8
+      if (((strstr(buf, "RFB 005.000") != NULL) || (strstr(buf, "RFB 004") != NULL) || (strstr(buf, "RFB 003.007") != NULL) || (strstr(buf, "RFB 003.008") != NULL))) {
+        //using proto version 003.007 to talk to server 005.xxx and 004.xxx same for 3.7 and 3.8
         vnc_client_version = RFB37;
         free(buf);
         buf = strdup("RFB 003.007\n");

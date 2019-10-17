@@ -33,7 +33,7 @@ int32_t do_retry = 1;
 int32_t module_auth_type = -1;
 int32_t intern_socket, extern_socket;
 char pair[260];
-char HYDRA_EXIT[5] = "\x00\xff\x00\xff\x00";
+char *HYDRA_EXIT = "\x00\xff\x00\xff\x00";
 char *HYDRA_EMPTY = "\x00\x00\x00\x00";
 char *fe80 = "\xfe\x80\x00";
 int32_t fail = 0;
@@ -85,7 +85,7 @@ void interrupt() {
 
 /* ----------------- internal functions ----------------- */
 
-int32_t internal__hydra_connect(char *host, int32_t port, int32_t protocol, int32_t type) {
+int32_t internal__hydra_connect(char *host, int32_t port, int32_t type, int32_t protocol) {
   int32_t s, ret = -1, ipv6 = 0, reset_selected = 0;
 
 #ifdef AF_INET6
@@ -102,6 +102,8 @@ int32_t internal__hydra_connect(char *host, int32_t port, int32_t protocol, int3
     selected_proxy = random() % proxy_count;
   }    
 
+  memset(&target, 0, sizeof(target));
+  memset(&sin, 0, sizeof(sin));
 #ifdef AF_INET6
   memset(&target6, 0, sizeof(target6));
   memset(&sin6, 0, sizeof(sin6));
@@ -111,10 +113,10 @@ int32_t internal__hydra_connect(char *host, int32_t port, int32_t protocol, int3
 
 #ifdef AF_INET6
   if (ipv6)
-    s = socket(AF_INET6, protocol, type);
+    s = socket(AF_INET6, type, protocol);
   else
 #endif
-    s = socket(PF_INET, protocol, type);
+    s = socket(PF_INET, type, protocol);
   if (s >= 0) {
     if (src_port != 0) {
       int32_t bind_ok = 0;
@@ -468,7 +470,7 @@ RSA *ssl_temp_rsa_cb(SSL * ssl, int32_t export, int32_t keylength) {
 #if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10100000L
   BIGNUM *n;
   n = BN_new();
-  RSA_get0_key(rsa, &n, NULL, NULL);
+  RSA_get0_key(rsa, (const struct bignum_st **)&n, NULL, NULL);
   ok = BN_zero(n);
 #else
   if (rsa->n == 0)
@@ -580,10 +582,10 @@ int32_t internal__hydra_connect_to_ssl(int32_t socket, char *hostname) {
   return socket;
 }
 
-int32_t internal__hydra_connect_ssl(char *host, int32_t port, int32_t protocol, int32_t type, char *hostname) {
+int32_t internal__hydra_connect_ssl(char *host, int32_t port, int32_t type, int32_t protocol, char *hostname) {
   int32_t socket;
 
-  if ((socket = internal__hydra_connect(host, port, protocol, type)) < 0)
+  if ((socket = internal__hydra_connect(host, port, type, protocol)) < 0)
     return -1;
 
   return internal__hydra_connect_to_ssl(socket, hostname);
@@ -935,74 +937,73 @@ int32_t hydra_recv_nb(int32_t socket, char *buf, uint32_t length) {
 }
 
 char *hydra_receive_line(int32_t socket) {
-  char buf[1024], *buff, *buff2, text[64];
-  int32_t i, j = 1, k, got = 0;
+  char buf[1024], *buff, *buff2, pid[64];
+  int32_t i, j, k, got = 0;
 
   if ((buff = malloc(sizeof(buf))) == NULL) {
     fprintf(stderr, "[ERROR] could not malloc\n");
     return NULL;
   }
+
   memset(buff, 0, sizeof(buf));
+
   if (debug)
     printf("[DEBUG] hydra_receive_line: waittime: %d, conwait: %d, socket: %d, pid: %d\n", waittime, conwait, socket, getpid());
 
   if ((i = hydra_data_ready_timed(socket, (long) waittime, 0)) > 0) {
-    if ((got = internal__hydra_recv(socket, buff, sizeof(buf) - 1)) < 0) {
+    do {
+      j = internal__hydra_recv(socket, buf, sizeof(buf) - 1);
+      if (j > 0) {
+        for (k = 0; k < j; k++)
+          if (buf[k] == 0)
+            buf[k] = 32;
+
+        buf[j] = 0;
+
+        if ((buff2 = realloc(buff, got + j + 1)) == NULL) {
+          free(buff);
+          return NULL;
+        }
+
+        buff = buff2;
+        memcpy(buff + got, &buf, j + 1);
+        got += j;
+        buff[got] = 0;
+      } else if (j < 0) {
+        // some error occured
+        got = -1;
+      }
+    } while (hydra_data_ready(socket) > 0 && j > 0
+#ifdef LIBOPENSSL
+       || use_ssl && SSL_pending(ssl)
+#endif
+        );
+
+    if (got > 0) {
+      if (debug) {
+        sprintf(pid, "[DEBUG] RECV [pid:%d]", getpid());
+        hydra_dump_data(buff, got, pid);
+        //hydra_report_debug(stderr, "DEBUG_RECV_BEGIN [pid:%d len:%d]|%s|END", getpid(), got, buff);
+      }
+    } else {
+      if (got < 0) {
+        if (debug) {
+          sprintf(pid, "[DEBUG] RECV [pid:%d]", getpid());
+          hydra_dump_data((unsigned char*)"", -1, pid);
+          //hydra_report_debug(stderr, "DEBUG_RECV_BEGIN||END [pid:%d %d]", getpid(), i);
+          perror("recv");
+        }
+      }
       free(buff);
       return NULL;
     }
+
+    usleepn(100);
   } else {
     if (debug)
       printf("[DEBUG] hydra_data_ready_timed: %d, waittime: %d, conwait: %d, socket: %d\n", i, waittime, conwait, socket);
   }
 
-  if (got < 0) {
-    if (debug) {
-      sprintf(text, "[DEBUG] RECV [pid:%d]", getpid());
-      hydra_dump_data((unsigned char*)"", -1, text);
-      //hydra_report_debug(stderr, "DEBUG_RECV_BEGIN||END [pid:%d %d]", getpid(), i);
-      perror("recv");
-    }
-    free(buff);
-    return NULL;
-  } else {
-    if (got > 0) {
-      for (k = 0; k < got; k++)
-        if (buff[k] == 0)
-          buff[k] = 32;
-      buff[got] = 0;
-      usleepn(100);
-    }
-  }
-
-  while (hydra_data_ready(socket) > 0 && j > 0) {
-    j = internal__hydra_recv(socket, buf, sizeof(buf) - 1);
-    if (j > 0) {
-      for (k = 0; k < j; k++)
-        if (buf[k] == 0)
-          buf[k] = 32;
-      buf[j] = 0;
-      if ((buff2 = realloc(buff, got + j + 1)) == NULL) {
-        free(buff);
-        return NULL;
-      } else
-        buff = buff2;
-      memcpy(buff + got, &buf, j + 1);
-      got += j;
-      buff[got] = 0;
-    }
-    usleepn(100);
-  }
-
-  if (debug) {
-    sprintf(text, "[DEBUG] RECV [pid:%d]", getpid());
-    hydra_dump_data(buff, got, text);
-    //hydra_report_debug(stderr, "DEBUG_RECV_BEGIN [pid:%d len:%d]|%s|END", getpid(), got, buff);
-  }
-  if (got == 0) {
-    free(buff);
-    return NULL;
-  }
   return buff;
 }
 

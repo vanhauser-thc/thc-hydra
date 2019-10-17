@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# uname -s = Linux | OpenBSD | FreeBSD
+# uname -s = Linux | OpenBSD | FreeBSD | Darwin
 # uname -m = i636 or x86_64
 
 if [ "$1" = "-h" -o "$1" = "--help" ]; then
@@ -38,6 +38,7 @@ WSSL_LIB_PATH=""
 CURSES_PATH=""
 CURSES_IPATH=""
 CRYPTO_PATH=""
+GPGERROR_IPATH=""
 IDN_PATH=""
 IDN_IPATH=""
 PR29_IPATH=""
@@ -48,6 +49,12 @@ FIREBIRD_PATH=""
 FIREBIRD_IPATH=""
 MYSQL_PATH=""
 MYSQL_IPATH=""
+MCACHED_PATH=""
+MCACHED_IPATH=""
+MONGODB_PATH=""
+MONGODB_IPATH=""
+BSON_PATH=""
+BSON_IPATH=""
 AFP_PATH=""
 AFP_IPATH=""
 NCP_PATH=""
@@ -63,6 +70,8 @@ NSL_PATH=""
 SOCKET_PATH=""
 MANDIR=""
 XHYDRA_SUPPORT=""
+FREERDP2_PATH=""
+WINPR2_PATH=""
 
 if [ '!' "X" = "X$*" ]; then
   while [ $# -gt 0 ] ; do
@@ -117,6 +126,7 @@ echo "Starting hydra auto configuration ..."
 rm -f Makefile.in
 SYSS=`uname -s 2> /dev/null`
 SYSO=`uname -o 2> /dev/null`
+SYSM=`uname -m 2> /dev/null`
 if [ "$SYSS" = "Linux" -o "$SYSS" = "OpenBSD" -o "$SYSS" = "FreeBSD" -o "$SYSS" = "NetBSD" -o "$SYSS" = "Darwin" ]; then
   SF=`uname -m | grep 64`
   if [ `uname -m` = "s390x" ]; then
@@ -252,21 +262,32 @@ if [ "$SSL_IPATH" = "/usr/include" ]; then
     SSL_IPATH=""
 fi
 
-echo "Checking for gcrypt (libgcrypt.so) ..."
+echo "Checking for gcrypt (libgcrypt.so, gpg-error.h) ..."
 for i in $LIBDIRS ; do
-    if [ "X" = "X$GCRYPT_PATH" ]; then
-        if [ -f "$i/libgcrypt.so" -o -f "$i/libgcrypt.dylib" -o -f "$i/libgcrypt.a" -o -f "$i/libgcrypt.dll.a" -o -f "$i/libgcrypt.la" ]; then
+    if [ -f "$i/libgcrypt.so" -o -f "$i/libgcrypt.dylib" -o -f "$i/libgcrypt.a" -o -f "$i/libgcrypt.dll.a" -o -f "$i/libgcrypt.la" ]; then
 	  HAVE_GCRYPT="y"
+    fi
+done
+
+for i in $INCDIRS ; do
+    if [ "X" = "X$GPGERROR_IPATH" ]; then
+        TMP_PATH=`/bin/ls $i/$SYSM*/gpg-error.h 2> /dev/null`
+        if [ -n "$TMP_PATH" ]; then
+            GPGERROR_IPATH="$i"
+        else
+            if [ -f "$i/gpg-error.h" ]; then
+                GPGERROR_IPATH="$i"
+            fi
         fi
     fi
 done
-if [ -n "$HAVE_GCRYPT" ]; then
-   echo "                                        ... found"
+
+if [ -n "$HAVE_GCRYPT" -a "X" != "X$GPGERROR_IPATH" ]; then
+    echo "                                        ... found"
 else
-   echo "                                        ... gcrypt not found, radmin2 module disabled"
+    echo "                                        ... gcrypt not found, radmin2 module disabled"
+    HAVE_GCRYPT=""
 fi
-
-
 
 echo "Checking for idn (libidn.so) ..."
 for i in $LIBDIRS ; do
@@ -549,6 +570,10 @@ for i in $INCDIRS ; do
         fi
     fi  
 done
+SYS_PARAM=""
+if [ -f "$SDK_PATH/usr/include/sys/param.h" ]; then
+  SYS_PARAM=-DHAVE_SYS_PARAM_H
+fi
 if [ "X" != "X$DEBUG" ]; then
    echo DEBUG: SVN_PATH=$SVN_PATH/libsvn_client-1
    echo DEBUG: APR_PATH=$APR_PATH/libapr
@@ -940,6 +965,218 @@ if [ "X" = "X$ORACLE_PATH" -o "X" = "X$ORACLE_IPATH" ]; then
     ORACLE_IPATH=""
 fi
 
+echo "Checking for Memcached (libmemcached.so, memcached.h) ..."
+
+  for i in $LIBDIRS ; do
+    if [ "X" = "X$MCACHED_PATH" ]; then
+        if [ -f "$i/libmemcached.so" -o -f "$i/libmemcached.dylib" -o -f "$i/libmemcached.a" ]; then
+            MCACHED_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$MCACHED_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libmemcached.so* 2> /dev/null | grep memcached`
+        if [ -n "$TMP_LIB" ]; then
+          MCACHED_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$MCACHED_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libmemcached.dll* 2> /dev/null | grep memcached`
+        if [ -n "$TMP_LIB" ]; then
+          MCACHED_PATH="$i"
+        fi
+    fi
+  done
+
+  MCACHED_IPATH=
+  for i in $INCDIRS ; do
+    if [ "X" = "X$MCACHED_IPATH" ]; then
+        if [ -f "$i/memcached.h" ]; then
+            MCACHED_IPATH="$i"
+        fi
+        if [ -f "$i/libmemcached/memcached.h" ]; then
+            MCACHED_IPATH="$i/libmemcached"
+        fi
+        if [ -f "$i/libmemcached-1.0/memcached.h" ]; then
+            MCACHED_IPATH="$i/libmemcached-1.0"
+        fi
+    fi
+  done
+
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: MCACHED_PATH=$MCACHED_PATH/libmemcached
+   echo DEBUG: MCACHED_IPATH=$MCACHED_IPATH/memcached.h
+fi
+  if [ -n "$MCACHED_PATH" -a -n "$MCACHED_IPATH" ]; then
+    echo "                                             ... found"
+  fi
+  if [ "X" = "X$MCACHED_PATH" -o "X" = "X$MCACHED_IPATH" ]; then
+    echo "                                             ... NOT found, module memcached disabled"
+    MCACHED_PATH=""
+    MCACHED_IPATH=""
+  fi
+
+
+echo "Checking for Freerdp2 (libfreerdp2.so, freerdp/*.h, libwinpr2.so, winpr/*.h) ..."
+
+  for i in $LIBDIRS ; do
+    if [ "X" = "X$FREERDP2_PATH" ]; then
+        if [ -f "$i/libfreerdp2.so" -o -f "$i/libfreerdp2.dylib" -o -f "$i/libfreerdp2.a" ]; then
+            FREERDP2_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$FREERDP2_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libfreerdp2*.so* 2> /dev/null | grep libfreerdp2`
+        if [ -n "$TMP_LIB" ]; then
+          FREERDP2_PATH="$i"
+        fi
+    fi
+  done
+
+  FREERDP2_IPATH=
+  for i in $INCDIRS ; do
+    if [ "X" = "X$FREERDP2_IPATH" ]; then
+        if [ -f "$i/freerdp/freerdp.h" ]; then
+            FREERDP2_IPATH="$i/freerdp2"
+        fi
+        if [ -f "$i/freerdp2/freerdp/freerdp.h" ]; then
+            FREERDP2_IPATH="$i/freerdp2"
+        fi
+    fi
+  done
+
+ for i in $LIBDIRS ; do
+    if [ "X" = "X$WINPR2_PATH" ]; then
+        if [ -f "$i/libwinpr2.so" -o -f "$i/libwinpr2.dylib" -o -f "$i/libwinpr2.a" ]; then
+            WINPR2_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$WINPR2_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/winpr.dll* 2> /dev/null | grep winpr`
+        if [ -n "$TMP_LIB" ]; then
+          WINPR2_PATH="$i"
+        fi
+    fi
+  done
+
+  WINPR2_IPATH=
+  for i in $INCDIRS ; do
+    if [ "X" = "X$WINPR2_IPATH" ]; then
+        if [ -f "$i/winpr.h" ]; then
+            WINPR2_IPATH="$i"
+        fi
+        if [ -f "$i/winpr2/winpr/winpr.h" ]; then
+            WINPR2_IPATH="$i/winpr2"
+        fi
+    fi
+  done
+
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: FREERDP2_PATH=$FREERDP2_PATH/
+   echo DEBUG: FREERDP2_IPATH=$FREERDP2_IPATH/
+   echo DEBUG: WINPR2_PATH=$WINPR2_PATH/
+   echo DEBUG: WINPR2_IPATH=$WINPR2_IPATH/
+fi
+
+  if [ -n "$FREERDP2_PATH" -a -n "$FREERDP2_IPATH" -a -n "$WINPR2_PATH" -a -n "$WINPR2_IPATH" ]; then
+    echo "                                             ... found"
+  fi
+  if [ "X" = "X$FREERDP2_PATH" -o "X" = "X$FREERDP2_IPATH" -o "X" = "X$WINPR2_PATH" -o "X" = "X$WINPR2_IPATH" ]; then
+    echo "                                             ... NOT found, module rdp disabled"
+    FREERDP2_PATH=""
+    FREERDP2_IPATH=""
+    WINPR2_PATH=""
+    WINPR2_IPATH=""
+  fi
+
+echo "Checking for Mongodb (libmongoc-1.0.so, mongoc.h, libbson-1.0.so, bson.h) ..."
+
+  for i in $LIBDIRS ; do
+    if [ "X" = "X$MONGODB_PATH" ]; then
+        if [ -f "$i/libmongoc-1.0.so" -o -f "$i/libmongoc-1.0.dylib" -o -f "$i/libmongoc-1.0.a" ]; then
+            MONGODB_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$MONGODB_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libmongoc-*.so* 2> /dev/null | grep mongoc`
+        if [ -n "$TMP_LIB" ]; then
+          MONGODB_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$MONGODB_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libmongoc.dll* 2> /dev/null | grep mongoc`
+        if [ -n "$TMP_LIB" ]; then
+          MONGODB_PATH="$i"
+        fi
+    fi
+  done
+
+  MONGODB_IPATH=
+  for i in $INCDIRS ; do
+    if [ "X" = "X$MONGODB_IPATH" ]; then
+        if [ -f "$i/mongoc.h" ]; then
+            MONGODB_IPATH="$i"
+        fi
+        if [ -f "$i/libmongoc/mongoc.h" ]; then
+            MONGODB_IPATH="$i/libmongoc"
+        fi
+        if [ -f "$i/libmongoc-1.0/mongoc.h" ]; then
+            MONGODB_IPATH="$i/libmongoc-1.0"
+        fi
+    fi
+  done
+
+ for i in $LIBDIRS ; do
+    if [ "X" = "X$BSON_PATH" ]; then
+        if [ -f "$i/libbson-1.0.so" -o -f "$i/libbson-1.0.dylib" -o -f "$i/libbson-1.0.a" ]; then
+            BSON_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$BSON_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libbson-*.so* 2> /dev/null | grep mongoc`
+        if [ -n "$TMP_LIB" ]; then
+          BSON_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$BSON_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libbson.dll* 2> /dev/null | grep mongoc`
+        if [ -n "$TMP_LIB" ]; then
+          BSON_PATH="$i"
+        fi
+    fi
+  done
+
+  BSON_IPATH=
+  for i in $INCDIRS ; do
+    if [ "X" = "X$BSON_IPATH" ]; then
+        if [ -f "$i/bson.h" ]; then
+            BSON_IPATH="$i"
+        fi
+        if [ -f "$i/libbson/bson.h" ]; then
+            BSON_IPATH="$i/libbson"
+        fi
+        if [ -f "$i/libbson-1.0/bson.h" ]; then
+            BSON_IPATH="$i/libbson-1.0"
+        fi
+    fi
+  done
+
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: MONGODB_PATH=$MONGODB_PATH/libmongoc
+   echo DEBUG: MONGODB_IPATH=$MONGODB_IPATH/libmongoc.h
+   echo DEBUG: BSON_PATH=$BSON_PATH/libbson
+   echo DEBUG: BSON_IPATH=$BSON_IPATH/libbson.h
+fi
+
+  if [ -n "$MONGODB_PATH" -a -n "$MONGODB_IPATH" -a -n "$BSON_PATH" -a -n "$BSON_IPATH" ]; then
+    echo "                                             ... found"
+  fi
+  if [ "X" = "X$MONGODB_PATH" -o "X" = "X$MONGODB_IPATH" -o "X" = "X$BSON_PATH" -o "X" = "X$BSON_IPATH" ]; then
+    echo "                                             ... NOT found, module mongodb disabled"
+    MONGODB_PATH=""
+    MONGODB_IPATH=""
+    BSON_PATH=""
+    BSON_IPATH=""
+  fi
 
 if [ "X" = "X$XHYDRA_SUPPORT" ]; then
     echo "Checking for GUI req's (pkg-config, gtk+-2.0) ..."
@@ -1034,8 +1271,17 @@ XLIBS=""
 XLIBPATHS=""
 XIPATHS=""
 
-if [ -n "$FIREBIRD_PATH" -o -n "$PCRE_PATH" -o -n "$IDN_PATH" -o -n "$SSL_PATH" -o -n "$CRYPTO_PATH" -o -n "$NSL_PATH" -o -n "$SOCKET_PATH" -o -n "$RESOLV_PATH" -o -n "$SAPR3_PATH" -o -n "$SSH_PATH" -o -n "$POSTGRES_PATH" -o -n "$SVN_PATH" -o -n "$NCP_PATH" -o -n "$CURSES_PATH" -o -n "$ORACLE_PATH" -o -n "$AFP_PATH" -o -n "$MYSQL_PATH" ]; then
-    XLIBPATHS="-L/usr/lib -L/usr/local/lib -L/lib"
+if [ -n "$FIREBIRD_PATH" -o -n "$PCRE_PATH" -o -n "$IDN_PATH" -o -n "$SSL_PATH" -o -n "$CRYPTO_PATH" -o -n "$NSL_PATH" -o -n "$SOCKET_PATH" -o -n "$RESOLV_PATH" -o -n "$SAPR3_PATH" -o -n "$SSH_PATH" -o -n "$POSTGRES_PATH" -o -n "$SVN_PATH" -o -n "$NCP_PATH" -o -n "$CURSES_PATH" -o -n "$ORACLE_PATH" -o -n "$AFP_PATH" -o -n "$MYSQL_PATH" -o -n "$MCACHED_PATH" -o -n "$MONGOD_PATH" -o -n "$FREERDP2_PATH" -o -n "$WINPR2_PATH" ]; then
+    if [ "$SYSS" = "Darwin" ] && [ ! -d "/lib" ]; then
+        #for libraries installed with MacPorts
+        if [ -d "/opt/local/lib" ]; then
+            XLIBPATHS="-L/usr/lib -L/usr/local/lib -L/opt/local/lib"
+        else
+            XLIBPATHS="-L/usr/lib -L/usr/local/lib"
+        fi
+    else
+        XLIBPATHS="-L/usr/lib -L/usr/local/lib -L/lib"
+    fi
 fi
 if [ -n "$MYSQL_IPATH" ]; then
     XIPATHS="$XIPATHS -I$MYSQL_IPATH"
@@ -1098,10 +1344,24 @@ fi
 if [ -n "$HAVE_GCRYPT" ]; then
     XDEFINES="$XDEFINES -DHAVE_GCRYPT"
 fi
-
+if [ -n "$MCACHED_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBMCACHED"
+fi
+if [ -n "$MONGODB_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBMONGODB"
+fi
+if [ -n "$BSON_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBBSON"
+fi
+if [ -n "$FREERDP2_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBFREERDP2"
+fi
+if [ -n "$WINPR2_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBWINPR2"
+fi
 
 OLDPATH=""
-for i in $SSL_PATH $FIREBIRD_PATH $WORACLE_LIB_PATH $PCRE_PATH $IDN_PATH $CRYPTO_PATH $SSH_PATH $NSL_PATH $SOCKET_PATH $RESOLV_PATH $SAPR3_PATH $POSTGRES_PATH $SVN_PATH $NCP_PATH $CURSES_PATH $ORACLE_PATH $AFP_PATH $MYSQL_PATH; do
+for i in $SSL_PATH $FIREBIRD_PATH $WORACLE_LIB_PATH $PCRE_PATH $IDN_PATH $CRYPTO_PATH $SSH_PATH $NSL_PATH $SOCKET_PATH $RESOLV_PATH $SAPR3_PATH $POSTGRES_PATH $SVN_PATH $NCP_PATH $CURSES_PATH $ORACLE_PATH $AFP_PATH $MYSQL_PATH $MCACHED_PATH $MONGODB_PATH $BSON_PATH $FREERDP2_PATH $WINPR2_PATH; do
     if [ "$OLDPATH" = "$i" ]; then
       OLDPATH="$i"
     else
@@ -1153,6 +1413,15 @@ if [ -n "$AFP_IPATH" ]; then
 fi
 if [ -n "$ORACLE_IPATH" ]; then
     XIPATHS="$XIPATHS -I$ORACLE_IPATH"
+fi
+if [ -n "$MCACHED_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$MCACHED_IPATH"
+fi
+if [ -n "$MONGODB_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$MONGODB_IPATH -I$BSON_IPATH"
+fi
+if [ -n "$FREERDP2_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$FREERDP2_IPATH -I$WINPR2_IPATH"
 fi
 if [ -n "$HAVE_GCRYPT" ]; then
     XLIBS="$XLIBS -lgcrypt"
@@ -1217,7 +1486,21 @@ fi
 if [ -n "$RESOLV_PATH" ]; then
     XLIBS="$XLIBS -lresolv"
 fi
-
+if [ -n "$MCACHED_PATH" ]; then
+    XLIBS="$XLIBS -lmemcached"
+fi
+if [ -n "$MONGODB_PATH" ]; then
+    XLIBS="$XLIBS -lmongoc-1.0"
+fi
+if [ -n "$BSON_PATH" ]; then
+    XLIBS="$XLIBS -lbson-1.0"
+fi
+if [ -n "$FREERDP2_PATH" ]; then
+    XLIBS="$XLIBS -lfreerdp2"
+fi
+if [ -n "$WINPR2_PATH" ]; then
+    XLIBS="$XLIBS -lwinpr2"
+fi
 if [ -d /usr/kerberos/include ]; then
   XIPATHS="$XIPATHS -I/usr/kerberos/include"
 fi
@@ -1244,7 +1527,7 @@ else
 fi
 
 if [ "X" != "X$DEBUG" ]; then
-   echo DEBUG: XDEFINES=$XDEFINES $MATH
+   echo DEBUG: XDEFINES=$XDEFINES $MATH $SYS_PARAM
    echo DEBUG: XLIBS=$XLIBS
    echo DEBUG: XLIBPATHS=$XLIBPATHS
    echo DEBUG: XIPATHS=$XIPATHS
@@ -1262,7 +1545,7 @@ if [ "X" != "X$FHS" ]; then
   echo "MANDIR = /share/man/man1" >> Makefile.in
   echo "DATADIR = /share/hydra" >> Makefile.in
 fi
-echo "XDEFINES=$XDEFINES $MATH" >> Makefile.in
+echo "XDEFINES=$XDEFINES $MATH $SYS_PARAM" >> Makefile.in
 echo "XLIBS=$XLIBS" >> Makefile.in
 echo "XLIBPATHS=$XLIBPATHS" >> Makefile.in
 echo "XIPATHS=$XIPATHS" >> Makefile.in
@@ -1300,7 +1583,7 @@ if [ "x$WINDRES" = "x" ]; then
   echo HYDRA_LOGO= >> Makefile
   echo PWI_LOGO= >> Makefile
 fi
-if [ "$GCCSEC" = "yes" ] && [ "$SYSS" != "SunOS" ]; then
+if [ "$GCCSEC" = "yes" ] && [ "$SYSS" != "SunOS" ] && [ "$SYSS" != "Darwin" ]; then
   echo "SEC=$GCCSECOPT" >> Makefile
 else
   echo "SEC=" >> Makefile

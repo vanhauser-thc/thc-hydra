@@ -690,7 +690,7 @@ void on_btnSave_clicked(GtkButton * button, gpointer user_data) {
     text = gtk_text_buffer_get_text(outputbuf, &start, &end, TRUE);
 
     fd = open(filename, O_CREAT | O_TRUNC | O_WRONLY, 0644);
-    if (fd > 0) {
+    if (fd >= 0) {
       write(fd, text, strlen(text));
       close(fd);
     }
