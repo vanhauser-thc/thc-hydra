@@ -337,7 +337,6 @@ char *sck = NULL;
 int32_t prefer_ipv6 = 0, conwait = 0, loop_cnt = 0, fck = 0, options = 0, killed = 0;
 int32_t child_head_no = -1, child_socket;
 int32_t total_redo_count = 0;
-bool rainy = false;
 
 // moved for restore feature
 int32_t process_restore = 0, dont_unlink;
@@ -483,7 +482,6 @@ void help(int32_t ext) {
                     "[service://server[:PORT][/OPT]]\n");
   PRINT_NORMAL(ext, "\nOptions:\n");
   PRINT_EXTEND(ext, "  -R        restore a previous aborted/crashed session\n"
-  					"  -r		 in conjonction with -x, use rain algorythm\n"
                     "  -I        ignore an existing restore file (don't wait 10 seconds)\n"
 #ifdef LIBOPENSSL
                     "  -S        perform an SSL connect\n"
@@ -495,6 +493,7 @@ void help(int32_t ext) {
 #ifdef HAVE_MATH_H
                     "  -x MIN:MAX:CHARSET  password bruteforce generation, type \"-x -h\" to get help\n"
                     "  -y        disable use of symbols in bruteforce, see above\n"
+                    "  -r        rainy mode for password generation (-x)\n"
 #endif
                     "  -e nsr    try \"n\" null password, \"s\" login as pass and/or \"r\" reversed login\n"
                     "  -u        loop around users, not passwords (effective! implied with -x)\n");
@@ -2224,6 +2223,7 @@ int main(int argc, char *argv[]) {
   hydra_brains.ofp = stdout;
   hydra_brains.targets = 1;
   hydra_options.waittime = waittime = WAITTIME;
+  hydra_options.rainy = 0;
   bf_options.disable_symbols = 0;
 
   // command line processing
@@ -2259,7 +2259,7 @@ int main(int argc, char *argv[]) {
       hydra_restore_read();
       break;
     case 'r':
-      hydra_options.rainy = true;
+      hydra_options.rainy = 1;
       break;
     case 'I':
       ignore_restore = 1; // this is not to be saved in hydra_options!
@@ -3204,7 +3204,7 @@ int main(int argc, char *argv[]) {
         hydra_strcasestr(hydra_options.server, ".gmail.") != NULL || 
         hydra_strcasestr(hydra_options.server, "googlemail.") != NULL
        )) {
-      fprintf(stderr, "[WARNING] Google Mail and others have bruteforce and hydra detection and sends false positives. You are not doing anything illegal right?!\n");
+      fprintf(stderr, "[WARNING] Google Mail and others have bruteforce and hydra detection and sends false positives. You are not doing anything illegal right?! If you really need to bruteforce gmail, connect to pop3s://smtp.gmail.com\n");
       fprintf(stderr, "[WARNING] !read the above!\n");
       sleep(5);
     }

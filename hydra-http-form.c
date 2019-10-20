@@ -1261,18 +1261,14 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     ptr++;
   if (*ptr != 0)
     *ptr++ = 0;
+  
+  cond = ptr;
 
-  if ((ptr2 = rindex(ptr, ':')) != NULL) {
-    cond = ptr2 + 1;
-    *ptr2 = 0;
-  } else
-    cond = ptr;
-/*
   while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
     ptr++;
   if (*ptr != 0)
     *ptr++ = 0;
-*/
+
   optional1 = ptr;
   if (strstr(url, "\\:") != NULL) {
     if ((ptr = malloc(strlen(url))) != NULL) {
@@ -1314,7 +1310,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     success_cond = 0;
   }
 
-  //printf("miscptr: %s, url=%s, variables=%s, ptr=%s, optional1: %s, cond: %s (%d)\n", miscptr, url, variables, ptr, optional1, cond, success_cond);
+  printf("miscptr: %s, url=%s, variables=%s, ptr=%s, optional1: %s, cond: %s (%d)\n", miscptr, url, variables, ptr, optional1, cond, success_cond);
 
   /*
    * Parse the user-supplied options.
