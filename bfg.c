@@ -192,12 +192,12 @@ uint64_t bf_get_pcount() {
 
 int accu(int value)
 {
-	int sum = 0;
-	for(int i=1; i<=value; ++i)
-	{
-		sum+=i;
-	}
-	return sum;
+  int i = 0;
+  for(int a=1; a<=value; ++a)
+  {
+  	i+=a;
+  }
+  return i;
 }
 
 char *bf_next(_Bool rainy) {
@@ -210,7 +210,7 @@ char *bf_next(_Bool rainy) {
     fprintf(stderr, "Error: Can not allocate memory for -x data!\n");
     return NULL;
   }
-  
+
   if(rainy)
   {
 	for (i = 0; i < bf_options.current; i++){
@@ -223,12 +223,10 @@ char *bf_next(_Bool rainy) {
 	  bf_options.rain-=accu(bf_options.current)-4;
     else if(bf_options.crs_len%2)
 	  bf_options.rain-=accu(bf_options.current)-1;
-
   }
   else
     for (i = 0; i < bf_options.current; i++)
 	  bf_options.ptr[i] = bf_options.crs[bf_options.state[i]];
-		
   bf_options.ptr[bf_options.current] = 0;
 
   if (debug) {

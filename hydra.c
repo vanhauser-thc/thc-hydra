@@ -493,7 +493,6 @@ void help(int32_t ext) {
 #ifdef HAVE_MATH_H
                     "  -x MIN:MAX:CHARSET  password bruteforce generation, type \"-x -h\" to get help\n"
                     "  -y        disable use of symbols in bruteforce, see above\n"
-                    "  -r        rainy mode for password generation (-x)\n"
 #endif
                     "  -e nsr    try \"n\" null password, \"s\" login as pass and/or \"r\" reversed login\n"
                     "  -u        loop around users, not passwords (effective! implied with -x)\n");
@@ -556,6 +555,7 @@ void help_bfg() {
          "             'A' for uppercase letters, '1' for numbers, and for all others,\n"
          "             just add their real representation.\n"
          "  -y         disable the use of the above letters as placeholders\n\n"
+         "  -r         use 'rain' to explode the linearity of the generation.
          "Examples:\n"
          "   -x 3:5:a  generate passwords from length 3 to 5 with all lowercase letters\n"
          "   -x 5:8:A1 generate passwords from length 5 to 8 with uppercase and numbers\n"
@@ -3053,7 +3053,6 @@ int main(int argc, char *argv[]) {
         printf("[INFO] Using HTTP Proxy: %s\n", getenv("HYDRA_PROXY_HTTP"));
         use_proxy = 1;
       }
-
       if (strstr(hydra_options.miscptr, "\\:") != NULL) {
         fprintf(stderr, "[INFORMATION] escape sequence \\: detected in module option, no parameter verification is performed.\n");
       } else {
@@ -3075,7 +3074,7 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "[ERROR] Wrong syntax of optional argument: %s\n", optional1);
             exit(-1);
           }
-          switch (optional1[0]) {
+          switch (optional1[0]){
           case 'C':            // fall through
           case 'c':
             if (optional1[1] != '=' || optional1[2] != '/') {
@@ -3204,7 +3203,7 @@ int main(int argc, char *argv[]) {
         hydra_strcasestr(hydra_options.server, ".gmail.") != NULL || 
         hydra_strcasestr(hydra_options.server, "googlemail.") != NULL
        )) {
-      fprintf(stderr, "[WARNING] Google Mail and others have bruteforce and hydra detection and sends false positives. You are not doing anything illegal right?! If you really need to bruteforce gmail, connect to pop3s://smtp.gmail.com\n");
+      fprintf(stderr, "[WARNING] Google Mail and others have bruteforce and hydra detection and sends false positives. You are not doing anything illegal right?!\n");
       fprintf(stderr, "[WARNING] !read the above!\n");
       sleep(5);
     }

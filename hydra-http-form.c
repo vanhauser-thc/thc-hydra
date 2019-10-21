@@ -1250,26 +1250,13 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     webport = PORT_HTTP_SSL;
 
   sprintf(bufferurl, "%.6096s", miscptr);
-  url = bufferurl;
-  ptr = url;
-  while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
-    ptr++;
-  if (*ptr != 0)
-    *ptr++ = 0;
-  variables = ptr;
-  while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
-    ptr++;
-  if (*ptr != 0)
-    *ptr++ = 0;
+  ptr = bufferurl;
+  url = strtok(ptr, ":");
+  variables = strtok(NULL, ":");
+  cond = strtok(NULL, ":");
+  optional1 = strtok(NULL, "\n");
+  if(optional1 == NULL) optional1 = "";//will crash if NULL or 0, so set "" (don't know the difference...) 
   
-  cond = ptr;
-
-  while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
-    ptr++;
-  if (*ptr != 0)
-    *ptr++ = 0;
-
-  optional1 = ptr;
   if (strstr(url, "\\:") != NULL) {
     if ((ptr = malloc(strlen(url))) != NULL) {
       strcpy(ptr, hydra_strrep(url, "\\:", ":"));
@@ -1309,9 +1296,9 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     //by default condition is a fail
     success_cond = 0;
   }
-
-  printf("miscptr: %s, url=%s, variables=%s, ptr=%s, optional1: %s, cond: %s (%d)\n", miscptr, url, variables, ptr, optional1, cond, success_cond);
-
+  
+  fprintf(stderr, "miscptr: %s, url=%s, variables=%s, ptr=%s, optional1: %s, cond: %s (%d)\n", miscptr, url, variables, ptr, optional1, cond, success_cond);
+  
   /*
    * Parse the user-supplied options.
    * Beware of the backslashes (\)!
