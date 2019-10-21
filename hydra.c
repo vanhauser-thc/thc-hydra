@@ -504,6 +504,7 @@ void help(int32_t ext) {
 #ifdef HAVE_MATH_H
                     "  -x MIN:MAX:CHARSET  password bruteforce generation, type \"-x -h\" to get help\n"
                     "  -y        disable use of symbols in bruteforce, see above\n"
+                    "  -r        rainy mode for password generation (-x)\n"
 #endif
                "  -e nsr    try \"n\" null password, \"s\" login as pass "
                "and/or \"r\" reversed login\n"
