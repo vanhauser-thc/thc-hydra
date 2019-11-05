@@ -73,6 +73,8 @@ int32_t start_rdp(char *ip, int32_t port, unsigned char options, char *miscptr, 
     case 0x0002000c:
     case 0x0002000d:
       // cannot establish rdp connection, either the port is not opened or it's not rdp
+      if (verbose)
+        hydra_report(stderr, "[ERROR] freerdp: %s (0x%.8x)\n", freerdp_get_last_error_string(login_result), login_result);
       return 3;
     default:
       if (verbose) {
