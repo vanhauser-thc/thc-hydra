@@ -68,13 +68,14 @@ int32_t start_rdp(char *ip, int32_t port, unsigned char options, char *miscptr, 
       // login failure
       hydra_completed_pair();
       break;
+    case 0x0002000d:
+        hydra_report(stderr, "[%d][rdp] account on %s might be valid but account not active for remote desktop: login: %s password: %s, continuing attacking the account.\n", port, hydra_address2string_beautiful(ip), login, pass);
+        hydra_completed_pair();
+        break;
     case 0x00020006:
     case 0x00020008:
     case 0x0002000c:
-    case 0x0002000d:
       // cannot establish rdp connection, either the port is not opened or it's not rdp
-      if (verbose)
-        hydra_report(stderr, "[ERROR] freerdp: %s (0x%.8x)\n", freerdp_get_last_error_string(login_result), login_result);
       return 3;
     default:
       if (verbose) {
