@@ -504,7 +504,6 @@ void help(int32_t ext) {
 #ifdef HAVE_MATH_H
                     "  -x MIN:MAX:CHARSET  password bruteforce generation, type \"-x -h\" to get help\n"
                     "  -y        disable use of symbols in bruteforce, see above\n"
-                    "  -r        rainy mode for password generation (-x)\n"
 #endif
                "  -e nsr    try \"n\" null password, \"s\" login as pass "
                "and/or \"r\" reversed login\n"
@@ -590,8 +589,8 @@ void help_bfg() {
          "             'A' for uppercase letters, '1' for numbers, and for all "
          "others,\n"
          "             just add their real representation.\n"
-         "  -y         disable the use of the above letters as placeholders\n\n"
-         "  -r         use 'rain' to explode the linearity of the generation.
+         "  -y         disable the use of the above letters as placeholders\n"
+         "  -r         use a formula to explode the linearity of the generation, without loss.\n\n"
          "Examples:\n"
          "   -x 3:5:a  generate passwords from length 3 to 5 with all "
          "lowercase letters\n"

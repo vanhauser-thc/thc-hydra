@@ -1272,13 +1272,18 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
   sprintf(bufferurl, "%.6096s", miscptr);
   url = bufferurl;
   ptr = url;
-
   while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
     ptr++;
   if (*ptr != 0)
     *ptr++ = 0;
   variables = ptr;
 
+  while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
+    ptr++;
+  if (*ptr != 0)
+    *ptr++ = 0;
+
+  cond = ptr;
   while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
     ptr++;
   if (*ptr != 0)
