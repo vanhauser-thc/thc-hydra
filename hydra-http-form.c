@@ -1250,12 +1250,23 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     webport = PORT_HTTP_SSL;
 
   sprintf(bufferurl, "%.6096s", miscptr);
-  ptr = bufferurl;
-  url = strtok(ptr, ":");
-  variables = strtok(NULL, ":");
-  cond = strtok(NULL, ":");
-  optional1 = strtok(NULL, "\n");
-  if(optional1 == NULL) optional1 = "";//will crash if NULL or 0, so set to blank
+  url = bufferurl;
+  ptr = url;
+  while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
+    ptr++;
+  if (*ptr != 0)
+    *ptr++ = 0;
+  variables = ptr;
+  while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
+    ptr++;
+  if (*ptr != 0)
+    *ptr++ = 0;
+  cond = ptr;
+  while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
+    ptr++;
+  if (*ptr != 0)
+    *ptr++ = 0;
+  optional1 = ptr;
 
   if (strstr(url, "\\:") != NULL) {
     if ((ptr = malloc(strlen(url))) != NULL) {
