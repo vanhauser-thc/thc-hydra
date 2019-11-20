@@ -393,6 +393,9 @@ char *stringify_headers(ptr_header_node *ptr_head) {
 int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
   char *ptr, *ptr2;
 
+  if (miscptr == NULL)
+    return 1;
+
   /*
    * Parse the user-supplied options.
    * Beware of the backslashes (\)!
@@ -1238,6 +1241,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     } else
       webtarget = NULL;
   }
+
   if (cmdlinetarget != NULL && webtarget == NULL)
     webtarget = cmdlinetarget;
   else if (webtarget == NULL && cmdlinetarget == NULL)
@@ -1252,15 +1256,18 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
   sprintf(bufferurl, "%.6096s", miscptr);
   url = bufferurl;
   ptr = url;
+
   while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
     ptr++;
   if (*ptr != 0)
     *ptr++ = 0;
   variables = ptr;
+
   while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
     ptr++;
   if (*ptr != 0)
     *ptr++ = 0;
+
 
   if ((ptr2 = rindex(ptr, ':')) != NULL) {
     cond = ptr2 + 1;
@@ -1273,7 +1280,11 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
   if (*ptr != 0)
     *ptr++ = 0;
 */
-  optional1 = ptr;
+  if (ptr == cond)
+    optional1 = NULL;
+  else
+    optional1 = ptr;
+
   if (strstr(url, "\\:") != NULL) {
     if ((ptr = malloc(strlen(url))) != NULL) {
       strcpy(ptr, hydra_strrep(url, "\\:", ":"));
@@ -1292,6 +1303,9 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
       cond = ptr;
     }
   }
+
+  //printf("ptr: %s  ptr2: %s  cond: %s  url: %s  variables: %s  optional1: %s\n", ptr, ptr2, cond, url, variables, optional1 == NULL ? "null" : optional1);
+
   if (url == NULL || variables == NULL || cond == NULL /*|| optional1 == NULL */ )
     hydra_child_exit(2);
 
