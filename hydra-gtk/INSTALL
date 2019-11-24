@@ -178,5 +178,4 @@ operates.
 `--version'
      Print the version of Autoconf used to generate the `configure'
      script, and exit.
-
-`configure' also accepts some other, not widely useful, options.
+`configure' also accepts some other, not widely useful, options. TQ
