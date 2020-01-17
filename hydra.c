@@ -45,6 +45,7 @@ void usage_http_proxy(const char* service);
 void usage_http_proxy_urlenum(const char* service);
 void usage_snmp(const char* service);
 void usage_http(const char* service);
+void usage_smb2(const char* service);
 
 
 extern void service_asterisk(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
@@ -92,6 +93,10 @@ extern void service_rpcap(char *ip, int32_t sp, unsigned char options, char *mis
 
 // ADD NEW SERVICES HERE
 
+#if defined(LIBSMBCLIENT)
+extern int32_t service_smb2_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+extern void service_smb2(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
+#endif
 
 #ifdef HAVE_MATH_H
 extern void service_mysql(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname);
@@ -196,7 +201,7 @@ extern int32_t service_rpcap_init(char *ip, int32_t sp, unsigned char options, c
 
 // ADD NEW SERVICES HERE
 char *SERVICES =
-  "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp[s] http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] memcached mongodb mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres radmin2 rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
+  "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp[s] http[s]-{head|get|post} http[s]-{get|post}-form http-proxy http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] memcached mongodb mssql mysql ncp nntp oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s] postgres radmin2 rdp redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip smb smb2 smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
 
 #define MAXBUF       520
 #define MAXLINESIZE  ( ( MAXBUF / 2 ) - 4 )
@@ -437,6 +442,9 @@ SERVICE3("mongodb", mongodb),
   SERVICE(sip),
   SERVICE3("smbnt", smb),
   SERVICE3("smb", smb),
+#endif
+#if defined(LIBSMBCLIENT)
+  SERVICE3("smb2", smb2),
 #endif
   SERVICE3("smtp", smtp),
   SERVICE3("smtp-enum", smtp_enum),
@@ -1288,6 +1296,7 @@ int32_t hydra_lookup_port(char *service) {
     {"rsh", PORT_RSH, PORT_RSH_SSL},
     {"sapr3", PORT_SAPR3, PORT_SAPR3_SSL},
     {"smb", PORT_SMBNT, PORT_SMBNT_SSL},
+    {"smb2", PORT_SMBNT, PORT_SMBNT_SSL},
     {"smbnt", PORT_SMBNT, PORT_SMBNT_SSL},
     {"socks5", PORT_SOCKS5, PORT_SOCKS5_SSL},
     {"ssh", PORT_SSH, PORT_SSH_SSL},
@@ -2152,6 +2161,10 @@ int main(int argc, char *argv[]) {
   SERVICES = hydra_string_replace(SERVICES, "svn ", "");
   strcat(unsupported, "svn ");
 #endif
+#if !defined(LIBSMBCLIENT)
+  SERVICES = hydra_string_replace(SERVICES, "smb2 ", "");
+  strcat(unsupported, "smb2 ");
+#endif
 
 #ifndef LIBOPENSSL
   // for ftps
@@ -2801,6 +2814,25 @@ int main(int argc, char *argv[]) {
       bail("Compiled without OPENSSL support, module not available!");
 #endif
     }
+    if (strcmp(hydra_options.service, "smb2") == 0) {
+#if !defined(LIBSMBCLIENT)
+      bail("Compiled without LIBSMBCLIENT support, module not available!");
+#else
+      if (hydra_options.login != NULL &&
+          (index(hydra_options.login, '\\') != NULL ||
+           index(hydra_options.login, '/') != NULL))
+        fprintf(stderr,
+                "[WARNING] potential windows domain specification found in "
+                "login. You must use the -m option to pass a domain.\n");
+      if (hydra_options.miscptr == NULL || \
+          (strlen(hydra_options.miscptr) == 0)) {
+        fprintf(stderr,
+                "[WARNING] Workgroup was not specified, using \"WORKGROUP\"\n");
+      }
+      i = 1;
+#endif
+    }
+
     if (strcmp(hydra_options.service, "rdp") == 0){
 #ifndef LIBFREERDP2
       bail("Compiled without FREERDP2 support, module not available!");
