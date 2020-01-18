@@ -72,6 +72,8 @@ MANDIR=""
 XHYDRA_SUPPORT=""
 FREERDP2_PATH=""
 WINPR2_PATH=""
+SMBC_PATH=""
+SMBC_IPATH=""
 
 if [ '!' "X" = "X$*" ]; then
   while [ $# -gt 0 ] ; do
@@ -1178,6 +1180,54 @@ fi
     BSON_IPATH=""
   fi
 
+echo "Checking for smbclient (libsmbclient.so, libsmbclient.h) ..."
+
+  for i in $LIBDIRS ; do
+    if [ "X" = "X$SMBC_PATH" ]; then
+        if [ -f "$i/libsmbclient.so" -o -f "$i/libsmbclient.dylib" -o -f "$i/libsmbclient.a" ]; then
+            SMBC_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$SMBC_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libsmbclient.so* 2> /dev/null | grep smbclient`
+        if [ -n "$TMP_LIB" ]; then
+          SMBC_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$SMBC_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libsmbclient.dll* 2> /dev/null | grep smbclient`
+        if [ -n "$TMP_LIB" ]; then
+          SMBC_PATH="$i"
+        fi
+    fi
+  done
+
+  SMBC_IPATH=
+  for i in $INCDIRS ; do
+    if [ "X" = "X$SMBC_IPATH" ]; then
+        if [ -f "$i/libsmbclient.h" ]; then
+            SMBC_IPATH="$i"
+        fi
+        if [ -f "$i/samba-4.0/libsmbclient.h" ]; then
+            SMBC_IPATH="$i/samba-4.0"
+        fi
+    fi
+  done
+
+  if [ "X" != "X$DEBUG" ]; then
+     echo DEBUG: SMBC_PATH=$SMBC_PATH/libsmbclient
+     echo DEBUG: SMBC_IPATH=$SMBC_IPATH/libsmbclient.h
+  fi
+  if [ -n "$SMBC_PATH" -a -n "$SMBC_IPATH" ]; then
+    echo "                                             ... found"
+  fi
+  if [ "X" = "X$SMBC_PATH" -o "X" = "X$SMBC_IPATH" ]; then
+    echo "                                             ... NOT found, module smb2 disabled"
+    SMBC_PATH=""
+    SMBC_IPATH=""
+  fi
+
+
 if [ "X" = "X$XHYDRA_SUPPORT" ]; then
     echo "Checking for GUI req's (pkg-config, gtk+-2.0) ..."
   XHYDRA_SUPPORT=`pkg-config --help > /dev/null 2>&1 || echo disabled`
@@ -1271,7 +1321,29 @@ XLIBS=""
 XLIBPATHS=""
 XIPATHS=""
 
-if [ -n "$FIREBIRD_PATH" -o -n "$PCRE_PATH" -o -n "$IDN_PATH" -o -n "$SSL_PATH" -o -n "$CRYPTO_PATH" -o -n "$NSL_PATH" -o -n "$SOCKET_PATH" -o -n "$RESOLV_PATH" -o -n "$SAPR3_PATH" -o -n "$SSH_PATH" -o -n "$POSTGRES_PATH" -o -n "$SVN_PATH" -o -n "$NCP_PATH" -o -n "$CURSES_PATH" -o -n "$ORACLE_PATH" -o -n "$AFP_PATH" -o -n "$MYSQL_PATH" -o -n "$MCACHED_PATH" -o -n "$MONGOD_PATH" -o -n "$FREERDP2_PATH" -o -n "$WINPR2_PATH" ]; then
+if [ -n "$FIREBIRD_PATH" -o \
+        -n "$PCRE_PATH" -o \
+        -n "$IDN_PATH" -o \
+        -n "$SSL_PATH" -o \
+        -n "$CRYPTO_PATH" -o \
+        -n "$NSL_PATH" -o \
+        -n "$SOCKET_PATH" -o \
+        -n "$RESOLV_PATH" -o \
+        -n "$SAPR3_PATH" -o \
+        -n "$SSH_PATH" -o \
+        -n "$POSTGRES_PATH" -o \
+        -n "$SVN_PATH" -o \
+        -n "$NCP_PATH" -o \
+        -n "$CURSES_PATH" -o \
+        -n "$ORACLE_PATH" -o \
+        -n "$AFP_PATH" -o \
+        -n "$MYSQL_PATH" -o \
+        -n "$MCACHED_PATH" -o \
+        -n "$MONGOD_PATH" -o \
+        -n "$FREERDP2_PATH" -o \
+        -n "$WINPR2_PATH" -o \
+        -n "$SMBC_PATH" \
+   ]; then
     if [ "$SYSS" = "Darwin" ] && [ ! -d "/lib" ]; then
         #for libraries installed with MacPorts
         if [ -d "/opt/local/lib" ]; then
@@ -1359,9 +1431,35 @@ fi
 if [ -n "$WINPR2_PATH" ]; then
     XDEFINES="$XDEFINES -DLIBWINPR2"
 fi
+if [ -n "$SMBC_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBSMBCLIENT"
+fi
 
 OLDPATH=""
-for i in $SSL_PATH $FIREBIRD_PATH $WORACLE_LIB_PATH $PCRE_PATH $IDN_PATH $CRYPTO_PATH $SSH_PATH $NSL_PATH $SOCKET_PATH $RESOLV_PATH $SAPR3_PATH $POSTGRES_PATH $SVN_PATH $NCP_PATH $CURSES_PATH $ORACLE_PATH $AFP_PATH $MYSQL_PATH $MCACHED_PATH $MONGODB_PATH $BSON_PATH $FREERDP2_PATH $WINPR2_PATH; do
+for i in $SSL_PATH \
+             $FIREBIRD_PATH \
+             $WORACLE_LIB_PATH \
+             $PCRE_PATH \
+             $IDN_PATH \
+             $CRYPTO_PATH \
+             $SSH_PATH \
+             $NSL_PATH \
+             $SOCKET_PATH \
+             $RESOLV_PATH \
+             $SAPR3_PATH \
+             $POSTGRES_PATH \
+             $SVN_PATH \
+             $NCP_PATH \
+             $CURSES_PATH \
+             $ORACLE_PATH \
+             $AFP_PATH \
+             $MYSQL_PATH \
+             $MCACHED_PATH \
+             $MONGODB_PATH \
+             $BSON_PATH \
+             $FREERDP2_PATH \
+             $WINPR2_PATH \
+             $SMBC_PATH; do
     if [ "$OLDPATH" = "$i" ]; then
       OLDPATH="$i"
     else
@@ -1422,6 +1520,9 @@ if [ -n "$MONGODB_IPATH" ]; then
 fi
 if [ -n "$FREERDP2_IPATH" ]; then
     XIPATHS="$XIPATHS -I$FREERDP2_IPATH -I$WINPR2_IPATH"
+fi
+if [ -n "$SMBC_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$SMBC_IPATH"
 fi
 if [ -n "$HAVE_GCRYPT" ]; then
     XLIBS="$XLIBS -lgcrypt"
@@ -1500,6 +1601,9 @@ if [ -n "$FREERDP2_PATH" ]; then
 fi
 if [ -n "$WINPR2_PATH" ]; then
     XLIBS="$XLIBS -lwinpr2"
+fi
+if [ -n "$SMBC_PATH" ]; then
+    XLIBS="$XLIBS -lsmbclient"
 fi
 if [ -d /usr/kerberos/include ]; then
   XIPATHS="$XIPATHS -I/usr/kerberos/include"
