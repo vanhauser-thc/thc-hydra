@@ -1,13 +1,16 @@
 #
 # Makefile for Hydra - (c) 2001-2020 by van Hauser / THC <vh@thc.org>
 #
-OPTS=-I. -O3 -march=native -flto
+WARN_CLANG=-Wformat-nonliteral -Wstrncat-size -Wformat-security -Wsign-conversion -Wconversion -Wfloat-conversion -Wshorten-64-to-32 -Wuninitialized -Wmissing-variable-declarations  -Wmissing-declarations
+WARN_GCC=-Wformat=2 -Wformat-overflow=2 -Wformat-nonliteral -Wformat-truncation=2 -Wnull-dereference -Wstrict-overflow=2 -Wstringop-overflow=4 -Walloca-larger-than=4096 -Wtype-limits -Wconversion -Wtrampolines -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -fno-common -Wcast-align
+CFLAGS ?= -march=native -flto
+OPTS=-I. -O3 $(CFLAGS)
 # -Wall -g -pedantic
 LIBS=-lm
-BINDIR = /bin
-MANDIR ?= /man/man1/
-DATADIR ?= /etc
 DESTDIR ?=
+BINDIR = /bin
+MANDIR = /man/man1/
+DATADIR = /etc
 
 SRC = hydra-vnc.c hydra-pcnfs.c hydra-rexec.c hydra-nntp.c hydra-socks5.c \
       hydra-telnet.c hydra-cisco.c hydra-http.c hydra-ftp.c hydra-imap.c \
