@@ -1342,10 +1342,10 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     // proxy with authentication
     add_header(&ptr_head, "Host", webtarget, HEADER_TYPE_DEFAULT);
     add_header(&ptr_head, "User-Agent", "Mozilla 5.0 (Hydra Proxy Auth)", HEADER_TYPE_DEFAULT);
-    proxy_string = (char *) malloc(strlen(proxy_authentication[selected_proxy]) + 6);
+    proxy_string = (char *) malloc(strlen(proxy_authentication[selected_proxy]) + 10);
     if (proxy_string) {
       strcpy(proxy_string, "Basic ");
-      strncat(proxy_string, proxy_authentication[selected_proxy], strlen(proxy_authentication[selected_proxy]) - 6);
+      strcat(proxy_string, proxy_authentication[selected_proxy]);
       add_header(&ptr_head, "Proxy-Authorization", proxy_string, HEADER_TYPE_DEFAULT);
     } else {
       hydra_report(stderr, "Out of memory for \"Proxy-Authorization\" header.\n");
