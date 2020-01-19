@@ -33,7 +33,7 @@ int hydra_pid = 0;
 char port[10];
 char tasks[10];
 char timeout[10];
-char smbparm[12];
+char smbparm[128];
 char sapr3id[4];
 char passLoginNull[4];
 
@@ -274,7 +274,7 @@ int hydra_get_options(char *options[]) {
     options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
 
   } else if (!strcmp(tmp, "smb")) {
-    memset(smbparm, 0, 12);
+    memset(smbparm, 0, sizeof(smbparm));
 
     widget = lookup_widget(GTK_WIDGET(wndMain), "chkDomain");
     widget2 = lookup_widget(GTK_WIDGET(wndMain), "chkLocal");
@@ -300,7 +300,22 @@ int hydra_get_options(char *options[]) {
       strcat(smbparm, "Hash");
     }
     options[i++] = smbparm;
+  } else if (!strcmp(tmp, "smb2")) {
+    memset(smbparm, 0, sizeof(smbparm));
 
+    options[i++] = "-m";
+    options[i++] = smbparm;
+
+    widget = lookup_widget(GTK_WIDGET(wndMain), "chkNTLM");
+    int pth = gtk_toggle_button_get_active((GtkToggleButton *) widget);
+
+    widget = lookup_widget(GTK_WIDGET(wndMain), "entSMB2Workgroup");
+
+    snprintf(smbparm,
+             sizeof(smbparm)-1,
+             "nthash:%s workgroup:{%s}",
+             pth ? "true" : "false",
+             (char *) gtk_entry_get_text((GtkEntry *) widget));
   } else if (!strcmp(tmp, "sapr3")) {
     widget = lookup_widget(GTK_WIDGET(wndMain), "spnSAPR3");
     j = gtk_spin_button_get_value_as_int((GtkSpinButton *) widget);

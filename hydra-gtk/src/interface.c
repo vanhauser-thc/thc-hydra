@@ -171,6 +171,9 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *btnClear;
   GtkWidget *label4;
   GtkWidget *statusbar;
+  GtkWidget *lblSMB2;
+  GtkWidget *entSMB2Workgroup;
+  GtkWidget *fraSMB2;
   GtkAccelGroup *accel_group;
   GtkTooltips *tooltips;
 
@@ -273,6 +276,7 @@ GtkWidget *create_wndMain(void) {
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "sapr3");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "sip");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "smb");
+  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "smb2");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "smtp");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "snmp");
   cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "socks5");
@@ -849,24 +853,41 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(chkLocal, "chkLocal");
   gtk_widget_show(chkLocal);
   gtk_box_pack_start(GTK_BOX(hbox2), chkLocal, TRUE, TRUE, 0);
-  gtk_tooltips_set_tip(tooltips, chkLocal, "Just attack local accounts", NULL);
+  gtk_tooltips_set_tip(tooltips, chkLocal, "Just attack local accounts (only valid for smb module)", NULL);
 
   chkDomain = gtk_check_button_new_with_mnemonic("domain accounts");
   gtk_widget_set_name(chkDomain, "chkDomain");
   gtk_widget_show(chkDomain);
   gtk_box_pack_start(GTK_BOX(hbox2), chkDomain, TRUE, TRUE, 0);
-  gtk_tooltips_set_tip(tooltips, chkDomain, "Attack domain and local accounts", NULL);
+  gtk_tooltips_set_tip(tooltips, chkDomain, "Attack domain and local accounts (only valid for smb module)", NULL);
 
   chkNTLM = gtk_check_button_new_with_mnemonic("Interpret passes as NTLM hashes");
   gtk_widget_set_name(chkNTLM, "chkNTLM");
   gtk_widget_show(chkNTLM);
   gtk_box_pack_start(GTK_BOX(hbox2), chkNTLM, FALSE, FALSE, 0);
-  gtk_tooltips_set_tip(tooltips, chkNTLM, "Interpret passes as NTML hashes", NULL);
+  gtk_tooltips_set_tip(tooltips, chkNTLM, "Interpret passes as NTML hashes  (valid for both smb and smb2 modules)", NULL);
 
   label18 = gtk_label_new("SMB");
   gtk_widget_set_name(label18, "label18");
   gtk_widget_show(label18);
   gtk_frame_set_label_widget(GTK_FRAME(frame6), label18);
+
+  fraSMB2 = gtk_frame_new(NULL);
+  gtk_widget_set_name(fraSMB2, "fraSMB2");
+  gtk_widget_show(fraSMB2);
+  gtk_box_pack_start(GTK_BOX(vbox4), fraSMB2, TRUE, TRUE, 0);
+
+  entSMB2Workgroup = gtk_entry_new();
+  gtk_widget_set_name(entSMB2Workgroup, "entSMB2Workgroup");
+  gtk_widget_show(entSMB2Workgroup);
+  gtk_container_add(GTK_CONTAINER(fraSMB2), entSMB2Workgroup);
+  gtk_tooltips_set_tip(tooltips, entSMB2Workgroup, "Workgroup to use for SMB authentication (only valid for smb2 module)", NULL);
+  gtk_entry_set_text(GTK_ENTRY(entSMB2Workgroup), "WORKGROUP");
+
+  lblSMB2 = gtk_label_new("SMB2 Workgroup");
+  gtk_widget_set_name(lblSMB2, "lblSMB2");
+  gtk_widget_show(lblSMB2);
+  gtk_frame_set_label_widget(GTK_FRAME(fraSMB2), lblSMB2);
 
   frame7 = gtk_frame_new(NULL);
   gtk_widget_set_name(frame7, "frame7");
@@ -1164,6 +1185,7 @@ GtkWidget *create_wndMain(void) {
   GLADE_HOOKUP_OBJECT(wndMain, label4, "label4");
   GLADE_HOOKUP_OBJECT(wndMain, statusbar, "statusbar");
   GLADE_HOOKUP_OBJECT_NO_REF(wndMain, tooltips, "tooltips");
+  GLADE_HOOKUP_OBJECT(wndMain, entSMB2Workgroup, "entSMB2Workgroup");
 
   gtk_window_add_accel_group(GTK_WINDOW(wndMain), accel_group);
 
