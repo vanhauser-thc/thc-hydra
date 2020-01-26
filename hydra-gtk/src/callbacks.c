@@ -66,7 +66,7 @@ int hydra_get_options(char *options[]) {
   gchar *tmp;
   GString *a;
 
-  options[0] = HYDRA_BIN;
+  options[0] = hydra_bin;
 
   /* get the port */
   widget = lookup_widget(GTK_WIDGET(wndMain), "spnPort");
@@ -599,7 +599,7 @@ int *popen_re_unbuffered(char *command) {
 
     (void) hydra_get_options(options);
 
-    execv(HYDRA_BIN, options);
+    execv(hydra_bin, options);
 
     g_warning("%s %i: popen_rw_unbuffered: execv() returned", __FILE__, __LINE__);
 

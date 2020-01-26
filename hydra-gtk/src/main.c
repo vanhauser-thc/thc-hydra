@@ -17,12 +17,12 @@
 char *hydra_path1 = "./hydra";
 char *hydra_path2 = "/usr/local/bin/hydra";
 char *hydra_path3 = "/usr/bin/hydra";
-
+char *hydra_bin;
+GtkWidget *wndMain;
+guint message_id;
 
 int main(int argc, char *argv[]) {
-  extern GtkWidget *wndMain;
   int i;
-  extern guint message_id;
   GtkWidget *output;
   GtkTextBuffer *outputbuf;
 
@@ -35,22 +35,22 @@ int main(int argc, char *argv[]) {
   message_id = 0;
 
   /* locate the hydra binary */
-  HYDRA_BIN = NULL;
+  hydra_bin = NULL;
   for (i = 0; i < argc - 1; i++) {
     if (!strcmp(argv[i], "--hydra-path")) {
-      HYDRA_BIN = argv[i + 1];
+      hydra_bin = argv[i + 1];
       break;
     }
   }
 
-  if ((HYDRA_BIN != NULL) && (g_file_test(HYDRA_BIN, G_FILE_TEST_IS_EXECUTABLE))) {
+  if ((hydra_bin != NULL) && (g_file_test(hydra_bin, G_FILE_TEST_IS_EXECUTABLE))) {
     /* just for obfuscation *g* */
   } else if (g_file_test(hydra_path1, G_FILE_TEST_IS_EXECUTABLE)) {
-    HYDRA_BIN = hydra_path1;
+    hydra_bin = hydra_path1;
   } else if (g_file_test(hydra_path2, G_FILE_TEST_IS_EXECUTABLE)) {
-    HYDRA_BIN = hydra_path2;
+    hydra_bin = hydra_path2;
   } else if (g_file_test(hydra_path3, G_FILE_TEST_IS_EXECUTABLE)) {
-    HYDRA_BIN = hydra_path3;
+    hydra_bin = hydra_path3;
   } else {
     g_error("Please tell me where hydra is, use --hydra-path\n");
     return -1;
