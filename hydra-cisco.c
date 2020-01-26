@@ -5,11 +5,11 @@
 #endif
 
 extern char *HYDRA_EXIT;
-char *buf = NULL;
 
 int32_t start_cisco(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *pass, buffer[300];
+  char *buf = NULL;
 
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;

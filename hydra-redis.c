@@ -1,11 +1,11 @@
 #include "hydra-mod.h"
 
 extern char *HYDRA_EXIT;
-char *buf;
 
 int32_t start_redis(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *pass, buffer[510];
   char *empty = "";
+  char *buf;
 
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
@@ -134,6 +134,7 @@ int32_t service_redis_init(char *ip, int32_t sp, unsigned char options, char *mi
   int32_t sock = -1;
   int32_t myport = PORT_REDIS, mysslport = PORT_REDIS_SSL;
   char buffer[] = "*1\r\n$4\r\nping\r\n";
+  char *buf;
 
   hydra_register_socket(sp);
   if ((options & OPTION_SSL) == 0) {

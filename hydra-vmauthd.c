@@ -8,11 +8,11 @@
 
 extern char *HYDRA_EXIT;
 
-char *buf;
-
 int32_t start_vmauthd(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "\"\"";
   char *login, *pass, buffer[300];
+  char *buf;
+
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -68,6 +68,7 @@ int32_t start_vmauthd(int32_t s, char *ip, int32_t port, unsigned char options, 
 void service_vmauthd(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_VMAUTHD, mysslport = PORT_VMAUTHD_SSL;
+  char *buf;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)

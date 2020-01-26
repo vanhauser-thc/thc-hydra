@@ -14,7 +14,6 @@ passwd will be used as the domain name
 #include "hydra-mod.h"
 
 extern char *HYDRA_EXIT;
-char *buf;
 char *err = NULL;
 int32_t tosent = 0;
 
@@ -27,6 +26,7 @@ int32_t smtp_enum_cmd = VRFY;
 int32_t start_smtp_enum(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass, buffer[500];
+  char *buf;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -154,6 +154,7 @@ void service_smtp_enum(char *ip, int32_t sp, unsigned char options, char *miscpt
   int32_t run = 1, next_run = 1, sock = -1, i = 0;
   int32_t myport = PORT_SMTP, mysslport = PORT_SMTP_SSL;
   char *buffer = "HELO hydra\r\n";
+  char *buf;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)

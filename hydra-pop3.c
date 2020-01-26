@@ -13,7 +13,6 @@ typedef struct pool_str {
 } pool;
 
 extern char *HYDRA_EXIT;
-char *buf;
 char apop_challenge[300] = "";
 pool *plist = NULL, *p = NULL;
 
@@ -120,6 +119,7 @@ STLS
 int32_t start_pop3(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "\"\"";
   char *login, *pass, buffer[500], buffer2[500], *fooptr;
+  char *buf;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -416,6 +416,7 @@ int32_t start_pop3(int32_t s, char *ip, int32_t port, unsigned char options, cha
 void service_pop3(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1;
   char *ptr = NULL;
+  char *buf;
 
   //extract data from the pool, ip is the key
   if (plist == NULL)
@@ -520,6 +521,7 @@ int32_t service_pop3_init(char *ip, int32_t sp, unsigned char options, char *mis
   char *capa_str = "CAPA\r\n";
   char *quit_str = "QUIT\r\n";
   pool p;
+  char *buf;
 
   p.pop3_auth_mechanism = AUTH_CLEAR;
   p.disable_tls = 1;

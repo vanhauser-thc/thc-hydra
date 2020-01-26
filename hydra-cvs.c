@@ -3,7 +3,6 @@
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
 extern char *HYDRA_EXIT;
-char *buf;
 
 int32_t start_cvs(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
@@ -37,6 +36,7 @@ int32_t start_cvs(int32_t s, char *ip, int32_t port, unsigned char options, char
     0, 121, 117, 104, 101, 100, 69, 73, 99, 63, 94, 93, 39, 37, 61, 48,
     58, 113, 32, 90, 44, 98, 60, 51, 33, 97, 62
   };
+  char *buf;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;

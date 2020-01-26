@@ -19,7 +19,6 @@ int32_t vnc_client_version = RFB33;
 int32_t failed_auth = 0;
 
 extern char *HYDRA_EXIT;
-char *buf;
 
 /*
  * Encrypt CHALLENGESIZE bytes in memory using a password.
@@ -48,6 +47,7 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
   char *empty = "";
   char *pass;
   unsigned char buf2[CHALLENGESIZE + 4];
+  char *buf;
 
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
@@ -148,6 +148,7 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
 void service_vnc(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_VNC, mysslport = PORT_VNC_SSL;
+  char *buf;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)

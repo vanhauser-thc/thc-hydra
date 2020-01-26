@@ -10,7 +10,6 @@ This module enable bruteforcing for socks5, only following types are supported:
 */
 
 extern char *HYDRA_EXIT;
-unsigned char *buf;
 
 int32_t fail_cnt;
 
@@ -18,6 +17,7 @@ int32_t start_socks5(int32_t s, char *ip, int32_t port, unsigned char options, c
   char *empty = "";
   char *login, *pass, buffer[300];
   int32_t pport, fud = 0;
+  unsigned char *buf;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;

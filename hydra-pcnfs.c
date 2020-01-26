@@ -3,7 +3,6 @@
 /* pcnfs stuff copied from prout.c */
 
 extern char *HYDRA_EXIT;
-char *buf;
 
 #define LEN_HDR_RPC	24
 #define LEN_AUTH_UNIX   72+12
@@ -37,6 +36,7 @@ int32_t start_pcnfs(int32_t s, char *ip, int32_t port, unsigned char options, ch
   char *empty = "";
   char *login, *pass, buffer[LEN_HDR_RPC + LEN_AUTH_UNIX + LEN_HDR_PCN_AUTH];
   char *ptr, *pkt = buffer;
+  char *buf;
 
   unsigned long *authp;
   struct timeval tv;

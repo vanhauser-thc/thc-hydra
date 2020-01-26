@@ -2,7 +2,6 @@
 #include "sasl.h"
 
 extern char *HYDRA_EXIT;
-char *buf;
 static int32_t http_proxy_auth_mechanism = AUTH_ERROR;
 
 int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp, char *hostname) {
@@ -12,6 +11,7 @@ int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned cha
   char *header = "";            /* XXX TODO */
   char *ptr;
   int32_t auth = 0;
+  char *buf;
 
   login = hydra_get_next_login();
   if (login == NULL || strlen(login) == 0 || strstr(login, "://") == NULL) {

@@ -17,7 +17,6 @@ void dummy_mongodb() {
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
 extern char *HYDRA_EXIT;
-char *buf;
 
 #define DEFAULT_DB "admin"
 
@@ -31,6 +30,7 @@ int is_error_msg(char *msg) {
 }
 
 int require_auth(int32_t sock) {
+  char *buf;
   unsigned char m_hdr[] =
     "\x3f\x00\x00\x00"  //messageLength (63)
     "\x00\x00\x00\x41"  //requestID

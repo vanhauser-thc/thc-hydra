@@ -3,7 +3,6 @@
 #define MSLEN 30
 
 extern char *HYDRA_EXIT;
-char *buf;
 
 unsigned char p_hdr[] =
   "\x02\x00\x02\x00\x00\x00\x02\x00\x00\x00" "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" "\x00\x00\x00\x00\x00\x00\x00\x00\x00";
@@ -52,6 +51,7 @@ int32_t start_mssql(int32_t s, char *ip, int32_t port, unsigned char options, ch
   char ms_pass[MSLEN + 1];
   unsigned char len_login, len_pass;
   int32_t ret = -1;
+  char *buf;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;

@@ -22,8 +22,6 @@ void dummy_oracle_listener() {
 #define HASHSIZE 17
 
 extern char *HYDRA_EXIT;
-char *buf;
-unsigned char *hash;
 int32_t sid_mechanism = AUTH_PLAIN;
 
 int32_t initial_permutation(unsigned char **result, char *p_str, int32_t *sz) {
@@ -143,6 +141,7 @@ int32_t ora_hash_password(char *pass) {
   unsigned char *desresult;
   unsigned char *result;
   char buff[strlen(pass) + 5];
+  unsigned char *hash;
 
   memset(buff, 0, sizeof(buff));
 
@@ -192,6 +191,8 @@ int32_t start_oracle_listener(int32_t s, char *ip, int32_t port, unsigned char o
   char connect_string[200];
   char buffer2[260];
   int32_t siz = 0;
+  char *buf;
+  unsigned char *hash;
 
   memset(connect_string, 0, sizeof(connect_string));
   memset(buffer2, 0, sizeof(buffer2));

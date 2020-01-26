@@ -13,7 +13,6 @@ RFC 4643: Network News Transfer Protocol (NNTP) Extension for Authentication
 int32_t nntp_auth_mechanism = AUTH_CLEAR;
 
 extern char *HYDRA_EXIT;
-char *buf;
 
 char *nntp_read_server_capacity(int32_t sock) {
   char *ptr = NULL;
@@ -51,6 +50,7 @@ int32_t start_nntp(int32_t s, char *ip, int32_t port, unsigned char options, cha
   char *empty = "\"\"";
   char *login, *pass, buffer[500], buffer2[500], *fooptr;
   int32_t i = 1;
+  char *buf;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -270,6 +270,7 @@ void service_nntp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
   int32_t i = 0, run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_NNTP, mysslport = PORT_NNTP_SSL, disable_tls = 0;
   char *buffer1 = "CAPABILITIES\r\n";
+  char *buf;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)

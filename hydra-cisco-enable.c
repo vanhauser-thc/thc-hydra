@@ -1,11 +1,11 @@
 #include "hydra-mod.h"
 
 extern char *HYDRA_EXIT;
-char *buf;
 
 int32_t start_cisco_enable(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *pass, buffer[300];
+  char *buf;
 
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
@@ -63,6 +63,7 @@ void service_cisco_enable(char *ip, int32_t sp, unsigned char options, char *mis
   int32_t myport = PORT_TELNET, mysslport = PORT_TELNET_SSL;
   char buffer[300];
   char *login;
+  char *buf;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)

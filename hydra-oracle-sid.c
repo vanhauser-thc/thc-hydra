@@ -19,7 +19,6 @@ void dummy_oracle_sid() {
 #define HASHSIZE 16
 
 extern char *HYDRA_EXIT;
-char *buf;
 unsigned char *hash;
 
 
@@ -40,6 +39,7 @@ int32_t start_oracle_sid(int32_t s, char *ip, int32_t port, unsigned char option
   char connect_string[200];
   char buffer2[260];
   int32_t siz = 0;
+  char *buf;
 
   memset(connect_string, 0, sizeof(connect_string));
   memset(buffer2, 0, sizeof(buffer2));

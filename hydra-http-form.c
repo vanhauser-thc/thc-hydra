@@ -53,7 +53,6 @@ Added fail or success condition, getting cookies, and allow 5 redirections by da
 #include "sasl.h"
 
 extern char *HYDRA_EXIT;
-char *buf;
 char *cond;
 extern int32_t http_auth_mechanism;
 
@@ -579,6 +578,7 @@ return -1 if no response from server
 */
 int32_t analyze_server_response(int32_t s) {
   int32_t runs = 0;
+  char *buf;
 
   redirected_flag = 0;
   auth_flag = 0;

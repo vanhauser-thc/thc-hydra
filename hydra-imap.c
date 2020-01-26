@@ -2,7 +2,6 @@
 #include "sasl.h"
 
 extern char *HYDRA_EXIT;
-char *buf;
 int32_t counter;
 
 int32_t imap_auth_mechanism = AUTH_CLEAR;
@@ -42,6 +41,7 @@ char *imap_read_server_capacity(int32_t sock) {
 int32_t start_imap(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";
   char *login, *pass, buffer[500], buffer2[500], *fooptr;
+  char *buf = NULL;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -357,6 +357,7 @@ void service_imap(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
   int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_IMAP, mysslport = PORT_IMAP_SSL, disable_tls = 1;
   char *buffer1 = "1 CAPABILITY\r\n";
+  char *buf = NULL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)

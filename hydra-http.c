@@ -12,7 +12,7 @@ char *http_buf = NULL;
 static char end_condition[END_CONDITION_MAX_LEN];
 int end_condition_type=-1;
 
-int32_t webport, freemischttp = 0;
+int32_t freemischttp = 0;
 int32_t http_auth_mechanism = AUTH_UNASSIGNED;
 
 int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp, char *type, ptr_header_node ptr_head) {
@@ -22,6 +22,7 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   char *ptr, *fooptr;
   int32_t complete_line = 0, buffer_size;
   char tmpreplybuf[1024] = "", *tmpreplybufptr;
+  int32_t webport;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -291,6 +292,7 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
   int32_t myport = PORT_HTTP, mysslport = PORT_HTTP_SSL;
   char *ptr, *ptr2;
   ptr_header_node ptr_head = NULL;
+  int32_t webport;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)

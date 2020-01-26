@@ -3,8 +3,6 @@
 
 extern char *HYDRA_EXIT;
 
-unsigned char *buf;
-int32_t counter;
 int32_t tls_required = 0;
 
 int32_t start_ldap(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp, char *hostname, char version, int32_t auth_method) {
@@ -13,6 +11,8 @@ int32_t start_ldap(int32_t s, char *ip, int32_t port, unsigned char options, cha
   unsigned char buffer[512];
   int32_t length = 0;
   int32_t ldap_auth_mechanism = auth_method;
+  unsigned char *buf;
+  int32_t counter;
 
   /*
      The LDAP "simple" method has three modes of operation:
@@ -354,6 +354,8 @@ int32_t start_ldap(int32_t s, char *ip, int32_t port, unsigned char options, cha
 void service_ldap(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname, char version, int32_t auth_method) {
   int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_LDAP, mysslport = PORT_LDAP_SSL;
+  unsigned char *buf;
+  int32_t counter;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
