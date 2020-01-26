@@ -75,7 +75,7 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
   //supported security type
   switch (buf2[3]) {
   case 0x0:
-    hydra_report(stderr, "[ERROR] VNC server told us to quit %c\n", buf[3]);
+    hydra_report(stderr, "[ERROR] VNC server told us to quit %c\n", buf2[3]);
     hydra_child_exit(0);
     break;
   case 0x1:
