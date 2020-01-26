@@ -48,6 +48,19 @@ char ipstring[64];
 uint32_t colored_output = 1;
 char quiet = 0;
 int32_t old_ssl = 0;
+int32_t debug;
+char *proxy_authentication[MAX_PROXY_COUNT];
+int32_t proxy_count;
+char proxy_string_ip[MAX_PROXY_COUNT][36];
+char proxy_string_type[MAX_PROXY_COUNT][10];
+int32_t proxy_string_port[MAX_PROXY_COUNT];
+int32_t selected_proxy;
+int32_t verbose;
+int32_t waittime;
+int32_t use_proxy;
+int32_t port;
+char *cmdlinetarget;
+int32_t found;
 
 #ifdef LIBOPENSSL
 SSL *ssl = NULL;

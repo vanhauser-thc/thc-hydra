@@ -49,23 +49,23 @@ extern int32_t hydra_memsearch(char *haystack, int32_t hlen, char *needle, int32
 extern char *hydra_strrep(char *string, char *oldpiece, char *newpiece);
 
 #ifdef HAVE_PCRE
-int32_t hydra_string_match(char *str, const char *regex);
+extern int32_t hydra_string_match(char *str, const char *regex);
 #endif
-char *hydra_string_replace(const char *string, const char *substr, const char *replacement);
+extern char *hydra_string_replace(const char *string, const char *substr, const char *replacement);
 
-int32_t debug;
-int32_t verbose;
-int32_t waittime;
-int32_t port;
-int32_t found;
-int32_t proxy_count;
-int32_t use_proxy;
-int32_t selected_proxy;
-char proxy_string_ip[MAX_PROXY_COUNT][36];
-int32_t proxy_string_port[MAX_PROXY_COUNT];
-char proxy_string_type[MAX_PROXY_COUNT][10];
-char *proxy_authentication[MAX_PROXY_COUNT];
-char *cmdlinetarget;
+extern int32_t debug;
+extern int32_t verbose;
+extern int32_t waittime;
+extern int32_t port;
+extern int32_t found;
+extern int32_t proxy_count;
+extern int32_t use_proxy;
+extern int32_t selected_proxy;
+extern char proxy_string_ip[MAX_PROXY_COUNT][36];
+extern int32_t proxy_string_port[MAX_PROXY_COUNT];
+extern char proxy_string_type[MAX_PROXY_COUNT][10];
+extern char *proxy_authentication[MAX_PROXY_COUNT];
+extern char *cmdlinetarget;
 
 typedef int32_t BOOL;
 
