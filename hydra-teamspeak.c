@@ -36,7 +36,6 @@ struct team_speak {
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
 extern char *HYDRA_EXIT;
-char *buf;
 
 int32_t start_teamspeak(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
   char *empty = "";

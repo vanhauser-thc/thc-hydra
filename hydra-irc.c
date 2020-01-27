@@ -7,7 +7,6 @@ RFC 1459: Internet Relay Chat Protocol
 */
 
 extern char *HYDRA_EXIT;
-char *buf;
 char buffer[300] = "";
 int32_t myport = PORT_IRC, mysslport = PORT_IRC_SSL;
 

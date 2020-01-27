@@ -12,7 +12,6 @@
 #include "sasl.h"
 
 extern char *HYDRA_EXIT;
-char *buf;
 char packet[500];
 char packet2[500];
 
