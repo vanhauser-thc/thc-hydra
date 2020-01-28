@@ -8,6 +8,7 @@ Release 9.1-dev
 * changed mysql module not to use mysql db as a default. if the user has not access to this db auth fails ...
 * added -K command line switch to disable redo attempts (good for mass scanning)
 * forgot to have the -m option in the hydra help output
+* gcc-10 support and various cleanups by Jeroen Roovers, thanks!
 
 
 Release 9.0
