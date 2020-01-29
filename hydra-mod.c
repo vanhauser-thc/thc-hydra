@@ -466,24 +466,25 @@ int32_t internal__hydra_connect(char *host, int32_t port, int32_t type, int32_t 
 
 #if defined(LIBOPENSSL) && !defined(LIBRESSL_VERSION_NUMBER)
 RSA *ssl_temp_rsa_cb(SSL * ssl, int32_t export, int32_t keylength) {
-  int32_t ok = 0;
+  int32_t nok = 0;
 #if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10100000L
   BIGNUM *n;
-  n = BN_new();
+  if ((n = BN_new()) == NULL)
+   nok = 1;
   RSA_get0_key(rsa, (const struct bignum_st **)&n, NULL, NULL);
-  ok = BN_zero(n);
+  BN_zero(n);
 #else
   if (rsa->n == 0)
-    ok = 1;
+    nok = 1;
 #endif
-  if(ok == 0 && RSA_size(rsa)!=(keylength/8)){ // n is not zero
+  if (nok == 0 && RSA_size(rsa)!=(keylength/8)){ // n is not zero
 #if !defined(LIBRESSL_VERSION_NUMBER) && OPENSSL_VERSION_NUMBER >= 0x10100000L 
       BN_free(n);
 #endif
       RSA_free(rsa);
       rsa = NULL;
   }
-  if (ok != 0) { // n is zero
+  if (nok != 0) { // n is zero
 #if defined(NO_RSA_LEGACY) || OPENSSL_VERSION_NUMBER >= 0x10100000L
     RSA *rsa = RSA_new();
     BIGNUM *f4 = BN_new();
