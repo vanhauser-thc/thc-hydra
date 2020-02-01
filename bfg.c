@@ -192,8 +192,8 @@ uint64_t bf_get_pcount() {
 
 int accu(int value)
 {
-  int i = 0;
-  for(int a=1; a<=value; ++a)
+  int i = 0, a;
+  for (a=1; a<=value; ++a)
   {
   	i+=a;
   }
