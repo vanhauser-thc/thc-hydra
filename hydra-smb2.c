@@ -21,47 +21,41 @@
 
 #include "hydra-mod.h"
 
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
 #include <errno.h>
 #include <libsmbclient.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
 extern char *HYDRA_EXIT;
 
 typedef struct creds {
-  const char* workgroup;
-  const char* user;
-  const char* pass;
+  const char *workgroup;
+  const char *user;
+  const char *pass;
 } creds_t;
-
 
 const char default_workgroup[] = "WORKGROUP";
 bool use_nt_hash = false;
-const char* workgroup = default_workgroup;
-const char* netbios_name = NULL;
+const char *workgroup = default_workgroup;
+const char *netbios_name = NULL;
 
-#define EXIT_PROTOCOL_ERROR     hydra_child_exit(2)
-#define EXIT_CONNECTION_ERROR   hydra_child_exit(1)
-#define EXIT_NORMAL             hydra_child_exit(0)
+#define EXIT_PROTOCOL_ERROR hydra_child_exit(2)
+#define EXIT_CONNECTION_ERROR hydra_child_exit(1)
+#define EXIT_NORMAL hydra_child_exit(0)
 
-void smb2_auth_provider(SMBCCTX *c,
-                        const char *srv,
-                        const char *shr,
-                        char *wg, int wglen,
-                        char *un, int unlen,
-                        char *pw, int pwlen) {
-  creds_t* cr = (creds_t*)smbc_getOptionUserData(c);
+void smb2_auth_provider(SMBCCTX *c, const char *srv, const char *shr, char *wg, int wglen, char *un, int unlen, char *pw, int pwlen) {
+  creds_t *cr = (creds_t *)smbc_getOptionUserData(c);
   strncpy(wg, cr->workgroup, wglen);
   strncpy(un, cr->user, unlen);
   strncpy(pw, cr->pass, pwlen);
-  wg[wglen-1] = 0;
-  un[unlen-1] = 0;
-  pw[pwlen-1] = 0;
+  wg[wglen - 1] = 0;
+  un[unlen - 1] = 0;
+  pw[pwlen - 1] = 0;
 }
 
-bool smb2_run_test(creds_t* cr, const char* server, uint16_t port) {
-  SMBCCTX* ctx = smbc_new_context();
+bool smb2_run_test(creds_t *cr, const char *server, uint16_t port) {
+  SMBCCTX *ctx = smbc_new_context();
   if (ctx == NULL) {
     hydra_report(stderr, "[ERROR] failed to create context\n");
     EXIT_PROTOCOL_ERROR;
@@ -76,7 +70,7 @@ bool smb2_run_test(creds_t* cr, const char* server, uint16_t port) {
   smbc_setOptionNoAutoAnonymousLogin(ctx, false);
   smbc_setOptionUseNTHash(ctx, use_nt_hash);
   if (netbios_name) {
-    smbc_setNetbiosName(ctx, (char*)netbios_name);
+    smbc_setNetbiosName(ctx, (char *)netbios_name);
   }
 
   ctx = smbc_init_context(ctx);
@@ -88,12 +82,9 @@ bool smb2_run_test(creds_t* cr, const char* server, uint16_t port) {
 
   char uri[2048];
   snprintf(uri, sizeof(uri) - 1, "smb://%s/IPC$", server);
-  uri[sizeof(uri)-1] = 0;
+  uri[sizeof(uri) - 1] = 0;
   if (verbose) {
-    printf("[INFO] Connecting to: %s with %s\\%s%%%s\n",
-           uri, cr->workgroup,
-           cr->user,
-           cr->pass);
+    printf("[INFO] Connecting to: %s with %s\\%s%%%s\n", uri, cr->workgroup, cr->user, cr->pass);
   }
   SMBCFILE *fd = smbc_getFunctionOpendir(ctx)(ctx, uri);
   if (fd) {
@@ -162,13 +153,7 @@ bool smb2_run_test(creds_t* cr, const char* server, uint16_t port) {
   return false;
 }
 
-void service_smb2(char *ip,
-                  int32_t sp,
-                  unsigned char options,
-                  char *miscptr,
-                  FILE * fp,
-                  int32_t port,
-                  char *hostname) {
+void service_smb2(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   hydra_register_socket(sp);
   while (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT))) {
     char *login, *pass;
@@ -177,9 +162,9 @@ void service_smb2(char *ip,
     pass = hydra_get_next_password();
 
     creds_t cr = {
-      .user = login,
-      .pass = pass,
-      .workgroup = workgroup,
+        .user = login,
+        .pass = pass,
+        .workgroup = workgroup,
     };
 
     if (smb2_run_test(&cr, hydra_address2string(ip), port & 0xffff)) {
@@ -199,24 +184,18 @@ const char tkn_netbios[] = "netbios:{";
 
 #define CMP(s1, s2) (strncmp(s1, s2, sizeof(s1) - 1) == 0)
 
-int32_t service_smb2_init(char *ip,
-                          int32_t sp,
-                          unsigned char options,
-                          char *miscptr,
-                          FILE * fp,
-                          int32_t port,
-                          char *hostname) {
+int32_t service_smb2_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   if (!miscptr)
     return 0;
 
-  while(*miscptr) {
+  while (*miscptr) {
     if (isspace(*miscptr)) {
       miscptr++;
       continue;
     }
     if (CMP(tkn_workgroup, miscptr)) {
       miscptr += sizeof(tkn_workgroup) - 1;
-      char* p = strchr(miscptr, '}');
+      char *p = strchr(miscptr, '}');
       if (p == NULL) {
         hydra_report(stderr, "[ERROR] missing closing brace in workgroup\n");
         return -1;
@@ -231,7 +210,7 @@ int32_t service_smb2_init(char *ip,
     }
     if (CMP(tkn_netbios, miscptr)) {
       miscptr += sizeof(tkn_netbios) - 1;
-      char* p = strchr(miscptr, '}');
+      char *p = strchr(miscptr, '}');
       if (p == NULL) {
         hydra_report(stderr, "[ERROR] missing closing brace in netbios name\n");
         return -1;
@@ -268,7 +247,7 @@ int32_t service_smb2_init(char *ip,
   return 0;
 }
 
-void usage_smb2(const char* service) {
+void usage_smb2(const char *service) {
   puts("Module is a thin wrapper over the Samba client library (libsmbclient).\n"
        "Thus, is capable of negotiating v1, v2 and v3 of the protocol.\n"
        "\n"
@@ -296,9 +275,10 @@ void usage_smb2(const char* service) {
        "\n"
        "Examples: \n"
        "  hydra smb2://abc.com -l admin -p xxx -m workgroup:{OFFICE}\n"
-       "  hydra smb2://1.2.3.4 -l admin -p F54F3A1D3C38140684FF4DAD029F25B5 -m 'workgroup:{OFFICE} nthash:true'\n"
-       "  hydra -l admin -p F54F3A1D3C38140684FF4DAD029F25B5 'smb2://1.2.3.4/workgroup:{OFFICE} nthash:true'\n"
-       );
+       "  hydra smb2://1.2.3.4 -l admin -p F54F3A1D3C38140684FF4DAD029F25B5 -m "
+       "'workgroup:{OFFICE} nthash:true'\n"
+       "  hydra -l admin -p F54F3A1D3C38140684FF4DAD029F25B5 "
+       "'smb2://1.2.3.4/workgroup:{OFFICE} nthash:true'\n");
 }
 
 #endif // LIBSMBCLIENT

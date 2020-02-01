@@ -1,8 +1,8 @@
 
+#include "hydra-mod.h"
+#include "ntlm.h"
 #include <stdio.h>
 #include <string.h>
-#include "ntlm.h"
-#include "hydra-mod.h"
 
 #define AUTH_ERROR -1
 #define AUTH_CLEAR 0
@@ -28,10 +28,7 @@
 #endif
 #endif
 
-typedef enum {
-  SASL_ALLOW_UNASSIGNED = 1
-} sasl_saslprep_flags;
-
+typedef enum { SASL_ALLOW_UNASSIGNED = 1 } sasl_saslprep_flags;
 
 int32_t print_hex(unsigned char *buf, int32_t len);
 
@@ -39,9 +36,9 @@ void sasl_plain(char *result, char *login, char *pass);
 int32_t sasl_saslprep(const char *in, sasl_saslprep_flags flags, char **out);
 
 #ifdef LIBOPENSSL
+#include <openssl/hmac.h>
 #include <openssl/md5.h>
 #include <openssl/sha.h>
-#include <openssl/hmac.h>
 
 void sasl_cram_md5(char *result, char *pass, char *challenge);
 void sasl_cram_sha1(char *result, char *pass, char *challenge);

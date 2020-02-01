@@ -9,9 +9,10 @@ static char *domain = NULL;
 int32_t xmpp_auth_mechanism = AUTH_ERROR;
 
 char *JABBER_CLIENT_INIT_STR = "<?xml version='1.0' ?><stream:stream to='";
-char *JABBER_CLIENT_INIT_END_STR = "' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' version='1.0'>";
+char *JABBER_CLIENT_INIT_END_STR = "' xmlns='jabber:client' xmlns:stream='http://etherx.jabber.org/streams' "
+                                   "version='1.0'>";
 
-int32_t start_xmpp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_xmpp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "\"\"";
   char *login, *pass, buffer[500], buffer2[500];
   char *AUTH_STR = "<auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' mechanism='";
@@ -71,131 +72,30 @@ int32_t start_xmpp(int32_t s, char *ip, int32_t port, unsigned char options, cha
       strncpy(buffer2, ptr + strlen(CHALLENGE_STR), chglen);
       buffer2[chglen] = '\0';
       memset(buffer, 0, sizeof(buffer));
-      from64tobits((char *) buffer, buffer2);
+      from64tobits((char *)buffer, buffer2);
       if (debug)
         hydra_report(stderr, "DEBUG S: %s\n", buffer);
     }
 
     switch (xmpp_auth_mechanism) {
-    case AUTH_LOGIN:{
-        if (strstr(buffer, "sername") != NULL) {
-          strncpy(buffer2, login, sizeof(buffer2) - 1);
-          buffer2[sizeof(buffer2) - 1] = '\0';
+    case AUTH_LOGIN: {
+      if (strstr(buffer, "sername") != NULL) {
+        strncpy(buffer2, login, sizeof(buffer2) - 1);
+        buffer2[sizeof(buffer2) - 1] = '\0';
 
-          hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
-          sprintf(buffer, "%s%.250s%s", RESPONSE_STR, buffer2, RESPONSE_END_STR);
-          if (debug)
-            hydra_report(stderr, "DEBUG C: %s\n", buffer);
-          if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
-            free(buf);
-            return 1;
-          }
-          buf = hydra_receive_line(s);
-          if (buf == NULL)
-            return 1;
-          /* server now would ask for the password */
-          if ((strstr(buf, CHALLENGE_STR) != NULL) || (strstr(buf, CHALLENGE_STR2) != NULL)) {
-            char *ptr = strstr(buf, CHALLENGE_STR);
-
-            if (!ptr)
-              ptr = strstr(buf, CHALLENGE_STR2);
-            char *ptr_end = strstr(ptr, CHALLENGE_END_STR);
-            int32_t chglen = ptr_end - ptr - strlen(CHALLENGE_STR);
-
-            if ((chglen > 0) && (chglen < sizeof(buffer2))) {
-              strncpy(buffer2, ptr + strlen(CHALLENGE_STR), chglen);
-              buffer2[chglen] = '\0';
-              memset(buffer, 0, sizeof(buffer));
-              from64tobits((char *) buffer, buffer2);
-              if (strstr(buffer, "assword") != NULL) {
-                strncpy(buffer2, pass, sizeof(buffer2) - 1);
-                buffer2[sizeof(buffer2) - 1] = '\0';
-                hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
-                sprintf(buffer, "%s%.250s%s", RESPONSE_STR, buffer2, RESPONSE_END_STR);
-              }
-            } else {
-              hydra_report(stderr, "[ERROR] xmpp could not extract challenge from server\n");
-              free(buf);
-              return 1;
-            }
-          }
-        }
-      }
-      break;
-#ifdef LIBOPENSSL
-    case AUTH_PLAIN:{
-        memset(buffer2, 0, sizeof(buffer));
-        sasl_plain(buffer2, login, pass);
+        hydra_tobase64((unsigned char *)buffer2, strlen(buffer2), sizeof(buffer2));
         sprintf(buffer, "%s%.250s%s", RESPONSE_STR, buffer2, RESPONSE_END_STR);
         if (debug)
           hydra_report(stderr, "DEBUG C: %s\n", buffer);
-
-      }
-      break;
-    case AUTH_CRAMMD5:{
-        int32_t rc = 0;
-        char *preplogin;
-
-        memset(buffer2, 0, sizeof(buffer2));
-        sasl_cram_md5(buffer2, pass, buffer);
-
-        rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
-        if (rc) {
-          free(buf);
-          return 3;
-        }
-
-        sprintf(buffer, "%.200s %.250s", preplogin, buffer2);
-        if (debug)
-          hydra_report(stderr, "DEBUG C: %s\n", buffer);
-        hydra_tobase64((unsigned char *) buffer, strlen(buffer), sizeof(buffer));
-        sprintf(buffer2, "%s%.250s%s", RESPONSE_STR, buffer, RESPONSE_END_STR);
-        strncpy(buffer, buffer2, sizeof(buffer) - 1);
-        buffer[sizeof(buffer) - 1] = '\0';
-        free(preplogin);
-      }
-      break;
-    case AUTH_DIGESTMD5:{
-        memset(buffer2, 0, sizeof(buffer2));
-        fooptr = buffer2;
-        sasl_digest_md5(fooptr, login, pass, buffer, domain, "xmpp", NULL, 0, NULL);
-        if (fooptr == NULL) {
-          free(buf);
-          return 3;
-        }
-        if (debug)
-          hydra_report(stderr, "DEBUG C: %s\n", buffer2);
-        hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
-        snprintf(buffer, sizeof(buffer), "%s%s%s", RESPONSE_STR, buffer2, RESPONSE_END_STR);
-      }
-      break;
-    case AUTH_SCRAMSHA1:{
-        /*client-first-message */
-        char clientfirstmessagebare[200];
-        char *preplogin;
-        int32_t rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
-
-        if (rc) {
-          free(buf);
-          return 3;
-        }
-
-        snprintf(clientfirstmessagebare, sizeof(clientfirstmessagebare), "n=%s,r=hydra", preplogin);
-        free(preplogin);
-        sprintf(buffer2, "n,,%.200s", clientfirstmessagebare);
-        hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
-        snprintf(buffer, sizeof(buffer), "%s%s%s", RESPONSE_STR, buffer2, RESPONSE_END_STR);
-
-        free(buf);
         if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+          free(buf);
           return 1;
         }
         buf = hydra_receive_line(s);
         if (buf == NULL)
           return 1;
-
+        /* server now would ask for the password */
         if ((strstr(buf, CHALLENGE_STR) != NULL) || (strstr(buf, CHALLENGE_STR2) != NULL)) {
-          char serverfirstmessage[200];
           char *ptr = strstr(buf, CHALLENGE_STR);
 
           if (!ptr)
@@ -206,36 +106,132 @@ int32_t start_xmpp(int32_t s, char *ip, int32_t port, unsigned char options, cha
           if ((chglen > 0) && (chglen < sizeof(buffer2))) {
             strncpy(buffer2, ptr + strlen(CHALLENGE_STR), chglen);
             buffer2[chglen] = '\0';
+            memset(buffer, 0, sizeof(buffer));
+            from64tobits((char *)buffer, buffer2);
+            if (strstr(buffer, "assword") != NULL) {
+              strncpy(buffer2, pass, sizeof(buffer2) - 1);
+              buffer2[sizeof(buffer2) - 1] = '\0';
+              hydra_tobase64((unsigned char *)buffer2, strlen(buffer2), sizeof(buffer2));
+              sprintf(buffer, "%s%.250s%s", RESPONSE_STR, buffer2, RESPONSE_END_STR);
+            }
           } else {
             hydra_report(stderr, "[ERROR] xmpp could not extract challenge from server\n");
             free(buf);
             return 1;
           }
+        }
+      }
+    } break;
+#ifdef LIBOPENSSL
+    case AUTH_PLAIN: {
+      memset(buffer2, 0, sizeof(buffer));
+      sasl_plain(buffer2, login, pass);
+      sprintf(buffer, "%s%.250s%s", RESPONSE_STR, buffer2, RESPONSE_END_STR);
+      if (debug)
+        hydra_report(stderr, "DEBUG C: %s\n", buffer);
 
-          /*server-first-message */
-          memset(buffer, 0, sizeof(buffer));
-          from64tobits((char *) buffer, buffer2);
-          strncpy(serverfirstmessage, buffer, sizeof(serverfirstmessage) - 1);
-          serverfirstmessage[sizeof(serverfirstmessage) - 1] = '\0';
+    } break;
+    case AUTH_CRAMMD5: {
+      int32_t rc = 0;
+      char *preplogin;
 
-          memset(buffer2, 0, sizeof(buffer2));
-          fooptr = buffer2;
-          sasl_scram_sha1(fooptr, pass, clientfirstmessagebare, serverfirstmessage);
-          if (fooptr == NULL) {
-            hydra_report(stderr, "[ERROR] Can't compute client response\n");
-            free(buf);
-            return 1;
-          }
-          hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
-          snprintf(buffer, sizeof(buffer), "%s%s%s", RESPONSE_STR, buffer2, RESPONSE_END_STR);
+      memset(buffer2, 0, sizeof(buffer2));
+      sasl_cram_md5(buffer2, pass, buffer);
+
+      rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
+      if (rc) {
+        free(buf);
+        return 3;
+      }
+
+      sprintf(buffer, "%.200s %.250s", preplogin, buffer2);
+      if (debug)
+        hydra_report(stderr, "DEBUG C: %s\n", buffer);
+      hydra_tobase64((unsigned char *)buffer, strlen(buffer), sizeof(buffer));
+      sprintf(buffer2, "%s%.250s%s", RESPONSE_STR, buffer, RESPONSE_END_STR);
+      strncpy(buffer, buffer2, sizeof(buffer) - 1);
+      buffer[sizeof(buffer) - 1] = '\0';
+      free(preplogin);
+    } break;
+    case AUTH_DIGESTMD5: {
+      memset(buffer2, 0, sizeof(buffer2));
+      fooptr = buffer2;
+      sasl_digest_md5(fooptr, login, pass, buffer, domain, "xmpp", NULL, 0, NULL);
+      if (fooptr == NULL) {
+        free(buf);
+        return 3;
+      }
+      if (debug)
+        hydra_report(stderr, "DEBUG C: %s\n", buffer2);
+      hydra_tobase64((unsigned char *)buffer2, strlen(buffer2), sizeof(buffer2));
+      snprintf(buffer, sizeof(buffer), "%s%s%s", RESPONSE_STR, buffer2, RESPONSE_END_STR);
+    } break;
+    case AUTH_SCRAMSHA1: {
+      /*client-first-message */
+      char clientfirstmessagebare[200];
+      char *preplogin;
+      int32_t rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
+
+      if (rc) {
+        free(buf);
+        return 3;
+      }
+
+      snprintf(clientfirstmessagebare, sizeof(clientfirstmessagebare), "n=%s,r=hydra", preplogin);
+      free(preplogin);
+      sprintf(buffer2, "n,,%.200s", clientfirstmessagebare);
+      hydra_tobase64((unsigned char *)buffer2, strlen(buffer2), sizeof(buffer2));
+      snprintf(buffer, sizeof(buffer), "%s%s%s", RESPONSE_STR, buffer2, RESPONSE_END_STR);
+
+      free(buf);
+      if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+        return 1;
+      }
+      buf = hydra_receive_line(s);
+      if (buf == NULL)
+        return 1;
+
+      if ((strstr(buf, CHALLENGE_STR) != NULL) || (strstr(buf, CHALLENGE_STR2) != NULL)) {
+        char serverfirstmessage[200];
+        char *ptr = strstr(buf, CHALLENGE_STR);
+
+        if (!ptr)
+          ptr = strstr(buf, CHALLENGE_STR2);
+        char *ptr_end = strstr(ptr, CHALLENGE_END_STR);
+        int32_t chglen = ptr_end - ptr - strlen(CHALLENGE_STR);
+
+        if ((chglen > 0) && (chglen < sizeof(buffer2))) {
+          strncpy(buffer2, ptr + strlen(CHALLENGE_STR), chglen);
+          buffer2[chglen] = '\0';
         } else {
-          if (verbose || debug)
-            hydra_report(stderr, "[ERROR] Not a valid server challenge\n");
+          hydra_report(stderr, "[ERROR] xmpp could not extract challenge from server\n");
           free(buf);
           return 1;
         }
+
+        /*server-first-message */
+        memset(buffer, 0, sizeof(buffer));
+        from64tobits((char *)buffer, buffer2);
+        strncpy(serverfirstmessage, buffer, sizeof(serverfirstmessage) - 1);
+        serverfirstmessage[sizeof(serverfirstmessage) - 1] = '\0';
+
+        memset(buffer2, 0, sizeof(buffer2));
+        fooptr = buffer2;
+        sasl_scram_sha1(fooptr, pass, clientfirstmessagebare, serverfirstmessage);
+        if (fooptr == NULL) {
+          hydra_report(stderr, "[ERROR] Can't compute client response\n");
+          free(buf);
+          return 1;
+        }
+        hydra_tobase64((unsigned char *)buffer2, strlen(buffer2), sizeof(buffer2));
+        snprintf(buffer, sizeof(buffer), "%s%s%s", RESPONSE_STR, buffer2, RESPONSE_END_STR);
+      } else {
+        if (verbose || debug)
+          hydra_report(stderr, "[ERROR] Not a valid server challenge\n");
+        free(buf);
+        return 1;
       }
-      break;
+    } break;
 #endif
       ptr = 0;
     }
@@ -249,8 +245,9 @@ int32_t start_xmpp(int32_t s, char *ip, int32_t port, unsigned char options, cha
     if (buf == NULL)
       return 1;
 
-    //we test the challenge tag as digest-md5 when connected is sending "rspauth" value
-    //so if we are receiving a second challenge we assume the auth is good
+    // we test the challenge tag as digest-md5 when connected is sending
+    // "rspauth" value so if we are receiving a second challenge we assume the
+    // auth is good
 
     if ((strstr(buf, "<success") != NULL) || (strstr(buf, "<challenge ") != NULL)) {
       hydra_report_found_host(port, ip, "xmpp", fp);
@@ -278,29 +275,31 @@ int32_t start_xmpp(int32_t s, char *ip, int32_t port, unsigned char options, cha
   return 3;
 }
 
-void service_xmpp(char *target, char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+void service_xmpp(char *target, char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1, tls = 0;
   char buffer[500], *buf = NULL;
   int32_t myport = PORT_XMPP, mysslport = PORT_XMPP_SSL, disable_tls = 0;
   char *enddomain = NULL;
 
-  //we have to pass the target here as the reverse dns resolution is not working for some servers
-  //try to extract only the domain name from the target
-  //so for o.nimbuzz.com will get nimbuzz.com
-  //and hermes.jabber.org will get jabber.org
+  // we have to pass the target here as the reverse dns resolution is not
+  // working for some servers try to extract only the domain name from the
+  // target so for o.nimbuzz.com will get nimbuzz.com and hermes.jabber.org will
+  // get jabber.org
 
   domain = strchr(target, '.');
   if (!domain) {
-    hydra_report(stderr, "[ERROR] can't extract the domain name, you have to specify a fqdn xmpp server, the domain name will be used in the jabber init request\n");
+    hydra_report(stderr, "[ERROR] can't extract the domain name, you have to "
+                         "specify a fqdn xmpp server, the domain name will be "
+                         "used in the jabber init request\n");
     hydra_child_exit(1);
   }
 
   enddomain = strrchr(target, '.');
-  //check if target is not already a domain name aka only . char in the string
+  // check if target is not already a domain name aka only . char in the string
   if (enddomain && (enddomain == domain)) {
     domain = target;
   } else {
-    //moving to pass the . char
+    // moving to pass the . char
     domain = domain + 1;
   }
 
@@ -309,7 +308,7 @@ void service_xmpp(char *target, char *ip, int32_t sp, unsigned char options, cha
     return;
   while (1) {
     switch (run) {
-    case 1:                    /* connect and service init function */
+    case 1: /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       if ((options & OPTION_SSL) == 0) {
@@ -325,7 +324,7 @@ void service_xmpp(char *target, char *ip, int32_t sp, unsigned char options, cha
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
         hydra_child_exit(1);
       }
       memset(buffer, 0, sizeof(buffer));
@@ -333,7 +332,7 @@ void service_xmpp(char *target, char *ip, int32_t sp, unsigned char options, cha
       if (hydra_send(sock, buffer, strlen(buffer), 0) < 0) {
         hydra_child_exit(1);
       }
-      //some server is longer to answer
+      // some server is longer to answer
       usleepn(300);
       do {
         if ((buf = hydra_receive_line(sock)) == NULL) {
@@ -351,7 +350,11 @@ void service_xmpp(char *target, char *ip, int32_t sp, unsigned char options, cha
 
         if (strstr(buf, "<stream:error")) {
           if (strstr(buf, "<host-unknown"))
-            hydra_report(stderr, "[ERROR] %s host unknown, you have to specify a fqdn xmpp server, the domain name will be used in the jabber init request : %s\n", domain, buf);
+            hydra_report(stderr,
+                         "[ERROR] %s host unknown, you have to specify a fqdn "
+                         "xmpp server, the domain name will be used in the "
+                         "jabber init request : %s\n",
+                         domain, buf);
           else
             hydra_report(stderr, "[ERROR] xmpp protocol : %s\n", buf);
           free(buf);
@@ -387,7 +390,7 @@ void service_xmpp(char *target, char *ip, int32_t sp, unsigned char options, cha
         int32_t i;
 
         for (i = 0; i < strlen(miscptr); i++)
-          miscptr[i] = (char) toupper((int32_t) miscptr[i]);
+          miscptr[i] = (char)toupper((int32_t)miscptr[i]);
 
         if (strncmp(miscptr, "LOGIN", 5) == 0)
           xmpp_auth_mechanism = AUTH_LOGIN;
@@ -429,7 +432,7 @@ void service_xmpp(char *target, char *ip, int32_t sp, unsigned char options, cha
         }
       }
 #ifdef LIBOPENSSL
-      //check if tls is not wanted and if tls is available
+      // check if tls is not wanted and if tls is available
       if (!disable_tls && tls) {
         char *STARTTLS = "<starttls xmlns='urn:ietf:params:xml:ns:xmpp-tls'/>";
 
@@ -458,7 +461,7 @@ void service_xmpp(char *target, char *ip, int32_t sp, unsigned char options, cha
           if (hydra_send(sock, buffer, strlen(buffer), 0) < 0) {
             hydra_child_exit(1);
           }
-          //some server is longer to answer
+          // some server is longer to answer
           usleepn(300);
           buf = hydra_receive_line(sock);
           if ((buf == NULL) || (strstr(buf, "<stream:stream") == NULL))
@@ -469,10 +472,10 @@ void service_xmpp(char *target, char *ip, int32_t sp, unsigned char options, cha
 #endif
       next_run = 2;
       break;
-    case 2:                    /* run the cracking function */
+    case 2: /* run the cracking function */
       next_run = start_xmpp(sock, ip, port, options, miscptr, fp);
       break;
-    case 3:                    /* clean exit */
+    case 3: /* clean exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       hydra_child_exit(0);
@@ -485,13 +488,13 @@ void service_xmpp(char *target, char *ip, int32_t sp, unsigned char options, cha
   }
 }
 
-int32_t service_xmpp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+int32_t service_xmpp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
   //
   // fill if needed.
-  // 
+  //
   // return codes:
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here
@@ -499,8 +502,9 @@ int32_t service_xmpp_init(char *ip, int32_t sp, unsigned char options, char *mis
   return 0;
 }
 
-void usage_xmpp(const char* service) {
+void usage_xmpp(const char *service) {
   printf("Module xmpp is optionally taking one authentication type of:\n"
          "  LOGIN (default), PLAIN, CRAM-MD5, DIGEST-MD5, SCRAM-SHA1\n\n"
-         "Note, the target passed should be a fdqn as the value is used in the Jabber init request, example: hermes.jabber.org\n\n");
+         "Note, the target passed should be a fdqn as the value is used in the "
+         "Jabber init request, example: hermes.jabber.org\n\n");
 }

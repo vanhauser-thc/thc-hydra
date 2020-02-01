@@ -8,9 +8,7 @@ have to add option -DWITH_SSH1=On in the cmake
 
 #include "hydra-mod.h"
 #ifndef LIBSSH
-void dummy_ssh() {
-  printf("\n");
-}
+void dummy_ssh() { printf("\n"); }
 #else
 
 #include <libssh/libssh.h>
@@ -23,7 +21,7 @@ extern hydra_option hydra_options;
 extern char *HYDRA_EXIT;
 int32_t new_session = 1;
 
-int32_t start_ssh(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_ssh(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";
   char *login, *pass, keep_login[300];
   int32_t auth_state = 0, rc = 0, i = 0;
@@ -49,7 +47,7 @@ int32_t start_ssh(int32_t s, char *ip, int32_t port, unsigned char options, char
     ssh_options_set(session, SSH_OPTIONS_COMPRESSION_C_S, "none");
     ssh_options_set(session, SSH_OPTIONS_COMPRESSION_S_C, "none");
     if (ssh_connect(session) != 0) {
-      //if the connection was drop, exit and let hydra main handle it
+      // if the connection was drop, exit and let hydra main handle it
       if (verbose)
         hydra_report(stderr, "[ERROR] could not connect to target port %d: %s\n", port, ssh_get_error(session));
       return 3;
@@ -110,7 +108,7 @@ int32_t start_ssh(int32_t s, char *ip, int32_t port, unsigned char options, char
   return 1;
 }
 
-void service_ssh(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+void service_ssh(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1;
 
   hydra_register_socket(sp);
@@ -118,7 +116,7 @@ void service_ssh(char *ip, int32_t sp, unsigned char options, char *miscptr, FIL
     return;
   while (1) {
     switch (run) {
-    case 1:                    /* connect and service init function */
+    case 1: /* connect and service init function */
       next_run = start_ssh(sock, ip, port, options, miscptr, fp);
       break;
     case 2:
@@ -158,16 +156,16 @@ void service_ssh(char *ip, int32_t sp, unsigned char options, char *miscptr, FIL
 #endif
 
 //
-// dirty workaround here: miscptr is the ptr to the logins, and the first one is used
-// to test if password authentication is enabled!!
+// dirty workaround here: miscptr is the ptr to the logins, and the first one is
+// used to test if password authentication is enabled!!
 //
-int32_t service_ssh_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+int32_t service_ssh_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
   //
   // fill if needed.
-  // 
+  //
   // return codes:
   //   0 all OK
   //   1 skip target without generating an error
@@ -176,9 +174,11 @@ int32_t service_ssh_init(char *ip, int32_t sp, unsigned char options, char *misc
 #ifdef LIBSSH
   int32_t rc, method;
   ssh_session session = ssh_new();
-  
+
   if (verbose || debug)
-    printf("[INFO] Testing if password authentication is supported by ssh://%s@%s:%d\n", miscptr == NULL ? "hydra" : miscptr, hydra_address2string_beautiful(ip), port);
+    printf("[INFO] Testing if password authentication is supported by "
+           "ssh://%s@%s:%d\n",
+           miscptr == NULL ? "hydra" : miscptr, hydra_address2string_beautiful(ip), port);
   ssh_options_set(session, SSH_OPTIONS_PORT, &port);
   ssh_options_set(session, SSH_OPTIONS_HOST, hydra_address2string(ip));
   if (miscptr == NULL)
@@ -191,26 +191,35 @@ int32_t service_ssh_init(char *ip, int32_t sp, unsigned char options, char *misc
   if (ssh_connect(session) != 0) {
     fprintf(stderr, "[ERROR] could not connect to ssh://%s:%d - %s\n", hydra_address2string_beautiful(ip), port, ssh_get_error(session));
     return 2;
-  } 
+  }
   rc = ssh_userauth_none(session, NULL);
-  method = ssh_userauth_list(session, NULL); 
+  method = ssh_userauth_list(session, NULL);
   ssh_disconnect(session);
   ssh_finalize();
   ssh_free(session);
 
-  if (debug) printf("[DEBUG] SSH method check: %08x\n", method);
+  if (debug)
+    printf("[DEBUG] SSH method check: %08x\n", method);
 
   if ((method & SSH_AUTH_METHOD_INTERACTIVE) || (method & SSH_AUTH_METHOD_PASSWORD)) {
     if (verbose || debug)
-      printf("[INFO] Successful, password authentication is supported by ssh://%s:%d\n", hydra_address2string_beautiful(ip), port);
+      printf("[INFO] Successful, password authentication is supported by "
+             "ssh://%s:%d\n",
+             hydra_address2string_beautiful(ip), port);
     return 0;
   } else if (method == 0) {
     if (verbose || debug)
-      fprintf(stderr, "[WARNING] invalid SSH method reply from ssh://%s:%d, continuing anyway ... (check for empty password!)\n", hydra_address2string_beautiful(ip), port);
+      fprintf(stderr,
+              "[WARNING] invalid SSH method reply from ssh://%s:%d, continuing "
+              "anyway ... (check for empty password!)\n",
+              hydra_address2string_beautiful(ip), port);
     return 0;
   }
 
-  fprintf(stderr, "[ERROR] target ssh://%s:%d/ does not support password authentication (method reply %d).\n", hydra_address2string_beautiful(ip), port, method);
+  fprintf(stderr,
+          "[ERROR] target ssh://%s:%d/ does not support password "
+          "authentication (method reply %d).\n",
+          hydra_address2string_beautiful(ip), port, method);
   return 1;
 #else
   return 0;

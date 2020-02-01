@@ -1,5 +1,5 @@
-//This plugin was written by <david dot maciejak at gmail D O T com>
-//checked for memleaks on 110425, none found
+// This plugin was written by <david dot maciejak at gmail D O T com>
+// checked for memleaks on 110425, none found
 
 #ifdef LIBSVN
 
@@ -10,12 +10,12 @@
 #include <sys/param.h>
 #endif
 
-#include <svn_version.h>
 #include <svn_client.h>
 #include <svn_cmdline.h>
-#include <svn_pools.h>
 #include <svn_config.h>
 #include <svn_fs.h>
+#include <svn_pools.h>
+#include <svn_version.h>
 #if SVN_VER_MINOR > 7
 #include <svn_path.h>
 #endif
@@ -25,9 +25,7 @@
 #include "hydra-mod.h"
 
 #ifndef LIBSVN
-void dummy_svn() {
-  printf("\n");
-}
+void dummy_svn() { printf("\n"); }
 #else
 
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
@@ -36,11 +34,9 @@ extern char *HYDRA_EXIT;
 
 #define DEFAULT_BRANCH "trunk"
 
-static svn_error_t *print_dirdummy(void *baton, const char *path, const svn_dirent_t * dirent, const svn_lock_t * lock, const char *abs_path, apr_pool_t * pool) {
-  return SVN_NO_ERROR;
-}
+static svn_error_t *print_dirdummy(void *baton, const char *path, const svn_dirent_t *dirent, const svn_lock_t *lock, const char *abs_path, apr_pool_t *pool) { return SVN_NO_ERROR; }
 
-static svn_error_t *my_simple_prompt_callback(svn_auth_cred_simple_t ** cred, void *baton, const char *realm, const char *username, svn_boolean_t may_save, apr_pool_t * pool) {
+static svn_error_t *my_simple_prompt_callback(svn_auth_cred_simple_t **cred, void *baton, const char *realm, const char *username, svn_boolean_t may_save, apr_pool_t *pool) {
   char *empty = "";
   char *login, *pass;
   svn_auth_cred_simple_t *ret = apr_pcalloc(pool, sizeof(*ret));
@@ -57,13 +53,13 @@ static svn_error_t *my_simple_prompt_callback(svn_auth_cred_simple_t ** cred, vo
   return SVN_NO_ERROR;
 }
 
-int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
-  //int32_t ipv6 = 0;
+int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
+  // int32_t ipv6 = 0;
   char URL[1024];
   char URLBRANCH[256];
-  #if SVN_VER_MINOR > 7
+#if SVN_VER_MINOR > 7
   const char *canonical;
-  #endif
+#endif
   apr_pool_t *pool;
   svn_error_t *err;
   svn_opt_revision_t revision;
@@ -80,7 +76,7 @@ int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char
   if (svn_cmdline_init("hydra", stderr) != EXIT_SUCCESS)
     return 4;
 
-  //if (ip[0] == 16)
+  // if (ip[0] == 16)
   //  ipv6 = 1;
 
   pool = svn_pool_create(NULL);
@@ -96,7 +92,7 @@ int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char
   if ((err = svn_client_create_context2(&ctx, NULL, pool))) {
 #else
   if ((err = svn_client_create_context(&ctx, pool))) {
-#endif    
+#endif
     svn_pool_destroy(pool);
     svn_handle_error2(err, stderr, FALSE, "hydra: ");
     return 4;
@@ -110,7 +106,7 @@ int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char
 
   providers = apr_array_make(pool, 1, sizeof(svn_auth_provider_object_t *));
 
-  svn_auth_get_simple_prompt_provider(&provider, my_simple_prompt_callback, NULL,       /* baton */
+  svn_auth_get_simple_prompt_provider(&provider, my_simple_prompt_callback, NULL, /* baton */
                                       0, pool);
   APR_ARRAY_PUSH(providers, svn_auth_provider_object_t *) = provider;
 
@@ -120,29 +116,29 @@ int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char
   revision.kind = svn_opt_revision_head;
   snprintf(URL, sizeof(URL), "svn://%s:%d/%s", hydra_address2string_beautiful(ip), port, URLBRANCH);
   dirents = SVN_DIRENT_KIND;
-  #if SVN_VER_MINOR > 9
+#if SVN_VER_MINOR > 9
   canonical = svn_uri_canonicalize(URL, pool);
-  err = svn_client_list4(canonical, &revision, &revision, NULL, svn_depth_unknown, dirents, FALSE, FALSE, (svn_client_list_func2_t) print_dirdummy, NULL, ctx, pool);
-  #elif SVN_VER_MINOR > 7
+  err = svn_client_list4(canonical, &revision, &revision, NULL, svn_depth_unknown, dirents, FALSE, FALSE, (svn_client_list_func2_t)print_dirdummy, NULL, ctx, pool);
+#elif SVN_VER_MINOR > 7
   canonical = svn_uri_canonicalize(URL, pool);
-  err = svn_client_list3(canonical, &revision, &revision, svn_depth_unknown, dirents, FALSE, FALSE, (svn_client_list_func2_t) print_dirdummy, NULL, ctx, pool);
-  #else
-  err = svn_client_list2(URL, &revision, &revision, svn_depth_unknown, dirents, FALSE, print_dirdummy, NULL, ctx, pool);
-  #endif
+  err = svn_client_list3(canonical, &revision, &revision, svn_depth_unknown, dirents, FALSE, FALSE, (svn_client_list_func2_t)print_dirdummy, NULL, ctx, pool);
+#else
+err = svn_client_list2(URL, &revision, &revision, svn_depth_unknown, dirents, FALSE, print_dirdummy, NULL, ctx, pool);
+#endif
 
   svn_pool_destroy(pool);
 
   if (err) {
     if (debug || (verbose && (err->apr_err != 170001 && err->apr_err != 170013)))
       hydra_report(stderr, "[ERROR] Access refused (error code %d) , message: %s\n", err->apr_err, err->message);
-    //Username not found 170001 ": Username not found"
-    //Password incorrect 170001 ": Password incorrect"
+    // Username not found 170001 ": Username not found"
+    // Password incorrect 170001 ": Password incorrect"
     if (err->apr_err != 170001 && err->apr_err != 170013) {
-      return 4;                 //error
+      return 4; // error
     } else {
       if (strstr(err->message, "Username not found")) {
-        //if (verbose)
-          //printf("[INFO] user %s does not exist, skipping\n", login);
+        // if (verbose)
+        // printf("[INFO] user %s does not exist, skipping\n", login);
         hydra_completed_pair_skip();
         if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
           return 3;
@@ -162,7 +158,7 @@ int32_t start_svn(int32_t s, char *ip, int32_t port, unsigned char options, char
   return 3;
 }
 
-void service_svn(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+void service_svn(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_SVN, mysslport = PORT_SVN_SSL;
 
@@ -173,11 +169,11 @@ void service_svn(char *ip, int32_t sp, unsigned char options, char *miscptr, FIL
       return;
 
     switch (run) {
-    case 1:                    /* connect and service init function */
+    case 1: /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
 
-//      usleepn(300);
+      //      usleepn(300);
       if ((options & OPTION_SSL) == 0) {
         if (port != 0)
           myport = port;
@@ -191,7 +187,7 @@ void service_svn(char *ip, int32_t sp, unsigned char options, char *miscptr, FIL
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
         hydra_child_exit(1);
       }
 
@@ -207,7 +203,8 @@ void service_svn(char *ip, int32_t sp, unsigned char options, char *miscptr, FIL
       return;
     default:
       if (!verbose)
-        hydra_report(stderr, "[ERROR] Caught unknown return code, try verbose option for more details\n");
+        hydra_report(stderr, "[ERROR] Caught unknown return code, try verbose "
+                             "option for more details\n");
       hydra_child_exit(0);
     }
     run = next_run;
@@ -216,13 +213,13 @@ void service_svn(char *ip, int32_t sp, unsigned char options, char *miscptr, FIL
 
 #endif
 
-int32_t service_svn_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+int32_t service_svn_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
   //
   // fill if needed.
-  // 
+  //
   // return codes:
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here
@@ -238,6 +235,7 @@ int32_t service_svn_init(char *ip, int32_t sp, unsigned char options, char *misc
   return 0;
 }
 
-void usage_svn(const char* service) {
-  printf("Module svn is optionally taking the repository name to attack, default is \"trunk\"\n\n");
+void usage_svn(const char *service) {
+  printf("Module svn is optionally taking the repository name to attack, "
+         "default is \"trunk\"\n\n");
 }

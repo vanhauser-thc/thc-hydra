@@ -6,17 +6,16 @@
 //
 //
 
-#include <stdio.h>
 #include "hydra-mod.h"
-#include <string.h>
 #include "sasl.h"
+#include <stdio.h>
+#include <string.h>
 
 extern char *HYDRA_EXIT;
 char packet[500];
 char packet2[500];
 
 int32_t is_Unauthorized(char *s) {
-
   if (strstr(s, "401 Unauthorized") != NULL) {
     return 1;
   } else {
@@ -25,7 +24,6 @@ int32_t is_Unauthorized(char *s) {
 }
 
 int32_t is_NotFound(char *s) {
-
   if (strstr(s, "404 Stream Not Found") != NULL) {
     return 1;
   } else {
@@ -34,7 +32,6 @@ int32_t is_NotFound(char *s) {
 }
 
 int32_t is_Authorized(char *s) {
-
   if (strstr(s, "200 OK") != NULL) {
     return 1;
   } else {
@@ -43,7 +40,6 @@ int32_t is_Authorized(char *s) {
 }
 
 int32_t use_Basic_Auth(char *s) {
-
   if (strstr(s, "WWW-Authenticate: Basic") != NULL) {
     return 1;
   } else {
@@ -52,15 +48,12 @@ int32_t use_Basic_Auth(char *s) {
 }
 
 int32_t use_Digest_Auth(char *s) {
-
   if (strstr(s, "WWW-Authenticate: Digest") != NULL) {
     return 1;
   } else {
     return 0;
   }
 }
-
-
 
 void create_core_packet(int32_t control, char *ip, int32_t port) {
   char *target = hydra_address2string(ip);
@@ -75,7 +68,7 @@ void create_core_packet(int32_t control, char *ip, int32_t port) {
     }
   }
 }
-int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";
   char *login, *pass, buffer[1030], buffer2[500];
   char *lresp;
@@ -109,22 +102,19 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
     }
     return 1;
   } else {
-
     create_core_packet(1, ip, port);
 
     if (use_Basic_Auth(lresp) == 1) {
-
       free(lresp);
       sprintf(buffer2, "%.249s:%.249s", login, pass);
-      hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
+      hydra_tobase64((unsigned char *)buffer2, strlen(buffer2), sizeof(buffer2));
 
       sprintf(buffer, "%.500sAuthorization: : Basic %.500s\r\n\r\n", packet2, buffer2);
 
       if (debug) {
         hydra_report(stderr, "C:%s\n", buffer);
       }
-    }
-    else {
+    } else {
       if (use_Digest_Auth(lresp) == 1) {
         char *dbuf = NULL;
         char aux[500] = "";
@@ -136,7 +126,8 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
 #ifdef LIBOPENSSL
         sasl_digest_md5(dbuf, login, pass, aux, miscptr, "rtsp", hydra_address2string(ip), port, "");
 #else
-        hydra_report(stderr, "[ERROR] Digest auth required but compiled without OpenSSL/MD5 support\n");
+        hydra_report(stderr, "[ERROR] Digest auth required but compiled "
+                             "without OpenSSL/MD5 support\n");
         return 3;
 #endif
 
@@ -163,7 +154,7 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
     lresp = NULL;
     lresp = hydra_receive_line(s);
-  
+
     if (lresp == NULL) {
       hydra_report(stderr, "[ERROR] no server reply\n");
       return 1;
@@ -177,7 +168,6 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
         return 3;
       }
       return 1;
-
     }
     free(lresp);
     hydra_completed_pair();
@@ -186,13 +176,13 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     return 3;
 
-//not rechead
+  // not rechead
   return 2;
 }
 
-void service_rtsp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+void service_rtsp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1;
-  int32_t myport = PORT_RTSP/*, mysslport = PORT_RTSP_SSL*/;
+  int32_t myport = PORT_RTSP /*, mysslport = PORT_RTSP_SSL*/;
 
   hydra_register_socket(sp);
 
@@ -200,9 +190,8 @@ void service_rtsp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
     return;
 
   while (1) {
-
     switch (run) {
-    case 1:                    /* connect and service init function */
+    case 1: /* connect and service init function */
       if (sock >= 0) {
         sock = hydra_disconnect(sock);
       }
@@ -215,16 +204,16 @@ void service_rtsp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
         hydra_child_exit(1);
       }
 
       next_run = 2;
       break;
-    case 2:                    /* run the cracking function */
+    case 2: /* run the cracking function */
       next_run = start_rtsp(sock, ip, port, options, miscptr, fp);
       break;
-    case 3:                    /* clean exit */
+    case 3: /* clean exit */
       if (sock >= 0) {
         sock = hydra_disconnect(sock);
       }
@@ -238,7 +227,7 @@ void service_rtsp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
   }
 }
 
-int32_t service_rtsp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+int32_t service_rtsp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.

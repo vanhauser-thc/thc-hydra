@@ -14,7 +14,7 @@ char *smtp_read_server_capacity(int32_t sock) {
       free(buf);
     ptr = buf = hydra_receive_line(sock);
     if (buf != NULL) {
-      if (isdigit((int32_t) buf[0]) && buf[3] == ' ')
+      if (isdigit((int32_t)buf[0]) && buf[3] == ' ')
         resp = 1;
       else {
         if (buf[strlen(buf) - 1] == '\n')
@@ -27,7 +27,7 @@ char *smtp_read_server_capacity(int32_t sock) {
         if ((ptr = strrchr(buf, '\n')) != NULL) {
 #endif
           ptr++;
-          if (isdigit((int32_t) *ptr) && *(ptr + 3) == ' ')
+          if (isdigit((int32_t)*ptr) && *(ptr + 3) == ' ')
             resp = 1;
         }
       }
@@ -36,7 +36,7 @@ char *smtp_read_server_capacity(int32_t sock) {
   return buf;
 }
 
-int32_t start_smtp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_smtp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";
   char *login, *pass, buffer[500], buffer2[500], *fooptr, *buf;
 
@@ -52,7 +52,6 @@ int32_t start_smtp(int32_t s, char *ip, int32_t port, unsigned char options, cha
   }
 
   switch (smtp_auth_mechanism) {
-
   case AUTH_PLAIN:
     sprintf(buffer, "AUTH PLAIN\r\n");
     if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
@@ -77,105 +76,102 @@ int32_t start_smtp(int32_t s, char *ip, int32_t port, unsigned char options, cha
     break;
 
 #ifdef LIBOPENSSL
-  case AUTH_CRAMMD5:{
-      int32_t rc = 0;
-      char *preplogin;
+  case AUTH_CRAMMD5: {
+    int32_t rc = 0;
+    char *preplogin;
 
-      rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
-      if (rc) {
-        return 3;
-      }
-
-      sprintf(buffer, "AUTH CRAM-MD5\r\n");
-      if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
-        return 1;
-      }
-      //get the one-time BASE64 encoded challenge
-      if ((buf = hydra_receive_line(s)) == NULL)
-        return 1;
-      if (strstr(buf, "334") == NULL || strlen(buf) < 8) {
-        hydra_report(stderr, "[ERROR] SMTP CRAM-MD5 AUTH : %s\n", buf);
-        free(buf);
-        return 3;
-      }
-      memset(buffer, 0, sizeof(buffer));
-      from64tobits((char *) buffer, buf + 4);
-      free(buf);
-
-      memset(buffer2, 0, sizeof(buffer2));
-      sasl_cram_md5(buffer2, pass, buffer);
-
-      sprintf(buffer, "%s %.250s", preplogin, buffer2);
-      hydra_tobase64((unsigned char *) buffer, strlen(buffer), sizeof(buffer));
-
-      char tmp_buffer[sizeof(buffer)];
-      sprintf(tmp_buffer, "%.250s\r\n", buffer);
-      strcpy(buffer, tmp_buffer);
-
-      free(preplogin);
+    rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
+    if (rc) {
+      return 3;
     }
-    break;
 
-  case AUTH_DIGESTMD5:{
-      sprintf(buffer, "AUTH DIGEST-MD5\r\n");
-
-      if (hydra_send(s, buffer, strlen(buffer), 0) < 0)
-        return 1;
-      //receive
-      if ((buf = hydra_receive_line(s)) == NULL)
-        return 1;
-      if (strstr(buf, "334") == NULL) {
-        hydra_report(stderr, "[ERROR] SMTP DIGEST-MD5 AUTH : %s\n", buf);
-        free(buf);
-        return 3;
-      }
-      memset(buffer, 0, sizeof(buffer));
-      from64tobits((char *) buffer, buf + 4);
-      free(buf);
-
-      if (debug)
-        hydra_report(stderr, "DEBUG S: %s\n", buffer);
-
-      fooptr = buffer2;
-      sasl_digest_md5(fooptr, login, pass, buffer, miscptr, "smtp", NULL, 0, NULL);
-      if (fooptr == NULL)
-        return 3;
-
-      if (debug)
-        hydra_report(stderr, "DEBUG C: %s\n", buffer2);
-      hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
-      sprintf(buffer, "%s\r\n", buffer2);
+    sprintf(buffer, "AUTH CRAM-MD5\r\n");
+    if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+      return 1;
     }
-    break;
+    // get the one-time BASE64 encoded challenge
+    if ((buf = hydra_receive_line(s)) == NULL)
+      return 1;
+    if (strstr(buf, "334") == NULL || strlen(buf) < 8) {
+      hydra_report(stderr, "[ERROR] SMTP CRAM-MD5 AUTH : %s\n", buf);
+      free(buf);
+      return 3;
+    }
+    memset(buffer, 0, sizeof(buffer));
+    from64tobits((char *)buffer, buf + 4);
+    free(buf);
+
+    memset(buffer2, 0, sizeof(buffer2));
+    sasl_cram_md5(buffer2, pass, buffer);
+
+    sprintf(buffer, "%s %.250s", preplogin, buffer2);
+    hydra_tobase64((unsigned char *)buffer, strlen(buffer), sizeof(buffer));
+
+    char tmp_buffer[sizeof(buffer)];
+    sprintf(tmp_buffer, "%.250s\r\n", buffer);
+    strcpy(buffer, tmp_buffer);
+
+    free(preplogin);
+  } break;
+
+  case AUTH_DIGESTMD5: {
+    sprintf(buffer, "AUTH DIGEST-MD5\r\n");
+
+    if (hydra_send(s, buffer, strlen(buffer), 0) < 0)
+      return 1;
+    // receive
+    if ((buf = hydra_receive_line(s)) == NULL)
+      return 1;
+    if (strstr(buf, "334") == NULL) {
+      hydra_report(stderr, "[ERROR] SMTP DIGEST-MD5 AUTH : %s\n", buf);
+      free(buf);
+      return 3;
+    }
+    memset(buffer, 0, sizeof(buffer));
+    from64tobits((char *)buffer, buf + 4);
+    free(buf);
+
+    if (debug)
+      hydra_report(stderr, "DEBUG S: %s\n", buffer);
+
+    fooptr = buffer2;
+    sasl_digest_md5(fooptr, login, pass, buffer, miscptr, "smtp", NULL, 0, NULL);
+    if (fooptr == NULL)
+      return 3;
+
+    if (debug)
+      hydra_report(stderr, "DEBUG C: %s\n", buffer2);
+    hydra_tobase64((unsigned char *)buffer2, strlen(buffer2), sizeof(buffer2));
+    sprintf(buffer, "%s\r\n", buffer2);
+  } break;
 #endif
 
-  case AUTH_NTLM:{
-      unsigned char buf1[4096];
-      unsigned char buf2[4096];
+  case AUTH_NTLM: {
+    unsigned char buf1[4096];
+    unsigned char buf2[4096];
 
-      //send auth and receive challenge
-      buildAuthRequest((tSmbNtlmAuthRequest *) buf2, 0, NULL, NULL);
-      to64frombits(buf1, buf2, SmbLength((tSmbNtlmAuthRequest *) buf2));
-      sprintf(buffer, "AUTH NTLM %s\r\n", buf1);
-      if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
-        return 1;
-      }
-      if ((buf = hydra_receive_line(s)) == NULL)
-        return 1;
-      if (strstr(buf, "334") == NULL || strlen(buf) < 8) {
-        hydra_report(stderr, "[ERROR] SMTP NTLM AUTH : %s\n", buf);
-        free(buf);
-        return 3;
-      }
-      //recover challenge
-      from64tobits((char *) buf1, buf + 4);
-      free(buf);
-
-      buildAuthResponse((tSmbNtlmAuthChallenge *) buf1, (tSmbNtlmAuthResponse *) buf2, 0, login, pass, NULL, NULL);
-      to64frombits(buf1, buf2, SmbLength((tSmbNtlmAuthResponse *) buf2));
-      sprintf(buffer, "%s\r\n", buf1);
+    // send auth and receive challenge
+    buildAuthRequest((tSmbNtlmAuthRequest *)buf2, 0, NULL, NULL);
+    to64frombits(buf1, buf2, SmbLength((tSmbNtlmAuthRequest *)buf2));
+    sprintf(buffer, "AUTH NTLM %s\r\n", buf1);
+    if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
+      return 1;
     }
-    break;
+    if ((buf = hydra_receive_line(s)) == NULL)
+      return 1;
+    if (strstr(buf, "334") == NULL || strlen(buf) < 8) {
+      hydra_report(stderr, "[ERROR] SMTP NTLM AUTH : %s\n", buf);
+      free(buf);
+      return 3;
+    }
+    // recover challenge
+    from64tobits((char *)buf1, buf + 4);
+    free(buf);
+
+    buildAuthResponse((tSmbNtlmAuthChallenge *)buf1, (tSmbNtlmAuthResponse *)buf2, 0, login, pass, NULL, NULL);
+    to64frombits(buf1, buf2, SmbLength((tSmbNtlmAuthResponse *)buf2));
+    sprintf(buffer, "%s\r\n", buf1);
+  } break;
 
   default:
     /* by default trying AUTH LOGIN */
@@ -188,13 +184,16 @@ int32_t start_smtp(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
     /* 504 5.7.4 Unrecognized authentication type  */
     if (strstr(buf, "334") == NULL) {
-      hydra_report(stderr, "[ERROR] SMTP LOGIN AUTH, either this auth is disabled or server is not using auth: %s\n", buf);
+      hydra_report(stderr,
+                   "[ERROR] SMTP LOGIN AUTH, either this auth is disabled or "
+                   "server is not using auth: %s\n",
+                   buf);
       free(buf);
       return 3;
     }
     free(buf);
     sprintf(buffer2, "%.250s", login);
-    hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
+    hydra_tobase64((unsigned char *)buffer2, strlen(buffer2), sizeof(buffer2));
     sprintf(buffer, "%.250s\r\n", buffer2);
 
     if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
@@ -210,7 +209,7 @@ int32_t start_smtp(int32_t s, char *ip, int32_t port, unsigned char options, cha
     free(buf);
 
     sprintf(buffer2, "%.250s", pass);
-    hydra_tobase64((unsigned char *) buffer2, strlen(buffer2), sizeof(buffer2));
+    hydra_tobase64((unsigned char *)buffer2, strlen(buffer2), sizeof(buffer2));
     sprintf(buffer, "%.250s\r\n", buffer2);
   }
 
@@ -224,7 +223,7 @@ int32_t start_smtp(int32_t s, char *ip, int32_t port, unsigned char options, cha
   if (smtp_auth_mechanism == AUTH_DIGESTMD5) {
     if (strstr(buf, "334") != NULL && strlen(buf) >= 8) {
       memset(buffer2, 0, sizeof(buffer2));
-      from64tobits((char *) buffer2, buf + 4);
+      from64tobits((char *)buffer2, buf + 4);
       if (strstr(buffer2, "rspauth=") != NULL) {
         hydra_report_found_host(port, ip, "smtp", fp);
         hydra_completed_pair_found();
@@ -254,7 +253,7 @@ int32_t start_smtp(int32_t s, char *ip, int32_t port, unsigned char options, cha
   return 2;
 }
 
-void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1, i = 0;
   int32_t myport = PORT_SMTP, mysslport = PORT_SMTP_SSL, disable_tls = 1;
   char *buf;
@@ -266,7 +265,7 @@ void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
     return;
   while (1) {
     switch (run) {
-    case 1:                    /* connect and service init function */
+    case 1: /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       if ((options & OPTION_SSL) == 0) {
@@ -282,7 +281,7 @@ void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
         hydra_child_exit(1);
       }
 
@@ -310,7 +309,7 @@ void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
 
       if ((miscptr != NULL) && (strlen(miscptr) > 0)) {
         for (i = 0; i < strlen(miscptr); i++)
-          miscptr[i] = (char) toupper((int32_t) miscptr[i]);
+          miscptr[i] = (char)toupper((int32_t)miscptr[i]);
 
         if (strstr(miscptr, "TLS") || strstr(miscptr, "SSL") || strstr(miscptr, "STARTTLS")) {
           disable_tls = 0;
@@ -325,7 +324,8 @@ void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
             free(buf);
             buf = hydra_receive_line(sock);
             if (buf[0] != '2') {
-              hydra_report(stderr, "[ERROR] TLS negotiation failed, no answer received from STARTTLS request\n");
+              hydra_report(stderr, "[ERROR] TLS negotiation failed, no answer "
+                                   "received from STARTTLS request\n");
             } else {
               free(buf);
               if ((hydra_connect_to_ssl(sock, hostname) == -1)) {
@@ -346,9 +346,11 @@ void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
                 hydra_child_exit(2);
             }
           } else
-            hydra_report(stderr, "[ERROR] option to use TLS/SSL failed as it is not supported by the server\n");
+            hydra_report(stderr, "[ERROR] option to use TLS/SSL failed as it "
+                                 "is not supported by the server\n");
         } else
-          hydra_report(stderr, "[ERROR] option to use TLS/SSL failed as it is not supported by the server\n");
+          hydra_report(stderr, "[ERROR] option to use TLS/SSL failed as it is "
+                               "not supported by the server\n");
       }
 #endif
 
@@ -380,9 +382,7 @@ void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
         smtp_auth_mechanism = AUTH_PLAIN;
       }
 
-
       if ((miscptr != NULL) && (strlen(miscptr) > 0)) {
-
         if (strstr(miscptr, "LOGIN"))
           smtp_auth_mechanism = AUTH_LOGIN;
 
@@ -399,7 +399,6 @@ void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
 
         if (strstr(miscptr, "NTLM"))
           smtp_auth_mechanism = AUTH_NTLM;
-
       }
 
       if (verbose) {
@@ -426,10 +425,10 @@ void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
       free(buf);
       next_run = 2;
       break;
-    case 2:                    /* run the cracking function */
+    case 2: /* run the cracking function */
       next_run = start_smtp(sock, ip, port, options, miscptr, fp);
       break;
-    case 3:                    /* clean exit */
+    case 3: /* clean exit */
       if (sock >= 0) {
         sock = hydra_disconnect(sock);
       }
@@ -443,13 +442,13 @@ void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
   }
 }
 
-int32_t service_smtp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+int32_t service_smtp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
   //
   // fill if needed.
-  // 
+  //
   // return codes:
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here
@@ -457,8 +456,10 @@ int32_t service_smtp_init(char *ip, int32_t sp, unsigned char options, char *mis
   return 0;
 }
 
-void usage_smtp(const char* service) {
+void usage_smtp(const char *service) {
   printf("Module smtp is optionally taking one authentication type of:\n"
          "  LOGIN (default), PLAIN, CRAM-MD5, DIGEST-MD5, NTLM\n\n"
-         "Additionally TLS encryption via STARTTLS can be enforced with the TLS option.\n\n" "Example: smtp://target/TLS:PLAIN\n");
+         "Additionally TLS encryption via STARTTLS can be enforced with the "
+         "TLS option.\n\n"
+         "Example: smtp://target/TLS:PLAIN\n");
 }
