@@ -41,7 +41,7 @@ char *imap_read_server_capacity(int32_t sock) {
 }
 
 int32_t start_imap(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
-  char *empty = "";
+  char *empty = "", *result = NULL;
   char *login, *pass, buffer[500], buffer2[500], *fooptr;
 
   if (strlen(login = hydra_get_next_login()) == 0)
@@ -104,7 +104,8 @@ int32_t start_imap(int32_t s, char *ip, int32_t port, unsigned char options, cha
     free(buf);
 
     memset(buffer2, 0, sizeof(buffer2));
-    sasl_plain(buffer2, login, pass);
+    result = sasl_plain(buffer2, login, pass);
+    if (result == NULL) return 3;
     sprintf(buffer, "%.250s\r\n", buffer2);
     break;
 
@@ -161,15 +162,18 @@ int32_t start_imap(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
     switch (imap_auth_mechanism) {
     case AUTH_CRAMMD5: {
-      sasl_cram_md5(buffer2, pass, buffer);
+      result = sasl_cram_md5(buffer2, pass, buffer);
+      if (result == NULL) return 3;
       sprintf(buffer, "%s %.250s", preplogin, buffer2);
     } break;
     case AUTH_CRAMSHA1: {
-      sasl_cram_sha1(buffer2, pass, buffer);
+      result = sasl_cram_sha1(buffer2, pass, buffer);
+      if (result == NULL) return 3;
       sprintf(buffer, "%s %.250s", preplogin, buffer2);
     } break;
     case AUTH_CRAMSHA256: {
-      sasl_cram_sha256(buffer2, pass, buffer);
+      result = sasl_cram_sha256(buffer2, pass, buffer);
+      if (result == NULL) return 3;
       sprintf(buffer, "%s %.250s", preplogin, buffer2);
     } break;
     }
@@ -202,8 +206,8 @@ int32_t start_imap(int32_t s, char *ip, int32_t port, unsigned char options, cha
       hydra_report(stderr, "DEBUG S: %s\n", buffer);
 
     fooptr = buffer2;
-    sasl_digest_md5(fooptr, login, pass, buffer, miscptr, "imap", NULL, 0, NULL);
-    if (fooptr == NULL)
+    result = sasl_digest_md5(fooptr, login, pass, buffer, miscptr, "imap", NULL, 0, NULL);
+    if (result == NULL)
       return 3;
     if (debug)
       hydra_report(stderr, "DEBUG C: %s\n", buffer2);
@@ -262,8 +266,8 @@ int32_t start_imap(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
       memset(buffer2, 0, sizeof(buffer2));
       fooptr = buffer2;
-      sasl_scram_sha1(fooptr, pass, clientfirstmessagebare, serverfirstmessage);
-      if (fooptr == NULL) {
+      result = sasl_scram_sha1(fooptr, pass, clientfirstmessagebare, serverfirstmessage);
+      if (result == NULL) {
         hydra_report(stderr, "[ERROR] Can't compute client response\n");
         return 1;
       }

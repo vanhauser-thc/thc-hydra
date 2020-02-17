@@ -116,22 +116,21 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
       }
     } else {
       if (use_Digest_Auth(lresp) == 1) {
-        char *dbuf = NULL;
-        char aux[500] = "";
+        char aux[500] = "", dbuf[500] = "", *result = NULL;
         char *pbuffer = hydra_strcasestr(lresp, "WWW-Authenticate: Digest ");
 
         strncpy(aux, pbuffer + strlen("WWW-Authenticate: Digest "), sizeof(aux));
         aux[sizeof(aux) - 1] = '\0';
         free(lresp);
 #ifdef LIBOPENSSL
-        sasl_digest_md5(dbuf, login, pass, aux, miscptr, "rtsp", hydra_address2string(ip), port, "");
+        result = sasl_digest_md5(dbuf, login, pass, aux, miscptr, "rtsp", hydra_address2string(ip), port, "");
 #else
         hydra_report(stderr, "[ERROR] Digest auth required but compiled "
                              "without OpenSSL/MD5 support\n");
         return 3;
 #endif
 
-        if (dbuf == NULL) {
+        if (result == NULL) {
           hydra_report(stderr, "[ERROR] digest generation failed\n");
           return 3;
         }

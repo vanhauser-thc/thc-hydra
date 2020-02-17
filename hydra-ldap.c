@@ -8,7 +8,7 @@ int32_t counter;
 int32_t tls_required = 0;
 
 int32_t start_ldap(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp, char *hostname, char version, int32_t auth_method) {
-  char *empty = "";
+  char *empty = "", *result = NULL;
   char *login = "", *pass, *fooptr = "";
   unsigned char buffer[512];
   int32_t length = 0;
@@ -123,8 +123,8 @@ int32_t start_ldap(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
     ptr = strstr((char *)buf, "<");
     fooptr = buf2;
-    sasl_cram_md5(fooptr, pass, ptr);
-    if (fooptr == NULL)
+    result = sasl_cram_md5(fooptr, pass, ptr);
+    if (result == NULL)
       return 1;
     counter++;
     if (strstr(miscptr, "^USER^") != NULL) {
@@ -180,8 +180,8 @@ int32_t start_ldap(int32_t s, char *ip, int32_t port, unsigned char options, cha
       }
 
       fooptr = buffer2;
-      sasl_digest_md5(fooptr, login, pass, ptr, miscptr, "ldap", NULL, 0, NULL);
-      if (fooptr == NULL) {
+      result = sasl_digest_md5(fooptr, login, pass, ptr, miscptr, "ldap", NULL, 0, NULL);
+      if (result == NULL) {
         free(buf);
         return 3;
       }

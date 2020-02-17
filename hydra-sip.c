@@ -48,7 +48,7 @@ int32_t get_sip_code(char *buf) {
 }
 
 int32_t start_sip(int32_t s, char *ip, char *lip, int32_t port, int32_t lport, unsigned char options, char *miscptr, FILE *fp) {
-  char *login, *pass, *host, buffer[SIP_MAX_BUF];
+  char *login, *pass, *host, buffer[SIP_MAX_BUF], *result = NULL;
   int32_t i;
   char buf[SIP_MAX_BUF];
 
@@ -138,7 +138,8 @@ int32_t start_sip(int32_t s, char *ip, char *lip, int32_t port, int32_t lport, u
     hydra_report(stderr, "[INFO] S: %s\n", buf);
   char buffer2[512];
 
-  sasl_digest_md5(buffer2, login, pass, strstr(buf, "WWW-Authenticate: Digest") + strlen("WWW-Authenticate: Digest") + 1, host, "sip", NULL, 0, NULL);
+  result = sasl_digest_md5(buffer2, login, pass, strstr(buf, "WWW-Authenticate: Digest") + strlen("WWW-Authenticate: Digest") + 1, host, "sip", NULL, 0, NULL);
+  if (result == NULL) return 3;
 
   memset(buffer, 0, SIP_MAX_BUF);
   snprintf(buffer, SIP_MAX_BUF,

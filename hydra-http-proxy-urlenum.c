@@ -170,7 +170,7 @@ int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned cha
       } else {
 #ifdef LIBOPENSSL
         if (hydra_strcasestr(buf, "Proxy-Authenticate: Digest") != NULL) {
-          char *pbuffer;
+          char *pbuffer, *result;
 
           http_proxy_auth_mechanism = AUTH_DIGESTMD5;
           pbuffer = hydra_strcasestr(buf, "Proxy-Authenticate: Digest ");
@@ -178,8 +178,8 @@ int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned cha
           buffer[sizeof(buffer) - 1] = '\0';
 
           pbuffer = buffer2;
-          sasl_digest_md5(pbuffer, login, pass, buffer, miscptr, "proxy", host, 0, header);
-          if (pbuffer == NULL)
+          result = sasl_digest_md5(pbuffer, login, pass, buffer, miscptr, "proxy", host, 0, header);
+          if (result == NULL)
             return 3;
 
           if (debug)

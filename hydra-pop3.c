@@ -118,7 +118,7 @@ char *pop3_read_server_capacity(int32_t sock) {
 }
 
 int32_t start_pop3(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
-  char *empty = "\"\"";
+  char *empty = "\"\"", *result = NULL;
   char *login, *pass, buffer[500], buffer2[500], *fooptr;
 
   if (strlen(login = hydra_get_next_login()) == 0)
@@ -202,7 +202,8 @@ int32_t start_pop3(int32_t s, char *ip, int32_t port, unsigned char options, cha
     free(buf);
 
     memset(buffer, 0, sizeof(buffer));
-    sasl_plain(buffer, login, pass);
+    result = sasl_plain(buffer, login, pass);
+    if (result == NULL) return 3;
 
     char tmp_buffer[sizeof(buffer)];
     sprintf(tmp_buffer, "%.250s\r\n", buffer);
@@ -263,15 +264,18 @@ int32_t start_pop3(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
     switch (p->pop3_auth_mechanism) {
     case AUTH_CRAMMD5: {
-      sasl_cram_md5(buffer2, pass, buffer);
+      result = sasl_cram_md5(buffer2, pass, buffer);
+      if (result == NULL) return 3;
       sprintf(buffer, "%s %.250s", preplogin, buffer2);
     } break;
     case AUTH_CRAMSHA1: {
-      sasl_cram_sha1(buffer2, pass, buffer);
+      result = sasl_cram_sha1(buffer2, pass, buffer);
+      if (result == NULL) return 3;
       sprintf(buffer, "%s %.250s", preplogin, buffer2);
     } break;
     case AUTH_CRAMSHA256: {
-      sasl_cram_sha256(buffer2, pass, buffer);
+      result = sasl_cram_sha256(buffer2, pass, buffer);
+      if (result == NULL) return 3;
       sprintf(buffer, "%s %.250s", preplogin, buffer2);
     } break;
     }
@@ -304,8 +308,8 @@ int32_t start_pop3(int32_t s, char *ip, int32_t port, unsigned char options, cha
       hydra_report(stderr, "[DEBUG] S: %s\n", buffer);
 
     fooptr = buffer2;
-    sasl_digest_md5(fooptr, login, pass, buffer, miscptr, "pop", NULL, 0, NULL);
-    if (fooptr == NULL)
+    result = sasl_digest_md5(fooptr, login, pass, buffer, miscptr, "pop", NULL, 0, NULL);
+    if (result == NULL)
       return 3;
 
     if (debug)

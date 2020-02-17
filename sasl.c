@@ -68,20 +68,20 @@ sasl_plain computes the plain authentication from strings login and password
 and stored the value in variable result
 the first parameter result must be able to hold at least 255 bytes!
 */
-void sasl_plain(char *result, char *login, char *pass) {
+char *sasl_plain(char *result, char *login, char *pass) {
   char *preplogin;
   char *preppasswd;
   int32_t rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
 
   if (rc) {
     result = NULL;
-    return;
+    return result;
   }
   rc = sasl_saslprep(pass, 0, &preppasswd);
   if (rc) {
     free(preplogin);
     result = NULL;
-    return;
+    return result;
   }
   if (2 * strlen(preplogin) + 3 + strlen(preppasswd) < 180) {
     strcpy(result, preplogin);
@@ -91,6 +91,7 @@ void sasl_plain(char *result, char *login, char *pass) {
   }
   free(preplogin);
   free(preppasswd);
+  return result;
 }
 
 #ifdef LIBOPENSSL
@@ -102,7 +103,7 @@ and the challenge sent by the server, and stored the value in variable
 result
 the parameter result must be able to hold at least 100 bytes!
 */
-void sasl_cram_md5(char *result, char *pass, char *challenge) {
+char *sasl_cram_md5(char *result, char *pass, char *challenge) {
   char ipad[64];
   char opad[64];
   unsigned char md5_raw[MD5_DIGEST_LENGTH];
@@ -112,12 +113,12 @@ void sasl_cram_md5(char *result, char *pass, char *challenge) {
 
   if (challenge == NULL) {
     result = NULL;
-    return;
+    return result;
   }
   rc = sasl_saslprep(pass, 0, &preppasswd);
   if (rc) {
     result = NULL;
-    return;
+    return result;
   }
   memset(ipad, 0, sizeof(ipad));
   memset(opad, 0, sizeof(opad));
@@ -148,6 +149,7 @@ void sasl_cram_md5(char *result, char *pass, char *challenge) {
     result += 2;
   }
   free(preppasswd);
+  return result;
 }
 
 /*
@@ -156,7 +158,7 @@ and the challenge sent by the server, and stored the value in variable
 result
 the parameter result must be able to hold at least 100 bytes!
 */
-void sasl_cram_sha1(char *result, char *pass, char *challenge) {
+char *sasl_cram_sha1(char *result, char *pass, char *challenge) {
   char ipad[64];
   char opad[64];
   unsigned char sha1_raw[SHA_DIGEST_LENGTH];
@@ -166,12 +168,12 @@ void sasl_cram_sha1(char *result, char *pass, char *challenge) {
 
   if (challenge == NULL) {
     result = NULL;
-    return;
+    return result;
   }
   rc = sasl_saslprep(pass, 0, &preppasswd);
   if (rc) {
     result = NULL;
-    return;
+    return result;
   }
   memset(ipad, 0, sizeof(ipad));
   memset(opad, 0, sizeof(opad));
@@ -202,6 +204,7 @@ void sasl_cram_sha1(char *result, char *pass, char *challenge) {
     result += 2;
   }
   free(preppasswd);
+  return result;
 }
 
 /*
@@ -210,7 +213,7 @@ and the challenge sent by the server, and stored the value in variable
 result
 the parameter result must be able to hold at least 100 bytes!
 */
-void sasl_cram_sha256(char *result, char *pass, char *challenge) {
+char *sasl_cram_sha256(char *result, char *pass, char *challenge) {
   char ipad[64];
   char opad[64];
   unsigned char sha256_raw[SHA256_DIGEST_LENGTH];
@@ -220,14 +223,14 @@ void sasl_cram_sha256(char *result, char *pass, char *challenge) {
 
   if (challenge == NULL) {
     result = NULL;
-    return;
+    return result;
   }
   memset(ipad, 0, sizeof(ipad));
   memset(opad, 0, sizeof(opad));
   rc = sasl_saslprep(pass, 0, &preppasswd);
   if (rc) {
     result = NULL;
-    return;
+    return result;
   }
   if (strlen(preppasswd) >= 64) {
     SHA256_Init(&sha256c);
@@ -256,13 +259,14 @@ void sasl_cram_sha256(char *result, char *pass, char *challenge) {
     result += 2;
   }
   free(preppasswd);
+  return result;
 }
 
 /*
 RFC 2831: Using Digest Authentication as a SASL Mechanism
 the parameter result must be able to hold at least 500 bytes!!
 */
-void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *miscptr, char *type, char *webtarget, int32_t webport, char *header) {
+char *sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *miscptr, char *type, char *webtarget, int32_t webport, char *header) {
   char *pbuffer = NULL;
   int32_t array_size = 10;
   unsigned char response[MD5_DIGEST_LENGTH];
@@ -277,13 +281,13 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
   memset(realm, 0, sizeof(realm));
   if (rc) {
     result = NULL;
-    return;
+    return result;
   }
   rc = sasl_saslprep(pass, 0, &preppasswd);
   if (rc) {
     free(preplogin);
     result = NULL;
-    return;
+    return result;
   }
   // DEBUG S:
   // nonce="HB3HGAk+hxKpijy/ichq7Wob3Zo17LPM9rr4kMX7xRM=",realm="tida",qop="auth",maxbuf=4096,charset=utf-8,algorithm=md5-sess
@@ -344,7 +348,7 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
               free(array[j]);
           hydra_report(stderr, "Error: DIGEST-MD5 nonce from server could not be extracted\n");
           result = NULL;
-          return;
+          return result;
         }
       } else {
         strncpy(nonce, strstr(array[i], "nonce=") + strlen("nonce="), sizeof(nonce) - 1);
@@ -367,7 +371,7 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
               free(array[i]);
           hydra_report(stderr, "Error: DIGEST-MD5 realm from server could not be extracted\n");
           result = NULL;
-          return;
+          return result;
         }
       } else {
         strncpy(realm, strstr(array[i], "realm=") + strlen("realm="), sizeof(realm) - 1);
@@ -390,7 +394,7 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
         hydra_report(stderr, "Error: DIGEST-MD5 quality of protection only "
                              "authentication is not supported by server\n");
         result = NULL;
-        return;
+        return result;
       }
     }
     if (strstr(array[i], "algorithm=") != NULL) {
@@ -410,7 +414,7 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
           hydra_report(stderr, "Error: DIGEST-MD5 algorithm from server could "
                                "not be extracted\n");
           result = NULL;
-          return;
+          return result;
         }
       } else {
         strncpy(algo, strstr(array[i], "algorithm=") + strlen("algorithm="), sizeof(algo) - 1);
@@ -424,7 +428,7 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
             free(array[j]);
         hydra_report(stderr, "Error: DIGEST-MD5 algorithm not based on md5, based on %s\n", algo);
         result = NULL;
-        return;
+        return result;
       }
     }
     free(array[i]);
@@ -575,6 +579,7 @@ void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *
   }
   free(preplogin);
   free(preppasswd);
+  return result;
 }
 
 /*
@@ -584,7 +589,7 @@ I want to thx Simon Josefsson for his public server test,
 and my girlfriend that let me work on that 2 whole nights ;)
 clientfirstmessagebare must be at least 500 bytes in size!
 */
-void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, char *serverfirstmessage) {
+char *sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, char *serverfirstmessage) {
   int32_t saltlen = 0;
   int32_t iter = 4096;
   char *salt, *nonce, *ic;
@@ -603,7 +608,7 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
 
   if (rc) {
     result = NULL;
-    return;
+    return result;
   }
 
   /*client-final-message */
@@ -614,7 +619,7 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
     hydra_report(stderr, "Error: Can't understand server message\n");
     free(preppasswd);
     result = NULL;
-    return;
+    return result;
   }
   strncpy(buffer, serverfirstmessage, sizeof(buffer) - 1);
   buffer[sizeof(buffer) - 1] = '\0';
@@ -627,7 +632,7 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
     hydra_report(stderr, "Error: Can't understand server response\n");
     free(preppasswd);
     result = NULL;
-    return;
+    return result;
   }
   if ((nonce != NULL) && (strlen(nonce) > 2))
     snprintf(clientfinalmessagewithoutproof, sizeof(clientfinalmessagewithoutproof), "c=biws,%s", nonce);
@@ -635,7 +640,7 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
     hydra_report(stderr, "Error: Could not identify server nonce value\n");
     free(preppasswd);
     result = NULL;
-    return;
+    return result;
   }
   if ((salt != NULL) && (strlen(salt) > 2) && (strlen(salt) <= sizeof(buffer)))
     // s=ghgIAfLl1+yUy/Xl1WD5Tw== remove the header s=
@@ -644,7 +649,7 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
     hydra_report(stderr, "Error: Could not identify server salt value\n");
     free(preppasswd);
     result = NULL;
-    return;
+    return result;
   }
 
   /* SaltedPassword := Hi(Normalize(password), salt, i) */
@@ -653,7 +658,7 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
     hydra_report(stderr, "Error: Failed to generate PBKDF2\n");
     free(preppasswd);
     result = NULL;
-    return;
+    return result;
   }
 
 /* ClientKey := HMAC(SaltedPassword, "Client Key") */
@@ -674,5 +679,6 @@ void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, cha
   if (debug)
     hydra_report(stderr, "DEBUG C: %s\n", result);
   free(preppasswd);
+  return result;
 }
 #endif

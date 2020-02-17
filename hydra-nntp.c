@@ -48,7 +48,7 @@ char *nntp_read_server_capacity(int32_t sock) {
 }
 
 int32_t start_nntp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
-  char *empty = "\"\"";
+  char *empty = "\"\"", *result = NULL;
   char *login, *pass, buffer[500], buffer2[500], *fooptr;
   int32_t i = 1;
 
@@ -112,7 +112,8 @@ int32_t start_nntp(int32_t s, char *ip, int32_t port, unsigned char options, cha
     free(buf);
 
     memset(buffer, 0, sizeof(buffer));
-    sasl_plain(buffer, login, pass);
+    result = sasl_plain(buffer, login, pass);
+    if (result == NULL) return 3;
 
     char tmp_buffer[sizeof(buffer)];
     sprintf(tmp_buffer, "%.250s\r\n", buffer);
@@ -147,7 +148,8 @@ int32_t start_nntp(int32_t s, char *ip, int32_t port, unsigned char options, cha
     free(buf);
 
     memset(buffer2, 0, sizeof(buffer2));
-    sasl_cram_md5(buffer2, pass, buffer);
+    result = sasl_cram_md5(buffer2, pass, buffer);
+    if (result == NULL) return 3;
 
     sprintf(buffer, "%s %.250s", preplogin, buffer2);
     hydra_tobase64((unsigned char *)buffer, strlen(buffer), sizeof(buffer));
@@ -178,8 +180,8 @@ int32_t start_nntp(int32_t s, char *ip, int32_t port, unsigned char options, cha
     if (debug)
       hydra_report(stderr, "DEBUG S: %s\n", buffer);
     fooptr = buffer2;
-    sasl_digest_md5(fooptr, login, pass, buffer, miscptr, "nntp", NULL, 0, NULL);
-    if (fooptr == NULL)
+    result = sasl_digest_md5(fooptr, login, pass, buffer, miscptr, "nntp", NULL, 0, NULL);
+    if (result == NULL)
       return 3;
 
     if (debug)

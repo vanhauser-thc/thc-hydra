@@ -32,7 +32,7 @@ typedef enum { SASL_ALLOW_UNASSIGNED = 1 } sasl_saslprep_flags;
 
 int32_t print_hex(unsigned char *buf, int32_t len);
 
-void sasl_plain(char *result, char *login, char *pass);
+char* sasl_plain(char *result, char *login, char *pass);
 int32_t sasl_saslprep(const char *in, sasl_saslprep_flags flags, char **out);
 
 #ifdef LIBOPENSSL
@@ -40,9 +40,9 @@ int32_t sasl_saslprep(const char *in, sasl_saslprep_flags flags, char **out);
 #include <openssl/md5.h>
 #include <openssl/sha.h>
 
-void sasl_cram_md5(char *result, char *pass, char *challenge);
-void sasl_cram_sha1(char *result, char *pass, char *challenge);
-void sasl_cram_sha256(char *result, char *pass, char *challenge);
-void sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *miscptr, char *type, char *webtarget, int32_t webport, char *header);
-void sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, char *serverfirstmessage);
+char* sasl_cram_md5(char *result, char *pass, char *challenge);
+char* sasl_cram_sha1(char *result, char *pass, char *challenge);
+char* sasl_cram_sha256(char *result, char *pass, char *challenge);
+char* sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char *miscptr, char *type, char *webtarget, int32_t webport, char *header);
+char* sasl_scram_sha1(char *result, char *pass, char *clientfirstmessagebare, char *serverfirstmessage);
 #endif

@@ -76,15 +76,15 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
 #ifdef LIBOPENSSL
   case AUTH_DIGESTMD5: {
-    char *pbuffer;
+    char *pbuffer, *result;
 
     pbuffer = hydra_strcasestr(http_buf, "WWW-Authenticate: Digest ");
     strncpy(buffer, pbuffer + strlen("WWW-Authenticate: Digest "), buffer_size - 1);
     buffer[buffer_size - 1] = '\0';
 
     fooptr = buffer2;
-    sasl_digest_md5(fooptr, login, pass, buffer, miscptr, type, webtarget, webport, header);
-    if (fooptr == NULL) {
+    result = sasl_digest_md5(fooptr, login, pass, buffer, miscptr, type, webtarget, webport, header);
+    if (result == NULL) {
       free(buffer);
       free(header);
       return 3;

@@ -13,7 +13,7 @@ char *JABBER_CLIENT_INIT_END_STR = "' xmlns='jabber:client' xmlns:stream='http:/
                                    "version='1.0'>";
 
 int32_t start_xmpp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
-  char *empty = "\"\"";
+  char *empty = "\"\"", *result = NULL;
   char *login, *pass, buffer[500], buffer2[500];
   char *AUTH_STR = "<auth xmlns='urn:ietf:params:xml:ns:xmpp-sasl' mechanism='";
   char *AUTH_STR_END = "'/>";
@@ -125,7 +125,8 @@ int32_t start_xmpp(int32_t s, char *ip, int32_t port, unsigned char options, cha
 #ifdef LIBOPENSSL
     case AUTH_PLAIN: {
       memset(buffer2, 0, sizeof(buffer));
-      sasl_plain(buffer2, login, pass);
+      result = sasl_plain(buffer2, login, pass);
+      if (result == NULL) return 3;
       sprintf(buffer, "%s%.250s%s", RESPONSE_STR, buffer2, RESPONSE_END_STR);
       if (debug)
         hydra_report(stderr, "DEBUG C: %s\n", buffer);
@@ -136,7 +137,8 @@ int32_t start_xmpp(int32_t s, char *ip, int32_t port, unsigned char options, cha
       char *preplogin;
 
       memset(buffer2, 0, sizeof(buffer2));
-      sasl_cram_md5(buffer2, pass, buffer);
+      result = sasl_cram_md5(buffer2, pass, buffer);
+      if (result == NULL) return 3;
 
       rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
       if (rc) {
@@ -156,8 +158,8 @@ int32_t start_xmpp(int32_t s, char *ip, int32_t port, unsigned char options, cha
     case AUTH_DIGESTMD5: {
       memset(buffer2, 0, sizeof(buffer2));
       fooptr = buffer2;
-      sasl_digest_md5(fooptr, login, pass, buffer, domain, "xmpp", NULL, 0, NULL);
-      if (fooptr == NULL) {
+      result = sasl_digest_md5(fooptr, login, pass, buffer, domain, "xmpp", NULL, 0, NULL);
+      if (result == NULL) {
         free(buf);
         return 3;
       }
@@ -217,8 +219,8 @@ int32_t start_xmpp(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
         memset(buffer2, 0, sizeof(buffer2));
         fooptr = buffer2;
-        sasl_scram_sha1(fooptr, pass, clientfirstmessagebare, serverfirstmessage);
-        if (fooptr == NULL) {
+        result = sasl_scram_sha1(fooptr, pass, clientfirstmessagebare, serverfirstmessage);
+        if (result == NULL) {
           hydra_report(stderr, "[ERROR] Can't compute client response\n");
           free(buf);
           return 1;
