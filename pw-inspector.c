@@ -130,6 +130,8 @@ int main(int argc, char *argv[]) {
       continue;
     if (buf[strlen(buf) - 1] == '\n')
       buf[strlen(buf) - 1] = 0;
+    if (buf[strlen(buf) - 1] == '\r')
+      buf[strlen(buf) - 1] = 0;
     if (strlen(buf) >= minlen && strlen(buf) <= maxlen) {
       i = 0;
       if (countsets > 0) {
