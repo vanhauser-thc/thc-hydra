@@ -105,7 +105,8 @@ int32_t start_imap(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
     memset(buffer2, 0, sizeof(buffer2));
     result = sasl_plain(buffer2, login, pass);
-    if (result == NULL) return 3;
+    if (result == NULL)
+      return 3;
     sprintf(buffer, "%.250s\r\n", buffer2);
     break;
 
@@ -163,17 +164,20 @@ int32_t start_imap(int32_t s, char *ip, int32_t port, unsigned char options, cha
     switch (imap_auth_mechanism) {
     case AUTH_CRAMMD5: {
       result = sasl_cram_md5(buffer2, pass, buffer);
-      if (result == NULL) return 3;
+      if (result == NULL)
+        return 3;
       sprintf(buffer, "%s %.250s", preplogin, buffer2);
     } break;
     case AUTH_CRAMSHA1: {
       result = sasl_cram_sha1(buffer2, pass, buffer);
-      if (result == NULL) return 3;
+      if (result == NULL)
+        return 3;
       sprintf(buffer, "%s %.250s", preplogin, buffer2);
     } break;
     case AUTH_CRAMSHA256: {
       result = sasl_cram_sha256(buffer2, pass, buffer);
-      if (result == NULL) return 3;
+      if (result == NULL)
+        return 3;
       sprintf(buffer, "%s %.250s", preplogin, buffer2);
     } break;
     }

@@ -139,7 +139,8 @@ int32_t start_sip(int32_t s, char *ip, char *lip, int32_t port, int32_t lport, u
   char buffer2[512];
 
   result = sasl_digest_md5(buffer2, login, pass, strstr(buf, "WWW-Authenticate: Digest") + strlen("WWW-Authenticate: Digest") + 1, host, "sip", NULL, 0, NULL);
-  if (result == NULL) return 3;
+  if (result == NULL)
+    return 3;
 
   memset(buffer, 0, SIP_MAX_BUF);
   snprintf(buffer, SIP_MAX_BUF,

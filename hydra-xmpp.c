@@ -126,7 +126,8 @@ int32_t start_xmpp(int32_t s, char *ip, int32_t port, unsigned char options, cha
     case AUTH_PLAIN: {
       memset(buffer2, 0, sizeof(buffer));
       result = sasl_plain(buffer2, login, pass);
-      if (result == NULL) return 3;
+      if (result == NULL)
+        return 3;
       sprintf(buffer, "%s%.250s%s", RESPONSE_STR, buffer2, RESPONSE_END_STR);
       if (debug)
         hydra_report(stderr, "DEBUG C: %s\n", buffer);
@@ -138,7 +139,8 @@ int32_t start_xmpp(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
       memset(buffer2, 0, sizeof(buffer2));
       result = sasl_cram_md5(buffer2, pass, buffer);
-      if (result == NULL) return 3;
+      if (result == NULL)
+        return 3;
 
       rc = sasl_saslprep(login, SASL_ALLOW_UNASSIGNED, &preplogin);
       if (rc) {
