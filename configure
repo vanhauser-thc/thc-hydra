@@ -627,6 +627,9 @@ for i in $INCDIRS ; do
         if [ -f "$i/ibase.h" ]; then
             FIREBIRD_IPATH="$i"
         fi
+        if [ -f "$i/firebird/ibase.h" ]; then
+            FIREBIRD_IPATH="$i/firebird"
+        fi
     fi
 done
 if [ "X" != "X$DEBUG" ]; then
