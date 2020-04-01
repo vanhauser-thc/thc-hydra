@@ -1439,6 +1439,7 @@ void usage_http_form(const char *service) {
          "The following parameters are optional:\n"
          " (c|C)=/page/uri     to define a different page to gather initial "
          "cookies from\n"
+         " (g|G)=optional      to skip pre-request\n"
          " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each "
          "request\n"
          "                 ^USER[64]^ and ^PASS[64]^ can also be put into these "
