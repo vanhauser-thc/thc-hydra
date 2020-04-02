@@ -434,6 +434,16 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
       sprintf(cookieurl, "%.1000s", hydra_strrep(miscptr + 2, "\\:", ":"));
       miscptr = ptr;
       break;
+    case 'g': // fall through
+    case 'G':
+      ptr = miscptr + 2;
+      while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
+        ptr++;
+      if (*ptr != 0)
+        *ptr++ = 0;
+      getcookie = 0;
+      miscptr = ptr;
+      break;
     case 'h':
       // add a new header at the end
       ptr = miscptr + 2;
@@ -1429,6 +1439,7 @@ void usage_http_form(const char *service) {
          "The following parameters are optional:\n"
          " (c|C)=/page/uri     to define a different page to gather initial "
          "cookies from\n"
+         " (g|G)=              skip pre-requests - only use this when no pre-cookies are required\n"
          " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each "
          "request\n"
          "                 ^USER[64]^ and ^PASS[64]^ can also be put into these "
