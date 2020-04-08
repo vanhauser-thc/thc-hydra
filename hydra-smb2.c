@@ -131,6 +131,14 @@ bool smb2_run_test(creds_t *cr, const char *server, uint16_t port) {
     smbc_free_context(ctx, 1);
     return true;
     break;
+  case EPERM:
+    // Probably this means access denied inspite of mention above
+    // about being related to wrong workgroup. I have observed
+    // libsmbclient emitting this when connecting to a vanilla install
+    // of Windows 2019 server (non-domain) with wrong credentials. It
+    // appears related to a fallback null session being rejected after
+    // the library tries with provided credentials. If the null
+    // session is accepted, EACCES is returned.
   case EACCES:
     // 100% access denied
     break;
