@@ -237,7 +237,7 @@ extern void hydra_tobase64(unsigned char *buf, int32_t buflen, int32_t bufsize);
 extern char *hydra_string_replace(const char *string, const char *substr, const char *replacement);
 extern char *hydra_address2string(char *address);
 extern char *hydra_address2string_beautiful(char *address);
-extern int32_t colored_output;
+extern uint32_t colored_output;
 extern char quiet;
 extern int32_t do_retry;
 extern int32_t old_ssl;
