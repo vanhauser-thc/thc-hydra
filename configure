@@ -1025,7 +1025,7 @@ echo "Checking for Freerdp2 (libfreerdp2.so, freerdp/*.h, libwinpr2.so, winpr/*.
 
   for i in $LIBDIRS ; do
     if [ "X" = "X$FREERDP2_PATH" ]; then
-        if [ -f "$i/libfreerdp2.so" -o -f "$i/libfreerdp2.dylib" -o -f "$i/libfreerdp2.a" ]; then
+        if [ -f "$i/libfreerdp2.so" -o -f "$i/libfreerdp2.dylib" -o -f "$i/libfreerdp2.a" -o -f "$i/libfreerdp2.dll.a" ]; then
             FREERDP2_PATH="$i"
         fi
     fi
@@ -1056,7 +1056,7 @@ echo "Checking for Freerdp2 (libfreerdp2.so, freerdp/*.h, libwinpr2.so, winpr/*.
         fi
     fi
     if [ "X" = "X$WINPR2_PATH" ]; then
-        TMP_LIB=`/bin/ls $i/winpr.dll* 2> /dev/null | grep winpr`
+        TMP_LIB=`/bin/ls $i/libwinpr2.dll.a 2> /dev/null | grep winpr`
         if [ -n "$TMP_LIB" ]; then
           WINPR2_PATH="$i"
         fi
