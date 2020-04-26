@@ -864,7 +864,7 @@ if [ "$SSH_IPATH" = "/usr/include" ]; then
     SSH_IPATH=""
 fi
 
-echo "Checking for Oracle (libocci.so libclntsh.so / oci.h and libaio.so) ..."
+echo "Checking for Oracle (libocci.so libclntsh.so / oci.h and libaio.so / liboci.a and oci.dll) ..."
 #assume if we find oci.h other headers should also be in that dir
 #for libs we will test the 2
 if [ "X" != "X$WORACLE_PATH" ]; then
@@ -895,6 +895,11 @@ for i in $LIBDIRS ; do
         fi
     fi
     if [ "X" = "X$ORACLE_PATH" ]; then
+        if [ -f "$i/liboci.a" -a -f "$i/oci.dll" ]; then
+            ORACLE_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$ORACLE_PATH" ]; then
         TMP_LIB=`/bin/ls $i/libocci.so.* 2> /dev/null | grep occi.`
         if [ -n "$TMP_LIB" ]; then
             ORACLE_PATH="$i"
@@ -907,23 +912,17 @@ for i in $LIBDIRS ; do
         fi
     fi
     if [ "X" = "X$ORACLE_PATH" ]; then
-        TMP_LIB=`/bin/ls $i/libocci.dll* 2> /dev/null | grep occi.`
+        TMP_LIB=`/bin/ls $i/oci.dll* 2> /dev/null | grep occi.`
         if [ -n "$TMP_LIB" ]; then
             ORACLE_PATH="$i"
-        fi
-        if [ "X" != "X$ORACLE_PATH" ]; then
-          TMP_LIB=`/bin/ls $i/libclntsh.dll* 2> /dev/null | grep clntsh.`
-          if [ -z "$TMP_LIB" ]; then
-            ORACLE_PATH=""
-          fi
         fi
     fi
 done
 if [ "X" != "X$DEBUG" ]; then
    echo DEBUG: ORACLE_PATH=$ORACLE_PATH/libocci
 fi
-#check for Kernel Asynchronous I/O (AIO) lib support
-if [ "X" != "X$ORACLE_PATH" ]; then
+#check for Kernel Asynchronous I/O (AIO) lib support, no need on Cygwin
+if [ "X" != "X$ORACLE_PATH" -a "$SYSO" != "Cygwin" ]; then
   LIBAIO=""
   for i in $LIBDIRS ; do
      if [ "X" = "X$LIBAIO" ]; then
@@ -951,10 +950,8 @@ if [ "X" != "X$DEBUG" ]; then
 fi
 
 for i in $INCDIRS ; do
-    if [ "X" != "X$ORACLE_PATH" ]; then
-        if [ -f "$i/oci.h" ]; then
-            ORACLE_IPATH="$i"
-        fi
+    if [ -f "$i/oci.h" ]; then
+        ORACLE_IPATH="$i"
     fi
 done
 if [ "X" != "X$DEBUG" ]; then
@@ -1542,8 +1539,11 @@ fi
 if [ -n "$NCP_PATH" ]; then
     XLIBS="$XLIBS -lncp"
 fi
-if [ -n "$ORACLE_PATH" ]; then
+if [ -n "$ORACLE_PATH" -a "$SYSO" != "Cygwin" ]; then
     XLIBS="$XLIBS -locci -lclntsh"
+fi
+if [ -n "$ORACLE_PATH" -a "$SYSO" = "Cygwin" ]; then
+    XLIBS="$XLIBS -loci"
 fi
 if [ -n "$FIREBIRD_PATH" ]; then
     XLIBS="$XLIBS -lfbclient"
