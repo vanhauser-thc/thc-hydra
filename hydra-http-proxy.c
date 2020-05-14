@@ -7,7 +7,7 @@ char *http_proxy_buf = NULL;
 
 int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp, char *hostname) {
   char *empty = "";
-  char *login, *pass, buffer[500], buffer2[500];
+  char *login, *pass, buffer[5000], buffer2[4500];
   char url[210], host[60];
   char *header = ""; /* XXX TODO */
   char *ptr, *fooptr, *auth_hdr;
