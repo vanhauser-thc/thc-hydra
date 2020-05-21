@@ -461,10 +461,10 @@ char *sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char 
         sprintf(pbuffer, "%02x", response[i]);
         pbuffer += 2;
       }
-      sprintf(buffer, "%s:%s:%s", buffer3, nonce, "hydra");
+      snprintf(buffer, 500, "%s:%s:%s", buffer3, nonce, "hydra");
     } else {
       memcpy(buffer, response, sizeof(response));
-      sprintf(buffer + sizeof(response), ":%s:%s", nonce, "hydra");
+      snprintf(buffer + sizeof(response), 50 - sizeof(response), ":%s:%s", nonce, "hydra");
     }
     MD5_Init(&md5c);
     MD5_Update(&md5c, buffer, strlen(buffer));
@@ -479,22 +479,22 @@ char *sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char 
   // compute ha2
   // proxy case
   if (strstr(type, "proxy") != NULL)
-    sprintf(buffer, "%s:%s", "HEAD", miscptr);
+    snprintf(buffer, 500, "%s:%s", "HEAD", miscptr);
   else
       // http case
       if ((strstr(type, "GET") != NULL) || (strstr(type, "HEAD") != NULL))
-    sprintf(buffer, "%s:%s", type, miscptr);
+    snprintf(buffer, 500, "%s:%s", type, miscptr);
   else
       // sip case
       if (strstr(type, "sip") != NULL)
-    sprintf(buffer, "REGISTER:%s:%s", type, miscptr);
+    snprintf(buffer, 500, "REGISTER:%s:%s", type, miscptr);
   else
       // others
       if (strstr(type, "rtsp") != NULL)
-    sprintf(buffer, "DESCRIBE:%s://%s:%i", type, webtarget, port);
+    snprintf(buffer, 500, "DESCRIBE:%s://%s:%i", type, webtarget, port);
   else
     // others
-    sprintf(buffer, "AUTHENTICATE:%s/%s", type, realm);
+    snprintf(buffer, 500, "AUTHENTICATE:%s/%s", type, realm);
 
   MD5_Init(&md5c);
   MD5_Update(&md5c, buffer, strlen(buffer));
