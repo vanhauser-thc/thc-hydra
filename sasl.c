@@ -271,7 +271,7 @@ char *sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char 
   int32_t array_size = 10;
   unsigned char response[MD5_DIGEST_LENGTH];
   char *array[array_size];
-  char buffer2[500], buffer3[500], nonce[200], realm[50], algo[20];
+  char buffer2[500], buffer3[500], nonce[200], realm[200], algo[20];
   int32_t i = 0, ind = 0, lastpos = 0, currentpos = 0, intq = 0, auth_find = 0;
   MD5_CTX md5c;
   char *preplogin;
