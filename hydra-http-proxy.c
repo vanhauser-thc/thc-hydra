@@ -7,10 +7,10 @@ char *http_proxy_buf = NULL;
 
 int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp, char *hostname) {
   char *empty = "";
-  char *login, *pass, buffer[500], buffer2[500];
+  char *login, *pass, buffer[5000], buffer2[4500];
   char url[210], host[60];
   char *header = ""; /* XXX TODO */
-  char *ptr, *fooptr;
+  char *ptr, *fooptr, *auth_hdr;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -50,24 +50,32 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
       return 3;
     }
 
-    if (debug)
-      hydra_report(stderr, "S:%s\n", http_proxy_buf);
+    if (debug) {
+      hydra_report(stderr,
+                   "S:%-.*s\n",
+                   (int)(strchr(http_proxy_buf, '\r') - http_proxy_buf),
+                   http_proxy_buf);
+    }
 
-    free(http_proxy_buf);
-    http_proxy_buf = hydra_receive_line(s);
-    while (http_proxy_buf != NULL && hydra_strcasestr(http_proxy_buf, "Proxy-Authenticate:") == NULL) {
+    while (http_proxy_buf != NULL &&
+           (auth_hdr = hydra_strcasestr(http_proxy_buf,
+                                        "Proxy-Authenticate:")) == NULL) {
       free(http_proxy_buf);
       http_proxy_buf = hydra_receive_line(s);
     }
 
-    if (http_proxy_buf == NULL) {
+    if (auth_hdr == NULL) {
       if (verbose)
         hydra_report(stderr, "[ERROR] Proxy seems not to require authentication\n");
       return 3;
     }
 
-    if (debug)
-      hydra_report(stderr, "S:%s\n", http_proxy_buf);
+    if (debug) {
+      hydra_report(stderr,
+                   "S:%-.*s\n",
+                   (int)(strchr(auth_hdr, '\r') - auth_hdr),
+                   auth_hdr);
+    }
 
     // after the first query we should have been disconnected from web server
     s = hydra_disconnect(s);
@@ -78,8 +86,9 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
     }
   }
 
-  if (http_proxy_auth_mechanism == AUTH_BASIC || hydra_strcasestr(http_proxy_buf, "Proxy-Authenticate: Basic") != NULL) {
+  if (http_proxy_auth_mechanism == AUTH_BASIC || hydra_strcasestr(auth_hdr, "Proxy-Authenticate: Basic") != NULL) {
     http_proxy_auth_mechanism = AUTH_BASIC;
+    auth_hdr = NULL;
     sprintf(buffer2, "%.50s:%.50s", login, pass);
     hydra_tobase64((unsigned char *)buffer2, strlen(buffer2), sizeof(buffer2));
     sprintf(buffer,
@@ -105,15 +114,20 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
       return 3;
     }
 
-    if (debug)
-      hydra_report(stderr, "S:%s\n", http_proxy_buf);
+    if (debug) {
+      hydra_report(stderr,
+                   "S:%-.*s\n",
+                   (int)(strchr(http_proxy_buf, '\r') - http_proxy_buf),
+                   http_proxy_buf);
+    }
   } else {
-    if (http_proxy_auth_mechanism == AUTH_NTLM || hydra_strcasestr(http_proxy_buf, "Proxy-Authenticate: NTLM") != NULL) {
+    if (http_proxy_auth_mechanism == AUTH_NTLM || hydra_strcasestr(auth_hdr, "Proxy-Authenticate: NTLM") != NULL) {
       unsigned char buf1[4096];
       unsigned char buf2[4096];
       char *pos = NULL;
 
       http_proxy_auth_mechanism = AUTH_NTLM;
+      auth_hdr = NULL;
       // send auth and receive challenge
       // send auth request: let the server send it's own hostname and domainname
       buildAuthRequest((tSmbNtlmAuthRequest *)buf2, 0, NULL, NULL);
@@ -178,10 +192,11 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
         return 3;
     } else {
 #ifdef LIBOPENSSL
-      if (hydra_strcasestr(http_proxy_buf, "Proxy-Authenticate: Digest") != NULL) {
+      if (hydra_strcasestr(auth_hdr, "Proxy-Authenticate: Digest") != NULL) {
         char *pbuffer, *result;
 
         http_proxy_auth_mechanism = AUTH_DIGESTMD5;
+        auth_hdr == NULL;
         pbuffer = hydra_strcasestr(http_proxy_buf, "Proxy-Authenticate: Digest ");
         strncpy(buffer, pbuffer + strlen("Proxy-Authenticate: Digest "), sizeof(buffer));
         buffer[sizeof(buffer) - 1] = '\0';
@@ -204,8 +219,12 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
           http_proxy_buf = hydra_receive_line(s);
         }
 
-        if (debug && http_proxy_buf != NULL)
-          hydra_report(stderr, "S:%s\n", http_proxy_buf);
+        if (debug && http_proxy_buf != NULL) {
+          hydra_report(stderr,
+                       "S:%-.*s\n",
+                       (int)(strchr(http_proxy_buf, '\r') - http_proxy_buf),
+                       http_proxy_buf);
+        }
 
         if (http_proxy_buf == NULL)
           return 3;
@@ -213,9 +232,13 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
       } else
 #endif
       {
-        if (http_proxy_buf != NULL) {
+        if (auth_hdr != NULL) {
           //          buf[strlen(http_proxy_buf) - 1] = '\0';
-          hydra_report(stderr, "Unsupported Auth type:\n%s\n", http_proxy_buf);
+          hydra_report(stderr,
+                       "Unsupported Auth type:\n%-.*s\n",
+                       (int)(strchr(http_proxy_buf, '\r') - auth_hdr),
+                       auth_hdr);
+          auth_hdr = NULL;
           free(http_proxy_buf);
           http_proxy_buf = NULL;
         } else {
@@ -227,7 +250,11 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
   }
 
   ptr = ((char *)index(http_proxy_buf, ' ')) + 1;
-  if (*ptr == '2' || (*ptr == '3' && *(ptr + 2) == '1') || (*ptr == '3' && *(ptr + 2) == '2')) {
+  if (*ptr == '2' ||
+      (*ptr == '3' && *(ptr + 2) == '1') ||
+      (*ptr == '3' && *(ptr + 2) == '2') ||
+      (*ptr == '4' && *(ptr + 2) == '4')
+    ) {
     hydra_report_found_host(port, ip, "http-proxy", fp);
     hydra_completed_pair_found();
     free(http_proxy_buf);
