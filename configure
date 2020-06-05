@@ -70,8 +70,8 @@ NSL_PATH=""
 SOCKET_PATH=""
 MANDIR=""
 XHYDRA_SUPPORT=""
-FREERDP2_PATH=""
-WINPR2_PATH=""
+FREERDP3_PATH=""
+WINPR3_PATH=""
 SMBC_PATH=""
 SMBC_IPATH=""
 
@@ -1018,76 +1018,76 @@ fi
   fi
 
 
-echo "Checking for Freerdp2 (libfreerdp2.so, freerdp/*.h, libwinpr2.so, winpr/*.h) ..."
+echo "Checking for Freerdp3 (libfreerdp3.so, freerdp/*.h, libwinpr3.so, winpr/*.h) ..."
 
   for i in $LIBDIRS ; do
-    if [ "X" = "X$FREERDP2_PATH" ]; then
-        if [ -f "$i/libfreerdp2.so" -o -f "$i/libfreerdp2.dylib" -o -f "$i/libfreerdp2.a" -o -f "$i/libfreerdp2.dll.a" ]; then
-            FREERDP2_PATH="$i"
+    if [ "X" = "X$FREERDP3_PATH" ]; then
+        if [ -f "$i/libfreerdp3.so" -o -f "$i/libfreerdp3.dylib" -o -f "$i/libfreerdp3.a" -o -f "$i/libfreerdp3.dll.a" ]; then
+            FREERDP3_PATH="$i"
         fi
     fi
-    if [ "X" = "X$FREERDP2_PATH" ]; then
-        TMP_LIB=`/bin/ls $i/libfreerdp2*.so* 2> /dev/null | grep libfreerdp2`
+    if [ "X" = "X$FREERDP3_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libfreerdp3*.so* 2> /dev/null | grep libfreerdp3`
         if [ -n "$TMP_LIB" ]; then
-          FREERDP2_PATH="$i"
+          FREERDP3_PATH="$i"
         fi
     fi
   done
 
-  FREERDP2_IPATH=
+  FREERDP3_IPATH=
   for i in $INCDIRS ; do
-    if [ "X" = "X$FREERDP2_IPATH" ]; then
+    if [ "X" = "X$FREERDP3_IPATH" ]; then
         if [ -f "$i/freerdp/freerdp.h" ]; then
-            FREERDP2_IPATH="$i/freerdp2"
+            FREERDP3_IPATH="$i/freerdp3"
         fi
-        if [ -f "$i/freerdp2/freerdp/freerdp.h" ]; then
-            FREERDP2_IPATH="$i/freerdp2"
+        if [ -f "$i/freerdp3/freerdp/freerdp.h" ]; then
+            FREERDP3_IPATH="$i/freerdp3"
         fi
     fi
   done
 
  for i in $LIBDIRS ; do
-    if [ "X" = "X$WINPR2_PATH" ]; then
-        if [ -f "$i/libwinpr2.so" -o -f "$i/libwinpr2.dylib" -o -f "$i/libwinpr2.a" ]; then
-            WINPR2_PATH="$i"
+    if [ "X" = "X$WINPR3_PATH" ]; then
+        if [ -f "$i/libwinpr3.so" -o -f "$i/libwinpr3.dylib" -o -f "$i/libwinpr3.a" ]; then
+            WINPR3_PATH="$i"
         fi
     fi
-    if [ "X" = "X$WINPR2_PATH" ]; then
-        TMP_LIB=`/bin/ls $i/libwinpr2.dll.a 2> /dev/null | grep winpr`
+    if [ "X" = "X$WINPR3_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libwinpr3.dll.a 2> /dev/null | grep winpr`
         if [ -n "$TMP_LIB" ]; then
-          WINPR2_PATH="$i"
+          WINPR3_PATH="$i"
         fi
     fi
   done
 
-  WINPR2_IPATH=
+  WINPR3_IPATH=
   for i in $INCDIRS ; do
-    if [ "X" = "X$WINPR2_IPATH" ]; then
+    if [ "X" = "X$WINPR3_IPATH" ]; then
         if [ -f "$i/winpr.h" ]; then
-            WINPR2_IPATH="$i"
+            WINPR3_IPATH="$i"
         fi
-        if [ -f "$i/winpr2/winpr/winpr.h" ]; then
-            WINPR2_IPATH="$i/winpr2"
+        if [ -f "$i/winpr3/winpr/winpr.h" ]; then
+            WINPR3_IPATH="$i/winpr3"
         fi
     fi
   done
 
 if [ "X" != "X$DEBUG" ]; then
-   echo DEBUG: FREERDP2_PATH=$FREERDP2_PATH/
-   echo DEBUG: FREERDP2_IPATH=$FREERDP2_IPATH/
-   echo DEBUG: WINPR2_PATH=$WINPR2_PATH/
-   echo DEBUG: WINPR2_IPATH=$WINPR2_IPATH/
+   echo DEBUG: FREERDP3_PATH=$FREERDP3_PATH/
+   echo DEBUG: FREERDP3_IPATH=$FREERDP3_IPATH/
+   echo DEBUG: WINPR3_PATH=$WINPR3_PATH/
+   echo DEBUG: WINPR3_IPATH=$WINPR3_IPATH/
 fi
 
-  if [ -n "$FREERDP2_PATH" -a -n "$FREERDP2_IPATH" -a -n "$WINPR2_PATH" -a -n "$WINPR2_IPATH" ]; then
+  if [ -n "$FREERDP3_PATH" -a -n "$FREERDP3_IPATH" -a -n "$WINPR3_PATH" -a -n "$WINPR3_IPATH" ]; then
     echo "                                             ... found"
   fi
-  if [ "X" = "X$FREERDP2_PATH" -o "X" = "X$FREERDP2_IPATH" -o "X" = "X$WINPR2_PATH" -o "X" = "X$WINPR2_IPATH" ]; then
+  if [ "X" = "X$FREERDP3_PATH" -o "X" = "X$FREERDP3_IPATH" -o "X" = "X$WINPR3_PATH" -o "X" = "X$WINPR3_IPATH" ]; then
     echo "                                             ... NOT found, module rdp disabled"
-    FREERDP2_PATH=""
-    FREERDP2_IPATH=""
-    WINPR2_PATH=""
-    WINPR2_IPATH=""
+    FREERDP3_PATH=""
+    FREERDP3_IPATH=""
+    WINPR3_PATH=""
+    WINPR3_IPATH=""
   fi
 
 echo "Checking for Mongodb (libmongoc-1.0.so, mongoc.h, libbson-1.0.so, bson.h) ..."
@@ -1340,8 +1340,8 @@ if [ -n "$FIREBIRD_PATH" -o \
         -n "$MYSQL_PATH" -o \
         -n "$MCACHED_PATH" -o \
         -n "$MONGOD_PATH" -o \
-        -n "$FREERDP2_PATH" -o \
-        -n "$WINPR2_PATH" -o \
+        -n "$FREERDP3_PATH" -o \
+        -n "$WINPR3_PATH" -o \
         -n "$SMBC_PATH" \
    ]; then
     if [ "$SYSS" = "Darwin" ] && [ ! -d "/lib" ]; then
@@ -1425,11 +1425,11 @@ fi
 if [ -n "$BSON_PATH" ]; then
     XDEFINES="$XDEFINES -DLIBBSON"
 fi
-if [ -n "$FREERDP2_PATH" ]; then
-    XDEFINES="$XDEFINES -DLIBFREERDP2"
+if [ -n "$FREERDP3_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBFREERDP3"
 fi
-if [ -n "$WINPR2_PATH" ]; then
-    XDEFINES="$XDEFINES -DLIBWINPR2"
+if [ -n "$WINPR3_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBWINPR3"
 fi
 if [ -n "$SMBC_PATH" ]; then
     XDEFINES="$XDEFINES -DLIBSMBCLIENT"
@@ -1457,8 +1457,8 @@ for i in $SSL_PATH \
              $MCACHED_PATH \
              $MONGODB_PATH \
              $BSON_PATH \
-             $FREERDP2_PATH \
-             $WINPR2_PATH \
+             $FREERDP3_PATH \
+             $WINPR3_PATH \
              $SMBC_PATH; do
     if [ "$OLDPATH" = "$i" ]; then
       OLDPATH="$i"
@@ -1518,8 +1518,8 @@ fi
 if [ -n "$MONGODB_IPATH" ]; then
     XIPATHS="$XIPATHS -I$MONGODB_IPATH -I$BSON_IPATH"
 fi
-if [ -n "$FREERDP2_IPATH" ]; then
-    XIPATHS="$XIPATHS -I$FREERDP2_IPATH -I$WINPR2_IPATH"
+if [ -n "$FREERDP3_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$FREERDP3_IPATH -I$WINPR3_IPATH"
 fi
 if [ -n "$SMBC_IPATH" ]; then
     XIPATHS="$XIPATHS -I$SMBC_IPATH"
@@ -1599,11 +1599,11 @@ fi
 if [ -n "$BSON_PATH" ]; then
     XLIBS="$XLIBS -lbson-1.0"
 fi
-if [ -n "$FREERDP2_PATH" ]; then
-    XLIBS="$XLIBS -lfreerdp2"
+if [ -n "$FREERDP3_PATH" ]; then
+    XLIBS="$XLIBS -lfreerdp3"
 fi
-if [ -n "$WINPR2_PATH" ]; then
-    XLIBS="$XLIBS -lwinpr2"
+if [ -n "$WINPR3_PATH" ]; then
+    XLIBS="$XLIBS -lwinpr3"
 fi
 if [ -n "$SMBC_PATH" ]; then
     XLIBS="$XLIBS -lsmbclient"
