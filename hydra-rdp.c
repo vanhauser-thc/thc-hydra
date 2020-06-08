@@ -1,5 +1,5 @@
 /*
-   This module is using freerdp2 lib
+   This module is using freerdp3 lib
 
    Tested on:
   - Windows 7 pro SP1
