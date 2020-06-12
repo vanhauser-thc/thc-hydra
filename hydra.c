@@ -2906,10 +2906,7 @@ int main(int argc, char *argv[]) {
 
     if (strcmp(hydra_options.service, "rdp") == 0) {
 #if !defined(LIBFREERDP2)|| (LIBFREERDP3)
-    if(!LIBFREERDP2)
-      bail("Compiled without FREERDP2 support, module not available!");
-    else
-      bail("Compiled without FREERDP3 support, module not available!");
+      bail("Compiled without FREERDP2 or FREERDP3 support, modules not available!");
 #endif
     }
     if (strcmp(hydra_options.service, "pcnfs") == 0) {
