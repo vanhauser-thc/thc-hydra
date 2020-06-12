@@ -70,6 +70,8 @@ NSL_PATH=""
 SOCKET_PATH=""
 MANDIR=""
 XHYDRA_SUPPORT=""
+FREERDP2_PATH=""
+WINPR2_PATH=""
 FREERDP3_PATH=""
 WINPR3_PATH=""
 SMBC_PATH=""
@@ -1017,16 +1019,92 @@ fi
     MCACHED_IPATH=""
   fi
 
+echo "Checking for Freerdp..."
+echo "Checking for Freerdp2 (libfreerdp2.so, freerdp/*.h, libwinpr2.so, winpr/*.h) ..."
+
+#Checking Freerdp2
+
+  for i in $LIBDIRS ; do
+    if [ "X" = "X$FREERDP2_PATH" ]; then
+        if [ -f "$i/libfreerdp2.so" -o -f "$i/libfreerdp2.dylib" -o -f "$i/libfreerdp2.a" -o -f "$i/libfreerdp2.dll.a" ]; then
+            FREERDP2_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$FREERDP2_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libfreerdp2*.so* 2> /dev/null | grep libfreerdp2`
+        if [ -n "$TMP_LIB" ]; then
+          FREERDP2_PATH="$i"
+        fi
+    fi
+  done
+
+  FREERDP2_IPATH=
+  for i in $INCDIRS ; do
+    if [ "X" = "X$FREERDP2_IPATH" ]; then
+        if [ -f "$i/freerdp/freerdp.h" ]; then
+            FREERDP2_IPATH="$i/freerdp2"
+        fi
+        if [ -f "$i/freerdp2/freerdp/freerdp.h" ]; then
+            FREERDP2_IPATH="$i/freerdp2"
+        fi
+    fi
+  done
+
+ for i in $LIBDIRS ; do
+    if [ "X" = "X$WINPR2_PATH" ]; then
+        if [ -f "$i/libwinpr2.so" -o -f "$i/libwinpr2.dylib" -o -f "$i/libwinpr2.a" ]; then
+            WINPR2_PATH="$i"
+        fi
+    fi
+    if [ "X" = "X$WINPR2_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libwinpr2.dll.a 2> /dev/null | grep winpr`
+        if [ -n "$TMP_LIB" ]; then
+          WINPR2_PATH="$i"
+        fi
+    fi
+  done
+
+  WINPR2_IPATH=
+  for i in $INCDIRS ; do
+    if [ "X" = "X$WINPR2_IPATH" ]; then
+        if [ -f "$i/winpr.h" ]; then
+            WINPR2_IPATH="$i"
+        fi
+        if [ -f "$i/winpr2/winpr/winpr.h" ]; then
+            WINPR2_IPATH="$i/winpr2"
+        fi
+    fi
+  done
+
+if [ "X" != "X$DEBUG" ]; then
+   echo DEBUG: FREERDP2_PATH=$FREERDP2_PATH/
+   echo DEBUG: FREERDP2_IPATH=$FREERDP2_IPATH/
+   echo DEBUG: WINPR2_PATH=$WINPR2_PATH/
+   echo DEBUG: WINPR2_IPATH=$WINPR2_IPATH/
+fi
+
+  if [ -n "$FREERDP2_PATH" -a -n "$FREERDP2_IPATH" -a -n "$WINPR2_PATH" -a -n "$WINPR2_IPATH" ]; then
+    echo "                                             ... found"
+  fi
+  if [ "X" = "X$FREERDP2_PATH" -o "X" = "X$FREERDP2_IPATH" -o "X" = "X$WINPR2_PATH" -o "X" = "X$WINPR2_IPATH" ]; then
+    echo "                                             ... NOT found, checking freerdp3 module next..."
+    FREERDP2_PATH=""
+    FREERDP2_IPATH=""
+    WINPR2_PATH=""
+    WINPR2_IPATH=""
+  fi
+
+#Checking Freerdp3 
 
 echo "Checking for Freerdp3 (libfreerdp3.so, freerdp/*.h, libwinpr3.so, winpr/*.h) ..."
 
   for i in $LIBDIRS ; do
-    if [ "X" = "X$FREERDP3_PATH" ]; then
+    if [ "X" = "X$FREERDP2_PATH" && "X" = "X$FREERDP3_PATH" ]; then
         if [ -f "$i/libfreerdp3.so" -o -f "$i/libfreerdp3.dylib" -o -f "$i/libfreerdp3.a" -o -f "$i/libfreerdp3.dll.a" ]; then
             FREERDP3_PATH="$i"
         fi
     fi
-    if [ "X" = "X$FREERDP3_PATH" ]; then
+    if [ "X" = "X$FREERDP2_PATH" && "X" = "X$FREERDP3_PATH" ]; then
         TMP_LIB=`/bin/ls $i/libfreerdp3*.so* 2> /dev/null | grep libfreerdp3`
         if [ -n "$TMP_LIB" ]; then
           FREERDP3_PATH="$i"
@@ -1036,7 +1114,7 @@ echo "Checking for Freerdp3 (libfreerdp3.so, freerdp/*.h, libwinpr3.so, winpr/*.
 
   FREERDP3_IPATH=
   for i in $INCDIRS ; do
-    if [ "X" = "X$FREERDP3_IPATH" ]; then
+    if [ "X" = "X$FREERDP2_IPATH" && "X" = "X$FREERDP3_IPATH" ]; then
         if [ -f "$i/freerdp/freerdp.h" ]; then
             FREERDP3_IPATH="$i/freerdp3"
         fi
@@ -1047,12 +1125,12 @@ echo "Checking for Freerdp3 (libfreerdp3.so, freerdp/*.h, libwinpr3.so, winpr/*.
   done
 
  for i in $LIBDIRS ; do
-    if [ "X" = "X$WINPR3_PATH" ]; then
+    if [ "X" = "X$WINPR2_PATH" && "X" = "X$WINPR3_PATH" ]; then
         if [ -f "$i/libwinpr3.so" -o -f "$i/libwinpr3.dylib" -o -f "$i/libwinpr3.a" ]; then
             WINPR3_PATH="$i"
         fi
     fi
-    if [ "X" = "X$WINPR3_PATH" ]; then
+    if [ "X" = "X$WINPR2_PATH" && "X" = "X$WINPR3_PATH" ]; then
         TMP_LIB=`/bin/ls $i/libwinpr3.dll.a 2> /dev/null | grep winpr`
         if [ -n "$TMP_LIB" ]; then
           WINPR3_PATH="$i"
@@ -1062,7 +1140,7 @@ echo "Checking for Freerdp3 (libfreerdp3.so, freerdp/*.h, libwinpr3.so, winpr/*.
 
   WINPR3_IPATH=
   for i in $INCDIRS ; do
-    if [ "X" = "X$WINPR3_IPATH" ]; then
+    if [ "X" = "X$WINPR2_IPATH" && "X" = "X$WINPR3_IPATH" ]; then
         if [ -f "$i/winpr.h" ]; then
             WINPR3_IPATH="$i"
         fi

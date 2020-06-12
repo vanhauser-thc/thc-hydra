@@ -10,7 +10,7 @@
 #include "hydra-mod.h"
 
 extern char *HYDRA_EXIT;
-#ifndef LIBFREERDP3
+#if !defined(LIBFREERDP2) || (LIBFREERDP3)
 void dummy_rdp() { printf("\n"); }
 #else
 

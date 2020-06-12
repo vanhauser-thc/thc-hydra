@@ -117,7 +117,7 @@ extern int32_t service_oracle_sid_init(char *ip, int32_t sp, unsigned char optio
 extern void service_sip(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern int32_t service_sip_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 #endif
-#ifdef LIBFREERDP3
+#if defined(LIBFREERDP2) || (LIBFREERDP3)
 extern void service_rdp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern int32_t service_rdp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 #endif
@@ -426,7 +426,7 @@ static const struct {
 #endif
                 SERVICE(redis),
                 SERVICE(rexec),
-#ifdef LIBFREERDP3
+#if defined(LIBFREERDP2) || (LIBFREERDP3)
                 SERVICE3("rdp", rdp),
 #endif
                 SERVICE(rlogin),
@@ -2237,7 +2237,7 @@ int main(int argc, char *argv[]) {
   strcat(unsupported, "SSL-services (ftps, sip, rdp, oracle-services, ...) ");
 #endif
 
-#ifndef LIBFREERDP3
+#if !defined(LIBFREERDP2) || (LIBFREERDP3)
   // for rdp
   SERVICES = hydra_string_replace(SERVICES, " rdp", "");
 #endif
@@ -2905,7 +2905,10 @@ int main(int argc, char *argv[]) {
     }
 
     if (strcmp(hydra_options.service, "rdp") == 0) {
-#ifndef LIBFREERDP3
+#if !defined(LIBFREERDP2)|| (LIBFREERDP3)
+    if(!LIBFREERDP2)
+      bail("Compiled without FREERDP2 support, module not available!");
+    else
       bail("Compiled without FREERDP3 support, module not available!");
 #endif
     }
