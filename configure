@@ -1413,6 +1413,8 @@ if [ -n "$FIREBIRD_PATH" -o \
         -n "$MYSQL_PATH" -o \
         -n "$MCACHED_PATH" -o \
         -n "$MONGOD_PATH" -o \
+        -n "$FREERDP2_PATH" -o \
+        -n "$WINPR2_PATH" -o \
         -n "$FREERDP3_PATH" -o \
         -n "$WINPR3_PATH" -o \
         -n "$SMBC_PATH" \
@@ -1498,8 +1500,14 @@ fi
 if [ -n "$BSON_PATH" ]; then
     XDEFINES="$XDEFINES -DLIBBSON"
 fi
+if [ -n "$FREERDP2_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBFREERDP"
+fi
+if [ -n "$WINPR2_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBWINPR2"
+fi
 if [ -n "$FREERDP3_PATH" ]; then
-    XDEFINES="$XDEFINES -DLIBFREERDP3"
+    XDEFINES="$XDEFINES -DLIBFREERDP"
 fi
 if [ -n "$WINPR3_PATH" ]; then
     XDEFINES="$XDEFINES -DLIBWINPR3"
@@ -1530,6 +1538,8 @@ for i in $SSL_PATH \
              $MCACHED_PATH \
              $MONGODB_PATH \
              $BSON_PATH \
+             $FREERDP2_PATH \
+             $WINPR2_PATH \
              $FREERDP3_PATH \
              $WINPR3_PATH \
              $SMBC_PATH; do
@@ -1590,6 +1600,9 @@ if [ -n "$MCACHED_IPATH" ]; then
 fi
 if [ -n "$MONGODB_IPATH" ]; then
     XIPATHS="$XIPATHS -I$MONGODB_IPATH -I$BSON_IPATH"
+fi
+if [ -n "$FREERDP3_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$FREERDP2_IPATH -I$WINPR2_IPATH"
 fi
 if [ -n "$FREERDP3_IPATH" ]; then
     XIPATHS="$XIPATHS -I$FREERDP3_IPATH -I$WINPR3_IPATH"
@@ -1671,6 +1684,12 @@ if [ -n "$MONGODB_PATH" ]; then
 fi
 if [ -n "$BSON_PATH" ]; then
     XLIBS="$XLIBS -lbson-1.0"
+fi
+if [ -n "$FREERDP3_PATH" ]; then
+    XLIBS="$XLIBS -lfreerdp2"
+fi
+if [ -n "$WINPR3_PATH" ]; then
+    XLIBS="$XLIBS -lwinpr2"
 fi
 if [ -n "$FREERDP3_PATH" ]; then
     XLIBS="$XLIBS -lfreerdp3"
