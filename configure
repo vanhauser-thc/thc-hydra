@@ -1685,10 +1685,10 @@ fi
 if [ -n "$BSON_PATH" ]; then
     XLIBS="$XLIBS -lbson-1.0"
 fi
-if [ -n "$FREERDP3_PATH" ]; then
+if [ -n "$FREERDP2_PATH" ]; then
     XLIBS="$XLIBS -lfreerdp2"
 fi
-if [ -n "$WINPR3_PATH" ]; then
+if [ -n "$WINPR2_PATH" ]; then
     XLIBS="$XLIBS -lwinpr2"
 fi
 if [ -n "$FREERDP3_PATH" ]; then
