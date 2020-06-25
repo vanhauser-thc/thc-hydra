@@ -19,6 +19,7 @@ void dummy_oracle() { printf("\n"); }
 
 #include <oci.h>
 #include <sys/types.h>
+#include <stdbool.h>
 
 extern char *HYDRA_EXIT;
 
@@ -84,7 +85,9 @@ int32_t start_oracle(int32_t s, char *ip, int32_t port, unsigned char options, c
     return 4;
   }
 
+  bool success = true;
   if (OCILogon(o_environment, o_error, &o_servicecontext, (const OraText *)login, strlen(login), (const OraText *)pass, strlen(pass), (const OraText *)buffer, strlen(buffer))) {
+    success = false;
     OCIErrorGet(o_error, 1, NULL, &o_errorcode, o_errormsg, sizeof(o_errormsg), OCI_HTYPE_ERROR);
     // database: oracle_error: ORA-01017: invalid username/password; logon
     // denied database: oracle_error: ORA-12514: TNS:listener does not currently
@@ -107,31 +110,26 @@ int32_t start_oracle(int32_t s, char *ip, int32_t port, unsigned char options, c
         return 3;
       return 2;
     }
-
-    if (o_error) {
-      OCIHandleFree((dvoid *)o_error, OCI_HTYPE_ERROR);
+    // ORA-28002: the password will expire within 7 days
+    if (strstr((const char *)o_errormsg, "ORA-28002") != NULL) {
+      hydra_report(stderr, "[INFO] ORACLE account %s password will expire soon.\n", login);
+      success = true;
     }
+  }
 
-    hydra_completed_pair();
-    // by default, set in sqlnet.ora, the trace file is generated in pwd to log
-    // any errors happening, as we don't care, we are deleting the file set
-    // these parameters to not generate the file LOG_DIRECTORY_CLIENT =
-    // /dev/null LOG_FILE_CLIENT = /dev/null
-
-    if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
-      return 3;
-    return 2;
-  } else {
+  if (success) {
     OCILogoff(o_servicecontext, o_error);
-    if (o_error) {
-      OCIHandleFree((dvoid *)o_error, OCI_HTYPE_ERROR);
-    }
     hydra_report_found_host(port, ip, "oracle", fp);
     hydra_completed_pair_found();
+  } else {
+    hydra_completed_pair();
+  }
+  if (o_error) {
+    OCIHandleFree((dvoid *)o_error, OCI_HTYPE_ERROR);
   }
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     return 3;
-  return 1;
+  return success ? 1 : 2;
 }
 
 void service_oracle(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
@@ -167,11 +165,15 @@ void service_oracle(char *ip, int32_t sp, unsigned char options, char *miscptr, 
       break;
     case 2:
       next_run = start_oracle(sock, ip, port, options, miscptr, fp);
-      hydra_child_exit(0);
       break;
     case 3: /* clean exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
+
+      // by default, set in sqlnet.ora, the trace file is generated in pwd to log
+      // any errors happening, as we don't care, we are deleting the file set
+      // these parameters to not generate the file LOG_DIRECTORY_CLIENT =
+      // /dev/null LOG_FILE_CLIENT = /dev/null
       unlink("sqlnet.log");
       hydra_child_exit(0);
       return;
