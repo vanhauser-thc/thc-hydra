@@ -619,6 +619,8 @@ void module_usage() {
          "%s:\n================================================================"
          "============\n",
          hydra_options.service);
+  if (strncmp(hydra_options.service, "https-", 6) == 0 )
+    memmove(hydra_options.service + 4, hydra_options.service + 5, strlen(hydra_options.service) - 4);
   for (i = 0; i < sizeof(services) / sizeof(services[0]); i++) {
     if (strcmp(hydra_options.service, services[i].name) == 0) {
       if (services[i].usage) {
