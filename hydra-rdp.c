@@ -1,5 +1,5 @@
 /*
-   This module is using freerdp2 lib
+   This module is using freerdp3 lib
 
    Tested on:
   - Windows 7 pro SP1
@@ -10,7 +10,7 @@
 #include "hydra-mod.h"
 
 extern char *HYDRA_EXIT;
-#ifndef LIBFREERDP2
+#ifndef LIBFREERDP
 void dummy_rdp() { printf("\n"); }
 #else
 
