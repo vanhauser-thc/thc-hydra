@@ -78,7 +78,6 @@ install:	strip
 	-cp -f *.csv $(DESTDIR)$(PREFIX)$(DATADIR)
 	-mkdir -p $(DESTDIR)$(PREFIX)$(MANDIR)
 	-cp -f hydra.1 xhydra.1 pw-inspector.1 $(DESTDIR)$(PREFIX)$(MANDIR)
-      -ldconfig
 
 clean:
 	rm -rf xhydra pw-inspector hydra *.o core *.core *.stackdump *~ Makefile.in Makefile dev_rfc hydra.restore arm/*.ipk arm/ipkg/usr/bin/* hydra-gtk/src/*.o hydra-gtk/src/xhydra hydra-gtk/stamp-h hydra-gtk/config.status hydra-gtk/errors hydra-gtk/config.log hydra-gtk/src/.deps hydra-gtk/src/Makefile hydra-gtk/Makefile
