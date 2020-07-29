@@ -2233,15 +2233,15 @@ if test "$ac_test_CFLAGS" = set; then
   CFLAGS=$ac_save_CFLAGS
 elif test $ac_cv_prog_cc_g = yes; then
   if test "$GCC" = yes; then
-    CFLAGS="-g -O2"
+    CFLAGS="-g -O2 -fcommon -Wl,--allow-multiple-definition"
   else
-    CFLAGS="-g"
+    CFLAGS="-g -fcommon -Wl,--allow-multiple-definition"
   fi
 else
   if test "$GCC" = yes; then
-    CFLAGS="-O2"
+    CFLAGS="-O2 -fcommon -Wl,--allow-multiple-definition"
   else
-    CFLAGS=
+    CFLAGS="-fcommon -Wl,--allow-multiple-definition"
   fi
 fi
 echo "$as_me:$LINENO: checking for $CC option to accept ANSI C" >&5
