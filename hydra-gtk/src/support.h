@@ -37,6 +37,6 @@ GdkPixbuf *create_pixbuf(const gchar *filename);
 /* This is used to set ATK action descriptions. */
 void glade_set_atk_action_description(AtkAction *action, const gchar *action_name, const gchar *description);
 
-GtkWidget *wndMain;
-char *HYDRA_BIN;
-guint message_id;
+extern GtkWidget *wndMain;
+extern char *HYDRA_BIN;
+extern guint message_id;

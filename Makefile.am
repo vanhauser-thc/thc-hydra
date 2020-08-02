@@ -4,7 +4,7 @@
 WARN_CLANG=-Wformat-nonliteral -Wstrncat-size -Wformat-security -Wsign-conversion -Wconversion -Wfloat-conversion -Wshorten-64-to-32 -Wuninitialized -Wmissing-variable-declarations  -Wmissing-declarations
 WARN_GCC=-Wformat=2 -Wformat-overflow=2 -Wformat-nonliteral -Wformat-truncation=2 -Wnull-dereference -Wstrict-overflow=2 -Wstringop-overflow=4 -Walloca-larger-than=4096 -Wtype-limits -Wconversion -Wtrampolines -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -fno-common -Wcast-align
 CFLAGS ?= -g
-OPTS=-I. -O3 $(CFLAGS) -fcommon
+OPTS=-I. -O3 $(CFLAGS) -fcommon -Wl,--allow-multiple-definition
 # -Wall -g -pedantic
 LIBS=-lm
 DESTDIR ?=

@@ -18,8 +18,11 @@ char *hydra_path1 = "./hydra";
 char *hydra_path2 = "/usr/local/bin/hydra";
 char *hydra_path3 = "/usr/bin/hydra";
 
+GtkWidget *wndMain;
+char *HYDRA_BIN;
+guint message_id;
+
 int main(int argc, char *argv[]) {
-  extern GtkWidget *wndMain;
   int i;
   extern guint message_id;
   GtkWidget *output;
