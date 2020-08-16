@@ -157,8 +157,8 @@ fi
 if [ -d "/Library/Developer/CommandLineTools/usr/lib" ]; then
   LIBDIRS="$LIBDIRS /Library/Developer/CommandLineTools/usr/lib /Library/Developer/CommandLineTools/lib"
 fi
-LIBDIRS="$LIBDIRS /lib /usr/lib /usr/local/lib /opt/local/lib"
-INCDIRS="$SDK_PATH/usr/include /usr/local/include /opt/include /opt/local/include"
+LIBDIRS="$LIBDIRS /lib /usr/lib /usr/local/lib /opt/local/lib /mingw64/lib /mingw64/bin"
+INCDIRS="$SDK_PATH/usr/include /usr/local/include /opt/include /opt/local/include /mingw64/include"
 if [ -n "$PREFIX" ]; then
     if [ -d "$PREFIX/lib" ]; then
         LIBDIRS="$LIBDIRS $PREFIX/lib"
@@ -445,7 +445,7 @@ echo "Checking for Postgres (libpq/libpq-fe.h) ..."
   done
   POSTGRES_IPATH=
   for i in $INCDIRS \
-    /opt/p*sql*/include /usr/*p*sql*/include /usr/local/*psql*/include
+    /opt/p*sql*/include /usr/*p*sql*/include /usr/local/*psql*/include /mingw64/include
   do
     if [ "X" = "X$POSTGRES_IPATH" ]; then
         if [ -f "$i/libpq-fe.h" ]; then
@@ -1761,9 +1761,9 @@ cat Makefile.in >> Makefile
 # ignore errors if this uname call fails
 ### Current Cygwin is up to speed :-)
 WINDRES=""
-if [ "$SYSO" = "Cygwin" ]; then
+if [ "$SYSO" = "Cygwin" -o "$SYSO" = "Msys" ]; then
     echo
-    echo "Cygwin detected, if compilation fails just update your installation."
+    echo "Cygwin/MSYS2 detected, if compilation fails just update your installation."
     echo
     WINDRES=`which windres`
     test -x "$WINDRES" && {
