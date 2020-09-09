@@ -555,7 +555,7 @@ void help_bfg() {
          "             'A' for uppercase letters, '1' for numbers, and for all others,\n"
          "             just add their real representation.\n"
          "  -y         disable the use of the above letters as placeholders\n"
-         "  -r         use a formula to explode the linearity of the generation, without loss.\n\n"
+         "  -r         use a method to delinearize the bruteforce.\n\n"
          "Examples:\n"
          "   -x 3:5:a  generate passwords from length 3 to 5 with all lowercase letters\n"
          "   -x 5:8:A1 generate passwords from length 5 to 8 with uppercase and numbers\n"
