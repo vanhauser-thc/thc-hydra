@@ -590,7 +590,7 @@ void help_bfg() {
          "others,\n"
          "             just add their real representation.\n"
          "  -y         disable the use of the above letters as placeholders\n"
-         "  -r         use a formula to explode the linearity of the generation, without loss.\n\n"
+         "  -r         use a method to delinearize the bruteforce.\n\n"
          "Examples:\n"
          "   -x 3:5:a  generate passwords from length 3 to 5 with all "
          "lowercase letters\n"
