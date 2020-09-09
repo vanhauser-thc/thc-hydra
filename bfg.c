@@ -1,5 +1,6 @@
 
-/* code original by Jan Dlabal <dlabaljan@gmail.com>, partially rewritten by vh */
+/* code original by Jan Dlabal <dlabaljan@gmail.com>, partially rewritten by vh,
+ rainy tweaks by yvain douard*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -192,15 +193,6 @@ uint64_t bf_get_pcount() {
   return foo;
 }
 
-int accu(int value)
-{
-  int i = 0, a;
-  for(a = 1; a <= value; ++a)
-  {
-  	i += a;
-  }
-  return i;
-}
 
 char *bf_next(_Bool rainy) {
   int32_t i, pos = bf_options.current - 1;
@@ -215,18 +207,22 @@ char *bf_next(_Bool rainy) {
 
   if(rainy)
   {
-  	#if(mpl < 5)
-		#define strafeValue i
-	#else
-		#define strafeValue (strafe[loop]+i-(i%2)*(1-mpl%2)-1+charcount%2)%mpl
-	#endif
-	
+  	int strafeValue;		
 	for(i=0; i<bf_options.current; ++i) {
+		if(bf_options.current > 4) {
+			if(bf_options.current % 2)
+				strafeValue  = (bf_options.strafe+i)%bf_options.current;
+			else 
+				strafeValue  = strafeValue  = (i+bf_options.current/2+3)%bf_options.current;
+		}
+		else
+			strafeValue = i;
+			
 		bf_options.ptr[i] = bf_options.crs[(bf_options.state[strafeValue] + bf_options.rotate) % bf_options.crs_len];
-		bf_options.rotate += i%2+1;
+		bf_options.rotate += 1;
 		bf_options.strafe += 3;
 	}
-	bf_options.rotate -= accu(bf_options.current);
+	bf_options.rotate -= bf_options.current - 2 + bf_options.crs_len % 2;
   }
   else
     for (i = 0; i < bf_options.current; i++)
@@ -243,6 +239,8 @@ char *bf_next(_Bool rainy) {
   while (pos >= 0 && (++bf_options.state[pos]) >= bf_options.crs_len) {
     bf_options.state[pos] = 0;
     pos--;
+    bf_options.strafe = 0;
+    bf_options.rotate = 0;
   }
 
   if (pos < 0) {
