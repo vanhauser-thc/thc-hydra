@@ -52,12 +52,13 @@ static int32_t add_single_char(char ch, char flags, int32_t* crs_len) {
 // note that we check for -x .:.:ab but not for -x .:.:ba
 //
 int32_t bf_init(char *arg) {
-  bf_options.rain = 0;
+  bf_options.rotate = 0;
+  bf_options.strafe = 0;
   int32_t i = 0;
   int32_t crs_len = 0;
   char flags = 0;
   char *tmp = strchr(arg, ':');
-
+	
   if (!tmp) {
     fprintf(stderr, "Error: Invalid option format for -x\n");
     return 1;
@@ -163,10 +164,11 @@ int32_t bf_init(char *arg) {
       }
     }
   }
-
+	
   bf_options.crs_len = crs_len;
   bf_options.current = bf_options.from;
   memset((char *) bf_options.state, 0, sizeof(bf_options.state));
+  
   if (debug)
     printf("[DEBUG] bfg INIT: from %u, to %u, len: %u, set: %s\n", bf_options.from, bf_options.to, bf_options.crs_len, bf_options.crs);
 
@@ -192,10 +194,10 @@ uint64_t bf_get_pcount() {
 
 int accu(int value)
 {
-  int i = 0;
-  for(int a=1; a<=value; ++a)
+  int i = 0, a;
+  for(a = 1; a <= value; ++a)
   {
-  	i+=a;
+  	i += a;
   }
   return i;
 }
@@ -213,16 +215,18 @@ char *bf_next(_Bool rainy) {
 
   if(rainy)
   {
-	for (i = 0; i < bf_options.current; i++){
-	  bf_options.ptr[i] = bf_options.crs[(bf_options.state[i]+bf_options.rain)%bf_options.crs_len];
-	  bf_options.rain += i+1;
+  	#if(mpl < 5)
+		#define strafeValue i
+	#else
+		#define strafeValue (strafe[loop]+i-(i%2)*(1-mpl%2)-1+charcount%2)%mpl
+	#endif
+	
+	for(i=0; i<bf_options.current; ++i) {
+		bf_options.ptr[i] = bf_options.crs[(bf_options.state[strafeValue] + bf_options.rotate) % bf_options.crs_len];
+		bf_options.rotate += i%2+1;
+		bf_options.strafe += 3;
 	}
-    if(bf_options.crs_len%10 == 0)
-	  bf_options.rain-=accu(bf_options.current)-2;
-    else if(bf_options.crs_len%2 == 0)
-	  bf_options.rain-=accu(bf_options.current)-4;
-    else if(bf_options.crs_len%2)
-	  bf_options.rain-=accu(bf_options.current)-1;
+	bf_options.rotate -= accu(bf_options.current);
   }
   else
     for (i = 0; i < bf_options.current; i++)
