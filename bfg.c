@@ -59,12 +59,11 @@ static int32_t add_single_char(char ch, char flags, int32_t *crs_len) {
 // note that we check for -x .:.:ab but not for -x .:.:ba
 //
 int32_t bf_init(char *arg) {
-  bf_options.rain = 0;
   int32_t i = 0;
   int32_t crs_len = 0;
   char flags = 0;
   char *tmp = strchr(arg, ':');
-
+	
   if (!tmp) {
     fprintf(stderr, "Error: Invalid option format for -x\n");
     return 1;
@@ -172,10 +171,11 @@ int32_t bf_init(char *arg) {
       }
     }
   }
-
+	
   bf_options.crs_len = crs_len;
   bf_options.current = bf_options.from;
-  memset((char *)bf_options.state, 0, sizeof(bf_options.state));
+  memset((char *) bf_options.state, 0, sizeof(bf_options.state));
+  
   if (debug)
     printf("[DEBUG] bfg INIT: from %u, to %u, len: %u, set: %s\n", bf_options.from, bf_options.to, bf_options.crs_len, bf_options.crs);
 
