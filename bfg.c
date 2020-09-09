@@ -1,6 +1,6 @@
 
-/* code original by Jan Dlabal <dlabaljan@gmail.com>, partially rewritten by vh
- */
+/* code original by Jan Dlabal <dlabaljan@gmail.com>, partially rewritten by vh,
+ rainy tweaks by yvain douard*/
 
 #include <ctype.h>
 #include <math.h>
@@ -229,7 +229,6 @@ char *bf_next() {
     bf_options.current++;
     memset((char *)bf_options.state, 0, sizeof(bf_options.state));
   }
-
   return bf_options.ptr;
 }
 
