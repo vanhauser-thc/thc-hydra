@@ -3,7 +3,7 @@
 extern char *HYDRA_EXIT;
 char *buf;
 
-int32_t start_redis(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_redis(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *pass, buffer[510];
   char *empty = "";
 
@@ -51,7 +51,7 @@ int32_t start_redis(int32_t s, char *ip, int32_t port, unsigned char options, ch
   return 1;
 }
 
-void service_redis_core(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname, int32_t tls) {
+void service_redis_core(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname, int32_t tls) {
   int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_REDIS, mysslport = PORT_REDIS_SSL;
 
@@ -61,7 +61,7 @@ void service_redis_core(char *ip, int32_t sp, unsigned char options, char *miscp
 
   while (1) {
     switch (run) {
-    case 1:                    /* connect and service init function */
+    case 1: /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       if ((options & OPTION_SSL) == 0) {
@@ -77,21 +77,21 @@ void service_redis_core(char *ip, int32_t sp, unsigned char options, char *miscp
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
         hydra_child_exit(1);
       }
       usleepn(250);
       next_run = 2;
       break;
-    case 2:                    /* run the cracking function */
+    case 2: /* run the cracking function */
       next_run = start_redis(sock, ip, port, options, miscptr, fp);
       break;
-    case 3:                    /* error exit */
+    case 3: /* error exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       hydra_child_exit(2);
       break;
-    case 4:                    /* clean exit */
+    case 4: /* clean exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       hydra_child_exit(0);
@@ -104,32 +104,32 @@ void service_redis_core(char *ip, int32_t sp, unsigned char options, char *miscp
   }
 }
 
-void service_redis(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
-  service_redis_core(ip, sp, options, miscptr, fp, port, hostname, 0);
-}
+void service_redis(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) { service_redis_core(ip, sp, options, miscptr, fp, port, hostname, 0); }
 
-/* 
-* Initial password authentication test and response test for the redis server,
-* added by Petar Kaleychev <petar.kaleychev@gmail.com>
-* The service_redis_init function is generating ping request as redis-cli (command line interface). 
-* You can use redis-cli to connect with Redis. After start of the redis-server in another terminal the following:
-*    % ./redis-cli
-*    redis> ping
-*    when the server does not require password, leads to:
-*    PONG
-*    when the server requires password, leads to:
-*    (error) NOAUTH Authentication required.
-*    or
-*    (error) ERR operation not permitted      (for older redis versions)
-* That is used for initial password authentication and redis server response tests in service_redis_init
-*/
-int32_t service_redis_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+/*
+ * Initial password authentication test and response test for the redis server,
+ * added by Petar Kaleychev <petar.kaleychev@gmail.com>
+ * The service_redis_init function is generating ping request as redis-cli
+ * (command line interface). You can use redis-cli to connect with Redis. After
+ * start of the redis-server in another terminal the following: % ./redis-cli
+ *    redis> ping
+ *    when the server does not require password, leads to:
+ *    PONG
+ *    when the server requires password, leads to:
+ *    (error) NOAUTH Authentication required.
+ *    or
+ *    (error) ERR operation not permitted      (for older redis versions)
+ * That is used for initial password authentication and redis server response
+ * tests in service_redis_init
+ */
+int32_t service_redis_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
   // return codes:
   // 0 - when the server is redis and it requires password
-  // n - when the server is not redis or when the server does not require password
+  // n - when the server is not redis or when the server does not require
+  // password
 
   int32_t sock = -1;
   int32_t myport = PORT_REDIS, mysslport = PORT_REDIS_SSL;
@@ -148,7 +148,8 @@ int32_t service_redis_init(char *ip, int32_t sp, unsigned char options, char *mi
     port = mysslport;
   }
   if (verbose)
-    printf("[VERBOSE] Initial redis password authentication test and response test ...\n");
+    printf("[VERBOSE] Initial redis password authentication test and response "
+           "test ...\n");
   if (sock < 0) {
     hydra_report(stderr, "[ERROR] Can not connect to port %d on the target\n", myport);
     return 3;
@@ -156,10 +157,10 @@ int32_t service_redis_init(char *ip, int32_t sp, unsigned char options, char *mi
   // generating ping request as redis-cli
   if (debug)
     printf("[DEBUG] buffer = %s\n", buffer);
-    //    [debug mode]: buffer is:
-    //    *1
-    //    $4
-    //    ping
+  //    [debug mode]: buffer is:
+  //    *1
+  //    $4
+  //    ping
   if (hydra_send(sock, buffer, strlen(buffer), 0) < 0) {
     return 2;
   }

@@ -1,13 +1,16 @@
 #
-# Makefile for Hydra - (c) 2001-2019 by van Hauser / THC <vh@thc.org>
+# Makefile for Hydra - (c) 2001-2020 by van Hauser / THC <vh@thc.org>
 #
-OPTS=-I. -O3 -march=native -flto
+WARN_CLANG=-Wformat-nonliteral -Wstrncat-size -Wformat-security -Wsign-conversion -Wconversion -Wfloat-conversion -Wshorten-64-to-32 -Wuninitialized -Wmissing-variable-declarations  -Wmissing-declarations
+WARN_GCC=-Wformat=2 -Wformat-overflow=2 -Wformat-nonliteral -Wformat-truncation=2 -Wnull-dereference -Wstrict-overflow=2 -Wstringop-overflow=4 -Walloca-larger-than=4096 -Wtype-limits -Wconversion -Wtrampolines -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -fno-common -Wcast-align
+CFLAGS ?= -g
+OPTS=-I. -O3 $(CFLAGS) -fcommon -Wl,--allow-multiple-definition
 # -Wall -g -pedantic
 LIBS=-lm
-BINDIR = /bin
-MANDIR ?= /man/man1/
-DATADIR ?= /etc
 DESTDIR ?=
+BINDIR = /bin
+MANDIR = /man/man1/
+DATADIR = /etc
 
 SRC = hydra-vnc.c hydra-pcnfs.c hydra-rexec.c hydra-nntp.c hydra-socks5.c \
       hydra-telnet.c hydra-cisco.c hydra-http.c hydra-ftp.c hydra-imap.c \
@@ -21,7 +24,8 @@ SRC = hydra-vnc.c hydra-pcnfs.c hydra-rexec.c hydra-nntp.c hydra-socks5.c \
       hydra-oracle-sid.c hydra-http-proxy.c hydra-http-form.c hydra-irc.c \
       hydra-s7-300.c hydra-redis.c hydra-adam6500.c hydra-rtsp.c \
       hydra-rpcap.c hydra-radmin2.c \
-      hydra-time.c crc32.c d3des.c bfg.c ntlm.c sasl.c hmacmd5.c hydra-mod.c
+      hydra-time.c crc32.c d3des.c bfg.c ntlm.c sasl.c hmacmd5.c hydra-mod.c \
+      hydra-smb2.c
 OBJ = hydra-vnc.o hydra-pcnfs.o hydra-rexec.o hydra-nntp.o hydra-socks5.o \
       hydra-telnet.o hydra-cisco.o hydra-http.o hydra-ftp.o hydra-imap.o \
       hydra-pop3.o hydra-smb.o hydra-icq.o hydra-cisco-enable.o hydra-ldap.o \
@@ -34,7 +38,8 @@ OBJ = hydra-vnc.o hydra-pcnfs.o hydra-rexec.o hydra-nntp.o hydra-socks5.o \
       hydra-ncp.o hydra-http-proxy.o hydra-http-form.o hydra-irc.o \
       hydra-redis.o hydra-rdp.o hydra-s7-300.c hydra-adam6500.o hydra-rtsp.o \
       hydra-rpcap.o hydra-radmin2.o \
-      crc32.o d3des.o bfg.o ntlm.o sasl.o hmacmd5.o hydra-mod.o hydra-time.o
+      crc32.o d3des.o bfg.o ntlm.o sasl.o hmacmd5.o hydra-mod.o hydra-time.o \
+      hydra-smb2.o
 BINS = hydra pw-inspector
 
 EXTRA_DIST = README README.arm README.palm CHANGES TODO INSTALL LICENSE \

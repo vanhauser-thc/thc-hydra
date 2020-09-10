@@ -1,13 +1,13 @@
-#include <unistd.h>
-#include <netdb.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <netdb.h>
 #include <sys/select.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 /* handles select errors */
-int32_t my_select(int32_t fd, fd_set * fdread, fd_set * fdwrite, fd_set * fdex, long sec, long usec) {
+int32_t my_select(int32_t fd, fd_set *fdread, fd_set *fdwrite, fd_set *fdex, long sec, long usec) {
   int32_t ret_val;
   struct timeval stv;
   fd_set *fdr2, *fdw2, *fde2;
@@ -18,10 +18,12 @@ int32_t my_select(int32_t fd, fd_set * fdread, fd_set * fdwrite, fd_set * fdex, 
     fde2 = fdex;
     stv.tv_sec = sec;
     stv.tv_usec = usec;
-    if (debug > 1) printf("before select\n");
+    if (debug > 1)
+      printf("before select\n");
     ret_val = select(fd, fdr2, fdw2, fde2, &stv);
-    if (debug > 1) printf("after select\n");
-  /* XXX select() sometimes returns errno=EINTR (signal found) */
+    if (debug > 1)
+      printf("after select\n");
+    /* XXX select() sometimes returns errno=EINTR (signal found) */
   } while (ret_val == -1 && errno == EINTR);
 
   return ret_val;
@@ -43,7 +45,7 @@ ssize_t read_safe(int32_t fd, void *buffer, size_t len) {
     tv.tv_sec = 0;
     tv.tv_usec = 250000;
     ret = select(fd + 1, &fr, 0, 0, &tv);
-  /* XXX select() sometimes return errno=EINTR (signal found) */
+    /* XXX select() sometimes return errno=EINTR (signal found) */
   } while (ret == -1 && errno == EINTR);
 
   if (ret < 0) {
@@ -55,7 +57,7 @@ ssize_t read_safe(int32_t fd, void *buffer, size_t len) {
   }
 
   if (ret > 0) {
-    while ((r = read(fd, (char*) ((char*)buffer + total), toread))) {
+    while ((r = read(fd, (char *)((char *)buffer + total), toread))) {
       if (r == -1) {
         if (errno == EAGAIN)
           break;

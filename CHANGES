@@ -2,11 +2,21 @@ Changelog for hydra
 -------------------
 
 Release 9.1-dev
+* enable gcc 10 support for xhydra too :)
+* rdb: support for libfreerdp3 (thanks to animetauren)
+* new module: smb2 which also supports smb3 (uses libsmbclient-dev) (thanks to Karim Kanso for the module!)
+* oracle: added success condition (thanks to kazkansouh), compile on Cygwin (thanks to maaaaz)
+* rtsp: fixed crash in MD5 auth
 * svn: updated to support past and new API
-* http module now supports F=/S= string matching conditions (thanks to poucz@github)
-* changed mysql module not to use mysql db as a default. if the user has not access to this db auth fails ...
+* http: now supports F=/S= string matching conditions (thanks to poucz@github)
+* http-proxy: buffer fix, 404 success condition (thanks to kazkansouh)
+* mysql: changed not to use mysql db as a default. if the user has not access to this db auth fails ...
+* sasl: buffer fix (thanks to TenGbps)
+* fixed help for https modules (thanks to Jab2870)
 * added -K command line switch to disable redo attempts (good for mass scanning)
 * forgot to have the -m option in the hydra help output
+* gcc-10 support and various cleanups by Jeroen Roovers, thanks!
+* added .clang-format and formatted all code
 
 
 Release 9.0

@@ -4,11 +4,11 @@
 #include "hydra.h"
 
 #ifdef __sun
-  #include <sys/int_types.h>
+#include <sys/int_types.h>
 #elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX)
-  #include <inttypes.h>
+#include <inttypes.h>
 #else
-  #include <stdint.h>
+#include <stdint.h>
 #endif
 
 extern char quiet;
@@ -21,10 +21,10 @@ extern char *hydra_get_next_password();
 extern void hydra_completed_pair();
 extern void hydra_completed_pair_found();
 extern void hydra_completed_pair_skip();
-extern void hydra_report_found(int32_t port, char *svc, FILE * fp);
-extern void hydra_report_pass_found(int32_t port, char *ip, char *svc, FILE * fp);
-extern void hydra_report_found_host(int32_t port, char *ip, char *svc, FILE * fp);
-extern void hydra_report_found_host_msg(int32_t port, char *ip, char *svc, FILE * fp, char *msg);
+extern void hydra_report_found(int32_t port, char *svc, FILE *fp);
+extern void hydra_report_pass_found(int32_t port, char *ip, char *svc, FILE *fp);
+extern void hydra_report_found_host(int32_t port, char *ip, char *svc, FILE *fp);
+extern void hydra_report_found_host_msg(int32_t port, char *ip, char *svc, FILE *fp, char *msg);
 extern void hydra_report_debug(FILE *st, char *format, ...);
 extern int32_t hydra_connect_to_ssl(int32_t socket, char *hostname);
 extern int32_t hydra_connect_ssl(char *host, int32_t port, char *hostname);

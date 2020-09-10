@@ -1,7 +1,7 @@
 
 /*
  * This file handles all that needs to be done...
- * Some stuff is stolen from gcombust since I never used pipes... ok, i 
+ * Some stuff is stolen from gcombust since I never used pipes... ok, i
  * only used them in reallife :)
  */
 
@@ -15,38 +15,35 @@
 #include "interface.h"
 #include "support.h"
 
-#include <sys/types.h>
-#include <sys/wait.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/stat.h>
+#include <sys/wait.h>
 
+#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <string.h>
+#include <unistd.h>
 
 int hydra_pid = 0;
 
 char port[10];
 char tasks[10];
 char timeout[10];
-char smbparm[12];
+char smbparm[128];
 char sapr3id[4];
 char passLoginNull[4];
 
-
 #define BUF_S 1024
 
-void hydra_select_file(GtkEntry * widget, char *text) {
+void hydra_select_file(GtkEntry *widget, char *text) {
 #ifdef GTK_TYPE_FILE_CHOOSER
   GtkWidget *dialog;
   char *filename;
 
-  dialog = gtk_file_chooser_dialog_new(text, (GtkWindow *) wndMain, GTK_FILE_CHOOSER_ACTION_OPEN,
-                                       GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+  dialog = gtk_file_chooser_dialog_new(text, (GtkWindow *)wndMain, GTK_FILE_CHOOSER_ACTION_OPEN, GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
 
   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
     filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
@@ -70,7 +67,7 @@ int hydra_get_options(char *options[]) {
 
   /* get the port */
   widget = lookup_widget(GTK_WIDGET(wndMain), "spnPort");
-  j = gtk_spin_button_get_value_as_int((GtkSpinButton *) widget);
+  j = gtk_spin_button_get_value_as_int((GtkSpinButton *)widget);
   if (j != 0) {
     snprintf(port, 10, "%d", j);
     options[i++] = "-s";
@@ -79,107 +76,107 @@ int hydra_get_options(char *options[]) {
 
   /* prefer ipv6 */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkIPV6");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     options[i++] = "-6";
   }
 
   /* use SSL? */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkSSL");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     options[i++] = "-S";
   }
 
   /* use old SSL? */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkOldSSL");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     options[i++] = "-O";
   }
 
   /* be verbose? */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkVerbose");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     options[i++] = "-v";
   }
 
   /* show attempts */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkAttempts");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     options[i++] = "-V";
   }
 
   /* debug mode? */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkDebug");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     options[i++] = "-d";
   }
 
   /* COMPLETE HELP */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkCompleteHelp");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     options[i++] = "-h";
   }
 
   /* Service Module Usage Details */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkServiceDetails");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     options[i++] = "-U";
   }
 
   /* use colon separated list? */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkColon");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     options[i++] = "-C";
     widget = lookup_widget(GTK_WIDGET(wndMain), "entColonFile");
-    options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+    options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
 
   } else {
     /* disable usernames */
     widget = lookup_widget(GTK_WIDGET(wndMain), "chkDisUser");
-    if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+    if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     } else {
       /* get the username, or username list */
       widget = lookup_widget(GTK_WIDGET(wndMain), "radioUsername1");
-      if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+      if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
         options[i++] = "-l";
         widget = lookup_widget(GTK_WIDGET(wndMain), "entUsername");
-        options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+        options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
       } else {
         options[i++] = "-L";
         widget = lookup_widget(GTK_WIDGET(wndMain), "entUsernameFile");
-        options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+        options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
       }
     }
 
     /* get the pass, pass list, or generate */
     /* The "generate" button was implemented by Petar Kaleychev <petar.kaleychev@gmail.com> */
     widget = lookup_widget(GTK_WIDGET(wndMain), "radioPass1");
-    if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+    if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
       options[i++] = "-p";
       widget = lookup_widget(GTK_WIDGET(wndMain), "entPass");
-      options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+      options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
     }
     widget = lookup_widget(GTK_WIDGET(wndMain), "radioPass2");
-    if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+    if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
       options[i++] = "-P";
       widget = lookup_widget(GTK_WIDGET(wndMain), "entPassFile");
-      options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+      options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
     }
     widget = lookup_widget(GTK_WIDGET(wndMain), "radioGenerate");
-    if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+    if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
       options[i++] = "-x";
       widget = lookup_widget(GTK_WIDGET(wndMain), "entGeneration");
-      options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+      options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
     }
   }
 
   /* empty passes / login as pass / reversed login? */
   memset(passLoginNull, 0, 4);
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkPassNull");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     passLoginNull[0] = 'n';
   }
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkPassLogin");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     if (passLoginNull[0] == 0) {
       passLoginNull[0] = 's';
     } else {
@@ -188,7 +185,7 @@ int hydra_get_options(char *options[]) {
   }
   /* The "Try reversed login" button was implemented by Petar Kaleychev <petar.kaleychev@gmail.com> */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkPassReverse");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     if (passLoginNull[0] == 0) {
       passLoginNull[0] = 'r';
     } else if (passLoginNull[1] == 0) {
@@ -204,7 +201,7 @@ int hydra_get_options(char *options[]) {
 
   /* #of tasks */
   widget = lookup_widget(GTK_WIDGET(wndMain), "spnTasks");
-  j = gtk_spin_button_get_value_as_int((GtkSpinButton *) widget);
+  j = gtk_spin_button_get_value_as_int((GtkSpinButton *)widget);
   if (j != 40) {
     snprintf(tasks, 10, "%d", j);
     options[i++] = "-t";
@@ -213,7 +210,7 @@ int hydra_get_options(char *options[]) {
 
   /* timeout */
   widget = lookup_widget(GTK_WIDGET(wndMain), "spnTimeout");
-  j = gtk_spin_button_get_value_as_int((GtkSpinButton *) widget);
+  j = gtk_spin_button_get_value_as_int((GtkSpinButton *)widget);
   if (j != 30) {
     snprintf(timeout, 10, "%d", j);
     options[i++] = "-w";
@@ -222,59 +219,59 @@ int hydra_get_options(char *options[]) {
 
   /* loop around users? */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkUsernameLoop");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     options[i++] = "-u";
   }
 
   /* exit after first found pair? */
   /* per host */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkExitf");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     options[i++] = "-f";
   }
   /* global */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkExitF");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     options[i++] = "-F";
   }
 
   /* Do not print messages about connection errors */
   widget = lookup_widget(GTK_WIDGET(wndMain), "chkNoErr");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     options[i++] = "-q";
   }
 
   /* get additional parameters */
   widget = lookup_widget(GTK_WIDGET(wndMain), "entProtocol");
-  tmp = (char *) gtk_entry_get_text((GtkEntry *) widget);
+  tmp = (char *)gtk_entry_get_text((GtkEntry *)widget);
 
   if (!strncmp(tmp, "http-proxy", 10)) {
     widget = lookup_widget(GTK_WIDGET(wndMain), "entHTTPProxyURL");
     options[i++] = "-m";
-    options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+    options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
 
   } else if (!strncmp(tmp, "http-", 5) || !strncmp(tmp, "https-", 6)) {
     options[i++] = "-m";
     widget = lookup_widget(GTK_WIDGET(wndMain), "entHTTPURL");
-    options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+    options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
 
   } else if (!strcmp(tmp, "cisco-enable")) {
     options[i++] = "-m";
     widget = lookup_widget(GTK_WIDGET(wndMain), "entCiscoPass");
-    options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+    options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
 
   } else if (!strcmp(tmp, "ldap3-crammd5")) {
     options[i++] = "-m";
     widget = lookup_widget(GTK_WIDGET(wndMain), "entLDAPDN");
-    options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+    options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
 
   } else if (!strcmp(tmp, "ldap3-digestmd5")) {
     options[i++] = "-m";
     widget = lookup_widget(GTK_WIDGET(wndMain), "entLDAPDN");
-    options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+    options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
 
   } else if (!strcmp(tmp, "smb")) {
-    memset(smbparm, 0, 12);
+    memset(smbparm, 0, sizeof(smbparm));
 
     widget = lookup_widget(GTK_WIDGET(wndMain), "chkDomain");
     widget2 = lookup_widget(GTK_WIDGET(wndMain), "chkLocal");
@@ -282,12 +279,12 @@ int hydra_get_options(char *options[]) {
     strncpy(smbparm, "Both", sizeof(smbparm));
     smbparm[strlen("Both")] = '\0';
 
-    if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+    if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
       strncpy(smbparm, "Domain", sizeof(smbparm));
       smbparm[strlen("Domain")] = '\0';
     }
-    if (gtk_toggle_button_get_active((GtkToggleButton *) widget2)) {
-      if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+    if (gtk_toggle_button_get_active((GtkToggleButton *)widget2)) {
+      if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
         strncpy(smbparm, "Both", sizeof(smbparm));
         smbparm[strlen("Both")] = '\0';
       } else {
@@ -296,14 +293,25 @@ int hydra_get_options(char *options[]) {
       }
     }
     widget = lookup_widget(GTK_WIDGET(wndMain), "chkNTLM");
-    if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+    if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
       strcat(smbparm, "Hash");
     }
     options[i++] = smbparm;
+  } else if (!strcmp(tmp, "smb2")) {
+    memset(smbparm, 0, sizeof(smbparm));
 
+    options[i++] = "-m";
+    options[i++] = smbparm;
+
+    widget = lookup_widget(GTK_WIDGET(wndMain), "chkNTLM");
+    int pth = gtk_toggle_button_get_active((GtkToggleButton *)widget);
+
+    widget = lookup_widget(GTK_WIDGET(wndMain), "entSMB2Workgroup");
+
+    snprintf(smbparm, sizeof(smbparm) - 1, "nthash:%s workgroup:{%s}", pth ? "true" : "false", (char *)gtk_entry_get_text((GtkEntry *)widget));
   } else if (!strcmp(tmp, "sapr3")) {
     widget = lookup_widget(GTK_WIDGET(wndMain), "spnSAPR3");
-    j = gtk_spin_button_get_value_as_int((GtkSpinButton *) widget);
+    j = gtk_spin_button_get_value_as_int((GtkSpinButton *)widget);
     snprintf(sapr3id, sizeof(sapr3id), "%d", j);
     options[i++] = "-m";
     options[i++] = sapr3id;
@@ -311,18 +319,18 @@ int hydra_get_options(char *options[]) {
   } else if (!strcmp(tmp, "cvs") || !strcmp(tmp, "svn")) {
     widget = lookup_widget(GTK_WIDGET(wndMain), "entCVS");
     options[i++] = "-m";
-    options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+    options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
 
   } else if (!strcmp(tmp, "snmp")) {
     widget = lookup_widget(GTK_WIDGET(wndMain), "entSNMP");
     options[i++] = "-m";
-    options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+    options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
 
   } else if (!strcmp(tmp, "telnet")) {
     widget = lookup_widget(GTK_WIDGET(wndMain), "entTelnet");
-    if ((char *) gtk_entry_get_text((GtkEntry *) widget) != NULL) {
+    if ((char *)gtk_entry_get_text((GtkEntry *)widget) != NULL) {
       options[i++] = "-m";
-      options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+      options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
     }
   }
 
@@ -334,45 +342,44 @@ int hydra_get_options(char *options[]) {
   /* proxy support */
   widget = lookup_widget(GTK_WIDGET(wndMain), "radioProxy");
 
-  if (!gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
-
+  if (!gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     widget2 = lookup_widget(GTK_WIDGET(wndMain), "entHTTPProxy");
     widget = lookup_widget(GTK_WIDGET(wndMain), "radioProxy2");
 
     /* which variable do we set? */
-    if ((!strncmp(tmp, "http-", 5)) && (gtk_toggle_button_get_active((GtkToggleButton *) widget))) {
-      setenv("HYDRA_PROXY_HTTP", gtk_entry_get_text((GtkEntry *) widget2), 1);
+    if ((!strncmp(tmp, "http-", 5)) && (gtk_toggle_button_get_active((GtkToggleButton *)widget))) {
+      setenv("HYDRA_PROXY_HTTP", gtk_entry_get_text((GtkEntry *)widget2), 1);
     } else {
-      setenv("HYDRA_PROXY_CONNECT", (char *) gtk_entry_get_text((GtkEntry *) widget2), 1);
+      setenv("HYDRA_PROXY_CONNECT", (char *)gtk_entry_get_text((GtkEntry *)widget2), 1);
     }
 
     /* do we need to provide user and pass? */
     widget = lookup_widget(GTK_WIDGET(wndMain), "chkProxyAuth");
-    if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+    if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
       widget = lookup_widget(GTK_WIDGET(wndMain), "entProxyUser");
       widget2 = lookup_widget(GTK_WIDGET(wndMain), "entProxyPass");
-      a = g_string_new((gchar *) gtk_entry_get_text((GtkEntry *) widget));
+      a = g_string_new((gchar *)gtk_entry_get_text((GtkEntry *)widget));
       a = g_string_append_c(a, ':');
-      a = g_string_append(a, gtk_entry_get_text((GtkEntry *) widget2));
+      a = g_string_append(a, gtk_entry_get_text((GtkEntry *)widget2));
       setenv("HYDRA_PROXY_AUTH", a->str, 1);
-      (void) g_string_free(a, TRUE);
+      (void)g_string_free(a, TRUE);
     }
   }
 
   /* get the target, or target list */
   widget = lookup_widget(GTK_WIDGET(wndMain), "radioTarget1");
-  if (gtk_toggle_button_get_active((GtkToggleButton *) widget)) {
+  if (gtk_toggle_button_get_active((GtkToggleButton *)widget)) {
     widget = lookup_widget(GTK_WIDGET(wndMain), "entTarget");
-    options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+    options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
   } else {
     options[i++] = "-M";
     widget = lookup_widget(GTK_WIDGET(wndMain), "entTargetFile");
-    options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+    options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
   }
 
   /* get the service */
   widget = lookup_widget(GTK_WIDGET(wndMain), "entProtocol");
-  options[i++] = (char *) gtk_entry_get_text((GtkEntry *) widget);
+  options[i++] = (char *)gtk_entry_get_text((GtkEntry *)widget);
 
   options[i] = NULL;
   return i;
@@ -389,12 +396,11 @@ int update_statusbar() {
   i = hydra_get_options(options);
 
   for (j = 1; j < i; j++) {
-
     statustext = g_string_append(statustext, options[j]);
     statustext = g_string_append_c(statustext, ' ');
   }
 
-  statusbar = (GtkStatusbar *) lookup_widget(GTK_WIDGET(wndMain), "statusbar");
+  statusbar = (GtkStatusbar *)lookup_widget(GTK_WIDGET(wndMain), "statusbar");
   context_id = gtk_statusbar_get_context_id(statusbar, "status");
 
   /* an old message in stack? */
@@ -402,9 +408,9 @@ int update_statusbar() {
     gtk_statusbar_remove(statusbar, context_id, message_id);
   }
 
-  message_id = gtk_statusbar_push(statusbar, context_id, (gchar *) statustext->str);
+  message_id = gtk_statusbar_push(statusbar, context_id, (gchar *)statustext->str);
 
-  (void) g_string_free(statustext, TRUE);
+  (void)g_string_free(statustext, TRUE);
 
   return TRUE;
 }
@@ -428,10 +434,9 @@ int read_into(int fd) {
   }
 
   output = lookup_widget(GTK_WIDGET(wndMain), "txtOutput");
-  outputbuf = gtk_text_view_get_buffer((GtkTextView *) output);
+  outputbuf = gtk_text_view_get_buffer((GtkTextView *)output);
 
   gtk_text_buffer_get_iter_at_offset(outputbuf, &outputiter, -1);
-
 
   if ((passline = strstr(in_buf, "password: ")) == NULL) {
     gtk_text_buffer_insert(outputbuf, &outputiter, in_buf, result);
@@ -450,15 +455,13 @@ int read_into(int fd) {
     if (end - in_buf - result > 0) {
       gtk_text_buffer_insert(outputbuf, &outputiter, end + 1, -1);
     }
-
   }
-
 
   if (strstr(in_buf, " finished at ") != NULL) {
     gtk_text_buffer_insert_with_tags_by_name(outputbuf, &outputiter, "<finished>\n\n", -1, "bold", NULL);
   }
 
-  if (result == BUF_S - 1)      /* there might be more available, recurse baby! */
+  if (result == BUF_S - 1) /* there might be more available, recurse baby! */
     return read_into(fd);
   else
     return TRUE;
@@ -515,7 +518,6 @@ static int wait_hydra_output(gpointer data) {
     return TRUE;
 }
 
-
 /* assumes a successfull pipe() won't set the fd's to -1 */
 static void close_pipe(int *pipe) {
   if (-1 != pipe[0]) {
@@ -535,8 +537,7 @@ static void close_pipe(int *pipe) {
  */
 
 int *popen_re_unbuffered(char *command) {
-  static int p_r[2] = { -1, -1 }, p_e[2] = {
-  -1, -1};
+  static int p_r[2] = {-1, -1}, p_e[2] = {-1, -1};
   static int *pfd = NULL;
 
   char *options[128];
@@ -561,7 +562,7 @@ int *popen_re_unbuffered(char *command) {
   if ((hydra_pid = fork()) < 0) {
     g_warning("popen_rw_unbuffered: Error forking!");
     return NULL;
-  } else if (hydra_pid == 0) {  /* child */
+  } else if (hydra_pid == 0) { /* child */
     int k;
 
     if (setpgid(getpid(), getpid()) < 0)
@@ -582,7 +583,7 @@ int *popen_re_unbuffered(char *command) {
     if (close(p_e[1]) < 0)
       g_warning("popen_rw_unbuffered: close(p_e[1]) failed");
 
-    (void) hydra_get_options(options);
+    (void)hydra_get_options(options);
 
     execv(HYDRA_BIN, options);
 
@@ -592,7 +593,7 @@ int *popen_re_unbuffered(char *command) {
       g_warning("%s", options[k]);
     }
     gtk_main_quit();
-  } else {                      /* parent */
+  } else { /* parent */
     if (close(p_r[1]) < 0)
       g_warning("popen_rw_unbuffered: close(p_r[1]) (parent) failed");
     if (close(p_e[1]) < 0)
@@ -605,32 +606,25 @@ int *popen_re_unbuffered(char *command) {
   return pfd;
 }
 
-void on_quit1_activate(GtkMenuItem * menuitem, gpointer user_data) {
-  gtk_main_quit();
-}
+void on_quit1_activate(GtkMenuItem *menuitem, gpointer user_data) { gtk_main_quit(); }
 
+void on_about1_activate(GtkMenuItem *menuitem, gpointer user_data) {}
 
-void on_about1_activate(GtkMenuItem * menuitem, gpointer user_data) {
-
-}
-
-void on_btnStart_clicked(GtkButton * button, gpointer user_data) {
+void on_btnStart_clicked(GtkButton *button, gpointer user_data) {
   int *fd = NULL;
 
   fd = popen_re_unbuffered(NULL);
   g_timeout_add(200, wait_hydra_output, fd);
-
 }
 
-void on_btnStop_clicked(GtkButton * button, gpointer user_data) {
+void on_btnStop_clicked(GtkButton *button, gpointer user_data) {
   if (hydra_pid != 0) {
     kill(hydra_pid, SIGTERM);
     hydra_pid = 0;
   }
 }
 
-
-void on_wndMain_destroy(GtkObject * object, gpointer user_data) {
+void on_wndMain_destroy(GtkObject *object, gpointer user_data) {
   if (hydra_pid != 0) {
     kill(hydra_pid, SIGTERM);
     hydra_pid = 0;
@@ -638,35 +632,31 @@ void on_wndMain_destroy(GtkObject * object, gpointer user_data) {
   gtk_main_quit();
 }
 
-
-
-gboolean on_entTargetFile_button_press_event(GtkWidget * widget, GdkEventButton * event, gpointer user_data) {
-  hydra_select_file((GtkEntry *) widget, "Select target list");
+gboolean on_entTargetFile_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
+  hydra_select_file((GtkEntry *)widget, "Select target list");
   gtk_widget_grab_focus(widget);
   return TRUE;
 }
 
-
-gboolean on_entUsernameFile_button_press_event(GtkWidget * widget, GdkEventButton * event, gpointer user_data) {
-  hydra_select_file((GtkEntry *) widget, "Select username list");
+gboolean on_entUsernameFile_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
+  hydra_select_file((GtkEntry *)widget, "Select username list");
   gtk_widget_grab_focus(widget);
   return TRUE;
 }
 
-
-gboolean on_entPassFile_button_press_event(GtkWidget * widget, GdkEventButton * event, gpointer user_data) {
-  hydra_select_file((GtkEntry *) widget, "Select password list");
+gboolean on_entPassFile_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
+  hydra_select_file((GtkEntry *)widget, "Select password list");
   gtk_widget_grab_focus(widget);
   return TRUE;
 }
 
-gboolean on_entColonFile_button_press_event(GtkWidget * widget, GdkEventButton * event, gpointer user_data) {
-  hydra_select_file((GtkEntry *) widget, "Select colon separated user,password list");
+gboolean on_entColonFile_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
+  hydra_select_file((GtkEntry *)widget, "Select colon separated user,password list");
   gtk_widget_grab_focus(widget);
   return TRUE;
 }
 
-void on_btnSave_clicked(GtkButton * button, gpointer user_data) {
+void on_btnSave_clicked(GtkButton *button, gpointer user_data) {
 #ifdef GTK_TYPE_FILE_CHOOSER
   GtkWidget *dialog;
   char *filename;
@@ -677,13 +667,12 @@ void on_btnSave_clicked(GtkButton * button, gpointer user_data) {
   GtkTextIter start;
   GtkTextIter end;
 
-  dialog = gtk_file_chooser_dialog_new("Save output", (GtkWindow *) wndMain, GTK_FILE_CHOOSER_ACTION_SAVE,
-                                       GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
+  dialog = gtk_file_chooser_dialog_new("Save output", (GtkWindow *)wndMain, GTK_FILE_CHOOSER_ACTION_SAVE, GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL, NULL);
   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
     filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
 
     output = lookup_widget(GTK_WIDGET(wndMain), "txtOutput");
-    outputbuf = gtk_text_view_get_buffer((GtkTextView *) output);
+    outputbuf = gtk_text_view_get_buffer((GtkTextView *)output);
     gtk_text_buffer_get_start_iter(outputbuf, &start);
     gtk_text_buffer_get_end_iter(outputbuf, &end);
 
@@ -701,10 +690,11 @@ void on_btnSave_clicked(GtkButton * button, gpointer user_data) {
 #endif
 }
 
-void on_chkColon_toggled(GtkToggleButton * togglebutton, gpointer user_data) {
+void on_chkColon_toggled(GtkToggleButton *togglebutton, gpointer user_data) {
   GtkWidget *user, *pass;
 
-  user = lookup_widget(GTK_WIDGET(wndMain), "frmUsername");;
+  user = lookup_widget(GTK_WIDGET(wndMain), "frmUsername");
+  ;
   pass = lookup_widget(GTK_WIDGET(wndMain), "frmPass");
 
   if (gtk_toggle_button_get_active(togglebutton)) {
@@ -716,10 +706,11 @@ void on_chkColon_toggled(GtkToggleButton * togglebutton, gpointer user_data) {
   }
 }
 
-void on_chkDisUser_toggled(GtkToggleButton * togglebutton, gpointer user_data) {
+void on_chkDisUser_toggled(GtkToggleButton *togglebutton, gpointer user_data) {
   GtkWidget *radioUsername1, *radioUsername2, *entUsername, *entUsernameFile;
 
-  radioUsername1 = lookup_widget(GTK_WIDGET(wndMain), "radioUsername1");;
+  radioUsername1 = lookup_widget(GTK_WIDGET(wndMain), "radioUsername1");
+  ;
   radioUsername2 = lookup_widget(GTK_WIDGET(wndMain), "radioUsername2");
   entUsername = lookup_widget(GTK_WIDGET(wndMain), "entUsername");
   entUsernameFile = lookup_widget(GTK_WIDGET(wndMain), "entUsernameFile");
@@ -737,11 +728,11 @@ void on_chkDisUser_toggled(GtkToggleButton * togglebutton, gpointer user_data) {
   }
 }
 
-void on_btnClear_clicked(GtkButton * button, gpointer user_data) {
+void on_btnClear_clicked(GtkButton *button, gpointer user_data) {
   GtkWidget *output;
   GtkTextBuffer *outputbuf;
 
   output = lookup_widget(GTK_WIDGET(wndMain), "txtOutput");
-  outputbuf = gtk_text_view_get_buffer((GtkTextView *) output);
+  outputbuf = gtk_text_view_get_buffer((GtkTextView *)output);
   gtk_text_buffer_set_text(outputbuf, "", -1);
 }

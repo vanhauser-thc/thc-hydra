@@ -1,7 +1,7 @@
 
 				  H Y D R A
 
-                      (c) 2001-2019 by van Hauser / THC
+                      (c) 2001-2020 by van Hauser / THC
              <vh@thc.org> https://github.com/vanhauser-thc/thc-hydra
        many modules were written by David (dot) Maciejak @ gmail (dot) com
                  BFG code by Jan Dlabal <dlabaljan@gmail.com>
@@ -10,6 +10,9 @@
 
            Please do not use in military or secret service organizations,
                           or for illegal purposes.
+      (This is the wish of the author and non-binding. Many people working
+       in these organizations do not care for laws and ethics anyways.
+            You are not one of the "good" ones if you ignore this.)
 
 
 
@@ -379,7 +382,7 @@ Version 1.00 example:
         "These are very free form"
     ],
     "generator": {
-        "built": "2019-03-01 14:44:22",
+        "built": "2020-03-01 14:44:22",
         "commandline": "hydra -b jsonv1 -o results.json ... ...",
         "jsonoutputversion": "1.00",
         "server": "127.0.0.1",

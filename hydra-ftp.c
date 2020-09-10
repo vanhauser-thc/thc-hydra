@@ -3,7 +3,7 @@
 extern char *HYDRA_EXIT;
 char *buf;
 
-int32_t start_ftp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_ftp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "\"\"";
   char *login, *pass, buffer[510];
 
@@ -20,7 +20,8 @@ int32_t start_ftp(int32_t s, char *ip, int32_t port, unsigned char options, char
   buf = hydra_receive_line(s);
   if (buf == NULL)
     return 1;
-  /* special hack to identify 530 user unknown msg. suggested by Jean-Baptiste.BEAUFRETON@turbomeca.fr */
+  /* special hack to identify 530 user unknown msg. suggested by
+   * Jean-Baptiste.BEAUFRETON@turbomeca.fr */
   if (buf[0] == '5' && buf[1] == '3' && buf[2] == '0') {
     if (verbose)
       printf("[INFO] user %s does not exist, skipping\n", login);
@@ -74,7 +75,7 @@ int32_t start_ftp(int32_t s, char *ip, int32_t port, unsigned char options, char
   return 2;
 }
 
-void service_ftp_core(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname, int32_t tls) {
+void service_ftp_core(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname, int32_t tls) {
   int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_FTP, mysslport = PORT_FTP_SSL;
 
@@ -83,10 +84,10 @@ void service_ftp_core(char *ip, int32_t sp, unsigned char options, char *miscptr
     hydra_child_exit(0);
   while (1) {
     switch (run) {
-    case 1:                    /* connect and service init function */
+    case 1: /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
-//      usleepn(300);
+      //      usleepn(300);
       if ((options & OPTION_SSL) == 0) {
         if (port != 0)
           myport = port;
@@ -100,12 +101,12 @@ void service_ftp_core(char *ip, int32_t sp, unsigned char options, char *miscptr
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
         hydra_child_exit(1);
       }
       usleepn(250);
       buf = hydra_receive_line(sock);
-      if (buf == NULL || buf[0] != '2') {       /* check the first line */
+      if (buf == NULL || buf[0] != '2') { /* check the first line */
         if (verbose || debug)
           hydra_report(stderr, "[ERROR] Not an FTP protocol or service shutdown: %s\n", buf);
         hydra_child_exit(2);
@@ -120,7 +121,7 @@ void service_ftp_core(char *ip, int32_t sp, unsigned char options, char *miscptr
       }
       free(buf);
 
-      //this mode is manually chosen, so if it fails we giving up
+      // this mode is manually chosen, so if it fails we giving up
       if (tls) {
         if (hydra_send(sock, "AUTH TLS\r\n", strlen("AUTH TLS\r\n"), 0) < 0) {
           hydra_child_exit(2);
@@ -148,15 +149,15 @@ void service_ftp_core(char *ip, int32_t sp, unsigned char options, char *miscptr
 
       next_run = 2;
       break;
-    case 2:                    /* run the cracking function */
+    case 2: /* run the cracking function */
       next_run = start_ftp(sock, ip, port, options, miscptr, fp);
       break;
-    case 3:                    /* error exit */
+    case 3: /* error exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       hydra_child_exit(2);
       break;
-    case 4:                    /* clean exit */
+    case 4: /* clean exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       hydra_child_exit(0);
@@ -169,21 +170,17 @@ void service_ftp_core(char *ip, int32_t sp, unsigned char options, char *miscptr
   }
 }
 
-void service_ftp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
-  service_ftp_core(ip, sp, options, miscptr, fp, port, hostname, 0);
-}
+void service_ftp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) { service_ftp_core(ip, sp, options, miscptr, fp, port, hostname, 0); }
 
-void service_ftps(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
-  service_ftp_core(ip, sp, options, miscptr, fp, port, hostname, 1);
-}
+void service_ftps(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) { service_ftp_core(ip, sp, options, miscptr, fp, port, hostname, 1); }
 
-int32_t service_ftp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+int32_t service_ftp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
   //
   // fill if needed.
-  // 
+  //
   // return codes:
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here

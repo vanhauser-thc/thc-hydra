@@ -36,9 +36,8 @@ struct team_speak {
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
 extern char *HYDRA_EXIT;
-char *buf;
 
-int32_t start_teamspeak(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_teamspeak(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";
   char *login, *pass;
   char buf[100];
@@ -54,21 +53,21 @@ int32_t start_teamspeak(int32_t s, char *ip, int32_t port, unsigned char options
   memcpy(&teamspeak.header, "\xf4\xbe\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00", 16);
 
   teamspeak.clientlen = 9;
-  strcpy((char *) &teamspeak.client, "TeamSpeak");
+  strcpy((char *)&teamspeak.client, "TeamSpeak");
 
   teamspeak.oslen = 11;
-  strcpy((char *) &teamspeak.os, "Linux 2.6.9");
+  strcpy((char *)&teamspeak.os, "Linux 2.6.9");
 
   memcpy(&teamspeak.misc, "\x02\x00\x00\x00\x20\x00\x3c\x00\x01\x02", 10);
 
   teamspeak.userlen = strlen(login);
-  strncpy((char *) &teamspeak.user, login, 29);
+  strncpy((char *)&teamspeak.user, login, 29);
 
   teamspeak.passlen = strlen(pass);
-  strncpy((char *) &teamspeak.pass, pass, 29);
+  strncpy((char *)&teamspeak.pass, pass, 29);
 
   teamspeak.loginlen = 0;
-  strcpy((char *) &teamspeak.login, "");
+  strcpy((char *)&teamspeak.login, "");
 
 #ifdef HAVE_ZLIB
   teamspeak.crc = crc32(0L, (const Bytef *)&teamspeak, sizeof(struct team_speak));
@@ -76,22 +75,22 @@ int32_t start_teamspeak(int32_t s, char *ip, int32_t port, unsigned char options
   teamspeak.crc = crc32(&teamspeak, sizeof(struct team_speak));
 #endif
 
-  if (hydra_send(s, (char *) &teamspeak, sizeof(struct team_speak), 0) < 0) {
+  if (hydra_send(s, (char *)&teamspeak, sizeof(struct team_speak), 0) < 0) {
     return 3;
   }
 
   if (hydra_data_ready_timed(s, 5, 0) > 0) {
-    hydra_recv(s, (char *) buf, sizeof(buf));
+    hydra_recv(s, (char *)buf, sizeof(buf));
     if (buf[0x58] == 1) {
       hydra_report_found_host(port, ip, "teamspeak", fp);
       hydra_completed_pair_found();
     }
     if (buf[0x4B] != 0) {
-      hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
+      hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
       hydra_child_exit(1);
     }
   } else {
-    hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
+    hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
     hydra_child_exit(1);
   }
 
@@ -102,7 +101,7 @@ int32_t start_teamspeak(int32_t s, char *ip, int32_t port, unsigned char options
   return 1;
 }
 
-void service_teamspeak(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+void service_teamspeak(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_TEAMSPEAK;
 
@@ -113,23 +112,23 @@ void service_teamspeak(char *ip, int32_t sp, unsigned char options, char *miscpt
 
   while (1) {
     switch (run) {
-    case 1:                    /* connect and service init function */
-//      if (sock >= 0)
-//      sock = hydra_disconnect(sock);
-//      usleepn(300);
+    case 1: /* connect and service init function */
+            //      if (sock >= 0)
+            //      sock = hydra_disconnect(sock);
+            //      usleepn(300);
       if (sock < 0) {
         if (port != 0)
           myport = port;
         sock = hydra_connect_udp(ip, myport);
         port = myport;
         if (sock < 0) {
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
           hydra_child_exit(1);
         }
       }
       next_run = start_teamspeak(sock, ip, port, options, miscptr, fp);
       break;
-    case 3:                    /* clean exit */
+    case 3: /* clean exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       hydra_child_exit(2);
@@ -142,13 +141,13 @@ void service_teamspeak(char *ip, int32_t sp, unsigned char options, char *miscpt
   }
 }
 
-int32_t service_teamspeak_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+int32_t service_teamspeak_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
   //
   // fill if needed.
-  // 
+  //
   // return codes:
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here

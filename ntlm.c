@@ -2,10 +2,10 @@
    Single file NTLM system to create and parse authentication messages.
 
    http://www.reversing.org
-   ilo-- ilo@reversing.org  
+   ilo-- ilo@reversing.org
 
-   I did copy&paste&modify several files to leave independent NTLM code 
-   that compile in cygwin/linux environment. Most of the code was ripped 
+   I did copy&paste&modify several files to leave independent NTLM code
+   that compile in cygwin/linux environment. Most of the code was ripped
    from Samba implementation so I left the Copying statement. Samba core
    code was left unmodified from 1.9 version.
 
@@ -19,41 +19,40 @@
    SMB parameters and setup
    Copyright (C) Andrew Tridgell 1992-1998
    Modified by Jeremy Allison 1995.
-   
+
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
+
    This program is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+
    You should have received a copy of the GNU General Public License
    along with this program; if not, write to the Free Software
    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 
    */
 
+#include <stdio.h>
 #ifdef WIN32
 #else
 #include <unistd.h>
 #endif
-#include <stdlib.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <assert.h>
-#include <string.h>
 #include "ntlm.h"
-
+#include <assert.h>
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
 
 /* Byte order macros */
 #ifndef _BYTEORDER_H
 #define _BYTEORDER_H
 
 /*
-   This file implements macros for machine independent short and 
+   This file implements macros for machine independent short and
    int32_t manipulation
 
 Here is a description of this file that I emailed to the samba list once:
@@ -62,7 +61,7 @@ Here is a description of this file that I emailed to the samba list once:
 > looked at it, and I would have thought that you might make a distinction
 > between LE and BE machines, but you only seem to distinguish between 386
 > and all other architectures.
-> 
+>
 > Can you give me a clue?
 
 sure.
@@ -126,33 +125,87 @@ it also defines lots of intermediate macros, just ignore those :-)
 
 /* some switch macros that do both store and read to and from SMB buffers */
 
-#define RW_PCVAL(read,inbuf,outbuf,len) \
-	{ if (read) { PCVAL (inbuf,0,outbuf,len); } \
-	else      { PSCVAL(inbuf,0,outbuf,len); } }
+#define RW_PCVAL(read, inbuf, outbuf, len)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    if (read) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+      PCVAL(inbuf, 0, outbuf, len);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
+      PSCVAL(inbuf, 0, outbuf, len);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           \
+    }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+  }
 
-#define RW_PIVAL(read,big_endian,inbuf,outbuf,len) \
-	{ if (read) { if (big_endian) { RPIVAL(inbuf,0,outbuf,len); } else { PIVAL(inbuf,0,outbuf,len); } } \
-	else      { if (big_endian) { RPSIVAL(inbuf,0,outbuf,len); } else { PSIVAL(inbuf,0,outbuf,len); } } }
+#define RW_PIVAL(read, big_endian, inbuf, outbuf, len)                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    if (read) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+      if (big_endian) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+        RPIVAL(inbuf, 0, outbuf, len);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+      } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
+        PIVAL(inbuf, 0, outbuf, len);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+    } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
+      if (big_endian) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+        RPSIVAL(inbuf, 0, outbuf, len);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+      } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
+        PSIVAL(inbuf, 0, outbuf, len);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+    }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+  }
 
-#define RW_PSVAL(read,big_endian,inbuf,outbuf,len) \
-	{ if (read) { if (big_endian) { RPSVAL(inbuf,0,outbuf,len); } else { PSVAL(inbuf,0,outbuf,len); } } \
-	else      { if (big_endian) { RPSSVAL(inbuf,0,outbuf,len); } else { PSSVAL(inbuf,0,outbuf,len); } } }
+#define RW_PSVAL(read, big_endian, inbuf, outbuf, len)                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    if (read) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+      if (big_endian) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+        RPSVAL(inbuf, 0, outbuf, len);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+      } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
+        PSVAL(inbuf, 0, outbuf, len);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+    } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
+      if (big_endian) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+        RPSSVAL(inbuf, 0, outbuf, len);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+      } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
+        PSSVAL(inbuf, 0, outbuf, len);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+    }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+  }
 
-#define RW_CVAL(read, inbuf, outbuf, offset) \
-	{ if (read) { (outbuf) = CVAL (inbuf,offset); } \
-	else      { SCVAL(inbuf,offset,outbuf); } }
+#define RW_CVAL(read, inbuf, outbuf, offset)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    if (read) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+      (outbuf) = CVAL(inbuf, offset);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+    } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
+      SCVAL(inbuf, offset, outbuf);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+  }
 
-#define RW_IVAL(read, big_endian, inbuf, outbuf, offset) \
-	{ if (read) { (outbuf) = ((big_endian) ? RIVAL(inbuf,offset) : IVAL (inbuf,offset)); } \
-	else      { if (big_endian) { RSIVAL(inbuf,offset,outbuf); } else { SIVAL(inbuf,offset,outbuf); } } }
+#define RW_IVAL(read, big_endian, inbuf, outbuf, offset)                                                                                                                                                                                                                                                                                                                                                                                                                                                                       \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    if (read) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+      (outbuf) = ((big_endian) ? RIVAL(inbuf, offset) : IVAL(inbuf, offset));                                                                                                                                                                                                                                                                                                                                                                                                                                                  \
+    } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
+      if (big_endian) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+        RSIVAL(inbuf, offset, outbuf);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+      } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
+        SIVAL(inbuf, offset, outbuf);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+    }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+  }
 
-#define RW_SVAL(read, big_endian, inbuf, outbuf, offset) \
-	{ if (read) { (outbuf) = ((big_endian) ? RSVAL(inbuf,offset) : SVAL (inbuf,offset)); } \
-	else      { if (big_endian) { RSSVAL(inbuf,offset,outbuf); } else { SSVAL(inbuf,offset,outbuf); } } }
+#define RW_SVAL(read, big_endian, inbuf, outbuf, offset)                                                                                                                                                                                                                                                                                                                                                                                                                                                                       \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    if (read) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+      (outbuf) = ((big_endian) ? RSVAL(inbuf, offset) : SVAL(inbuf, offset));                                                                                                                                                                                                                                                                                                                                                                                                                                                  \
+    } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
+      if (big_endian) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+        RSSVAL(inbuf, offset, outbuf);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+      } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
+        SSVAL(inbuf, offset, outbuf);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+    }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+  }
 
 #undef CAREFUL_ALIGNMENT
 
-/* we know that the 386 can handle misalignment and has the "right" 
+/* we know that the 386 can handle misalignment and has the "right"
    byteorder */
 #ifdef __i386__
 #define CAREFUL_ALIGNMENT 0
@@ -162,23 +215,22 @@ it also defines lots of intermediate macros, just ignore those :-)
 #define CAREFUL_ALIGNMENT 1
 #endif
 
-#define CVAL(buf,pos) (((unsigned char *)(buf))[pos])
-#define PVAL(buf,pos) ((unsigned)CVAL(buf,pos))
-#define SCVAL(buf,pos,val) (CVAL(buf,pos) = (val))
-
+#define CVAL(buf, pos) (((unsigned char *)(buf))[pos])
+#define PVAL(buf, pos) ((unsigned)CVAL(buf, pos))
+#define SCVAL(buf, pos, val) (CVAL(buf, pos) = (val))
 
 #if CAREFUL_ALIGNMENT
 
-#define SVAL(buf,pos) (PVAL(buf,pos)|PVAL(buf,(pos)+1)<<8)
-#define IVAL(buf,pos) (SVAL(buf,pos)|SVAL(buf,(pos)+2)<<16)
-#define SSVALX(buf,pos,val) (CVAL(buf,pos)=(val)&0xFF,CVAL(buf,pos+1)=(val)>>8)
-#define SIVALX(buf,pos,val) (SSVALX(buf,pos,val&0xFFFF),SSVALX(buf,pos+2,val>>16))
-#define SVALS(buf,pos) ((int16)SVAL(buf,pos))
-#define IVALS(buf,pos) ((int32)IVAL(buf,pos))
-#define SSVAL(buf,pos,val) SSVALX((buf),(pos),((uint16)(val)))
-#define SIVAL(buf,pos,val) SIVALX((buf),(pos),((uint32)(val)))
-#define SSVALS(buf,pos,val) SSVALX((buf),(pos),((int16)(val)))
-#define SIVALS(buf,pos,val) SIVALX((buf),(pos),((int32)(val)))
+#define SVAL(buf, pos) (PVAL(buf, pos) | PVAL(buf, (pos) + 1) << 8)
+#define IVAL(buf, pos) (SVAL(buf, pos) | SVAL(buf, (pos) + 2) << 16)
+#define SSVALX(buf, pos, val) (CVAL(buf, pos) = (val)&0xFF, CVAL(buf, pos + 1) = (val) >> 8)
+#define SIVALX(buf, pos, val) (SSVALX(buf, pos, val & 0xFFFF), SSVALX(buf, pos + 2, val >> 16))
+#define SVALS(buf, pos) ((int16)SVAL(buf, pos))
+#define IVALS(buf, pos) ((int32)IVAL(buf, pos))
+#define SSVAL(buf, pos, val) SSVALX((buf), (pos), ((uint16)(val)))
+#define SIVAL(buf, pos, val) SIVALX((buf), (pos), ((uint32)(val)))
+#define SSVALS(buf, pos, val) SSVALX((buf), (pos), ((int16)(val)))
+#define SIVALS(buf, pos, val) SIVALX((buf), (pos), ((int32)(val)))
 
 #else /* CAREFUL_ALIGNMENT */
 
@@ -187,147 +239,171 @@ it also defines lots of intermediate macros, just ignore those :-)
 
 /*
    WARNING: This section is dependent on the length of int16 and int32
-   being correct 
+   being correct
 */
 
 /* get single value from an SMB buffer */
-#define SVAL(buf,pos) (*(uint16 *)((char *)(buf) + (pos)))
-#define IVAL(buf,pos) (*(uint32 *)((char *)(buf) + (pos)))
-#define SVALS(buf,pos) (*(int16 *)((char *)(buf) + (pos)))
-#define IVALS(buf,pos) (*(int32 *)((char *)(buf) + (pos)))
+#define SVAL(buf, pos) (*(uint16 *)((char *)(buf) + (pos)))
+#define IVAL(buf, pos) (*(uint32 *)((char *)(buf) + (pos)))
+#define SVALS(buf, pos) (*(int16 *)((char *)(buf) + (pos)))
+#define IVALS(buf, pos) (*(int32 *)((char *)(buf) + (pos)))
 
 /* store single value in an SMB buffer */
-#define SSVAL(buf,pos,val) SVAL(buf,pos)=((uint16)(val))
-#define SIVAL(buf,pos,val) IVAL(buf,pos)=((uint32)(val))
-#define SSVALS(buf,pos,val) SVALS(buf,pos)=((int16)(val))
-#define SIVALS(buf,pos,val) IVALS(buf,pos)=((int32)(val))
+#define SSVAL(buf, pos, val) SVAL(buf, pos) = ((uint16)(val))
+#define SIVAL(buf, pos, val) IVAL(buf, pos) = ((uint32)(val))
+#define SSVALS(buf, pos, val) SVALS(buf, pos) = ((int16)(val))
+#define SIVALS(buf, pos, val) IVALS(buf, pos) = ((int32)(val))
 
 #endif /* CAREFUL_ALIGNMENT */
 
 /* macros for reading / writing arrays */
 
-#define SMBMACRO(macro,buf,pos,val,len,size) \
-{ int32_t l; for (l = 0; l < (len); l++) (val)[l] = macro((buf), (pos) + (size)*l); }
+#define SMBMACRO(macro, buf, pos, val, len, size)                                                                                                                                                                                                                                                                                                                                                                                                                                                                              \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    int32_t l;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
+    for (l = 0; l < (len); l++)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+      (val)[l] = macro((buf), (pos) + (size)*l);                                                                                                                                                                                                                                                                                                                                                                                                                                                                               \
+  }
 
-#define SSMBMACRO(macro,buf,pos,val,len,size) \
-{ int32_t l; for (l = 0; l < (len); l++) macro((buf), (pos) + (size)*l, (val)[l]); }
+#define SSMBMACRO(macro, buf, pos, val, len, size)                                                                                                                                                                                                                                                                                                                                                                                                                                                                             \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    int32_t l;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
+    for (l = 0; l < (len); l++)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+      macro((buf), (pos) + (size)*l, (val)[l]);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+  }
 
 /* reads multiple data from an SMB buffer */
-#define PCVAL(buf,pos,val,len) SMBMACRO(CVAL,buf,pos,val,len,1)
-#define PSVAL(buf,pos,val,len) SMBMACRO(SVAL,buf,pos,val,len,2)
-#define PIVAL(buf,pos,val,len) SMBMACRO(IVAL,buf,pos,val,len,4)
-#define PCVALS(buf,pos,val,len) SMBMACRO(CVALS,buf,pos,val,len,1)
-#define PSVALS(buf,pos,val,len) SMBMACRO(SVALS,buf,pos,val,len,2)
-#define PIVALS(buf,pos,val,len) SMBMACRO(IVALS,buf,pos,val,len,4)
+#define PCVAL(buf, pos, val, len) SMBMACRO(CVAL, buf, pos, val, len, 1)
+#define PSVAL(buf, pos, val, len) SMBMACRO(SVAL, buf, pos, val, len, 2)
+#define PIVAL(buf, pos, val, len) SMBMACRO(IVAL, buf, pos, val, len, 4)
+#define PCVALS(buf, pos, val, len) SMBMACRO(CVALS, buf, pos, val, len, 1)
+#define PSVALS(buf, pos, val, len) SMBMACRO(SVALS, buf, pos, val, len, 2)
+#define PIVALS(buf, pos, val, len) SMBMACRO(IVALS, buf, pos, val, len, 4)
 
 /* stores multiple data in an SMB buffer */
-#define PSCVAL(buf,pos,val,len) SSMBMACRO(SCVAL,buf,pos,val,len,1)
-#define PSSVAL(buf,pos,val,len) SSMBMACRO(SSVAL,buf,pos,val,len,2)
-#define PSIVAL(buf,pos,val,len) SSMBMACRO(SIVAL,buf,pos,val,len,4)
-#define PSCVALS(buf,pos,val,len) SSMBMACRO(SCVALS,buf,pos,val,len,1)
-#define PSSVALS(buf,pos,val,len) SSMBMACRO(SSVALS,buf,pos,val,len,2)
-#define PSIVALS(buf,pos,val,len) SSMBMACRO(SIVALS,buf,pos,val,len,4)
-
+#define PSCVAL(buf, pos, val, len) SSMBMACRO(SCVAL, buf, pos, val, len, 1)
+#define PSSVAL(buf, pos, val, len) SSMBMACRO(SSVAL, buf, pos, val, len, 2)
+#define PSIVAL(buf, pos, val, len) SSMBMACRO(SIVAL, buf, pos, val, len, 4)
+#define PSCVALS(buf, pos, val, len) SSMBMACRO(SCVALS, buf, pos, val, len, 1)
+#define PSSVALS(buf, pos, val, len) SSMBMACRO(SSVALS, buf, pos, val, len, 2)
+#define PSIVALS(buf, pos, val, len) SSMBMACRO(SIVALS, buf, pos, val, len, 4)
 
 /* now the reverse routines - these are used in nmb packets (mostly) */
-#define SREV(x) ((((x)&0xFF)<<8) | (((x)>>8)&0xFF))
-#define IREV(x) ((SREV(x)<<16) | (SREV((x)>>16)))
+#define SREV(x) ((((x)&0xFF) << 8) | (((x) >> 8) & 0xFF))
+#define IREV(x) ((SREV(x) << 16) | (SREV((x) >> 16)))
 
-#define RSVAL(buf,pos) SREV(SVAL(buf,pos))
-#define RSVALS(buf,pos) SREV(SVALS(buf,pos))
-#define RIVAL(buf,pos) IREV(IVAL(buf,pos))
-#define RIVALS(buf,pos) IREV(IVALS(buf,pos))
-#define RSSVAL(buf,pos,val) SSVAL(buf,pos,SREV(val))
-#define RSSVALS(buf,pos,val) SSVALS(buf,pos,SREV(val))
-#define RSIVAL(buf,pos,val) SIVAL(buf,pos,IREV(val))
-#define RSIVALS(buf,pos,val) SIVALS(buf,pos,IREV(val))
+#define RSVAL(buf, pos) SREV(SVAL(buf, pos))
+#define RSVALS(buf, pos) SREV(SVALS(buf, pos))
+#define RIVAL(buf, pos) IREV(IVAL(buf, pos))
+#define RIVALS(buf, pos) IREV(IVALS(buf, pos))
+#define RSSVAL(buf, pos, val) SSVAL(buf, pos, SREV(val))
+#define RSSVALS(buf, pos, val) SSVALS(buf, pos, SREV(val))
+#define RSIVAL(buf, pos, val) SIVAL(buf, pos, IREV(val))
+#define RSIVALS(buf, pos, val) SIVALS(buf, pos, IREV(val))
 
 /* reads multiple data from an SMB buffer (big-endian) */
-#define RPSVAL(buf,pos,val,len) SMBMACRO(RSVAL,buf,pos,val,len,2)
-#define RPIVAL(buf,pos,val,len) SMBMACRO(RIVAL,buf,pos,val,len,4)
-#define RPSVALS(buf,pos,val,len) SMBMACRO(RSVALS,buf,pos,val,len,2)
-#define RPIVALS(buf,pos,val,len) SMBMACRO(RIVALS,buf,pos,val,len,4)
+#define RPSVAL(buf, pos, val, len) SMBMACRO(RSVAL, buf, pos, val, len, 2)
+#define RPIVAL(buf, pos, val, len) SMBMACRO(RIVAL, buf, pos, val, len, 4)
+#define RPSVALS(buf, pos, val, len) SMBMACRO(RSVALS, buf, pos, val, len, 2)
+#define RPIVALS(buf, pos, val, len) SMBMACRO(RIVALS, buf, pos, val, len, 4)
 
 /* stores multiple data in an SMB buffer (big-endian) */
-#define RPSSVAL(buf,pos,val,len) SSMBMACRO(RSSVAL,buf,pos,val,len,2)
-#define RPSIVAL(buf,pos,val,len) SSMBMACRO(RSIVAL,buf,pos,val,len,4)
-#define RPSSVALS(buf,pos,val,len) SSMBMACRO(RSSVALS,buf,pos,val,len,2)
-#define RPSIVALS(buf,pos,val,len) SSMBMACRO(RSIVALS,buf,pos,val,len,4)
+#define RPSSVAL(buf, pos, val, len) SSMBMACRO(RSSVAL, buf, pos, val, len, 2)
+#define RPSIVAL(buf, pos, val, len) SSMBMACRO(RSIVAL, buf, pos, val, len, 4)
+#define RPSSVALS(buf, pos, val, len) SSMBMACRO(RSSVALS, buf, pos, val, len, 2)
+#define RPSIVALS(buf, pos, val, len) SSMBMACRO(RSIVALS, buf, pos, val, len, 4)
 
-#define DBG_RW_PCVAL(charmode,string,depth,base,read,inbuf,outbuf,len) \
-	{ RW_PCVAL(read,inbuf,outbuf,len) \
-	DEBUG(5,("%s%04x %s: ", \
-             tab_depth(depth), base,string)); \
-    if (charmode) print_asc(5, (unsigned char*)(outbuf), (len)); else \
-	{ int32_t idx; for (idx = 0; idx < len; idx++) { DEBUG(5,("%02x ", (outbuf)[idx])); } } \
-	DEBUG(5,("\n")); }
+#define DBG_RW_PCVAL(charmode, string, depth, base, read, inbuf, outbuf, len)                                                                                                                                                                                                                                                                                                                                                                                                                                                  \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    RW_PCVAL(read, inbuf, outbuf, len)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+    DEBUG(5, ("%s%04x %s: ", tab_depth(depth), base, string));                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
+    if (charmode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              \
+      print_asc(5, (unsigned char *)(outbuf), (len));                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+    else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     \
+      int32_t idx;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             \
+      for (idx = 0; idx < len; idx++) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+        DEBUG(5, ("%02x ", (outbuf)[idx]));                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    \
+      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+    }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+    DEBUG(5, ("\n"));                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+  }
 
-#define DBG_RW_PSVAL(charmode,string,depth,base,read,big_endian,inbuf,outbuf,len) \
-	{ RW_PSVAL(read,big_endian,inbuf,outbuf,len) \
-	DEBUG(5,("%s%04x %s: ", \
-             tab_depth(depth), base,string)); \
-    if (charmode) print_asc(5, (unsigned char*)(outbuf), 2*(len)); else \
-	{ int32_t idx; for (idx = 0; idx < len; idx++) { DEBUG(5,("%04x ", (outbuf)[idx])); } } \
-	DEBUG(5,("\n")); }
+#define DBG_RW_PSVAL(charmode, string, depth, base, read, big_endian, inbuf, outbuf, len)                                                                                                                                                                                                                                                                                                                                                                                                                                      \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    RW_PSVAL(read, big_endian, inbuf, outbuf, len)                                                                                                                                                                                                                                                                                                                                                                                                                                                                             \
+    DEBUG(5, ("%s%04x %s: ", tab_depth(depth), base, string));                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
+    if (charmode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              \
+      print_asc(5, (unsigned char *)(outbuf), 2 * (len));                                                                                                                                                                                                                                                                                                                                                                                                                                                                      \
+    else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     \
+      int32_t idx;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             \
+      for (idx = 0; idx < len; idx++) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+        DEBUG(5, ("%04x ", (outbuf)[idx]));                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    \
+      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+    }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+    DEBUG(5, ("\n"));                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+  }
 
-#define DBG_RW_PIVAL(charmode,string,depth,base,read,big_endian,inbuf,outbuf,len) \
-	{ RW_PIVAL(read,big_endian,inbuf,outbuf,len) \
-	DEBUG(5,("%s%04x %s: ", \
-             tab_depth(depth), base,string)); \
-    if (charmode) print_asc(5, (unsigned char*)(outbuf), 4*(len)); else \
-	{ int32_t idx; for (idx = 0; idx < len; idx++) { DEBUG(5,("%08x ", (outbuf)[idx])); } } \
-	DEBUG(5,("\n")); }
+#define DBG_RW_PIVAL(charmode, string, depth, base, read, big_endian, inbuf, outbuf, len)                                                                                                                                                                                                                                                                                                                                                                                                                                      \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    RW_PIVAL(read, big_endian, inbuf, outbuf, len)                                                                                                                                                                                                                                                                                                                                                                                                                                                                             \
+    DEBUG(5, ("%s%04x %s: ", tab_depth(depth), base, string));                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
+    if (charmode)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              \
+      print_asc(5, (unsigned char *)(outbuf), 4 * (len));                                                                                                                                                                                                                                                                                                                                                                                                                                                                      \
+    else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     \
+      int32_t idx;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             \
+      for (idx = 0; idx < len; idx++) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+        DEBUG(5, ("%08x ", (outbuf)[idx]));                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    \
+      }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        \
+    }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+    DEBUG(5, ("\n"));                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+  }
 
-#define DBG_RW_CVAL(string,depth,base,read,inbuf,outbuf) \
-	{ RW_CVAL(read,inbuf,outbuf,0) \
-	DEBUG(5,("%s%04x %s: %02x\n", \
-             tab_depth(depth), base, string, outbuf)); }
+#define DBG_RW_CVAL(string, depth, base, read, inbuf, outbuf)                                                                                                                                                                                                                                                                                                                                                                                                                                                                  \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    RW_CVAL(read, inbuf, outbuf, 0)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    DEBUG(5, ("%s%04x %s: %02x\n", tab_depth(depth), base, string, outbuf));                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
+  }
 
-#define DBG_RW_SVAL(string,depth,base,read,big_endian,inbuf,outbuf) \
-	{ RW_SVAL(read,big_endian,inbuf,outbuf,0) \
-	DEBUG(5,("%s%04x %s: %04x\n", \
-             tab_depth(depth), base, string, outbuf)); }
+#define DBG_RW_SVAL(string, depth, base, read, big_endian, inbuf, outbuf)                                                                                                                                                                                                                                                                                                                                                                                                                                                      \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    RW_SVAL(read, big_endian, inbuf, outbuf, 0)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+    DEBUG(5, ("%s%04x %s: %04x\n", tab_depth(depth), base, string, outbuf));                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
+  }
 
-#define DBG_RW_IVAL(string,depth,base,read,big_endian,inbuf,outbuf) \
-	{ RW_IVAL(read,big_endian,inbuf,outbuf,0) \
-	DEBUG(5,("%s%04x %s: %08x\n", \
-             tab_depth(depth), base, string, outbuf)); }
+#define DBG_RW_IVAL(string, depth, base, read, big_endian, inbuf, outbuf)                                                                                                                                                                                                                                                                                                                                                                                                                                                      \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    RW_IVAL(read, big_endian, inbuf, outbuf, 0)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+    DEBUG(5, ("%s%04x %s: %08x\n", tab_depth(depth), base, string, outbuf));                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
+  }
 
 #endif /* _BYTEORDER_H */
 
-
 /* Samba MD4 implementation */
 
-/* NOTE: This code makes no attempt to be fast! 
+/* NOTE: This code makes no attempt to be fast!
 
    It assumes that a int32_t is at least 32 bits long
 */
 
 static uint32 A, B, C, D;
 
-static uint32 F(uint32 X, uint32 Y, uint32 Z) {
-  return (X & Y) | ((~X) & Z);
-}
+static uint32 F(uint32 X, uint32 Y, uint32 Z) { return (X & Y) | ((~X) & Z); }
 
-static uint32 G(uint32 X, uint32 Y, uint32 Z) {
-  return (X & Y) | (X & Z) | (Y & Z);
-}
+static uint32 G(uint32 X, uint32 Y, uint32 Z) { return (X & Y) | (X & Z) | (Y & Z); }
 
-static uint32 H(uint32 X, uint32 Y, uint32 Z) {
-  return X ^ Y ^ Z;
-}
+static uint32 H(uint32 X, uint32 Y, uint32 Z) { return X ^ Y ^ Z; }
 
 static uint32 lshift(uint32 x, int32_t s) {
   x &= 0xFFFFFFFF;
   return ((x << s) & 0xFFFFFFFF) | (x >> (32 - s));
 }
 
-#define ROUND1(a,b,c,d,k,s) a = lshift(a + F(b,c,d) + X[k], s)
-#define ROUND2(a,b,c,d,k,s) a = lshift(a + G(b,c,d) + X[k] + (uint32)0x5A827999,s)
-#define ROUND3(a,b,c,d,k,s) a = lshift(a + H(b,c,d) + X[k] + (uint32)0x6ED9EBA1,s)
+#define ROUND1(a, b, c, d, k, s) a = lshift(a + F(b, c, d) + X[k], s)
+#define ROUND2(a, b, c, d, k, s) a = lshift(a + G(b, c, d) + X[k] + (uint32)0x5A827999, s)
+#define ROUND3(a, b, c, d, k, s) a = lshift(a + H(b, c, d) + X[k] + (uint32)0x6ED9EBA1, s)
 
 /* this applies md4 to 64 byte chunks */
-static void mdfour64(uint32 * M) {
+static void mdfour64(uint32 *M) {
   int32_t j;
   uint32 AA, BB, CC, DD;
   uint32 X[16];
@@ -405,7 +481,7 @@ static void mdfour64(uint32 * M) {
     X[j] = 0;
 }
 
-static void copy64(uint32 * M, unsigned char *in) {
+static void copy64(uint32 *M, unsigned char *in) {
   int32_t i;
 
   for (i = 0; i < 16; i++)
@@ -471,113 +547,37 @@ void mdfour(unsigned char *out, unsigned char *in, int32_t n) {
 #define uchar unsigned char
 #define int16 signed short
 
-static uchar perm1[56] = { 57, 49, 41, 33, 25, 17, 9,
-  1, 58, 50, 42, 34, 26, 18,
-  10, 2, 59, 51, 43, 35, 27,
-  19, 11, 3, 60, 52, 44, 36,
-  63, 55, 47, 39, 31, 23, 15,
-  7, 62, 54, 46, 38, 30, 22,
-  14, 6, 61, 53, 45, 37, 29,
-  21, 13, 5, 28, 20, 12, 4
-};
+static uchar perm1[56] = {57, 49, 41, 33, 25, 17, 9, 1, 58, 50, 42, 34, 26, 18, 10, 2, 59, 51, 43, 35, 27, 19, 11, 3, 60, 52, 44, 36, 63, 55, 47, 39, 31, 23, 15, 7, 62, 54, 46, 38, 30, 22, 14, 6, 61, 53, 45, 37, 29, 21, 13, 5, 28, 20, 12, 4};
 
-static uchar perm2[48] = { 14, 17, 11, 24, 1, 5,
-  3, 28, 15, 6, 21, 10,
-  23, 19, 12, 4, 26, 8,
-  16, 7, 27, 20, 13, 2,
-  41, 52, 31, 37, 47, 55,
-  30, 40, 51, 45, 33, 48,
-  44, 49, 39, 56, 34, 53,
-  46, 42, 50, 36, 29, 32
-};
+static uchar perm2[48] = {14, 17, 11, 24, 1, 5, 3, 28, 15, 6, 21, 10, 23, 19, 12, 4, 26, 8, 16, 7, 27, 20, 13, 2, 41, 52, 31, 37, 47, 55, 30, 40, 51, 45, 33, 48, 44, 49, 39, 56, 34, 53, 46, 42, 50, 36, 29, 32};
 
-static uchar perm3[64] = { 58, 50, 42, 34, 26, 18, 10, 2,
-  60, 52, 44, 36, 28, 20, 12, 4,
-  62, 54, 46, 38, 30, 22, 14, 6,
-  64, 56, 48, 40, 32, 24, 16, 8,
-  57, 49, 41, 33, 25, 17, 9, 1,
-  59, 51, 43, 35, 27, 19, 11, 3,
-  61, 53, 45, 37, 29, 21, 13, 5,
-  63, 55, 47, 39, 31, 23, 15, 7
-};
+static uchar perm3[64] = {58, 50, 42, 34, 26, 18, 10, 2, 60, 52, 44, 36, 28, 20, 12, 4, 62, 54, 46, 38, 30, 22, 14, 6, 64, 56, 48, 40, 32, 24, 16, 8, 57, 49, 41, 33, 25, 17, 9, 1, 59, 51, 43, 35, 27, 19, 11, 3, 61, 53, 45, 37, 29, 21, 13, 5, 63, 55, 47, 39, 31, 23, 15, 7};
 
-static uchar perm4[48] = { 32, 1, 2, 3, 4, 5,
-  4, 5, 6, 7, 8, 9,
-  8, 9, 10, 11, 12, 13,
-  12, 13, 14, 15, 16, 17,
-  16, 17, 18, 19, 20, 21,
-  20, 21, 22, 23, 24, 25,
-  24, 25, 26, 27, 28, 29,
-  28, 29, 30, 31, 32, 1
-};
+static uchar perm4[48] = {32, 1, 2, 3, 4, 5, 4, 5, 6, 7, 8, 9, 8, 9, 10, 11, 12, 13, 12, 13, 14, 15, 16, 17, 16, 17, 18, 19, 20, 21, 20, 21, 22, 23, 24, 25, 24, 25, 26, 27, 28, 29, 28, 29, 30, 31, 32, 1};
 
-static uchar perm5[32] = { 16, 7, 20, 21,
-  29, 12, 28, 17,
-  1, 15, 23, 26,
-  5, 18, 31, 10,
-  2, 8, 24, 14,
-  32, 27, 3, 9,
-  19, 13, 30, 6,
-  22, 11, 4, 25
-};
+static uchar perm5[32] = {16, 7, 20, 21, 29, 12, 28, 17, 1, 15, 23, 26, 5, 18, 31, 10, 2, 8, 24, 14, 32, 27, 3, 9, 19, 13, 30, 6, 22, 11, 4, 25};
 
+static uchar perm6[64] = {40, 8, 48, 16, 56, 24, 64, 32, 39, 7, 47, 15, 55, 23, 63, 31, 38, 6, 46, 14, 54, 22, 62, 30, 37, 5, 45, 13, 53, 21, 61, 29, 36, 4, 44, 12, 52, 20, 60, 28, 35, 3, 43, 11, 51, 19, 59, 27, 34, 2, 42, 10, 50, 18, 58, 26, 33, 1, 41, 9, 49, 17, 57, 25};
 
-static uchar perm6[64] = { 40, 8, 48, 16, 56, 24, 64, 32,
-  39, 7, 47, 15, 55, 23, 63, 31,
-  38, 6, 46, 14, 54, 22, 62, 30,
-  37, 5, 45, 13, 53, 21, 61, 29,
-  36, 4, 44, 12, 52, 20, 60, 28,
-  35, 3, 43, 11, 51, 19, 59, 27,
-  34, 2, 42, 10, 50, 18, 58, 26,
-  33, 1, 41, 9, 49, 17, 57, 25
-};
+static uchar sc[16] = {1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1};
 
+static uchar sbox[8][4][16] = {{{14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7}, {0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8}, {4, 1, 14, 8, 13, 6, 2, 11, 15, 12, 9, 7, 3, 10, 5, 0}, {15, 12, 8, 2, 4, 9, 1, 7, 5, 11, 3, 14, 10, 0, 6, 13}},
 
-static uchar sc[16] = { 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1 };
+                               {{15, 1, 8, 14, 6, 11, 3, 4, 9, 7, 2, 13, 12, 0, 5, 10}, {3, 13, 4, 7, 15, 2, 8, 14, 12, 0, 1, 10, 6, 9, 11, 5}, {0, 14, 7, 11, 10, 4, 13, 1, 5, 8, 12, 6, 9, 3, 2, 15}, {13, 8, 10, 1, 3, 15, 4, 2, 11, 6, 7, 12, 0, 5, 14, 9}},
 
-static uchar sbox[8][4][16] = {
-  {{14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7},
-   {0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8},
-   {4, 1, 14, 8, 13, 6, 2, 11, 15, 12, 9, 7, 3, 10, 5, 0},
-   {15, 12, 8, 2, 4, 9, 1, 7, 5, 11, 3, 14, 10, 0, 6, 13}},
+                               {{10, 0, 9, 14, 6, 3, 15, 5, 1, 13, 12, 7, 11, 4, 2, 8}, {13, 7, 0, 9, 3, 4, 6, 10, 2, 8, 5, 14, 12, 11, 15, 1}, {13, 6, 4, 9, 8, 15, 3, 0, 11, 1, 2, 12, 5, 10, 14, 7}, {1, 10, 13, 0, 6, 9, 8, 7, 4, 15, 14, 3, 11, 5, 2, 12}},
 
-  {{15, 1, 8, 14, 6, 11, 3, 4, 9, 7, 2, 13, 12, 0, 5, 10},
-   {3, 13, 4, 7, 15, 2, 8, 14, 12, 0, 1, 10, 6, 9, 11, 5},
-   {0, 14, 7, 11, 10, 4, 13, 1, 5, 8, 12, 6, 9, 3, 2, 15},
-   {13, 8, 10, 1, 3, 15, 4, 2, 11, 6, 7, 12, 0, 5, 14, 9}},
+                               {{7, 13, 14, 3, 0, 6, 9, 10, 1, 2, 8, 5, 11, 12, 4, 15}, {13, 8, 11, 5, 6, 15, 0, 3, 4, 7, 2, 12, 1, 10, 14, 9}, {10, 6, 9, 0, 12, 11, 7, 13, 15, 1, 3, 14, 5, 2, 8, 4}, {3, 15, 0, 6, 10, 1, 13, 8, 9, 4, 5, 11, 12, 7, 2, 14}},
 
-  {{10, 0, 9, 14, 6, 3, 15, 5, 1, 13, 12, 7, 11, 4, 2, 8},
-   {13, 7, 0, 9, 3, 4, 6, 10, 2, 8, 5, 14, 12, 11, 15, 1},
-   {13, 6, 4, 9, 8, 15, 3, 0, 11, 1, 2, 12, 5, 10, 14, 7},
-   {1, 10, 13, 0, 6, 9, 8, 7, 4, 15, 14, 3, 11, 5, 2, 12}},
+                               {{2, 12, 4, 1, 7, 10, 11, 6, 8, 5, 3, 15, 13, 0, 14, 9}, {14, 11, 2, 12, 4, 7, 13, 1, 5, 0, 15, 10, 3, 9, 8, 6}, {4, 2, 1, 11, 10, 13, 7, 8, 15, 9, 12, 5, 6, 3, 0, 14}, {11, 8, 12, 7, 1, 14, 2, 13, 6, 15, 0, 9, 10, 4, 5, 3}},
 
-  {{7, 13, 14, 3, 0, 6, 9, 10, 1, 2, 8, 5, 11, 12, 4, 15},
-   {13, 8, 11, 5, 6, 15, 0, 3, 4, 7, 2, 12, 1, 10, 14, 9},
-   {10, 6, 9, 0, 12, 11, 7, 13, 15, 1, 3, 14, 5, 2, 8, 4},
-   {3, 15, 0, 6, 10, 1, 13, 8, 9, 4, 5, 11, 12, 7, 2, 14}},
+                               {{12, 1, 10, 15, 9, 2, 6, 8, 0, 13, 3, 4, 14, 7, 5, 11}, {10, 15, 4, 2, 7, 12, 9, 5, 6, 1, 13, 14, 0, 11, 3, 8}, {9, 14, 15, 5, 2, 8, 12, 3, 7, 0, 4, 10, 1, 13, 11, 6}, {4, 3, 2, 12, 9, 5, 15, 10, 11, 14, 1, 7, 6, 0, 8, 13}},
 
-  {{2, 12, 4, 1, 7, 10, 11, 6, 8, 5, 3, 15, 13, 0, 14, 9},
-   {14, 11, 2, 12, 4, 7, 13, 1, 5, 0, 15, 10, 3, 9, 8, 6},
-   {4, 2, 1, 11, 10, 13, 7, 8, 15, 9, 12, 5, 6, 3, 0, 14},
-   {11, 8, 12, 7, 1, 14, 2, 13, 6, 15, 0, 9, 10, 4, 5, 3}},
+                               {{4, 11, 2, 14, 15, 0, 8, 13, 3, 12, 9, 7, 5, 10, 6, 1}, {13, 0, 11, 7, 4, 9, 1, 10, 14, 3, 5, 12, 2, 15, 8, 6}, {1, 4, 11, 13, 12, 3, 7, 14, 10, 15, 6, 8, 0, 5, 9, 2}, {6, 11, 13, 8, 1, 4, 10, 7, 9, 5, 0, 15, 14, 2, 3, 12}},
 
-  {{12, 1, 10, 15, 9, 2, 6, 8, 0, 13, 3, 4, 14, 7, 5, 11},
-   {10, 15, 4, 2, 7, 12, 9, 5, 6, 1, 13, 14, 0, 11, 3, 8},
-   {9, 14, 15, 5, 2, 8, 12, 3, 7, 0, 4, 10, 1, 13, 11, 6},
-   {4, 3, 2, 12, 9, 5, 15, 10, 11, 14, 1, 7, 6, 0, 8, 13}},
+                               {{13, 2, 8, 4, 6, 15, 11, 1, 10, 9, 3, 14, 5, 0, 12, 7}, {1, 15, 13, 8, 10, 3, 7, 4, 12, 5, 6, 11, 0, 14, 9, 2}, {7, 11, 4, 1, 9, 12, 14, 2, 0, 6, 10, 13, 15, 3, 5, 8}, {2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11}}};
 
-  {{4, 11, 2, 14, 15, 0, 8, 13, 3, 12, 9, 7, 5, 10, 6, 1},
-   {13, 0, 11, 7, 4, 9, 1, 10, 14, 3, 5, 12, 2, 15, 8, 6},
-   {1, 4, 11, 13, 12, 3, 7, 14, 10, 15, 6, 8, 0, 5, 9, 2},
-   {6, 11, 13, 8, 1, 4, 10, 7, 9, 5, 0, 15, 14, 2, 3, 12}},
-
-  {{13, 2, 8, 4, 6, 15, 11, 1, 10, 9, 3, 14, 5, 0, 12, 7},
-   {1, 15, 13, 8, 10, 3, 7, 4, 12, 5, 6, 11, 0, 14, 9, 2},
-   {7, 11, 4, 1, 9, 12, 14, 2, 0, 6, 10, 13, 15, 3, 5, 8},
-   {2, 1, 14, 7, 4, 10, 8, 13, 15, 12, 9, 0, 3, 5, 6, 11}}
-};
-
-static void permute(char *out, char *in, uchar * p, int32_t n) {
+static void permute(char *out, char *in, uchar *p, int32_t n) {
   int32_t i;
 
   for (i = 0; i < n; i++)
@@ -601,14 +601,15 @@ static void concat(char *out, char *in1, char *in2, int32_t l1, int32_t l2) {
     *out++ = *in2++;
 }
 
-void xor(char *out, char *in1, char *in2, int32_t n) {
-  int32_t i;
+void xor
+    (char *out, char *in1, char *in2, int32_t n) {
+      int32_t i;
 
-  for (i = 0; i < n; i++)
-    out[i] = in1[i] ^ in2[i];
-}
+      for (i = 0; i < n; i++)
+        out[i] = in1[i] ^ in2[i];
+    }
 
-static void dohash(char *out, char *in, char *key, int32_t forw) {
+    static void dohash(char *out, char *in, char *key, int32_t forw) {
   int32_t i, j, k;
   char pk1[56];
   char c[28];
@@ -703,7 +704,6 @@ static void str_to_key(unsigned char *str, unsigned char *key) {
   }
 }
 
-
 static void smbhash(unsigned char *out, unsigned char *in, unsigned char *key, int32_t forw) {
   int32_t i;
   char outb[64];
@@ -732,7 +732,7 @@ static void smbhash(unsigned char *out, unsigned char *in, unsigned char *key, i
 }
 
 void E_P16(unsigned char *p14, unsigned char *p16) {
-  unsigned char sp8[8] = { 0x4b, 0x47, 0x53, 0x21, 0x40, 0x23, 0x24, 0x25 };
+  unsigned char sp8[8] = {0x4b, 0x47, 0x53, 0x21, 0x40, 0x23, 0x24, 0x25};
   smbhash(p16, sp8, p14, 1);
   smbhash(p16 + 8, sp8, p14 + 7, 1);
 }
@@ -785,7 +785,7 @@ void SamOEMhash(unsigned char *data, unsigned char *key, int32_t val) {
   int32_t ind;
 
   for (ind = 0; ind < 256; ind++) {
-    s_box[ind] = (unsigned char) ind;
+    s_box[ind] = (unsigned char)ind;
   }
 
   for (ind = 0; ind < 256; ind++) {
@@ -815,7 +815,6 @@ void SamOEMhash(unsigned char *data, unsigned char *key, int32_t val) {
 
 /* Samba encryption implementation*/
 
-
 /****************************************************************************
  Like strncpy but always null terminates. Make sure there is room!
  The variable n should always be one less than the available size.
@@ -830,21 +829,19 @@ char *StrnCpy(char *dest, const char *src, size_t n) {
     *dest = 0;
     return (dest);
   }
-  while (n-- && (*d++ = *src++));
+  while (n-- && (*d++ = *src++))
+    ;
   *d = 0;
   return (dest);
 }
 
-size_t skip_multibyte_char(char c) {
-  return 0;
-}
-
+size_t skip_multibyte_char(char c) { return 0; }
 
 /*******************************************************************
 safe string copy into a known length string. maxlength does not
 include the terminating zero.
 ********************************************************************/
-#define DEBUG(a,b) ;
+#define DEBUG(a, b) ;
 char *safe_strcpy(char *dest, const char *src, size_t maxlength) {
   size_t len;
 
@@ -861,7 +858,7 @@ char *safe_strcpy(char *dest, const char *src, size_t maxlength) {
   len = strlen(src);
 
   if (len > maxlength) {
-    DEBUG(0, ("Error: string overflow by %d in safe_strcpy [%.50s]\n", (int32_t) (len - maxlength), src));
+    DEBUG(0, ("Error: string overflow by %d in safe_strcpy [%.50s]\n", (int32_t)(len - maxlength), src));
     len = maxlength;
   }
 
@@ -869,7 +866,6 @@ char *safe_strcpy(char *dest, const char *src, size_t maxlength) {
   dest[len] = 0;
   return dest;
 }
-
 
 void strupper(char *s) {
   while (*s) {
@@ -879,44 +875,44 @@ void strupper(char *s) {
       if (skip != 0)
         s += skip;
       else {
-        if (islower((int32_t) *s))
-          *s = toupper((int32_t) *s);
+        if (islower((int32_t)*s))
+          *s = toupper((int32_t)*s);
         s++;
       }
     }
   }
 }
 
-extern void SMBOWFencrypt(uchar passwd[16], uchar * c8, uchar p24[24]);
+extern void SMBOWFencrypt(uchar passwd[16], uchar *c8, uchar p24[24]);
 
 /*
  This implements the X/Open SMB password encryption
- It takes a password, a 8 byte "crypt key" and puts 24 bytes of 
- encrypted password into p24 
+ It takes a password, a 8 byte "crypt key" and puts 24 bytes of
+ encrypted password into p24
  */
 
-void SMBencrypt(uchar * passwd, uchar * c8, uchar * p24) {
+void SMBencrypt(uchar *passwd, uchar *c8, uchar *p24) {
   uchar p14[15], p21[21];
 
   memset(p21, '\0', 21);
   memset(p14, '\0', 14);
-  StrnCpy((char *) p14, (char *) passwd, 14);
+  StrnCpy((char *)p14, (char *)passwd, 14);
 
-  strupper((char *) p14);
+  strupper((char *)p14);
   E_P16(p14, p21);
 
   SMBOWFencrypt(p21, c8, p24);
 
 #ifdef DEBUG_PASSWORD
   DEBUG(100, ("SMBencrypt: lm#, challenge, response\n"));
-  dump_data(100, (char *) p21, 16);
-  dump_data(100, (char *) c8, 8);
-  dump_data(100, (char *) p24, 24);
+  dump_data(100, (char *)p21, 16);
+  dump_data(100, (char *)c8, 8);
+  dump_data(100, (char *)p24, 24);
 #endif
 }
 
 /* Routines for Windows NT MD4 Hash functions. */
-static int32_t _my_wcslen(int16 * str) {
+static int32_t _my_wcslen(int16 *str) {
   int32_t len = 0;
 
   while (*str++ != 0)
@@ -926,12 +922,12 @@ static int32_t _my_wcslen(int16 * str) {
 
 /*
  * Convert a string into an NT UNICODE string.
- * Note that regardless of processor type 
+ * Note that regardless of processor type
  * this must be in intel (little-endian)
  * format.
  */
 
-static int32_t _my_mbstowcs(int16 * dst, uchar * src, int32_t len) {
+static int32_t _my_mbstowcs(int16 *dst, uchar *src, int32_t len) {
   int32_t i;
   int16 val;
 
@@ -946,25 +942,25 @@ static int32_t _my_mbstowcs(int16 * dst, uchar * src, int32_t len) {
   return i;
 }
 
-/* 
+/*
  * Creates the MD4 Hash of the users password in NT UNICODE.
  */
 
-void E_md4hash(uchar * passwd, uchar * p16) {
+void E_md4hash(uchar *passwd, uchar *p16) {
   int32_t len;
   int16 wpwd[129];
 
   /* Password cannot be longer than 128 characters */
-  len = strlen((char *) passwd);
+  len = strlen((char *)passwd);
   if (len > 128)
     len = 128;
   /* Password must be converted to NT unicode */
   _my_mbstowcs(wpwd, passwd, len);
-  wpwd[len] = 0;                /* Ensure string is null terminated */
+  wpwd[len] = 0; /* Ensure string is null terminated */
   /* Calculate length in bytes */
   len = _my_wcslen(wpwd) * sizeof(int16);
 
-  mdfour(p16, (unsigned char *) wpwd, len);
+  mdfour(p16, (unsigned char *)wpwd, len);
 }
 
 /* Does both the NT and LM owfs of a user's password */
@@ -976,12 +972,12 @@ void nt_lm_owf_gen(char *pwd, uchar nt_p16[16], uchar p16[16]) {
 
   /* Calculate the MD4 hash (NT compatible) of the password */
   memset(nt_p16, '\0', 16);
-  E_md4hash((uchar *) passwd, nt_p16);
+  E_md4hash((uchar *)passwd, nt_p16);
 
 #ifdef DEBUG_PASSWORD
   DEBUG(100, ("nt_lm_owf_gen: pwd, nt#\n"));
   dump_data(120, passwd, strlen(passwd));
-  dump_data(100, (char *) nt_p16, 16);
+  dump_data(100, (char *)nt_p16, 16);
 #endif
 
   /* Mangle the passwords into Lanman format */
@@ -991,19 +987,19 @@ void nt_lm_owf_gen(char *pwd, uchar nt_p16[16], uchar p16[16]) {
   /* Calculate the SMB (lanman) hash functions of the password */
 
   memset(p16, '\0', 16);
-  E_P16((uchar *) passwd, (uchar *) p16);
+  E_P16((uchar *)passwd, (uchar *)p16);
 
 #ifdef DEBUG_PASSWORD
   DEBUG(100, ("nt_lm_owf_gen: pwd, lm#\n"));
   dump_data(120, passwd, strlen(passwd));
-  dump_data(100, (char *) p16, 16);
+  dump_data(100, (char *)p16, 16);
 #endif
   /* clear out local copy of user's password (just being paranoid). */
   memset(passwd, '\0', sizeof(passwd));
 }
 
 /* Does the des encryption from the NT or LM MD4 hash. */
-void SMBOWFencrypt(uchar passwd[16], uchar * c8, uchar p24[24]) {
+void SMBOWFencrypt(uchar passwd[16], uchar *c8, uchar p24[24]) {
   uchar p21[21];
 
   memset(p21, '\0', 21);
@@ -1013,7 +1009,7 @@ void SMBOWFencrypt(uchar passwd[16], uchar * c8, uchar p24[24]) {
 }
 
 /* Does the des encryption from the FIRST 8 BYTES of the NT or LM MD4 hash. */
-void NTLMSSPOWFencrypt(uchar passwd[8], uchar * ntlmchalresp, uchar p24[24]) {
+void NTLMSSPOWFencrypt(uchar passwd[8], uchar *ntlmchalresp, uchar p24[24]) {
   uchar p21[21];
 
   memset(p21, '\0', 21);
@@ -1023,16 +1019,15 @@ void NTLMSSPOWFencrypt(uchar passwd[8], uchar * ntlmchalresp, uchar p24[24]) {
   E_P24(p21, ntlmchalresp, p24);
 #ifdef DEBUG_PASSWORD
   DEBUG(100, ("NTLMSSPOWFencrypt: p21, c8, p24\n"));
-  dump_data(100, (char *) p21, 21);
-  dump_data(100, (char *) ntlmchalresp, 8);
-  dump_data(100, (char *) p24, 24);
+  dump_data(100, (char *)p21, 21);
+  dump_data(100, (char *)ntlmchalresp, 8);
+  dump_data(100, (char *)p24, 24);
 #endif
 }
 
-
 /* Does the NT MD4 hash then des encryption. */
 
-void SMBNTencrypt(uchar * passwd, uchar * c8, uchar * p24) {
+void SMBNTencrypt(uchar *passwd, uchar *c8, uchar *p24) {
   uchar p21[21];
 
   memset(p21, '\0', 21);
@@ -1042,9 +1037,9 @@ void SMBNTencrypt(uchar * passwd, uchar * c8, uchar * p24) {
 
 #ifdef DEBUG_PASSWORD
   DEBUG(100, ("SMBNTencrypt: nt#, challenge, response\n"));
-  dump_data(100, (char *) p21, 16);
-  dump_data(100, (char *) c8, 8);
-  dump_data(100, (char *) p24, 24);
+  dump_data(100, (char *)p21, 16);
+  dump_data(100, (char *)c8, 8);
+  dump_data(100, (char *)p24, 24);
 #endif
 }
 
@@ -1083,7 +1078,8 @@ BOOL make_oem_passwd_hash(char data[516], const char *passwd, uchar old_pw_hash[
 
 #endif
 
-/* libtnlm copyrigth was left here, anyway the interface was slightly modified */
+/* libtnlm copyrigth was left here, anyway the interface was slightly modified
+ */
 
 /* included libntlm-3.2.9 (c) even if this code is based in 2.1 version*/
 
@@ -1113,58 +1109,49 @@ Contributed LGPL versions of some of the GPL'd Samba files.
  * in the structures probably needs to be designed
  */
 
-#define AddBytes(ptr, header, buf, count) \
-{ \
-if (buf != NULL && count != 0) \
-  { \
-  SSVAL(&ptr->header.len,0,count); \
-  SSVAL(&ptr->header.maxlen,0,count); \
-  SIVAL(&ptr->header.offset,0,((ptr->buffer - ((uint8*)ptr)) + ptr->bufIndex)); \
-  memcpy(ptr->buffer+ptr->bufIndex, buf, count); \
-  ptr->bufIndex += count; \
-  } \
-else \
-  { \
-  ptr->header.len = \
-  ptr->header.maxlen = 0; \
-  SIVAL(&ptr->header.offset,0,ptr->bufIndex); \
-  } \
-}
+#define AddBytes(ptr, header, buf, count)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    if (buf != NULL && count != 0) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           \
+      SSVAL(&ptr->header.len, 0, count);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       \
+      SSVAL(&ptr->header.maxlen, 0, count);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    \
+      SIVAL(&ptr->header.offset, 0, ((ptr->buffer - ((uint8 *)ptr)) + ptr->bufIndex));                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+      memcpy(ptr->buffer + ptr->bufIndex, buf, count);                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+      ptr->bufIndex += count;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  \
+    } else {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
+      ptr->header.len = ptr->header.maxlen = 0;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+      SIVAL(&ptr->header.offset, 0, ptr->bufIndex);                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+  }
 
-#define AddString(ptr, header, string) \
-{ \
-char *p = string; \
-int32_t len = 0; \
-if (p) len = strlen(p); \
-AddBytes(ptr, header, ((unsigned char*)p), len); \
-}
+#define AddString(ptr, header, string)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    char *p = string;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+    int32_t len = 0;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           \
+    if (p)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     \
+      len = strlen(p);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+    AddBytes(ptr, header, ((unsigned char *)p), len);                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+  }
 
-#define AddUnicodeString(ptr, header, string) \
-{ \
-char *p = string; \
-unsigned char *b = NULL; \
-int32_t len = 0; \
-if (p) \
-  { \
-  len = strlen(p); \
-  b = strToUnicode(p); \
-  } \
-AddBytes(ptr, header, b, len*2); \
-}
+#define AddUnicodeString(ptr, header, string)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  \
+  {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
+    char *p = string;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+    unsigned char *b = NULL;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
+    int32_t len = 0;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           \
+    if (p) {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
+      len = strlen(p);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+      b = strToUnicode(p);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     \
+    }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
+    AddBytes(ptr, header, b, len * 2);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         \
+  }
 
+#define GetUnicodeString(structPtr, header) unicodeToString(((char *)structPtr) + IVAL(&structPtr->header.offset, 0), SVAL(&structPtr->header.len, 0) / 2)
+#define GetString(structPtr, header) toString((((char *)structPtr) + IVAL(&structPtr->header.offset, 0)), SVAL(&structPtr->header.len, 0))
+#define DumpBuffer(fp, structPtr, header) dumpRaw(fp, ((unsigned char *)structPtr) + IVAL(&structPtr->header.offset, 0), SVAL(&structPtr->header.len, 0))
 
-#define GetUnicodeString(structPtr, header) \
-unicodeToString(((char*)structPtr) + IVAL(&structPtr->header.offset,0) , SVAL(&structPtr->header.len,0)/2)
-#define GetString(structPtr, header) \
-toString((((char *)structPtr) + IVAL(&structPtr->header.offset,0)), SVAL(&structPtr->header.len,0))
-#define DumpBuffer(fp, structPtr, header) \
-dumpRaw(fp,((unsigned char*)structPtr)+IVAL(&structPtr->header.offset,0),SVAL(&structPtr->header.len,0))
-
-
-static void dumpRaw(FILE * fp, unsigned char *buf, size_t len) {
+static void dumpRaw(FILE *fp, unsigned char *buf, size_t len) {
   int32_t i;
 
-  for (i = 0; i < (int32_t) len; ++i)
+  for (i = 0; i < (int32_t)len; ++i)
     fprintf(fp, "%02x ", buf[i]);
 
   fprintf(fp, "\n");
@@ -1176,7 +1163,7 @@ static char *unicodeToString(char *p, size_t len) {
 
   assert(len + 1 < sizeof buf);
 
-  for (i = 0; i < (int32_t) len; ++i) {
+  for (i = 0; i < (int32_t)len; ++i) {
     buf[i] = *p & 0x7f;
     p += 2;
   }
@@ -1210,12 +1197,11 @@ static unsigned char *toString(char *p, size_t len) {
   return buf;
 }
 
+void buildAuthRequest(tSmbNtlmAuthRequest *request, long flags, char *host, char *domain) {
+  char *h = NULL; // strdup(host);
+  char *p = NULL; // strchr(h,'@');
 
-void buildAuthRequest(tSmbNtlmAuthRequest * request, long flags, char *host, char *domain) {
-  char *h = NULL;               //strdup(host);
-  char *p = NULL;               //strchr(h,'@');
-
-//TODO: review default flags
+  // TODO: review default flags
 
   if (host == NULL)
     host = "";
@@ -1230,7 +1216,7 @@ void buildAuthRequest(tSmbNtlmAuthRequest * request, long flags, char *host, cha
     *p = '\0';
   }
   if (flags == 0)
-    flags = 0x0000b207;         /* Lowest security options to avoid negotiation */
+    flags = 0x0000b207; /* Lowest security options to avoid negotiation */
   request->bufIndex = 0;
   memcpy(request->ident, "NTLMSSP\0\0\0", 8);
   SIVAL(&request->msgType, 0, 1);
@@ -1243,7 +1229,7 @@ void buildAuthRequest(tSmbNtlmAuthRequest * request, long flags, char *host, cha
   free(h);
 }
 
-void buildAuthResponse(tSmbNtlmAuthChallenge *challenge, tSmbNtlmAuthResponse * response, long flags, char *user, char *password, char *domainname, char *host) {
+void buildAuthResponse(tSmbNtlmAuthChallenge *challenge, tSmbNtlmAuthResponse *response, long flags, char *user, char *password, char *domainname, char *host) {
   uint8 lmRespData[24];
   uint8 ntRespData[24];
   char *u = strdup(user);
@@ -1264,8 +1250,8 @@ void buildAuthResponse(tSmbNtlmAuthChallenge *challenge, tSmbNtlmAuthResponse * 
     *p = '\0';
   }
 
-  SMBencrypt((unsigned char *) password, challenge->challengeData, lmRespData);
-  SMBNTencrypt((unsigned char *) password, challenge->challengeData, ntRespData);
+  SMBencrypt((unsigned char *)password, challenge->challengeData, lmRespData);
+  SMBNTencrypt((unsigned char *)password, challenge->challengeData, ntRespData);
 
   response->bufIndex = 0;
   memcpy(response->ident, "NTLMSSP\0\0\0", 8);
@@ -1284,7 +1270,7 @@ void buildAuthResponse(tSmbNtlmAuthChallenge *challenge, tSmbNtlmAuthResponse * 
   AddString(response, sessionKey, NULL);
 
   if (flags != 0)
-    challenge->flags = flags;   /* Overide flags! */
+    challenge->flags = flags; /* Overide flags! */
   response->flags = challenge->flags;
 
   if (w)
@@ -1295,16 +1281,12 @@ void buildAuthResponse(tSmbNtlmAuthChallenge *challenge, tSmbNtlmAuthResponse * 
     free(u);
 }
 
-
-
-
-
 // info functions
-void dumpAuthRequest(FILE * fp, tSmbNtlmAuthRequest * request);
-void dumpAuthChallenge(FILE * fp, tSmbNtlmAuthChallenge * challenge);
-void dumpAuthResponse(FILE * fp, tSmbNtlmAuthResponse * response);
+void dumpAuthRequest(FILE *fp, tSmbNtlmAuthRequest *request);
+void dumpAuthChallenge(FILE *fp, tSmbNtlmAuthChallenge *challenge);
+void dumpAuthResponse(FILE *fp, tSmbNtlmAuthResponse *response);
 
-void dumpAuthRequest(FILE * fp, tSmbNtlmAuthRequest * request) {
+void dumpAuthRequest(FILE *fp, tSmbNtlmAuthRequest *request) {
   fprintf(fp, "NTLM Request:\n");
   fprintf(fp, "      Ident = %s\n", request->ident);
   fprintf(fp, "      mType = %u\n", IVAL(&request->msgType, 0));
@@ -1313,7 +1295,7 @@ void dumpAuthRequest(FILE * fp, tSmbNtlmAuthRequest * request) {
   fprintf(fp, "     Domain = %s\n", GetString(request, domain));
 }
 
-void dumpAuthChallenge(FILE * fp, tSmbNtlmAuthChallenge * challenge) {
+void dumpAuthChallenge(FILE *fp, tSmbNtlmAuthChallenge *challenge) {
   fprintf(fp, "NTLM Challenge:\n");
   fprintf(fp, "      Ident = %s\n", challenge->ident);
   fprintf(fp, "      mType = %u\n", IVAL(&challenge->msgType, 0));
@@ -1324,7 +1306,7 @@ void dumpAuthChallenge(FILE * fp, tSmbNtlmAuthChallenge * challenge) {
   fprintf(fp, "  Incomplete!! parse optional parameters\n");
 }
 
-void dumpAuthResponse(FILE * fp, tSmbNtlmAuthResponse * response) {
+void dumpAuthResponse(FILE *fp, tSmbNtlmAuthResponse *response) {
   fprintf(fp, "NTLM Response:\n");
   fprintf(fp, "      Ident = %s\n", response->ident);
   fprintf(fp, "      mType = %u\n", IVAL(&response->msgType, 0));
@@ -1340,12 +1322,6 @@ void dumpAuthResponse(FILE * fp, tSmbNtlmAuthResponse * response) {
   fprintf(fp, "      Flags = %08x\n", IVAL(&response->flags, 0));
 }
 
-
-
-
-
-
-
 /*
  * base64.c -- base-64 conversion routines.
  *
@@ -1360,22 +1336,13 @@ void dumpAuthResponse(FILE * fp, tSmbNtlmAuthResponse * response) {
  * This code borrowed from fetchmail sources
  */
 
-
 static const char base64digits[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-#define BAD	-1
-static const char base64val[] = {
-  BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD,
-  BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD,
-  BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, 62, BAD, BAD, BAD, 63,
-  52, 53, 54, 55, 56, 57, 58, 59, 60, 61, BAD, BAD, BAD, BAD, BAD, BAD,
-  BAD, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
-  15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, BAD, BAD, BAD, BAD, BAD,
-  BAD, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
-  41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, BAD, BAD, BAD, BAD, BAD
-};
+#define BAD -1
+static const char base64val[] = {BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, BAD, 62, BAD, BAD, BAD, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, BAD, BAD, BAD, BAD, BAD, BAD,
+                                 BAD, 0,   1,   2,   3,   4,   5,   6,   7,   8,   9,   10,  11,  12,  13,  14,  15,  16,  17,  18,  19,  20,  21,  22,  23,  24,  25,  BAD, BAD, BAD, BAD, BAD, BAD, 26,  27,  28,  29,  30,  31,  32,  33,  34,  35,  36, 37,  38,  39,  40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51,  BAD, BAD, BAD, BAD, BAD};
 
-#define DECODE64(c)  (isascii(c) ? base64val[c] : BAD)
+#define DECODE64(c) (isascii(c) ? base64val[c] : BAD)
 
 void to64frombits(unsigned char *out, const unsigned char *in, int32_t inlen)
 

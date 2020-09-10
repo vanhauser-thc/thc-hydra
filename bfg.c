@@ -1,18 +1,18 @@
 
 /* code original by Jan Dlabal <dlabaljan@gmail.com>, partially rewritten by vh,
- rainy tweaks by yvain douard*/
+ rainy tweaks by owein <yvain29@gmail.com>*/
 
+#include <ctype.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <ctype.h>
 #ifdef __sun
-  #include <sys/int_types.h>
+#include <sys/int_types.h>
 #elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX)
-  #include <inttypes.h>
+#include <inttypes.h>
 #else
-  #include <stdint.h>
+#include <stdint.h>
 #endif
 #include "bfg.h"
 
@@ -22,20 +22,26 @@ bf_option bf_options;
 
 extern int32_t debug;
 
-static int32_t add_single_char(char ch, char flags, int32_t* crs_len) {
+static int32_t add_single_char(char ch, char flags, int32_t *crs_len) {
   if ((ch >= '2' && ch <= '9') || ch == '0') {
     if ((flags & BF_NUMS) > 0) {
-      printf("[ERROR] character %c defined in -x although the whole number range was already defined by '1', ignored\n", ch);
+      printf("[ERROR] character %c defined in -x although the whole number "
+             "range was already defined by '1', ignored\n",
+             ch);
       return 0;
     }
-    //printf("[WARNING] adding character %c for -x, note that '1' will add all numbers from 0-9\n", ch);
+    // printf("[WARNING] adding character %c for -x, note that '1' will add all
+    // numbers from 0-9\n", ch);
   }
-  if (tolower((int32_t) ch) >= 'b' && tolower((int32_t) ch) <= 'z') {
+  if (tolower((int32_t)ch) >= 'b' && tolower((int32_t)ch) <= 'z') {
     if ((ch <= 'Z' && (flags & BF_UPPER) > 0) || (ch > 'Z' && (flags & BF_UPPER) > 0)) {
-      printf("[ERROR] character %c defined in -x although the whole letter range was already defined by '%c', ignored\n", ch, ch <= 'Z' ? 'A' : 'a');
+      printf("[ERROR] character %c defined in -x although the whole letter "
+             "range was already defined by '%c', ignored\n",
+             ch, ch <= 'Z' ? 'A' : 'a');
       return 0;
     }
-    //printf("[WARNING] adding character %c for -x, note that '%c' will add all %scase letters\n", ch, ch <= 'Z' ? 'A' : 'a', ch <= 'Z' ? "up" : "low");
+    // printf("[WARNING] adding character %c for -x, note that '%c' will add all
+    // %scase letters\n", ch, ch <= 'Z' ? 'A' : 'a', ch <= 'Z' ? "up" : "low");
   }
   (*crs_len)++;
   if (BF_CHARSMAX - *crs_len < 1) {
@@ -55,6 +61,7 @@ static int32_t add_single_char(char ch, char flags, int32_t* crs_len) {
 int32_t bf_init(char *arg) {
   bf_options.rotate = 0;
   bf_options.strafe = 0;
+
   int32_t i = 0;
   int32_t crs_len = 0;
   char flags = 0;
@@ -68,7 +75,8 @@ int32_t bf_init(char *arg) {
   }
   bf_options.from = atoi(arg);
   if (bf_options.from < 1 || bf_options.from > 127) {
-    fprintf(stderr, "Error: minimum length must be between 1 and 127, format: -x min:max:types\n");
+    fprintf(stderr, "Error: minimum length must be between 1 and 127, format: "
+                    "-x min:max:types\n");
     return 1;
   }
   arg = tmp + 1;
@@ -88,7 +96,8 @@ int32_t bf_init(char *arg) {
   tmp++;
 
   if (bf_options.from > bf_options.to) {
-    fprintf(stderr, "Error: you specified a minimum length higher than the maximum length!\n");
+    fprintf(stderr, "Error: you specified a minimum length higher than the "
+                    "maximum length!\n");
     return 1;
   }
 
@@ -168,6 +177,7 @@ int32_t bf_init(char *arg) {
 	
   bf_options.crs_len = crs_len;
   bf_options.current = bf_options.from;
+  
   memset((char *) bf_options.state, 0, sizeof(bf_options.state));
   
   if (debug)
@@ -176,16 +186,16 @@ int32_t bf_init(char *arg) {
   return 0;
 }
 
-
 uint64_t bf_get_pcount() {
   int32_t i;
   double count = 0;
   uint64_t foo;
 
   for (i = bf_options.from; i <= bf_options.to; i++)
-    count += (pow((double) bf_options.crs_len, (double) i));
+    count += (pow((double)bf_options.crs_len, (double)i));
   if (count >= 0xffffffff) {
-    fprintf(stderr, "\n[ERROR] definition for password bruteforce (-x) generates more than 4 billion passwords\n");
+    fprintf(stderr, "\n[ERROR] definition for password bruteforce (-x) "
+                    "generates more than 4 billion passwords - this is not a bug in the program, it is just not feasible to try so many attempts. Try a calculator how long that would take. duh.\n");
     exit(-1);
   }
 
@@ -193,12 +203,19 @@ uint64_t bf_get_pcount() {
   return foo;
 }
 
+int accu(int value) {
+  int i = 0, a;
+  for (a = 1; a <= value; ++a) {
+    i += a;
+  }
+  return i;
+}
 
 char *bf_next(_Bool rainy) {
   int32_t i, pos = bf_options.current - 1;
 
   if (bf_options.current > bf_options.to)
-    return NULL;                // we are done
+    return NULL; // we are done
 
   if ((bf_options.ptr = malloc(BF_CHARSMAX)) == NULL) {
     fprintf(stderr, "Error: Can not allocate memory for -x data!\n");
@@ -231,6 +248,7 @@ char *bf_next(_Bool rainy) {
   else
     for (i = 0; i < bf_options.current; i++)
 	  bf_options.ptr[i] = bf_options.crs[bf_options.state[i]];
+
   bf_options.ptr[bf_options.current] = 0;
 
   if (debug) {
@@ -249,7 +267,7 @@ char *bf_next(_Bool rainy) {
 
   if (pos < 0) {
     bf_options.current++;
-    memset((char *) bf_options.state, 0, sizeof(bf_options.state));
+    memset((char *)bf_options.state, 0, sizeof(bf_options.state));
   }
 
   return bf_options.ptr;

@@ -1,4 +1,9 @@
 
+./configure:
+ - add test for -march=native
+
+--- this is old ---
+
 Prio 1:
 * add cookie support to hydra-http.c
 * hydra-smb more than 1 connection?

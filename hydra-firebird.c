@@ -1,7 +1,7 @@
 /*
 
 Firebird Support - by David Maciejak @ GMAIL dot com
-	
+
 you need to pass full path to the fdb file as argument
 default account is SYSDBA/masterkey
 
@@ -14,28 +14,26 @@ the msg: "no permission for direct access to security database"
 #include "hydra-mod.h"
 
 #ifndef LIBFIREBIRD
-void dummy_firebird() {
-  printf("\n");
-}
+void dummy_firebird() { printf("\n"); }
 #else
 
-#include <stdio.h>
 #include <ibase.h>
+#include <stdio.h>
 
 #define DEFAULT_DB "C:\\Program Files\\Firebird\\Firebird_1_5\\security.fdb"
 
 extern char *HYDRA_EXIT;
 
-int32_t start_firebird(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_firebird(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";
   char *login, *pass;
   char database[256];
   char connection_string[1024];
 
-  isc_db_handle db;             /* database handle */
-  ISC_STATUS_ARRAY status;      /* status vector */
+  isc_db_handle db;        /* database handle */
+  ISC_STATUS_ARRAY status; /* status vector */
 
-  char *dpb = NULL;             /* DB parameter buffer */
+  char *dpb = NULL; /* DB parameter buffer */
   short dpb_length = 0;
 
   if (miscptr)
@@ -49,8 +47,8 @@ int32_t start_firebird(int32_t s, char *ip, int32_t port, unsigned char options,
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
 
-  dpb_length = (short) (1 + strlen(login) + 2 + strlen(pass) + 2);
-  if ((dpb = (char *) malloc(dpb_length)) == NULL) {
+  dpb_length = (short)(1 + strlen(login) + 2 + strlen(pass) + 2);
+  if ((dpb = (char *)malloc(dpb_length)) == NULL) {
     hydra_report(stderr, "[ERROR] Can't allocate memory\n");
     return 1;
   }
@@ -86,7 +84,7 @@ int32_t start_firebird(int32_t s, char *ip, int32_t port, unsigned char options,
   return 1;
 }
 
-void service_firebird(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+void service_firebird(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_FIREBIRD, mysslport = PORT_FIREBIRD_SSL;
 
@@ -95,9 +93,8 @@ void service_firebird(char *ip, int32_t sp, unsigned char options, char *miscptr
     return;
 
   while (1) {
-
     switch (run) {
-    case 1:                    /* connect and service init function */
+    case 1: /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       if ((options & OPTION_SSL) == 0) {
@@ -112,7 +109,8 @@ void service_firebird(char *ip, int32_t sp, unsigned char options, char *miscptr
         port = mysslport;
       }
       if (sock < 0) {
-        if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t) getpid());
+        if (quiet != 1)
+          fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
         hydra_child_exit(1);
       }
 
@@ -122,7 +120,7 @@ void service_firebird(char *ip, int32_t sp, unsigned char options, char *miscptr
     case 2:
 
       /*
-       *      Here we start the password cracking process  
+       *      Here we start the password cracking process
        */
 
       next_run = start_firebird(sock, ip, port, options, miscptr, fp);
@@ -145,13 +143,13 @@ void service_firebird(char *ip, int32_t sp, unsigned char options, char *miscptr
 
 #endif
 
-int32_t service_firebird_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE * fp, int32_t port, char *hostname) {
+int32_t service_firebird_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
   //
   // fill if needed.
-  // 
+  //
   // return codes:
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here
@@ -159,6 +157,8 @@ int32_t service_firebird_init(char *ip, int32_t sp, unsigned char options, char 
   return 0;
 }
 
-void usage_firebird(const char* service) {
-  printf("Module firebird is optionally taking the database path to attack,\n" "default is \"C:\\Program Files\\Firebird\\Firebird_1_5\\security.fdb\"\n\n");
+void usage_firebird(const char *service) {
+  printf("Module firebird is optionally taking the database path to attack,\n"
+         "default is \"C:\\Program "
+         "Files\\Firebird\\Firebird_1_5\\security.fdb\"\n\n");
 }
