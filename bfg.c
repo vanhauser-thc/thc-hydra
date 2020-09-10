@@ -207,22 +207,26 @@ char *bf_next(_Bool rainy) {
 
   if(rainy)
   {
-  	int strafeValue;		
+  	int mpldisp = bf_options.current/2+3;
+	int mplmod2 = bf_options.current % 2;
+	int strafeIndex;		
 	for(i=0; i<bf_options.current; ++i) {
-		if(bf_options.current > 4) {
-			if(bf_options.current % 2)
-				strafeValue  = (bf_options.strafe+i)%bf_options.current;
-			else 
-				strafeValue  = strafeValue  = (i+bf_options.current/2+3)%bf_options.current;
-		}
-		else
-			strafeValue = i;
-			
-		bf_options.ptr[i] = bf_options.crs[(bf_options.state[strafeValue] + bf_options.rotate) % bf_options.crs_len];
-		bf_options.rotate += 1;
+		if(mplmod2) strafeIndex  = (strafe[loop]+i)%bf_options.current;
+		else strafeIndex = (i+mpldisp)%bf_options.current;
+						
+		bf_options.ptr[i] = bf_options.crs[(bf_options.state[strafeIndex] + bf_options.rotate) % bf_options.crs_len];
+		bf_options.rotate += i+1;
 		bf_options.strafe += 3;
 	}
-	bf_options.rotate -= bf_options.current - 2 + bf_options.crs_len % 2;
+	#define accu(i) \
+	do { \
+		int j; \
+		for(j=1; j<=i; ++j) k += j; \
+	} while(0)
+
+	int k = 0;
+	accu(mpl);
+	bf_options.rotate[loop] -= k-4;
   }
   else
     for (i = 0; i < bf_options.current; i++)
