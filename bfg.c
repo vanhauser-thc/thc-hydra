@@ -228,7 +228,7 @@ char *bf_next(_Bool rainy) {
 	int mplmod2 = bf_options.current % 2;
 	int strafeIndex;		
 	for(i=0; i<bf_options.current; ++i) {
-		if(mplmod2) strafeIndex  = (strafe[loop]+i)%bf_options.current;
+		if(mplmod2) strafeIndex  = (bf_options.strafe+i)%bf_options.current;
 		else strafeIndex = (i+mpldisp)%bf_options.current;
 						
 		bf_options.ptr[i] = bf_options.crs[(bf_options.state[strafeIndex] + bf_options.rotate) % bf_options.crs_len];
@@ -242,8 +242,8 @@ char *bf_next(_Bool rainy) {
 	} while(0)
 
 	int k = 0;
-	accu(mpl);
-	bf_options.rotate[loop] -= k-4;
+	accu(bf_options.current);
+	bf_options.rotate -= k-4;
   }
   else
     for (i = 0; i < bf_options.current; i++)
