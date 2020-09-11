@@ -224,16 +224,19 @@ char *bf_next(_Bool rainy) {
 
   if(rainy)
   {
-  	int mpldisp = bf_options.current/2+3;
-	int mplmod2 = bf_options.current % 2;
-	int strafeIndex;		
-	for(i=0; i<bf_options.current; ++i) {
-		if(mplmod2) strafeIndex  = (bf_options.strafe+i)%bf_options.current;
-		else strafeIndex = (i+mpldisp)%bf_options.current;
-						
-		bf_options.ptr[i] = bf_options.crs[(bf_options.state[strafeIndex] + bf_options.rotate) % bf_options.crs_len];
-		bf_options.rotate += i+1;
-		bf_options.strafe += 3;
+  	//only strafe the index above length 3
+  	if(bf_options.current > 3) {
+		for(i=0; i<bf_options.current; ++i) {
+			bf_options.ptr[i] = bf_options.crs[(bf_options.state[(bf_options.strafe[loop]/(bf_options.current/4)+i) % bf_options.current] + bf_options.rotate) % bf_options.crs_len];
+			bf_options.rotate += (i+1)%(bf_options.current/2+1);
+			bf_options.strafe += 2 * (2-bf_options.current%2);
+		}
+	}
+	else {
+		for(i=0; i<bf_options.current; ++i) {
+			bf_options.ptr[i] = bf_options.crs[(bf_options.state[i] + bf_options.rotate) % bf_options.crs_len];
+			bf_options.rotate += (i+1)%(bf_options.current/2+1);;
+		}
 	}
 	#define accu(i) \
 	do { \
@@ -243,7 +246,7 @@ char *bf_next(_Bool rainy) {
 
 	int k = 0;
 	accu(bf_options.current);
-	bf_options.rotate -= k-4;
+	bf_options.rotate -= k;
   }
   else
     for (i = 0; i < bf_options.current; i++)
