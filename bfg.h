@@ -43,6 +43,10 @@ typedef struct {
   char *crs;                        /* internal representation of charset */
   char *ptr;                        /* ptr to the last generated password */
   uint32_t disable_symbols;
+<<<<<<< HEAD
+=======
+  uint64_t rotate;
+>>>>>>> c65e3a2 (update efficient rain option)
 } bf_option;
 
 extern bf_option bf_options;
