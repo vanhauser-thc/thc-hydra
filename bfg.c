@@ -60,7 +60,6 @@ static int32_t add_single_char(char ch, char flags, int32_t *crs_len) {
 //
 int32_t bf_init(char *arg) {
   bf_options.rotate = 0;
-  bf_options.strafe = 0;
 
   int32_t i = 0;
   int32_t crs_len = 0;
@@ -224,34 +223,16 @@ char *bf_next(_Bool rainy) {
 
   if(rainy)
   {
-  	//only strafe the index above length 3
-  	if(bf_options.current > 3) {
-		for(i=0; i<bf_options.current; ++i) {
-			bf_options.ptr[i] = bf_options.crs[(bf_options.state[(bf_options.strafe[loop]/(bf_options.current/4)+i) % bf_options.current] + bf_options.rotate) % bf_options.crs_len];
-			bf_options.rotate += (i+1)%(bf_options.current/2+1);
-			bf_options.strafe += 2 * (2-bf_options.current%2);
-		}
+  	//the first character cannot be taken into account
+  	bf_options.ptr[0] = bf_options.crs[bf_options.state[0]];
+  	for(i=1; i<bf_options.current; ++i) {
+		bf_options.ptr[i] = bf_options.crs[(bf_options.state[i] + bf_options.rotate) % bf_options.crs_len];
+		bf_options.rotate += i+3;
 	}
-	else {
-		for(i=0; i<bf_options.current; ++i) {
-			bf_options.ptr[i] = bf_options.crs[(bf_options.state[i] + bf_options.rotate) % bf_options.crs_len];
-			bf_options.rotate += (i+1)%(bf_options.current/2+1);;
-		}
-	}
-	#define accu(i) \
-	do { \
-		int j; \
-		for(j=1; j<=i; ++j) k += j; \
-	} while(0)
-
-	int k = 0;
-	accu(bf_options.current);
-	bf_options.rotate -= k;
+	//we don't subtract the same depending on wether the length is odd or even
+    for(i=1+bf_options.current%2; i<=bf_options.current; ++i)
+        bf_options.rotate -= i+1;
   }
-  else
-    for (i = 0; i < bf_options.current; i++)
-	  bf_options.ptr[i] = bf_options.crs[bf_options.state[i]];
-
   bf_options.ptr[bf_options.current] = 0;
 
   if (debug) {
@@ -261,11 +242,16 @@ char *bf_next(_Bool rainy) {
     printf(", x: %s\n", bf_options.ptr);
   }
 
+  //we revert the ordering of the bruteforce to fix the first static character
+  if(rainy)
+  while (pos >= 0 && (++bf_options.state[bf_options.current-1-pos]) >= bf_options.crs_len) {
+    bf_options.state[bf_options.current-1-pos] = 0;
+    pos--;
+  }
+  else
   while (pos >= 0 && (++bf_options.state[pos]) >= bf_options.crs_len) {
     bf_options.state[pos] = 0;
     pos--;
-    bf_options.strafe = 0;
-    bf_options.rotate = 0;
   }
 
   if (pos < 0) {
