@@ -221,12 +221,6 @@ char *bf_next() {
   }
 
   //we revert the ordering of the bruteforce to fix the first static character
-  if(rainy)
-  while (pos >= 0 && (++bf_options.state[bf_options.current-1-pos]) >= bf_options.crs_len) {
-    bf_options.state[bf_options.current-1-pos] = 0;
-    pos--;
-  }
-  else
   while (pos >= 0 && (++bf_options.state[pos]) >= bf_options.crs_len) {
     bf_options.state[pos] = 0;
     pos--;
