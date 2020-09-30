@@ -230,7 +230,7 @@ char *bf_next(_Bool rainy) {
 		bf_options.rotate += i+3;
 	}
 	//we don't subtract the same depending on wether the length is odd or even
-    for(i=1+bf_options.current%2; i<=bf_options.current; ++i)
+    for(i=1+bf_options.current%2; i<bf_options.current+bf_options.current%2; ++i)
         bf_options.rotate -= i+1;
   }
   bf_options.ptr[bf_options.current] = 0;
