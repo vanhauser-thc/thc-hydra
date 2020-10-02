@@ -576,6 +576,8 @@ char *html_encode(char *string) {
     ret = hydra_strrep(ret, "#", "%23");
   if (index(ret, '=') != NULL)
     ret = hydra_strrep(ret, "=", "%3D");
+  if (index(ret, '+') != NULL)
+    ret = hydra_strrep(ret, "+", "%2B");
 
   return ret;
 }
