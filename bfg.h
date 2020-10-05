@@ -46,7 +46,11 @@ typedef struct {
 <<<<<<< HEAD
 =======
   uint64_t rotate;
+<<<<<<< HEAD
 >>>>>>> c65e3a2 (update efficient rain option)
+=======
+  uint64_t strafe;
+>>>>>>> fc82b52 (working algo after a change)
 } bf_option;
 
 extern bf_option bf_options;
