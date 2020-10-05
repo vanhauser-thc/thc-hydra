@@ -215,7 +215,7 @@ char *bf_next(_Bool rainy) {
 
   if(rainy)
   {
-    if(bf_options.current > 2) {
+    if(bf_options.current > 3) {
       if(bf_options.current % 2) {
         bf_options.ptr[0] = bf_options.crs[bf_options.state[0]];
         bf_options.ptr[1] = bf_options.crs[bf_options.state[1]];
@@ -226,17 +226,20 @@ char *bf_next(_Bool rainy) {
 		  bf_options.rotate ++;
 	    }
 	  }
-	}
-	else {
-	  if(bf_options.current % 2) {
-        bf_options.ptr[0] = bf_options.crs[bf_options.state[0]];
-        bf_options.ptr[1] = bf_options.crs[bf_options.state[1]];
-        for(i=2; i<bf_options.current; ++i) {
-		  bf_options.ptr[i] = bf_options.crs[(bf_options.state[(i+bf_options.strafe)%(bf_options.current-2)+2] + bf_options.rotate) % bf_options.crs_len];
-		  bf_options.rotate ++;
+	  else {
+	    if(bf_options.current % 2) {
+          bf_options.ptr[0] = bf_options.crs[bf_options.state[0]];
+          bf_options.ptr[1] = bf_options.crs[bf_options.state[1]];
+          for(i=2; i<bf_options.current; ++i) {
+		    bf_options.ptr[i] = bf_options.crs[(bf_options.state[(i+bf_options.strafe)%(bf_options.current-2)+2] + bf_options.rotate) % bf_options.crs_len];
+		    bf_options.rotate ++;
+	      }
 	    }
-	  }
+      }
     }
+    else
+      for(i=0; i<bf_options.current; ++i) {
+	    bf_options.ptr[i] = bf_options.crs[bf_options.state[i]] 
   }//we don't subtract the same depending on wether the length is odd or even
   bf_options.strafe++;
   bf_options.ptr[bf_options.current] = 0;
