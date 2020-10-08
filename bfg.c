@@ -174,8 +174,8 @@ int32_t bf_init(char *arg) {
 	
   bf_options.crs_len = crs_len;
   bf_options.current = bf_options.from;
-  bf_options.strafe = 0;
-  bf_options.rotate = 0;
+  bf_options.rain = 0;
+  bf_options.gcounter = 0;
 
   memset((char *) bf_options.state, 0, sizeof(bf_options.state));
   
@@ -215,33 +215,18 @@ char *bf_next(_Bool rainy) {
 
   if(rainy)
   {
-    if(bf_options.current > 3) {
-      if(bf_options.current % 2) {
-        bf_options.ptr[0] = bf_options.crs[bf_options.state[0]];
-        bf_options.ptr[1] = bf_options.crs[bf_options.state[1]];
-        bf_options.ptr[2] = bf_options.crs[bf_options.state[2]];
-          	
-        for(i=3; i<bf_options.current; ++i) {
-		  bf_options.ptr[i] = bf_options.crs[(bf_options.state[(i+bf_options.strafe)%(bf_options.current-3)+3] + bf_options.rotate) % bf_options.crs_len];
-		  bf_options.rotate ++;
-	    }
-	  }
-	  else {
-	    if(bf_options.current % 2) {
-          bf_options.ptr[0] = bf_options.crs[bf_options.state[0]];
-          bf_options.ptr[1] = bf_options.crs[bf_options.state[1]];
-          for(i=2; i<bf_options.current; ++i) {
-		    bf_options.ptr[i] = bf_options.crs[(bf_options.state[(i+bf_options.strafe)%(bf_options.current-2)+2] + bf_options.rotate) % bf_options.crs_len];
-		    bf_options.rotate ++;
-	      }
-	    }
-      }
+    bf_options.ptr[0] = bf_options.crs[bf_options.state[0]];
+    for(i=2; i<bf_options.current; ++i) {
+	  bf_options.ptr[i] = bf_options.crs[(bf_options.state[i] + bf_options.rain) % bf_options.crs_len];
+	  bf_options.rain /= 2;
     }
-    else
-      for(i=0; i<bf_options.current; ++i) {
-	    bf_options.ptr[i] = bf_options.crs[bf_options.state[i]] 
-  }//we don't subtract the same depending on wether the length is odd or even
-  bf_options.strafe++;
+    bf_options.rain = bf_options.gcounter + 1;
+    bf_options.gcounter++;
+  }
+  else
+    for(i=0; i<bf_options.current; ++i)
+	  bf_options.ptr[i] = bf_options.crs[bf_options.state[i]]; 
+  //we don't subtract the same depending on wether the length is odd or even
   bf_options.ptr[bf_options.current] = 0;
 
   if (debug) {
@@ -265,8 +250,7 @@ char *bf_next(_Bool rainy) {
 
   if (pos < 0) {
     bf_options.current++;
-    bf_options.strafe = 0;
-    bf_options.rotate = 0;
+    bf_options.rain = 0;
     memset((char *)bf_options.state, 0, sizeof(bf_options.state));
   }
 

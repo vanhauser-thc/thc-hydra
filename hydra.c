@@ -505,7 +505,7 @@ void help(int32_t ext) {
                "  -x MIN:MAX:CHARSET  password bruteforce generation, type "
                "\"-x -h\" to get help\n"
                "  -y        disable use of symbols in bruteforce, see above\n"
-               "  -r		 rainy mode for password generation (-x)\n"
+               "  -r        use a non-random shuffling method for option -x\n"
 #endif
                "  -e nsr    try \"n\" null password, \"s\" login as pass "
                "and/or \"r\" reversed login\n"
@@ -592,7 +592,8 @@ void help_bfg() {
          "others,\n"
          "             just add their real representation.\n"
          "  -y         disable the use of the above letters as placeholders\n"
-         "  -r         use a method to delinearize the bruteforce.\n\n"
+         "  -r         use a shuffling method called 'rain' to try to break\n"
+         "             the linearity of the bruteforce\n"
          "Examples:\n"
          "   -x 3:5:a  generate passwords from length 3 to 5 with all "
          "lowercase letters\n"
