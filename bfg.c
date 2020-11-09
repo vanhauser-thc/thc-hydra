@@ -215,13 +215,13 @@ char *bf_next(_Bool rainy) {
 
   if(rainy)
   {
-    bf_options.ptr[0] = bf_options.crs[bf_options.state[0]];
-    for(i=2; i<bf_options.current; ++i) {
-	  bf_options.ptr[i] = bf_options.crs[(bf_options.state[i] + bf_options.rain) % bf_options.crs_len];
-	  bf_options.rain -= bf_options.rain / bf_options.crs_len;
-    }
-    bf_options.gcounter++;
     bf_options.rain = bf_options.gcounter;
+    bf_options.ptr[0] = bf_options.crs[bf_options.state[0]];
+    for(i=1; i<bf_options.current; ++i) {
+	  bf_options.ptr[i] = bf_options.crs[(bf_options.state[i] + bf_options.rain) % bf_options.crs_len];
+	  bf_options.rain -= bf_options.gcounter / (bf_options.current - i);
+    }
+    bf_options.gcounter+=1+bf_options.crs_len%2;
   }
   else
     for(i=0; i<bf_options.current; ++i)
