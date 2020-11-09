@@ -237,10 +237,12 @@ char *bf_next(_Bool rainy) {
   }
 
   //we revert the ordering of the bruteforce to fix the first static character
-  if(rainy)
-  while (pos >= 0 && (++bf_options.state[bf_options.current-1-pos]) >= bf_options.crs_len) {
-    bf_options.state[bf_options.current-1-pos] = 0;
-    pos--;
+  if(rainy) {
+      pos = 0;
+      while (pos < bf_options.current && (++bf_options.state[pos]) >= bf_options.crs_len) {
+        bf_options.state[pos] = 0;
+        pos++;
+      }
   }
   else
   while (pos >= 0 && (++bf_options.state[pos]) >= bf_options.crs_len) {
@@ -248,7 +250,7 @@ char *bf_next(_Bool rainy) {
     pos--;
   }
 
-  if (pos < 0) {
+  if (pos < 0 || pos >= bf_options.current) {
     bf_options.current++;
     bf_options.rain = 0;
     memset((char *)bf_options.state, 0, sizeof(bf_options.state));
