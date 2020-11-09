@@ -226,7 +226,7 @@ char *bf_next() {
     pos--;
   }
 
-  if (pos < 0) {
+  if (pos < 0 || pos >= bf_options.current) {
     bf_options.current++;
     memset((char *)bf_options.state, 0, sizeof(bf_options.state));
   }
