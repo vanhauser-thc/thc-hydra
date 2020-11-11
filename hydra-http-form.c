@@ -78,7 +78,7 @@ int32_t auth_flag = 0;
 
 char cookie[4096] = "", cmiscptr[1024];
 
-int32_t webport, freemischttpform = 0;
+int32_t webport;
 char bufferurl[6096 + 24], cookieurl[6096 + 24] = "", userheader[6096 + 24] = "", *url, *variables, *optional1;
 
 #define MAX_REDIRECT 8
@@ -1133,9 +1133,6 @@ void service_http_form(char *ip, int32_t sp, unsigned char options, char *miscpt
   while (1) {
     if (run == 2) {
       if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0) {
-        if (freemischttpform)
-          free(miscptr);
-        freemischttpform = 0;
         hydra_child_exit(1);
       }
     }
@@ -1157,9 +1154,6 @@ void service_http_form(char *ip, int32_t sp, unsigned char options, char *miscpt
       }
       if (sock < 0) {
         hydra_report(stderr, "[ERROR] Child with pid %d terminating, cannot connect\n", (int32_t)getpid());
-        if (freemischttpform)
-          free(miscptr);
-        freemischttpform = 0;
         hydra_child_exit(1);
       }
       next_run = 2;
@@ -1171,30 +1165,19 @@ void service_http_form(char *ip, int32_t sp, unsigned char options, char *miscpt
     case 3: /* clean exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
-      if (freemischttpform)
-        free(miscptr);
-      freemischttpform = 0;
       hydra_child_exit(0);
       break;
     case 4: /* silent error exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
-      if (freemischttpform)
-        free(miscptr);
-      freemischttpform = 0;
       hydra_child_exit(1);
       break;
     default:
-      if (freemischttpform)
-        free(miscptr);
-      freemischttpform = 0;
       hydra_report(stderr, "[ERROR] Caught unknown return code, exiting!\n");
       hydra_child_exit(0);
     }
     run = next_run;
   }
-  if (freemischttpform)
-    free(miscptr);
 }
 
 void service_http_get_form(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
@@ -1240,35 +1223,21 @@ int32_t service_http_form_init(char *ip, int32_t sp, unsigned char options, char
 ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
   ptr_header_node ptr_head = NULL;
   char *ptr, *ptr2, *proxy_string;
+#ifdef AF_INET6
+  unsigned char addr6 [sizeof(struct in6_addr)];
+#endif
 
   if (use_proxy > 0 && proxy_count > 0)
     selected_proxy = random() % proxy_count;
 
-  if (webtarget != NULL && (webtarget = strstr(miscptr, "://")) != NULL) {
-    webtarget += strlen("://");
-    if ((ptr2 = index(webtarget, ':')) != NULL) { /* step over port if present */
-      *ptr2 = 0;
-      ptr2++;
-      ptr = ptr2;
-      if (*ptr == '/' || (ptr = index(ptr2, '/')) != NULL)
-        miscptr = ptr;
-      else
-        miscptr = slash; /* to make things easier to user */
-    } else if ((ptr2 = index(webtarget, '/')) != NULL) {
-      if (freemischttpform == 0) {
-        if ((miscptr = malloc(strlen(ptr2) + 1)) != NULL) {
-          freemischttpform = 1;
-          strcpy(miscptr, ptr2);
-          *ptr2 = 0;
-        }
-      }
-    } else
-      webtarget = NULL;
+  if (webtarget) {
+    free(webtarget);
+    webtarget = NULL;
   }
 
-  if (cmdlinetarget != NULL && webtarget == NULL)
+  if (cmdlinetarget != NULL)
     webtarget = cmdlinetarget;
-  else if (webtarget == NULL && cmdlinetarget == NULL)
+  else
     webtarget = hydra_address2string(ip);
   if (port != 0)
     webport = port;
@@ -1276,6 +1245,29 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     webport = PORT_HTTP;
   else
     webport = PORT_HTTP_SSL;
+
+  /* normalise the webtarget for ipv6/port number */
+  ptr = malloc(strlen(webtarget) + 1 /* null */ + 6 /* :65535  */
+#ifdef AF_INET6
+               + 2 /* [] */
+#endif
+              );
+#ifdef AF_INET6
+  /* let libc decide if target is an ipv6 address */
+  if (inet_pton(AF_INET6, webtarget, addr6)) {
+    ptr2 = ptr + sprintf(ptr, "[%s]", webtarget);
+  } else {
+#endif
+    ptr2 = ptr + sprintf(ptr, "%s", webtarget);
+#ifdef AF_INET6
+  }
+#endif
+  if (options & OPTION_SSL && webport != PORT_HTTP_SSL ||
+      !(options & OPTION_SSL) && webport != PORT_HTTP) {
+    sprintf(ptr2, ":%d", webport);
+  }
+  webtarget = ptr;
+  ptr = ptr2 = NULL;
 
   sprintf(bufferurl, "%.6096s", miscptr);
   url = bufferurl;
@@ -1411,6 +1403,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
       normal_request = stringify_headers(&ptr_head);
     }
   }
+
   return ptr_head;
 }
 
