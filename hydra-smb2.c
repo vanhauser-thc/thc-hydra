@@ -126,8 +126,13 @@ bool smb2_run_test(creds_t *cr, const char *server, uint16_t port) {
 
   */
   switch (errno) {
+  case ENOENT:
+    // Noticed this when connecting to older samba servers on linux
+    // where any credentials are accepted.
+    hydra_report(stderr, "[WARNING] %s might accept any credential\n", server);
   case EINVAL: // 22
-    // probably password ok
+    // probably password ok, nominal case when connecting to a windows
+    // smb server with good credentials.
     smbc_free_context(ctx, 1);
     return true;
     break;
@@ -147,6 +152,9 @@ bool smb2_run_test(creds_t *cr, const char *server, uint16_t port) {
   case ECONNREFUSED:
     // there are probably more codes that could be added here to
     // indicate connection errors.
+    hydra_report(stderr,
+                 "[ERROR] Error %s (%d) while connecting to %s\n",
+                 strerror(errno), errno, server);
     smbc_free_context(ctx, 1);
     EXIT_CONNECTION_ERROR;
     break;
@@ -202,6 +210,11 @@ int32_t service_smb2_init(char *ip, int32_t sp, unsigned char options, char *mis
       continue;
     }
     if (CMP(tkn_workgroup, miscptr)) {
+      if (workgroup != default_workgroup) {
+        // miscptr has already been processed, goto end
+        miscptr += strlen(miscptr) + 1;
+        continue;
+      }
       miscptr += sizeof(tkn_workgroup) - 1;
       char *p = strchr(miscptr, '}');
       if (p == NULL) {
@@ -217,6 +230,11 @@ int32_t service_smb2_init(char *ip, int32_t sp, unsigned char options, char *mis
       continue;
     }
     if (CMP(tkn_netbios, miscptr)) {
+      if (netbios_name != NULL) {
+        // miscptr has already been processed, goto end
+        miscptr += strlen(miscptr) + 1;
+        continue;
+      }
       miscptr += sizeof(tkn_netbios) - 1;
       char *p = strchr(miscptr, '}');
       if (p == NULL) {
