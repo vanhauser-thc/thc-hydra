@@ -1039,7 +1039,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
       }
 
       if (strrchr(url, ':') == NULL && port != 80) {
-        sprintf(str2, "%s:%d", str2, port);
+        sprintf(str2, "%.2040s:%d", str2, port);
       }
 
       if (verbose)
