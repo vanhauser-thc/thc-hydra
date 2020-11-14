@@ -400,6 +400,10 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
    * Beware of the backslashes (\)!
    */
   while (*miscptr != 0) {
+    if (strlen(miscptr) < 3 || miscptr[1] != '=') {
+      hydra_report(stderr, "[ERROR] optional parameters must have the format X=value: %s\n", miscptr);
+      return 0;
+    }
     switch (miscptr[0]) {
     case 'a': // fall through
     case 'A': // only for http, not http-form!
@@ -504,7 +508,9 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
       // Error: abort execution
       hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (H).\n");
       return 0;
-      // no default
+    default:
+      hydra_report(stderr, "[ERROR] no valid optional parameter type given: %c\n", miscptr[0]);
+      return 0;
     }
   }
   return 1;
@@ -576,6 +582,8 @@ char *html_encode(char *string) {
     ret = hydra_strrep(ret, "#", "%23");
   if (index(ret, '=') != NULL)
     ret = hydra_strrep(ret, "=", "%3D");
+  if (index(ret, '+') != NULL)
+    ret = hydra_strrep(ret, "+", "%2B");
 
   return ret;
 }
@@ -1197,7 +1205,7 @@ void service_http_get_form(char *ip, int32_t sp, unsigned char options, char *mi
     service_http_form(ip, sp, options, miscptr, fp, port, hostname, "GET", &ptr_head, &ptr_cookie);
   else {
     hydra_report(stderr, "[ERROR] Could not launch head. Error while initializing.\n");
-    hydra_child_exit(1);
+    hydra_child_exit(2);
   }
 }
 
@@ -1209,7 +1217,7 @@ void service_http_post_form(char *ip, int32_t sp, unsigned char options, char *m
     service_http_form(ip, sp, options, miscptr, fp, port, hostname, "POST", &ptr_head, &ptr_cookie);
   else {
     hydra_report(stderr, "[ERROR] Could not launch head. Error while initializing.\n");
-    hydra_child_exit(1);
+    hydra_child_exit(2);
   }
 }
 
@@ -1223,6 +1231,8 @@ int32_t service_http_form_init(char *ip, int32_t sp, unsigned char options, char
   // return codes:
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here
+
+  if (initialize(ip, options, miscptr) == NULL) return 1;
 
   return 0;
 }
@@ -1281,22 +1291,17 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     ptr++;
   if (*ptr != 0)
     *ptr++ = 0;
-  
-  if ((ptr2 = rindex(ptr, ':')) != NULL) {
-    cond = ptr2 + 1;
-    *ptr2 = 0;
+
+  cond = ptr;
+
+  if ((ptr2 = index(ptr, ':')) != NULL) {
+    *ptr2++ = 0;
+    if (*ptr2)
+      optional1 = ptr2;
+    else
+      optional1 = NULL;
   } else
-    cond = ptr;
-  /*
-    while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
-      ptr++;
-    if (*ptr != 0)
-      *ptr++ = 0;
-  */
-  if (ptr == cond)
     optional1 = NULL;
-  else
-    optional1 = ptr;
 
   if (strstr(url, "\\:") != NULL) {
     if ((ptr = malloc(strlen(url))) != NULL) {
@@ -1332,7 +1337,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
   sprintf(cookieurl, "%.1000s", url);
 
   // conditions now have to contain F or S to set the fail or success condition
-  if (*cond != 0 && (strpos(cond, "F=") == 0)) {
+  if (strpos(cond, "F=") == 0) {
     success_cond = 0;
     cond += 2;
   } else if (*cond != 0 && (strpos(cond, "S=") == 0)) {
