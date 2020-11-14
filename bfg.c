@@ -200,15 +200,16 @@ uint64_t bf_get_pcount() {
 }
 
 char *bf_next() {
-  int32_t i, pos = bf_options.current - 1;
 
-  if (bf_options.current > bf_options.to)
-    return NULL; // we are done
 
-  if ((bf_options.ptr = malloc(BF_CHARSMAX)) == NULL) {
-    fprintf(stderr, "Error: Can not allocate memory for -x data!\n");
-    return NULL;
-  }
+int accu(int x) {
+    int a = 0, b;
+    for(b=1; b<x; ++b)
+        a+=b;
+    return a;
+}
+
+char *bf_next(_Bool rainy) {
   for (i = 0; i < bf_options.current; i++)
     bf_options.ptr[i] = bf_options.crs[bf_options.state[i]];
   bf_options.ptr[bf_options.current] = 0;
