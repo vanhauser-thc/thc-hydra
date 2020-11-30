@@ -610,10 +610,6 @@ void help_bfg() {
 
 void module_usage() {
   int32_t i;
-  if (!hydra_options.service) {
-    printf("The Module %s does not need or support optional parameters\n", hydra_options.service);
-    exit(0);
-  }
 
   printf("\nHelp for module "
          "%s:\n================================================================"
