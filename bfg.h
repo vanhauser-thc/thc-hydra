@@ -43,7 +43,8 @@ typedef struct {
   char *crs;                        /* internal representation of charset */
   char *ptr;                        /* ptr to the last generated password */
   uint32_t disable_symbols;
-  uint64_t rain; /* accumulator for the rain */
+  uint64_t rain;
+  uint64_t gcounter;
 } bf_option;
 
 extern bf_option bf_options;

@@ -1283,6 +1283,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     ptr++;
   if (*ptr != 0)
     *ptr++ = 0;
+
   cond = ptr;
 
   if ((ptr2 = index(ptr, ':')) != NULL) {
@@ -1341,7 +1342,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
 
   // printf("miscptr: %s, url=%s, variables=%s, ptr=%s, optional1: %s, cond: %s
   // (%d)\n", miscptr, url, variables, ptr, optional1, cond, success_cond);
-
+  
   /*
    * Parse the user-supplied options.
    * Beware of the backslashes (\)!

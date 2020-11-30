@@ -505,7 +505,7 @@ void help(int32_t ext) {
                "  -x MIN:MAX:CHARSET  password bruteforce generation, type "
                "\"-x -h\" to get help\n"
                "  -y        disable use of symbols in bruteforce, see above\n"
-               "  -r		 rainy mode for password generation (-x)\n"
+               "  -r        use a non-random shuffling method for option -x\n"
 #endif
                "  -e nsr    try \"n\" null password, \"s\" login as pass "
                "and/or \"r\" reversed login\n"
@@ -591,7 +591,9 @@ void help_bfg() {
          "             'A' for uppercase letters, '1' for numbers, and for all "
          "others,\n"
          "             just add their real representation.\n"
-         "  -y         disable the use of the above letters as placeholders\n\n"
+         "  -y         disable the use of the above letters as placeholders\n"
+         "  -r         use a shuffling method called 'rain' to try to break\n"
+         "             the linearity of the bruteforce\n"
          "Examples:\n"
          "   -x 3:5:a  generate passwords from length 3 to 5 with all "
          "lowercase letters\n"
@@ -3183,7 +3185,6 @@ int main(int argc, char *argv[]) {
         printf("[INFO] Using HTTP Proxy: %s\n", getenv("HYDRA_PROXY_HTTP"));
         use_proxy = 1;
       }
-
       if (strstr(hydra_options.miscptr, "\\:") != NULL) {
         fprintf(stderr, "[INFORMATION] escape sequence \\: detected in module "
                         "option, no parameter verification is performed.\n");
@@ -3212,6 +3213,7 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "[ERROR] Wrong syntax of optional argument: %s\n", optional1);
             exit(-1);
           }
+
           switch (optional1[0]) {
           case 'C': // fall through
           case 'c':
@@ -3429,6 +3431,7 @@ int main(int argc, char *argv[]) {
 #ifdef HAVE_MATH_H
             if (bf_init(bf_options.arg))
               exit(-1); // error description is handled by bf_init
+
             pass_ptr = bf_next(hydra_options.rainy);
             hydra_brains.countpass += bf_get_pcount();
             hydra_brains.sizepass += BF_BUFLEN;

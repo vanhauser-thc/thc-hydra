@@ -206,7 +206,7 @@ typedef struct {
   char *server;
   char *service;
   char bfg;
-  _Bool rainy;
+  int8_t rainy;
   int32_t skip_redo;
 } hydra_option;
 
