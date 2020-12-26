@@ -10,7 +10,7 @@ char *http_buf = NULL;
 static char end_condition[END_CONDITION_MAX_LEN];
 int end_condition_type = -1;
 
-int32_t webport, freemischttp = 0;
+int32_t webport;
 int32_t http_auth_mechanism = AUTH_UNASSIGNED;
 
 int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp, char *type, ptr_header_node ptr_head) {
@@ -313,38 +313,44 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
   int32_t myport = PORT_HTTP, mysslport = PORT_HTTP_SSL;
   char *ptr, *ptr2;
   ptr_header_node ptr_head = NULL;
+#ifdef AF_INET6
+  unsigned char addr6 [sizeof(struct in6_addr)];
+#endif
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     return;
 
-  if ((webtarget = strstr(miscptr, "://")) != NULL) {
-    webtarget += strlen("://");
-    if ((ptr2 = index(webtarget, ':')) != NULL) { /* step over port if present */
-      *ptr2 = 0;
-      ptr2++;
-      ptr = ptr2;
-      if (*ptr == '/' || (ptr = index(ptr2, '/')) != NULL)
-        miscptr = ptr;
-      else
-        miscptr = slash; /* to make things easier to user */
-    } else if ((ptr2 = index(webtarget, '/')) != NULL) {
-      miscptr = malloc(strlen(ptr2) + 1);
-      freemischttp = 1;
-      strcpy(miscptr, ptr2);
-      *ptr2 = 0;
-    } else
-      webtarget = hostname;
-  } else if (strlen(miscptr) == 0)
+  if (strlen(miscptr) == 0)
     miscptr = strdup("/");
-  if (webtarget == NULL)
-    webtarget = hostname;
   if (port != 0)
     webport = port;
   else if ((options & OPTION_SSL) == 0)
     webport = myport;
   else
     webport = mysslport;
+
+  /* normalise the webtarget for ipv6/port number */
+  webtarget = malloc(strlen(hostname) + 1 /* null */ + 6 /* :65535  */
+#ifdef AF_INET6
+               + 2 /* [] */
+#endif
+              );
+#ifdef AF_INET6
+  /* let libc decide if target is an ipv6 address */
+  if (inet_pton(AF_INET6, hostname, addr6)) {
+    ptr = webtarget + sprintf(webtarget, "[%s]", hostname);
+  } else {
+#endif
+    ptr = webtarget + sprintf(webtarget, "%s", hostname);
+#ifdef AF_INET6
+  }
+#endif
+  if (options & OPTION_SSL && webport != PORT_HTTP_SSL ||
+      !(options & OPTION_SSL) && webport != PORT_HTTP) {
+    sprintf(ptr, ":%d", webport);
+  }
+  ptr = NULL;
 
   /* Advance to options string */
   ptr = miscptr;
@@ -380,8 +386,6 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
         port = mysslport;
       }
       if (sock < 0) {
-        if (freemischttp)
-          free(miscptr);
         if (quiet != 1)
           fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
         hydra_child_exit(1);
@@ -395,13 +399,9 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
     case 3: /* clean exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
-      if (freemischttp)
-        free(miscptr);
       hydra_child_exit(0);
       return;
     default:
-      if (freemischttp)
-        free(miscptr);
       fprintf(stderr, "[ERROR] Caught unknown return code, exiting!\n");
       hydra_child_exit(0);
     }
