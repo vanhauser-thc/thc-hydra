@@ -6,6 +6,8 @@ Release 9.2-dev
 * fix for http-post-form optional parameters
 * enable gcc 10 support for xhydra too :)
 * msys support
+* fix for rain mode (-r)
+* IPv6 support for Host: header for http based modules
 
 
 Release 9.1-dev

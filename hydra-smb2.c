@@ -13,7 +13,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  *
  *
- * Copyright (C) 2020 Karim Kanso, all rights reserved.
+ * Copyright (C) 2021 Karim Kanso, all rights reserved.
  *  kaz 'dot' kanso 'at' g mail 'dot' com
  */
 
