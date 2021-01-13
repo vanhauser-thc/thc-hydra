@@ -213,18 +213,7 @@ char *bf_next(_Bool rainy) {
     return NULL;
   }
 
-  if(rainy)
-  {
-    bf_options.rain = bf_options.gcounter;
-    bf_options.ptr[0] = bf_options.crs[bf_options.state[0]];
-    for(i=1; i<bf_options.current; ++i) {
-	  bf_options.ptr[i] = bf_options.crs[(bf_options.state[i] + bf_options.rain) % bf_options.crs_len];
-	  bf_options.rain -= bf_options.rain / bf_options.crs_len;
-    }
-    bf_options.gcounter++;
-  }
-  else
-    for(i=0; i<bf_options.current; ++i)
+  for(i=0; i<bf_options.current; ++i)
 	  bf_options.ptr[i] = bf_options.crs[bf_options.state[i]]; 
   //we don't subtract the same depending on wether the length is odd or even
   bf_options.ptr[bf_options.current] = 0;
@@ -238,11 +227,13 @@ char *bf_next(_Bool rainy) {
 
   //we revert the ordering of the bruteforce to fix the first static character
   if(rainy) {
-      pos = 0;
-      while (pos < bf_options.current && (++bf_options.state[pos]) >= bf_options.crs_len) {
-        bf_options.state[pos] = 0;
-        pos++;
-      }
+    int pos;
+    for(pos = 0; pos < bf_options.current; ++pos) {
+    	if(++bf_options.state[pos] >= bf_options.crs_len) {
+        	bf_options.state[pos] = 0;
+        	break;
+      	}
+     }
   }
   else
   while (pos >= 0 && (++bf_options.state[pos]) >= bf_options.crs_len) {
@@ -252,7 +243,6 @@ char *bf_next(_Bool rainy) {
 
   if (pos < 0 || pos >= bf_options.current) {
     bf_options.current++;
-    bf_options.rain = 0;
     memset((char *)bf_options.state, 0, sizeof(bf_options.state));
   }
 
