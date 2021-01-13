@@ -175,8 +175,6 @@ int32_t bf_init(char *arg) {
   bf_options.crs_len = crs_len;
   bf_options.current = bf_options.from;
   bf_options.rain = 0;
-  bf_options.gcounter = 0;
-
   memset((char *) bf_options.state, 0, sizeof(bf_options.state));
   
   if (debug)
