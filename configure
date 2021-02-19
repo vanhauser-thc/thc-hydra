@@ -17,10 +17,12 @@ if [ "$1" = "-h" -o "$1" = "--help" ]; then
   echo "  --help                     this here"
   echo
   echo If the CC environment variable is set, this is used as the compiler for the configure tests. The default is \"gcc\" otherwise.
+  echo You can also set PKG_CONFIG if necessary.
   exit 0
 fi
 
 test -z "$CC" && CC=gcc
+test -z "$PKG_CONFIG" && PKG_CONFIG=pkg-config
 
 FHS=""
 SIXFOUR=""
@@ -1305,9 +1307,9 @@ echo "Checking for smbclient (libsmbclient/libsmbclient.h) ..."
 
 if [ "X" = "X$XHYDRA_SUPPORT" ]; then
     echo "Checking for GUI req's (pkg-config/gtk+-2.0) ..."
-  XHYDRA_SUPPORT=`pkg-config --help > /dev/null 2>&1 || echo disabled`
+  XHYDRA_SUPPORT=`$PKG_CONFIG --help > /dev/null 2>&1 || echo disabled`
   if [ "X" = "X$XHYDRA_SUPPORT" ]; then
-     XHYDRA_SUPPORT=`pkg-config --modversion gtk+-2.0 2> /dev/null`
+     XHYDRA_SUPPORT=`$PKG_CONFIG --modversion gtk+-2.0 2> /dev/null`
   else
      XHYDRA_SUPPORT=""
   fi
