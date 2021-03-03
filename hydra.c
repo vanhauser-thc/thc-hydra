@@ -245,6 +245,26 @@ extern int32_t old_ssl;
 
 void hydra_kill_head(int32_t head_no, int32_t killit, int32_t fail);
 
+char *read_line_stdin() {
+  char *word = malloc(64);
+  memset(word, 0, sizeof(word));
+  char c;
+  int i = 0;
+  
+  do {
+    c = getc(stdin);
+    if(feof(stdin))
+    {
+      fprintf(stderr, "eof\n");
+      break;
+    }
+    strncpy(&word[i], &c, 1);
+    i++;
+  } while(c != '\n');
+  word[i-1] = 0;
+  return word;
+}
+
 // some enum definitions
 typedef enum { HEAD_DISABLED = -1, HEAD_UNUSED = 0, HEAD_ACTIVE = 1 } head_state_t;
 
@@ -911,7 +931,7 @@ void hydra_restore_read() {
     hydra_targets[j]->pass_ptr = pass_ptr + atoi(out);
     sck = fgets(out, sizeof(out), f); // target login_ptr, ignord
     sck = fgets(out, sizeof(out), f);
-    if (hydra_options.bfg) {
+    if (hydra_options.bfg && !hydra_options.read_stdin) {
       if (out[0] != 0 && out[strlen(out) - 1] == '\n')
         out[strlen(out) - 1] = 0;
       hydra_targets[j]->pass_ptr = malloc(strlen(out) + 1);
@@ -1777,13 +1797,18 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
                 hydra_targets[target_no]->pass_ptr = pass_ptr;
               } else {
                 if (check_flag(hydra_options.mode, MODE_PASSWORD_BRUTE)) {
+                  if(hydra_options.read_stdin) {
+                    hydra_targets[target_no]->pass_ptr = read_line_stdin();
+                  }
+                  else {                  
 #ifndef HAVE_MATH_H
-                  sleep(1);
-#else
-                  hydra_targets[target_no]->pass_ptr = bf_next(hydra_options.rainy);
-                  if (debug)
-                    printf("[DEBUG] bfg new password for next child: %s\n", hydra_targets[target_no]->pass_ptr);
+                    sleep(1);
+#else 
+                    hydra_targets[target_no]->pass_ptr = bf_next();
+                    if (debug)
+                      printf("[DEBUG] bfg new password for next child: %s\n", hydra_targets[target_no]->pass_ptr);
 #endif
+                  }
                 } else { // -p -P mode
                   hydra_targets[target_no]->pass_ptr++;
                   while (*hydra_targets[target_no]->pass_ptr != 0)
@@ -2280,8 +2305,10 @@ int main(int argc, char *argv[]) {
   hydra_brains.ofp = stdout;
   hydra_brains.targets = 1;
   hydra_options.waittime = waittime = WAITTIME;
-  hydra_options.rainy = 0;
+  hydra_options.stdin_lines = 0;
+  hydra_options.read_stdin = 0;
   bf_options.disable_symbols = 0;
+
 
   // command line processing
   if (argc > 1 && strncmp(argv[1], "-h", 2) == 0)
@@ -2314,9 +2341,6 @@ int main(int argc, char *argv[]) {
     case 'R':
       hydra_options.restore = 1;
       hydra_restore_read();
-      break;
-    case 'r':
-      hydra_options.rainy = 1;
       break;
     case 'I':
       ignore_restore = 1; // this is not to be saved in hydra_options!
@@ -2452,14 +2476,24 @@ int main(int argc, char *argv[]) {
       modusage = 1;
       break;
     case 'x':
+      if(optarg[0] == '-') {
+        hydra_options.read_stdin = 1;
+        hydra_options.stdin_lines = atoi(&optarg[1]);
+        if(hydra_options.stdin_lines < 1) {
+          fprintf(stderr, "Using stdin, you must give the numbers of lines to treat: -x -250");
+          exit(-1);
+        }
+      }
+      else {
 #ifndef HAVE_MATH_H
-      fprintf(stderr, "[ERROR] -x option is not available as math.h was not "
+        fprintf(stderr, "[ERROR] -x option is not available as math.h was not "
                       "found at compile time\n");
-      exit(-1);
+        exit(-1);
 #else
-      if (strcmp(optarg, "-h") == 0)
-        help_bfg();
-      bf_options.arg = optarg;
+        if (strcmp(optarg, "-h") == 0)
+          help_bfg();
+        bf_options.arg = optarg;
+      }
       hydra_options.bfg = 1;
       hydra_options.mode = hydra_options.mode | MODE_PASSWORD_BRUTE;
       hydra_options.loop_mode = 1;
@@ -3429,16 +3463,22 @@ int main(int argc, char *argv[]) {
           hydra_brains.sizepass = strlen(hydra_options.pass) + 1;
         } else {
           if (hydra_options.bfg) {
+            if(hydra_options.read_stdin) {
+              pass_ptr = read_line_stdin();
+              hydra_brains.countpass = hydra_options.stdin_lines;
+            }
+            else {
 #ifdef HAVE_MATH_H
-            if (bf_init(bf_options.arg))
-              exit(-1); // error description is handled by bf_init
+              if (bf_init(bf_options.arg))
+                exit(-1); // error description is handled by bf_init
 
-            pass_ptr = bf_next(hydra_options.rainy);
-            hydra_brains.countpass += bf_get_pcount();
-            hydra_brains.sizepass += BF_BUFLEN;
+              pass_ptr = bf_next();
+              hydra_brains.countpass += bf_get_pcount();
+              hydra_brains.sizepass += BF_BUFLEN;
 #else
-            sleep(1);
+              sleep(1);
 #endif
+            }
           } else {
             pass_ptr = hydra_options.pass = empty_login;
             hydra_brains.countpass = 0;
@@ -3703,7 +3743,10 @@ int main(int argc, char *argv[]) {
 
 #ifdef HAVE_MATH_H
     if (hydra_options.bfg) {
-      math2 = hydra_brains.countlogin * bf_get_pcount();
+      if(hydra_options.read_stdin)
+        math2 = hydra_brains.countlogin * hydra_options.stdin_lines;
+      else
+        math2 = hydra_brains.countlogin * bf_get_pcount();
     }
 #endif
 
