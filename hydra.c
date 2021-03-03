@@ -1774,10 +1774,10 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
               if (snpdont) {
                 hydra_targets[target_no]->pass_ptr = pass_ptr;
               } else {
-                if (check_flag(hydra_options.mode, MODE_PASSWORD_BRUTE)) {
+                if (check_flag(hydra_options.mode, MODE_PASSWORD_BRUTE)) {                  
 #ifndef HAVE_MATH_H
                   sleep(1);
-#else
+#else 
                   hydra_targets[target_no]->pass_ptr = bf_next();
                   if (debug)
                     printf("[DEBUG] bfg new password for next child: %s\n", hydra_targets[target_no]->pass_ptr);
@@ -2280,6 +2280,7 @@ int main(int argc, char *argv[]) {
   hydra_options.waittime = waittime = WAITTIME;
   bf_options.disable_symbols = 0;
 
+
   // command line processing
   if (argc > 1 && strncmp(argv[1], "-h", 2) == 0)
     help(1);
@@ -2447,13 +2448,14 @@ int main(int argc, char *argv[]) {
       break;
     case 'x':
 #ifndef HAVE_MATH_H
-      fprintf(stderr, "[ERROR] -x option is not available as math.h was not "
+        fprintf(stderr, "[ERROR] -x option is not available as math.h was not "
                       "found at compile time\n");
-      exit(-1);
+        exit(-1);
 #else
-      if (strcmp(optarg, "-h") == 0)
-        help_bfg();
-      bf_options.arg = optarg;
+        if (strcmp(optarg, "-h") == 0)
+          help_bfg();
+        bf_options.arg = optarg;
+      }
       hydra_options.bfg = 1;
       hydra_options.mode = hydra_options.mode | MODE_PASSWORD_BRUTE;
       hydra_options.loop_mode = 1;
@@ -3442,6 +3444,7 @@ int main(int argc, char *argv[]) {
 #else
             sleep(1);
 #endif
+            }
           } else {
             pass_ptr = hydra_options.pass = empty_login;
             hydra_brains.countpass = 0;
