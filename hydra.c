@@ -503,8 +503,11 @@ void help(int32_t ext) {
                     "[-C FILE]] [-e nsr]"
                     " [-o FILE] [-t TASKS] [-M FILE [-T TASKS]] [-w TIME] [-W "
                     "TIME] [-f] [-s PORT]"
-#ifdef HAVE_MATH_H
-                    " [-x MIN:MAX:CHARSET]"
+#ifndef HAVE_MATH_H
+                    " [-x +LINES]"
+#else
+                    " [ [-x MIN:MAX:CHARSET] | [-x +LINES] ]"
+
 #endif
                     " [-c TIME] [-ISOuvVd46] [-m MODULE_OPT] "
                     //"[server service [OPT]]|"
@@ -522,11 +525,14 @@ void help(int32_t ext) {
                     "  -p PASS  or -P FILE  try password PASS, or load several "
                     "passwords from FILE\n");
   PRINT_EXTEND(ext,
-#ifdef HAVE_MATH_H
-               "  -x MIN:MAX:CHARSET  password bruteforce generation, type "
+#ifndef HAVE_MATH_H
+               "  -x +LINES  read from stdin\n"
+               "\"-x -h\" to get help\n"
+#else
+               "  -x +LINES read from stdin\n"
+               "  -x MIN:MAX:CHARSET  password bruteforce generation, type\n"
                "\"-x -h\" to get help\n"
                "  -y        disable use of symbols in bruteforce, see above\n"
-               "  -r        use a non-random shuffling method for option -x\n"
 #endif
                "  -e nsr    try \"n\" null password, \"s\" login as pass "
                "and/or \"r\" reversed login\n"
@@ -612,9 +618,10 @@ void help_bfg() {
          "             'A' for uppercase letters, '1' for numbers, and for all "
          "others,\n"
          "             just add their real representation.\n"
-         "  -y         disable the use of the above letters as placeholders\n"
-         "  -r         use a shuffling method called 'rain' to try to break\n"
-         "             the linearity of the bruteforce\n"
+         "  -y         disable the use of the above letters as placeholders\n\n"
+         "  -x +LINES\n\n"
+         "     LINES    is the numer of lines read from standard input,\n"
+         "              you must not set it above what stdin is going to produce.\n" 
          "Examples:\n"
          "   -x 3:5:a  generate passwords from length 3 to 5 with all "
          "lowercase letters\n"
@@ -626,6 +633,7 @@ void help_bfg() {
          "only of /%%,.-\n"
          "   -x 3:5:aA1 -y generate passwords from length 3 to 5 with a, A and "
          "1 only\n"
+         "   -x +250   test with the first 250 lines of standard input\n"
          "\nThe bruteforce mode was made by Jan Dlabal, "
          "http://houbysoft.com/bfg/\n");
   exit(-1);
@@ -2476,11 +2484,11 @@ int main(int argc, char *argv[]) {
       modusage = 1;
       break;
     case 'x':
-      if(optarg[0] == '-') {
+      if(optarg[0] == '+') {
         hydra_options.read_stdin = 1;
         hydra_options.stdin_lines = atoi(&optarg[1]);
         if(hydra_options.stdin_lines < 1) {
-          fprintf(stderr, "Using stdin, you must give the numbers of lines to treat: -x -250");
+          fprintf(stderr, "Using stdin, you must give the numbers of lines to treat: -x +250\n");
           exit(-1);
         }
       }
