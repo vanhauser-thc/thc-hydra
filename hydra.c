@@ -254,10 +254,7 @@ char *read_line_stdin() {
   do {
     c = getc(stdin);
     if(feof(stdin))
-    {
-      fprintf(stderr, "eof\n");
-      break;
-    }
+      return NULL;
     strncpy(&word[i], &c, 1);
     i++;
   } while(c != '\n');
@@ -620,8 +617,7 @@ void help_bfg() {
          "             just add their real representation.\n"
          "  -y         disable the use of the above letters as placeholders\n\n"
          "  -x +LINES\n\n"
-         "     LINES    is the numer of lines read from standard input,\n"
-         "              you must not set it above what stdin is going to produce.\n" 
+         "     LINES    is the numer of lines read from standard input\n\n"
          "Examples:\n"
          "   -x 3:5:a  generate passwords from length 3 to 5 with all "
          "lowercase letters\n"
