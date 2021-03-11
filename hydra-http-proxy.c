@@ -51,15 +51,10 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
     }
 
     if (debug) {
-      hydra_report(stderr,
-                   "S:%-.*s\n",
-                   (int)(strchr(http_proxy_buf, '\r') - http_proxy_buf),
-                   http_proxy_buf);
+      hydra_report(stderr, "S:%-.*s\n", (int)(strchr(http_proxy_buf, '\r') - http_proxy_buf), http_proxy_buf);
     }
 
-    while (http_proxy_buf != NULL &&
-           (auth_hdr = hydra_strcasestr(http_proxy_buf,
-                                        "Proxy-Authenticate:")) == NULL) {
+    while (http_proxy_buf != NULL && (auth_hdr = hydra_strcasestr(http_proxy_buf, "Proxy-Authenticate:")) == NULL) {
       free(http_proxy_buf);
       http_proxy_buf = hydra_receive_line(s);
     }
@@ -71,10 +66,7 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
     }
 
     if (debug) {
-      hydra_report(stderr,
-                   "S:%-.*s\n",
-                   (int)(strchr(auth_hdr, '\r') - auth_hdr),
-                   auth_hdr);
+      hydra_report(stderr, "S:%-.*s\n", (int)(strchr(auth_hdr, '\r') - auth_hdr), auth_hdr);
     }
 
     // after the first query we should have been disconnected from web server
@@ -115,10 +107,7 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
     }
 
     if (debug) {
-      hydra_report(stderr,
-                   "S:%-.*s\n",
-                   (int)(strchr(http_proxy_buf, '\r') - http_proxy_buf),
-                   http_proxy_buf);
+      hydra_report(stderr, "S:%-.*s\n", (int)(strchr(http_proxy_buf, '\r') - http_proxy_buf), http_proxy_buf);
     }
   } else {
     if (http_proxy_auth_mechanism == AUTH_NTLM || hydra_strcasestr(auth_hdr, "Proxy-Authenticate: NTLM") != NULL) {
@@ -220,10 +209,7 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
         }
 
         if (debug && http_proxy_buf != NULL) {
-          hydra_report(stderr,
-                       "S:%-.*s\n",
-                       (int)(strchr(http_proxy_buf, '\r') - http_proxy_buf),
-                       http_proxy_buf);
+          hydra_report(stderr, "S:%-.*s\n", (int)(strchr(http_proxy_buf, '\r') - http_proxy_buf), http_proxy_buf);
         }
 
         if (http_proxy_buf == NULL)
@@ -234,10 +220,7 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
       {
         if (auth_hdr != NULL) {
           //          buf[strlen(http_proxy_buf) - 1] = '\0';
-          hydra_report(stderr,
-                       "Unsupported Auth type:\n%-.*s\n",
-                       (int)(strchr(http_proxy_buf, '\r') - auth_hdr),
-                       auth_hdr);
+          hydra_report(stderr, "Unsupported Auth type:\n%-.*s\n", (int)(strchr(http_proxy_buf, '\r') - auth_hdr), auth_hdr);
           auth_hdr = NULL;
           free(http_proxy_buf);
           http_proxy_buf = NULL;
@@ -250,11 +233,7 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
   }
 
   ptr = ((char *)index(http_proxy_buf, ' ')) + 1;
-  if (*ptr == '2' ||
-      (*ptr == '3' && *(ptr + 2) == '1') ||
-      (*ptr == '3' && *(ptr + 2) == '2') ||
-      (*ptr == '4' && *(ptr + 2) == '4')
-    ) {
+  if (*ptr == '2' || (*ptr == '3' && *(ptr + 2) == '1') || (*ptr == '3' && *(ptr + 2) == '2') || (*ptr == '4' && *(ptr + 2) == '4')) {
     hydra_report_found_host(port, ip, "http-proxy", fp);
     hydra_completed_pair_found();
     free(http_proxy_buf);

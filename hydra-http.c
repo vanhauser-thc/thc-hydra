@@ -314,7 +314,7 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
   char *ptr, *ptr2;
   ptr_header_node ptr_head = NULL;
 #ifdef AF_INET6
-  unsigned char addr6 [sizeof(struct in6_addr)];
+  unsigned char addr6[sizeof(struct in6_addr)];
 #endif
 
   hydra_register_socket(sp);
@@ -333,9 +333,9 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
   /* normalise the webtarget for ipv6/port number */
   webtarget = malloc(strlen(hostname) + 1 /* null */ + 6 /* :65535  */
 #ifdef AF_INET6
-               + 2 /* [] */
+                     + 2 /* [] */
 #endif
-              );
+  );
 #ifdef AF_INET6
   /* let libc decide if target is an ipv6 address */
   if (inet_pton(AF_INET6, hostname, addr6)) {
@@ -346,8 +346,7 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
 #ifdef AF_INET6
   }
 #endif
-  if (options & OPTION_SSL && webport != PORT_HTTP_SSL ||
-      !(options & OPTION_SSL) && webport != PORT_HTTP) {
+  if (options & OPTION_SSL && webport != PORT_HTTP_SSL || !(options & OPTION_SSL) && webport != PORT_HTTP) {
     sprintf(ptr, ":%d", webport);
   }
   ptr = NULL;

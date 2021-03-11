@@ -1215,7 +1215,8 @@ int32_t service_http_form_init(char *ip, int32_t sp, unsigned char options, char
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here
 
-  if (initialize(ip, options, miscptr) == NULL) return 1;
+  if (initialize(ip, options, miscptr) == NULL)
+    return 1;
 
   return 0;
 }
@@ -1224,7 +1225,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
   ptr_header_node ptr_head = NULL;
   char *ptr, *ptr2, *proxy_string;
 #ifdef AF_INET6
-  unsigned char addr6 [sizeof(struct in6_addr)];
+  unsigned char addr6[sizeof(struct in6_addr)];
 #endif
 
   if (use_proxy > 0 && proxy_count > 0)
@@ -1251,7 +1252,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
 #ifdef AF_INET6
                + 2 /* [] */
 #endif
-              );
+  );
 #ifdef AF_INET6
   /* let libc decide if target is an ipv6 address */
   if (inet_pton(AF_INET6, webtarget, addr6)) {
@@ -1262,8 +1263,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
 #ifdef AF_INET6
   }
 #endif
-  if (options & OPTION_SSL && webport != PORT_HTTP_SSL ||
-      !(options & OPTION_SSL) && webport != PORT_HTTP) {
+  if (options & OPTION_SSL && webport != PORT_HTTP_SSL || !(options & OPTION_SSL) && webport != PORT_HTTP) {
     sprintf(ptr2, ":%d", webport);
   }
   webtarget = ptr;
@@ -1342,7 +1342,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
 
   // printf("miscptr: %s, url=%s, variables=%s, ptr=%s, optional1: %s, cond: %s
   // (%d)\n", miscptr, url, variables, ptr, optional1, cond, success_cond);
-  
+
   /*
    * Parse the user-supplied options.
    * Beware of the backslashes (\)!

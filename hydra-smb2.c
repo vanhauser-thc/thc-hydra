@@ -152,9 +152,7 @@ bool smb2_run_test(creds_t *cr, const char *server, uint16_t port) {
   case ECONNREFUSED:
     // there are probably more codes that could be added here to
     // indicate connection errors.
-    hydra_report(stderr,
-                 "[ERROR] Error %s (%d) while connecting to %s\n",
-                 strerror(errno), errno, server);
+    hydra_report(stderr, "[ERROR] Error %s (%d) while connecting to %s\n", strerror(errno), errno, server);
     smbc_free_context(ctx, 1);
     EXIT_CONNECTION_ERROR;
     break;

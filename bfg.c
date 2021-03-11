@@ -62,7 +62,7 @@ int32_t bf_init(char *arg) {
   int32_t crs_len = 0;
   char flags = 0;
   char *tmp = strchr(arg, ':');
-	
+
   if (!tmp) {
     fprintf(stderr, "Error: Invalid option format for -x\n");
     return 1;
@@ -170,12 +170,12 @@ int32_t bf_init(char *arg) {
       }
     }
   }
-	
+
   bf_options.crs_len = crs_len;
   bf_options.current = bf_options.from;
 
-  memset((char *) bf_options.state, 0, sizeof(bf_options.state));
-  
+  memset((char *)bf_options.state, 0, sizeof(bf_options.state));
+
   if (debug)
     printf("[DEBUG] bfg INIT: from %u, to %u, len: %u, set: %s\n", bf_options.from, bf_options.to, bf_options.crs_len, bf_options.crs);
 
@@ -210,9 +210,9 @@ char *bf_next() {
     return NULL;
   }
 
-  for(i=0; i<bf_options.current; ++i)
-	  bf_options.ptr[i] = bf_options.crs[bf_options.state[i]]; 
-  //we don't subtract the same depending on wether the length is odd or even
+  for (i = 0; i < bf_options.current; ++i)
+    bf_options.ptr[i] = bf_options.crs[bf_options.state[i]];
+  // we don't subtract the same depending on wether the length is odd or even
   bf_options.ptr[bf_options.current] = 0;
 
   if (debug) {
@@ -222,7 +222,7 @@ char *bf_next() {
     printf(", x: %s\n", bf_options.ptr);
   }
 
-  //we revert the ordering of the bruteforce to fix the first static character
+  // we revert the ordering of the bruteforce to fix the first static character
   while (pos >= 0 && (++bf_options.state[pos]) >= bf_options.crs_len) {
     bf_options.state[pos] = 0;
     pos--;

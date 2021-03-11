@@ -18,8 +18,8 @@ void dummy_oracle() { printf("\n"); }
 #else
 
 #include <oci.h>
-#include <sys/types.h>
 #include <stdbool.h>
+#include <sys/types.h>
 
 extern char *HYDRA_EXIT;
 
