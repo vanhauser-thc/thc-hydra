@@ -59,6 +59,7 @@ static int32_t add_single_char(char ch, char flags, int32_t *crs_len) {
 // note that we check for -x .:.:ab but not for -x .:.:ba
 //
 int32_t bf_init(char *arg) {
+  bf_options.rain = 0;
   int32_t i = 0;
   int32_t crs_len = 0;
   char flags = 0;

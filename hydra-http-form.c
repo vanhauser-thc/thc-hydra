@@ -1283,17 +1283,8 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     ptr++;
   if (*ptr != 0)
     *ptr++ = 0;
-  cond = ptr;
 
-  if ((ptr2 = index(ptr, ':')) != NULL) {
-    *ptr2++ = 0;
-    if (*ptr2)
-      optional1 = ptr2;
-    else
-      optional1 = NULL;
-  } else
-    optional1 = NULL;
-
+  optional1 = ptr;
   if (strstr(url, "\\:") != NULL) {
     if ((ptr = malloc(strlen(url))) != NULL) {
       strcpy(ptr, hydra_strrep(url, "\\:", ":"));
@@ -1339,8 +1330,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     success_cond = 0;
   }
 
-  // printf("miscptr: %s, url=%s, variables=%s, ptr=%s, optional1: %s, cond: %s
-  // (%d)\n", miscptr, url, variables, ptr, optional1, cond, success_cond);
+  printf("miscptr: %s, url=%s, variables=%s, ptr=%s, optional1: %s, cond: %s (%d)\n", miscptr, url, variables, ptr, optional1, cond, success_cond);
 
   /*
    * Parse the user-supplied options.
