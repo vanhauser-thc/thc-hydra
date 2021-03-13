@@ -2446,14 +2446,14 @@ int main(int argc, char *argv[]) {
       break;
     case 'x':
 #ifndef HAVE_MATH_H
-        fprintf(stderr, "[ERROR] -x option is not available as math.h was not "
+      fprintf(stderr, "[ERROR] -x option is not available as math.h was not "
                       "found at compile time\n");
-        exit(-1);
+      exit(-1);
 #else
-        if (strcmp(optarg, "-h") == 0)
-          help_bfg();
-        bf_options.arg = optarg;
-      }
+      if (strcmp(optarg, "-h") == 0)
+        help_bfg();
+      bf_options.arg = optarg;
+      
       hydra_options.bfg = 1;
       hydra_options.mode = hydra_options.mode | MODE_PASSWORD_BRUTE;
       hydra_options.loop_mode = 1;
@@ -3208,13 +3208,8 @@ int main(int argc, char *argv[]) {
             fprintf(stderr, "[ERROR] Wrong syntax of optional argument: %s\n", optional1);
             exit(-1);
           }
-<<<<<<< HEAD
           switch (optional1[0]) {
           case 'C': // fall through
-=======
-          switch (optional1[0]){
-          case 'C':            // fall through
->>>>>>> 6dfd77a (fixed http-post)
           case 'c':
             if (optional1[1] != '=' || optional1[2] != '/') {
               fprintf(stderr,
@@ -3442,7 +3437,6 @@ int main(int argc, char *argv[]) {
 #else
             sleep(1);
 #endif
-            }
           } else {
             pass_ptr = hydra_options.pass = empty_login;
             hydra_brains.countpass = 0;
