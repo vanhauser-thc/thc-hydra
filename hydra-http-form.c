@@ -1284,10 +1284,22 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     *ptr++ = 0;
 
   cond = ptr;
+<<<<<<< HEAD
   while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
     ptr++;
   if (*ptr != 0)
     *ptr++ = 0;
+=======
+
+  if ((ptr2 = index(ptr, ':')) != NULL) {
+    *ptr2++ = 0;
+    if (*ptr2)
+      optional1 = ptr2;
+    else
+      optional1 = NULL;
+  } else
+    optional1 = NULL;
+>>>>>>> 6fc51db156b0f0dc533941bb24aa4f24f07f2124
 
   optional1 = ptr;
   if (strstr(url, "\\:") != NULL) {
@@ -1336,7 +1348,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
   }
   
   //fprintf(stderr, "miscptr: %s, url=%s, variables=%s, ptr=%s, optional1: %s, cond: %s (%d)\n", miscptr, url, variables, ptr, optional1, cond, success_cond);
-  
+ 
   /*
    * Parse the user-supplied options.
    * Beware of the backslashes (\)!

@@ -1,6 +1,8 @@
 
 /* code original by Jan Dlabal <dlabaljan@gmail.com>, partially rewritten by vh,
+<<<<<<< HEAD
  rainy tweaks by yvain douard*/
+ rainy tweaks by owein <yvain29@gmail.com>*/
 
 #include <ctype.h>
 #include <math.h>
