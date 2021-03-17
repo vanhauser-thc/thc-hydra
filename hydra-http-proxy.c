@@ -185,7 +185,7 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
         char *pbuffer, *result;
 
         http_proxy_auth_mechanism = AUTH_DIGESTMD5;
-        auth_hdr == NULL;
+        auth_hdr = NULL;
         pbuffer = hydra_strcasestr(http_proxy_buf, "Proxy-Authenticate: Digest ");
         strncpy(buffer, pbuffer + strlen("Proxy-Authenticate: Digest "), sizeof(buffer));
         buffer[sizeof(buffer) - 1] = '\0';
