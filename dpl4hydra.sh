@@ -64,7 +64,7 @@ refresh ()
   echo "done."
   echo
   
-  cat $INDEXSITE | grep td | awk -F"\"" '{ print $8 }' | grep http > $SUBSITES
+  cat $INDEXSITE | grep -i 'href=./passwd-' | sed 's/.*href=.\/passwd-/\/passwd-/' | sed 's/".*//' > $SUBSITES
   rm $INDEXSITE
   
   if [ -r $FULLFILE ]; then
@@ -74,14 +74,13 @@ refresh ()
   fi
     
   for SUBSITE in `cat $SUBSITES`; do
-    VENDOR=`echo $SUBSITE | awk -F"-" '{ print $3 }' | sed 's/.htm//'`
-    echo "Downloading default passwords for ${VENDOR}... " | tr -d "\n"
-    $FETCH $SUBSITE | grep -i tr | grep -i td | grep -i celltext | sed 's/<[^>]*>/,/g' | sed 's/,,*/,/g' | sed 's/^,//g' | tr -d "\r" >dpl4hydra_${VENDOR}.tmp || { echo "not found - skipping... " | tr -d "\n" ; }
-    
-    while read SYSTEM; do
-      echo "${VENDOR}," | tr -d "\n" >> $FULLFILE
-      echo "$SYSTEM" >> $FULLFILE
-    done < dpl4hydra_${VENDOR}.tmp
+    VENDOR=`echo $SUBSITE | sed 's/\.htm*//' | sed 's/.*-//'`
+    echo "Downloading default passwords for ${VENDOR} ... " | tr -d "\n"
+    $FETCH "${SITE}${SUBSITE}" | tr -d '\n\r' | sed 's/<tr/\n/gi' | sed 's/<\/tr/\n/gi' | \
+      grep -iw celltext | sed 's/.*celltext">/,/i' | sed 's/<\/td>/,/g' | sed 's/<[a-z =/":;-]*>//gi' | \
+      sed 's/[\t ]*,[\t ]*/,/g' | sed 's/&[a-z]*;//gi' | sed 's/(unknown)//gi' | sed 's/(none)//gi' | sed 's/,unknown,/,,/gi' | sed 's/,none,/,,/gi' > dpl4hydra_${VENDOR}.tmp
+
+    cat dpl4hydra_${VENDOR}.tmp | awk -F, '{print"'$VENDOR',"$2","$3","$4","$5","$6","$7","$8","$9}' >> $FULLFILE
     
     rm dpl4hydra_${VENDOR}.tmp
     echo "done."
@@ -163,7 +162,7 @@ LOCALFILE="$DPLPATH/dpl4hydra_local.csv"
 INDEXSITE="$DPLPATH/dpl4hydra_index.tmp"
 SUBSITES="$DPLPATH/dpl4hydra_subs.tmp"
 CLEANFILE="$DPLPATH/dpl4hydra_clean.tmp"
-SITE="http://open-sez.me/passwd.htm"
+SITE="http://open-sez.me"
 
 case $# in
 	0) usage

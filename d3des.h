@@ -1,3 +1,10 @@
+#ifdef __sun
+#include <sys/int_types.h>
+#elif defined(__FreeBSD__) || defined(__IBMCPP__) || defined(_AIX)
+#include <inttypes.h>
+#else
+#include <stdint.h>
+#endif
 
 /*
  * This is D3DES (V5.09) by Richard Outerbridge with the double and
@@ -20,10 +27,10 @@
  *	(GEnie : OUTER; CIS : [71755,204])
  */
 
-#define EN0	0               /* MODE == encrypt */
-#define DE1	1               /* MODE == decrypt */
+#define EN0 0 /* MODE == encrypt */
+#define DE1 1 /* MODE == decrypt */
 
-extern void deskey(unsigned char *, int);
+extern void deskey(unsigned char *, int32_t);
 
 /*		      hexkey[8]     MODE
  * Sets the internal key register according to the hexadecimal

@@ -8,19 +8,21 @@
 #include <config.h>
 #endif
 
-#include <gtk/gtk.h>
-#include <string.h>
+#include "callbacks.h"
 #include "interface.h"
 #include "support.h"
-#include "callbacks.h"
+#include <gtk/gtk.h>
+#include <string.h>
 
 char *hydra_path1 = "./hydra";
 char *hydra_path2 = "/usr/local/bin/hydra";
 char *hydra_path3 = "/usr/bin/hydra";
 
+GtkWidget *wndMain;
+char *HYDRA_BIN;
+guint message_id;
 
 int main(int argc, char *argv[]) {
-  extern GtkWidget *wndMain;
   int i;
   extern guint message_id;
   GtkWidget *output;
@@ -60,8 +62,7 @@ int main(int argc, char *argv[]) {
   wndMain = create_wndMain();
   gtk_widget_show(wndMain);
 
-
-  /* if we cant use the new cool file chooser, the save button gets disabled */
+  /* if we can't use the new cool file chooser, the save button gets disabled */
 #ifndef GTK_TYPE_FILE_CHOOSER
   GtkWidget *btnSave;
 
@@ -69,13 +70,12 @@ int main(int argc, char *argv[]) {
   gtk_widget_set_sensitive(btnSave, FALSE);
 #endif
 
-
   /* update the statusbar every now and then */
   g_timeout_add(600, update_statusbar, NULL);
 
   /* we want bold text in the output window */
   output = lookup_widget(GTK_WIDGET(wndMain), "txtOutput");
-  outputbuf = gtk_text_view_get_buffer((GtkTextView *) output);
+  outputbuf = gtk_text_view_get_buffer((GtkTextView *)output);
   gtk_text_buffer_create_tag(outputbuf, "bold", "weight", PANGO_WEIGHT_BOLD, NULL);
 
   /* he ho, lets go! */

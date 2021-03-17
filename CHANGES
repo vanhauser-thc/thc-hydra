@@ -1,14 +1,135 @@
 Changelog for hydra
 -------------------
 
-Release 8.2-pre
+
+Release 9.2
+* fix for http-post-form optional parameters
+* enable gcc 10 support for xhydra too :)
+* msys support
+* removed rain mode (-r) because of inefficiency
+* IPv6 support for Host: header for http based modules
+
+
+Release 9.1
+* rdb: support for libfreerdp3 (thanks to animetauren)
+* new module: smb2 which also supports smb3 (uses libsmbclient-dev) (thanks to Karim Kanso for the module!)
+* oracle: added success condition (thanks to kazkansouh), compile on Cygwin (thanks to maaaaz)
+* rtsp: fixed crash in MD5 auth
+* svn: updated to support past and new API
+* http: now supports F=/S= string matching conditions (thanks to poucz@github)
+* http-proxy: buffer fix, 404 success condition (thanks to kazkansouh)
+* mysql: changed not to use mysql db as a default. if the user has not access to this db auth fails ...
+* sasl: buffer fix (thanks to TenGbps)
+* fixed help for https modules (thanks to Jab2870)
+* added -K command line switch to disable redo attempts (good for mass scanning)
+* forgot to have the -m option in the hydra help output
+* gcc-10 support and various cleanups by Jeroen Roovers, thanks!
+* added .clang-format and formatted all code
+
+
+Release 9.0
+* rdp: Revamped rdp module to use FreeRDP library (thanks to loianhtuan@github for the patch!)
+* Added memcached module
+* Added mongodb module
+* http: http module now supports a= option to select http authentication type
+* JSON output does now truncate the file if exists.
+* Fixed svn module memory leaks
+* Fixed rtsp module potential buffer overflow
+* Fixed http module DIGEST-MD5 mode
+
+
+Release 8.9.1
+* Clarification for rdp error message
+* CIDR notation (hydra -l test -p test 192.168.0.0/24 ftp) was not detected, fixed
+
+
+Release 8.8
+* New web page: https://github.com/vanhauser-thc/thc-hydra
+* added PROBLEMS file with known issues
+* rdp: disabled the module as it does not support the current protocol. If you want to add it contact me
+* ldap: fixed a dumb strlen on a potential null pointer
+* http-get/http-post:
+   - now supports H=/h= parameters same as http-form (thanks to mathewmarcus@github for the patch)
+   - 403/404 errors are now always registered as failed attempts
+* mysql module: a non-default port was not working, fixed
+* added -w timeout support to ssh module
+* fixed various memory leaks in http-form module
+* corrected hydra return code to be 0 on success
+* added patch from debian maintainers which fixes spellings
+* fixed weird crash on x64 systems
+* many warning fixes by crondaemon
+
+
+Release 8.6
+* added radmin2 module by catatonic prime - great work!
+* smb module now checks if SMBv1 is supported by the server and if signing is required
+* http-form module now supports URLs up to 6000 bytes (thanks to petrock6@github for the patch)
+* Fix for SSL connections that failed with error:00000000:lib(0):func(0):reason(0) (thanks gaia@github for reporting)
+* Added new command line option:
+   -c TIME: seconds between login attempts (over all threads, so -t 1 is recommended)
+* Options put after -R (for loading a restore file) are now honored (and were disallowed before)
+* merged several patches by Diadlo@github to make the code easier readable. thanks for that!
+* merged a patch by Diadlo@github that moves the help output to the invididual module
+
+
+Release 8.5
+* New command line option:
+   -b : format option for -o output file (json only so far, happy for patches supporting others :) ) - thanks to veggiespam for the patch
+* ./configure now honors the CC enviroment variable if present
+* Fix for the restore file crash on some x64 platforms (finally! thanks to lukas227!)
+* Changed the format of the restore file to detect cross platform copies
+* Fixed a bug in the NCP module
+* Favor strrchr() over rindex()
+* Added refactoring patch by diadlo
+* Updated man page with missing command line options
+
+
+Release 8.4
+! Reports came in that the rdp module is not working reliable sometimes, most likely against new Windows versions. please test, report and if possible send a fix
+* Proxy support re-implemented:
+  - HYDRA_PROXY[_HTTP] environment can be a text file with up to 64 entries
+  - HYDRA_PROXY_AUTH was deprecated, set login/password in HTTP_PROXY[_HTTP]
+* New protocol: adam6500 - this one is work in progress, please test and report
+* New protocol: rpcap - thanks to Petar Kaleychev <petar.kaleychev@gmail.com>
+* New command line options:
+   -y : disables -x 1aA interpretation, thanks to crondaemon for the patch
+   -I : ignore an existing hydra.restore file (don't wait for 10 seconds)
+* hydra-svn: works now with the current libsvn version
+* hydra-ssh: initial check for password auth support now uses login supplied
+* Fixed dpl4hydra to be able to update from the web again
+* Fixed crash when -U was used without any service (thanks to thecarterb for reporting)
+* Updated default password lists
+* The protocols vnc, xmpp, telnet, imap, nntp and pcanywhere got accidentially long sleep commands due a patch in 8.2, fixed
+* Added special error message for clueless users :)
+
+
+Release 8.3
+* Support for upcoming OpenSSL 1.1 added. needs testing.
+* Fixed hydra redo bug (issue #113)
+* Updated xhydra for new hydra features and options
+* Some more command line error checking
+* Ensured unneeded sockets are closed
+
+Release 8.2
+* Added RTSP module, thanks to jjavi89 for supplying!
+* Added patch for ssh that fixes hydra stopping to connect, thanks to ShantonRU for the patch
 * Added new -O option to hydra to support SSL servers that do not suport TLS
 * Added xhydra gtk patche by Petar Kaleychev to support modules that do not use usernames
+* Added patch to redis for initial service checking by Petar Kaleychev - thanks a lot!
+* Added support in hydra-http for http-post (content length 0)
+* Fixed important bug in http-*://server/url command line processing
+* Added SSL SNI support
+* Fixed bug in HTTP Form redirection following - thanks for everyone who reported and especially to Hayden Young for setting up a test page for debugging
 * Better library finding in ./configure for SVN + support for Darwin Homebrew (and further enhanced)
 * Fixed http-form module crash that only occurs on *BSD/OSX systems. Thanks to zdk for reporting!
 * Fixed for SSL connection to support TLSv1.2 etc.
 * Support for different RSA keylengths, thanks to fann95 for the patch
 * Fixed a bug where the cisco-enable module was not working with the password-only logon mode
+* Fixed an out of memory bug in http-form
+* Fixed imap PLAIN method
+* Fixed -x option to bail if it would generate too many passwords (more than 4 billion)
+* Added warning if HYDRA_PROXY_CONNECT environment is detected, that is an outdated setting
+* Added --fhs switch to configure (for Linux distribution usage)
 * ... your patch?
 
 

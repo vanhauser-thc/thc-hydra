@@ -1,45 +1,54 @@
+#include <ctype.h>
+#include <stdint.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+#include <unistd.h>
 
-#define PROGRAM		"PW-Inspector"
-#define VERSION		"v0.2"
-#define EMAIL		"vh@thc.org"
-#define WEB		"http://www.thc.org"
+#define PROGRAM "PW-Inspector"
+#define VERSION "v0.2"
+#define EMAIL "vh@thc.org"
+#define WEB "https://github.com/vanhauser-thc/thc-hydra"
 
-#define MAXLENGTH	256
+#define MAXLENGTH 256
 
 char *prg;
 
 void help() {
   printf("%s %s (c) 2005 by van Hauser / THC %s [%s]\n\n", PROGRAM, VERSION, EMAIL, WEB);
-  printf("Syntax: %s [-i FILE] [-o FILE] [-m MINLEN] [-M MAXLEN] [-c MINSETS] -l -u -n -p -s\n\n", prg);
+  printf("Syntax: %s [-i FILE] [-o FILE] [-m MINLEN] [-M MAXLEN] [-c MINSETS] "
+         "-l -u -n -p -s\n\n",
+         prg);
   printf("Options:\n");
   printf("  -i FILE    file to read passwords from (default: stdin)\n");
   printf("  -o FILE    file to write valid passwords to (default: stdout)\n");
   printf("  -m MINLEN  minimum length of a valid password\n");
   printf("  -M MAXLEN  maximum length of a valid password\n");
-  printf("  -c MINSETS the minimum number of sets required (default: all given)\n");
+  printf("  -c MINSETS the minimum number of sets required (default: all "
+         "given)\n");
   printf("Sets:\n");
   printf("  -l         lowcase characters (a,b,c,d, etc.)\n");
   printf("  -u         upcase characters (A,B,C,D, etc.)\n");
   printf("  -n         numbers (1,2,3,4, etc.)\n");
-  printf("  -p         printable characters (which are not -l/-n/-p, e.g. $,!,/,(,*, etc.)\n");
-  printf("  -s         special characters - all others not withint the sets above\n");
+  printf("  -p         printable characters (which are not -l/-n/-p, e.g. "
+         "$,!,/,(,*, etc.)\n");
+  printf("  -s         special characters - all others not within the sets "
+         "above\n");
   printf("\n%s reads passwords in and prints those which meet the requirements.\n", PROGRAM);
-  printf("The return code is the number of valid passwords found, 0 if none was found.\n");
-  printf("Use for security: check passwords, if 0 is returned, reject password choice.\n");
-  printf("Use for hacking: trim your dictionary file to the pw requirements of the target.\n");
+  printf("The return code is the number of valid passwords found, 0 if none "
+         "was found.\n");
+  printf("Use for security: check passwords, if 0 is returned, reject password "
+         "choice.\n");
+  printf("Use for hacking: trim your dictionary file to the pw requirements of "
+         "the target.\n");
   printf("Usage only allowed for legal purposes.\n");
   exit(-1);
 }
 
 int main(int argc, char *argv[]) {
-  int i, j, k;
-  int sets = 0, countsets = 0, minlen = 0, maxlen = MAXLENGTH, count = 0;
-  int set_low = 0, set_up = 0, set_no = 0, set_print = 0, set_other = 0;
+  int32_t i, j, k;
+  int32_t sets = 0, countsets = 0, minlen = 0, maxlen = MAXLENGTH, count = 0;
+  int32_t set_low = 0, set_up = 0, set_no = 0, set_print = 0, set_other = 0;
   FILE *in = stdin, *out = stdout;
   char buf[MAXLENGTH + 1];
 
@@ -121,6 +130,8 @@ int main(int argc, char *argv[]) {
       continue;
     if (buf[strlen(buf) - 1] == '\n')
       buf[strlen(buf) - 1] = 0;
+    if (buf[strlen(buf) - 1] == '\r')
+      buf[strlen(buf) - 1] = 0;
     if (strlen(buf) >= minlen && strlen(buf) <= maxlen) {
       i = 0;
       if (countsets > 0) {
@@ -136,7 +147,7 @@ int main(int argc, char *argv[]) {
         if (set_print) {
           j = 0;
           for (k = 0; k < strlen(buf); k++)
-            if (isprint((int) buf[k]) != 0 && isalnum((int) buf[k]) == 0)
+            if (isprint((int32_t)buf[k]) != 0 && isalnum((int32_t)buf[k]) == 0)
               j = 1;
           if (j)
             i++;
@@ -144,7 +155,7 @@ int main(int argc, char *argv[]) {
         if (set_other) {
           j = 0;
           for (k = 0; k < strlen(buf); k++)
-            if (isprint((int) buf[k]) == 0 && isalnum((int) buf[k]) == 0)
+            if (isprint((int32_t)buf[k]) == 0 && isalnum((int32_t)buf[k]) == 0)
               j = 1;
           if (j)
             i++;
@@ -155,7 +166,8 @@ int main(int argc, char *argv[]) {
         count++;
       }
     }
-    /* fprintf(stderr, "[DEBUG] i: %d  minlen: %d  maxlen: %d  len: %d\n", i, minlen, maxlen, strlen(buf)); */
+    /* fprintf(stderr, "[DEBUG] i: %d  minlen: %d  maxlen: %d  len: %d\n", i,
+     * minlen, maxlen, strlen(buf)); */
   }
   fclose(in);
   fclose(out);

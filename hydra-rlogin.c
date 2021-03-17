@@ -8,16 +8,14 @@ client have to use port from 512 -> 1023 or server is denying the connection
 no memleaks found on 110425
 */
 
-
 #define TERM "vt100/9600"
 
 extern char *HYDRA_EXIT;
-char *buf;
 
-int start_rlogin(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_rlogin(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";
   char *login, *pass, buffer[300] = "", buffer2[100], *bptr = buffer2;
-  int ret;
+  int32_t ret;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -61,8 +59,7 @@ int start_rlogin(int s, char *ip, int port, unsigned char options, char *miscptr
     memset(buffer, 0, sizeof(buffer));
     ret = hydra_recv(s, buffer, sizeof(buffer));
     if (strcmp(buffer, "\r\n"))
-      ret = hydra_recv(s, buffer, sizeof(buffer) - 1);
-      if (ret >= 0)
+      if ((ret = hydra_recv(s, buffer, sizeof(buffer) - 1)) > 0)
         buffer[ret] = 0;
   }
   /* Authentication failure */
@@ -80,7 +77,8 @@ int start_rlogin(int s, char *ip, int port, unsigned char options, char *miscptr
       hydra_completed_pair();
     }
   } else {
-    /* if password is asked a second time, it means the pass we provided is wrong */
+    /* if password is asked a second time, it means the pass we provided is
+     * wrong */
     hydra_completed_pair();
   }
 
@@ -89,9 +87,9 @@ int start_rlogin(int s, char *ip, int port, unsigned char options, char *miscptr
   return 1;
 }
 
-void service_rlogin(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_RLOGIN, mysslport = PORT_RLOGIN_SSL;
+void service_rlogin(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_RLOGIN, mysslport = PORT_RLOGIN_SSL;
 
   hydra_register_socket(sp);
 
@@ -100,35 +98,35 @@ void service_rlogin(char *ip, int sp, unsigned char options, char *miscptr, FILE
   while (1) {
     next_run = 0;
     switch (run) {
-    case 1:                    /* connect and service init function */
-      {
-        /* 512 -> 1023 */
-        hydra_set_srcport(1023);
-        if (sock >= 0)
-          sock = hydra_disconnect(sock);
-//        usleep(275000);
-        if ((options & OPTION_SSL) == 0) {
-          if (port != 0)
-            myport = port;
-          sock = hydra_connect_tcp(ip, myport);
-          port = myport;
-        } else {
-          if (port != 0)
-            mysslport = port;
-          sock = hydra_connect_ssl(ip, mysslport);
-          port = mysslport;
-        }
-        if (sock < 0) {
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
-          hydra_child_exit(1);
-        }
-        next_run = 2;
-        break;
+    case 1: /* connect and service init function */
+    {
+      /* 512 -> 1023 */
+      hydra_set_srcport(1023);
+      if (sock >= 0)
+        sock = hydra_disconnect(sock);
+      //        usleepn(275);
+      if ((options & OPTION_SSL) == 0) {
+        if (port != 0)
+          myport = port;
+        sock = hydra_connect_tcp(ip, myport);
+        port = myport;
+      } else {
+        if (port != 0)
+          mysslport = port;
+        sock = hydra_connect_ssl(ip, mysslport, hostname);
+        port = mysslport;
       }
-    case 2:                    /* run the cracking function */
+      if (sock < 0) {
+        hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
+        hydra_child_exit(1);
+      }
+      next_run = 2;
+      break;
+    }
+    case 2: /* run the cracking function */
       next_run = start_rlogin(sock, ip, port, options, miscptr, fp);
       break;
-    case 3:                    /* clean exit */
+    case 3: /* clean exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       hydra_child_exit(0);
@@ -141,13 +139,13 @@ void service_rlogin(char *ip, int sp, unsigned char options, char *miscptr, FILE
   }
 }
 
-int service_rlogin_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int32_t service_rlogin_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
   //
   // fill if needed.
-  // 
+  //
   // return codes:
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here

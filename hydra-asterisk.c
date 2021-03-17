@@ -1,17 +1,16 @@
-//This plugin was written by david@
+// This plugin was written by david@
 //
-//This plugin is written for Asterisk Call Manager
-//which is running by default on TCP/5038
+// This plugin is written for Asterisk Call Manager
+// which is running by default on TCP/5038
 //
 
 #include "hydra-mod.h"
-
 
 extern char *HYDRA_EXIT;
 
 char *buf;
 
-int start_asterisk(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_asterisk(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "\"\"";
   char *login, *pass, buffer[1024];
 
@@ -41,7 +40,10 @@ int start_asterisk(int s, char *ip, int port, unsigned char options, char *miscp
     hydra_report(stderr, "[DEBUG] S: %s\n", buf);
 
   if (buf == NULL || (strstr(buf, "Response: ") == NULL)) {
-    hydra_report(stderr, "[ERROR] Asterisk Call Manager protocol error or service shutdown: %s\n", buf);
+    hydra_report(stderr,
+                 "[ERROR] Asterisk Call Manager protocol error or service "
+                 "shutdown: %s\n",
+                 buf);
     free(buf);
     return 4;
   }
@@ -62,19 +64,19 @@ int start_asterisk(int s, char *ip, int port, unsigned char options, char *miscp
   return 2;
 }
 
-void service_asterisk(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_ASTERISK, mysslport = PORT_ASTERISK_SSL;
+void service_asterisk(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_ASTERISK, mysslport = PORT_ASTERISK_SSL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     return;
   while (1) {
     switch (run) {
-    case 1:                    /* connect and service init function */
+    case 1: /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
-//      usleep(300000);
+      //      usleepn(300);
       if ((options & OPTION_SSL) == 0) {
         if (port != 0)
           myport = port;
@@ -83,37 +85,41 @@ void service_asterisk(char *ip, int sp, unsigned char options, char *miscptr, FI
       } else {
         if (port != 0)
           mysslport = port;
-        sock = hydra_connect_ssl(ip, mysslport);
+        sock = hydra_connect_ssl(ip, mysslport, hostname);
         port = mysslport;
       }
 
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
         hydra_child_exit(1);
       }
       buf = hydra_receive_line(sock);
-      //fprintf(stderr, "%s\n",buf);
-      //banner should look like:
-      //Asterisk Call Manager/1.1
+      // fprintf(stderr, "%s\n",buf);
+      // banner should look like:
+      // Asterisk Call Manager/1.1
 
       if (buf == NULL || strstr(buf, "Asterisk Call Manager/") == NULL) {
         /* check the first line */
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Not an Asterisk Call Manager protocol or service shutdown: %s\n", buf);
+          hydra_report(stderr,
+                       "[ERROR] Not an Asterisk Call Manager protocol or "
+                       "service shutdown: %s\n",
+                       buf);
         hydra_child_exit(2);
       }
       free(buf);
 
       next_run = 2;
       break;
-    case 2:                    /* run the cracking function */
+    case 2: /* run the cracking function */
       next_run = start_asterisk(sock, ip, port, options, miscptr, fp);
       break;
-    case 3:                    /* clean exit */
+    case 3: /* clean exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       hydra_child_exit(0);
+      break;
     default:
       hydra_report(stderr, "[ERROR] Caught unknown return code, exiting!\n");
       hydra_child_exit(2);
@@ -122,13 +128,13 @@ void service_asterisk(char *ip, int sp, unsigned char options, char *miscptr, FI
   }
 }
 
-int service_asterisk_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int32_t service_asterisk_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
   //
   // fill if needed.
-  // 
+  //
   // return codes:
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here

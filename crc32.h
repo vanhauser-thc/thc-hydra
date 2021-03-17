@@ -3,6 +3,8 @@
 
 #include <sys/types.h>
 
-unsigned int crc32(const void *buf, unsigned int size);
+#ifndef HAVE_ZLIB
+uint32_t crc32(const void *buf, uint32_t size);
+#endif
 
 #endif

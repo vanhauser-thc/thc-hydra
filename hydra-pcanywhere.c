@@ -1,6 +1,6 @@
-//This plugin was written by <david dot maciejak at kyxar dot fr>
+// This plugin was written by <david dot maciejak at kyxar dot fr>
 //
-//PC-Anywhere authentication protocol test on Symantec PC-Anywhere 10.5
+// PC-Anywhere authentication protocol test on Symantec PC-Anywhere 10.5
 //
 // no memleaks found on 110425
 
@@ -8,9 +8,9 @@
 
 extern char *HYDRA_EXIT;
 
-int pcadebug = 0;
+int32_t pcadebug = 0;
 
-int send_cstring(int s, char *crypted_string) {
+int32_t send_cstring(int32_t s, char *crypted_string) {
   char buffer2[100], *bptr = buffer2;
   char clientcryptheader[] = "\x06";
 
@@ -25,8 +25,8 @@ int send_cstring(int s, char *crypted_string) {
   return hydra_send(s, buffer2, 2 + strlen(crypted_string), 0);
 }
 
-void show_buffer(char *buffer, int size) {
-  int i;
+void show_buffer(char *buffer, int32_t size) {
+  int32_t i;
 
   printf("size: %d, buffer:\n", size);
   for (i = 0; i < size; i++) {
@@ -35,11 +35,11 @@ void show_buffer(char *buffer, int size) {
   printf("\n");
 }
 
-void clean_buffer(char *buf, int size) {
-  int i;
+void clean_buffer(char *buf, int32_t size) {
+  int32_t i;
 
   for (i = 0; i < size; i++) {
-    int pos = buf[i];
+    int32_t pos = buf[i];
 
     if (pos < 32 || pos > 126) {
       // . char
@@ -49,7 +49,7 @@ void clean_buffer(char *buf, int size) {
 }
 
 void print_encrypted_str(char *str) {
-  int i;
+  int32_t i;
 
   printf("encode string: ");
   for (i = 0; i < strlen(str); i++) {
@@ -60,7 +60,7 @@ void print_encrypted_str(char *str) {
 
 void pca_encrypt(char *cleartxt) {
   char passwd[128];
-  int i;
+  int32_t i;
 
   strncpy(passwd, cleartxt, sizeof(passwd) - 1);
   passwd[sizeof(passwd) - 1] = 0;
@@ -71,12 +71,11 @@ void pca_encrypt(char *cleartxt) {
     passwd[strlen(passwd)] = '\0';
     strcpy(cleartxt, passwd);
   }
-
 }
 
 void pca_decrypt(char *password) {
   char cleartext[128];
-  int i;
+  int32_t i;
 
   if (strlen(password) > 0) {
     cleartext[0] = password[0] ^ 0xab;
@@ -92,17 +91,17 @@ void debugprintf(char *msg) {
     printf("debug: %s\n", msg);
 }
 
-int start_pcanywhere(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_pcanywhere(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";
   char *login, *pass;
   char buffer[2048] = "";
   char clogin[128] = "";
   char cpass[128] = "";
-  int ret, i;
+  int32_t ret, i;
 
   char *client[4];
   char *server[5];
-  int clientsize[4];
+  int32_t clientsize[4];
 
   client[0] = "\x00\x00\x00\x00";
   clientsize[0] = 4;
@@ -118,7 +117,6 @@ int start_pcanywhere(int s, char *ip, int port, unsigned char options, char *mis
   server[2] = "\0x1B\0x62";
   server[3] = "Enter login name";
   server[4] = "denying connection";
-
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -158,13 +156,15 @@ int start_pcanywhere(int s, char *ip, int port, unsigned char options, char *mis
     if (i == 0 || i == 3)
       clean_buffer(buffer, ret);
 
-    if (debug) show_buffer(buffer, ret);
+    if (debug)
+      show_buffer(buffer, ret);
 
     if (i == 2) {
       clean_buffer(buffer, ret);
       buffer[sizeof(buffer) - 1] = 0;
       if (strstr(buffer, server[i + 2]) != NULL) {
-        fprintf(stderr, "[ERROR] PC Anywhere host denying connection because you have requested a lower encrypt level\n");
+        fprintf(stderr, "[ERROR] PC Anywhere host denying connection because "
+                        "you have requested a lower encrypt level\n");
         return 3;
       }
     }
@@ -224,21 +224,20 @@ int start_pcanywhere(int s, char *ip, int port, unsigned char options, char *mis
   return 1;
 }
 
-void service_pcanywhere(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_PCANYWHERE, mysslport = PORT_PCANYWHERE_SSL;
+void service_pcanywhere(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_PCANYWHERE, mysslport = PORT_PCANYWHERE_SSL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     return;
 
   while (1) {
-
     switch (run) {
-    case 1:                    /* connect and service init function */
+    case 1: /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
-      usleep(275000);
+      usleepn(275);
       if ((options & OPTION_SSL) == 0) {
         if (port != 0)
           myport = port;
@@ -247,11 +246,12 @@ void service_pcanywhere(char *ip, int sp, unsigned char options, char *miscptr, 
       } else {
         if (port != 0)
           mysslport = port;
-        sock = hydra_connect_ssl(ip, mysslport);
+        sock = hydra_connect_ssl(ip, mysslport, hostname);
         port = mysslport;
       }
       if (sock < 0) {
-        if (quiet != 1) fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+        if (quiet != 1)
+          fprintf(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
         hydra_child_exit(1);
       }
 
@@ -278,13 +278,13 @@ void service_pcanywhere(char *ip, int sp, unsigned char options, char *miscptr, 
   }
 }
 
-int service_pcanywhere_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int32_t service_pcanywhere_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
   //
   // fill if needed.
-  // 
+  //
   // return codes:
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here

@@ -1,0 +1,19 @@
+language: c
+sudo: required
+dist: trusty
+os:
+  - linux
+  - osx
+arch:
+  - amd64
+  - ppc64le
+compiler:
+  - clang
+  - gcc
+matrix:
+before_install:
+  - if [ "$TRAVIS_OS_NAME" == "osx" ];then brew install libgcrypt; fi
+before_script:
+  ./configure
+script:
+  - make

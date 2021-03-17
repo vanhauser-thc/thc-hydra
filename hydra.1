@@ -1,33 +1,37 @@
-.TH "HYDRA" "1" "24/05/2012"
+.TH "HYDRA" "1" "01/01/2021"
 .SH NAME
-hydra \- a very fast network logon cracker which support many different services
+hydra \- a very fast network logon cracker which supports many different services
 .SH SYNOPSIS
 .B hydra
- [[[\-l LOGIN|\-L FILE] [\-p PASS|\-P FILE|\-x OPT]] | [\-C FILE]] [\-e nsr]
- [\-u] [\-f] [\-F] [\-M FILE] [\-o FILE] [\-t TASKS] [\-w TIME] [\-W TIME]
- [\-s PORT] [\-S] [\-4/6] [\-vV] [\-d]
- server service [OPTIONAL_SERVICE_PARAMETER]
+ [[[\-l LOGIN|\-L FILE] [\-p PASS|\-P FILE|\-x OPT \-y]] | [\-C FILE]]
+ [\-e nsr] [\-u] [\-f|\-F] [\-M FILE] [\-o FILE] [\-b FORMAT]
+ [\-t TASKS] [\-T TASKS] [\-w TIME] [\-W TIME] [\-m OPTIONS] [\-s PORT]
+ [\-c TIME] [\-S] [\-O] [\-4|6] [\-I] [\-vV] [\-d]
+ server service [OPTIONS]
 .br
 .SH DESCRIPTION
-Hydra is a parallized login cracker which supports numerous protocols
+Hydra is a parallelized login cracker which supports numerous protocols
 to attack. New modules are easy to add, beside that, it is flexible and
 very fast.
-
-This tool gives researchers and security consultants the possiblity to
+.LP
+This tool gives researchers and security consultants the possibility to
 show how easy it would be to gain unauthorized access from remote to a
 system.
-
+.TP
 Currently this tool supports:
- AFP, Cisco AAA, Cisco auth, Cisco enable, CVS, Firebird, FTP, FTPS, 
- HTTP-FORM-GET, HTTP-FORM-POST, HTTP-GET, HTTP-HEAD, HTTP-PROXY,
- HTTP-PROXY-URLENUM, ICQ, IMAP, IRC, LDAP2, LDAP3, MS-SQL, MYSQL, NCP, NNTP,
- Oracle, Oracle-Listener, Oracle-SID, PC-Anywhere, PCNFS, POP3, POSTGRES,
- RDP, REXEC, RLOGIN, RSH, SAP/R3, SIP, SMB, SMTP, SMTP-Enum, SNMP,
- SOCKS5, SSH(v1 and v2), SSHKEY, Subversion, Teamspeak (TS2), Telnet,
- VMware-Auth, VNC and XMPP.
- For most protocols, SSL mode is available (e.g. https-get, ftp-ssl, etc.)
- If not all necessary libraries are found during compile time, your
- available services will be less. Type "hydra" to see what is available.
+adam6500 afp asterisk cisco cisco-enable cvs firebird ftp ftps
+http[s]-{head|get|post} http[s]-{get|post}-form http-proxy
+http-proxy-urlenum icq imap[s] irc ldap2[s]
+ldap3[-{cram|digest}md5][s] mssql mysql(v4) mysql5 ncp nntp
+oracle oracle-listener oracle-sid pcanywhere pcnfs pop3[s]
+postgres rdp radmin2 redis rexec rlogin rpcap rsh rtsp s7-300 sapr3 sip
+smb smtp[s] smtp-enum snmp socks5 ssh sshkey svn teamspeak telnet[s]
+vmauthd vnc xmpp
+.LP
+For most protocols SSL is supported (e.g. https-get, ftp-ssl, etc.).
+If not all necessary libraries are found during compile time, your
+available services will be less.
+Type "hydra" to see what is available.
 .SH Options
 .TP
 .B target
@@ -42,10 +46,15 @@ Some modules have optional or mandatory options. type "hydra \-U <servicename>"
 .TP
 .B \-R 
 restore a previously aborted session. Requires a hydra.restore file was
-written. No other options are allowed when using \-R
+written. Options are restored, but can be changed by setting them after
+\-R on the command line
 .TP
 .B \-S
 connect via SSL
+.TP
+.TP
+.B \-O
+use old SSL v2 and v3
 .TP
 .B \-s PORT
 if the service is on a different default port, define it here
@@ -64,6 +73,9 @@ generate passwords from min to max length. charset can contain 1
    The generated passwords will be of length 1 to 2 and contain
    lowcase letters, numbers and/or percent signs and dots.
 .TP
+.B \-y
+disable use of symbols in \-x bruteforce, see above
+.TP
 .B \-e nsr
 additional checks, "n" for null password, "s" try login as pass, "r" try the reverse login as pass
 .TP
@@ -79,7 +91,7 @@ tried on all logins, then the next password.
 exit after the first found login/password pair (per host if \-M)
 .TP
 .B \-F
-exit after the first found login/password pair for any host (for usage with -M)
+exit after the first found login/password pair for any host (for usage with \-M)
 .TP
 .B \-M FILE
 server list for parallel attacks, one entry per line
@@ -87,8 +99,14 @@ server list for parallel attacks, one entry per line
 .B \-o FILE
 write found login/password pairs to FILE instead of stdout
 .TP
+.B \-b FORMAT
+specify the format for the \-o FILE: text(default), json, jsonv1
+.TP
 .B \-t TASKS
 run TASKS number of connects in parallel (default: 16)
+.TP
+.B \-m OPTIONS
+module specific options. See hydra -U <module> what options are available.
 .TP
 .B \-w TIME
 defines the max wait time in seconds for responses (default: 32)
@@ -97,13 +115,21 @@ defines the max wait time in seconds for responses (default: 32)
 defines a wait time between each connection a task performs. This usually
 only makes sense if a low task number is used, .e.g \-t 1
 .TP
+.B \-c TIME
+the wait time in seconds per login attempt over all threads (-t 1 is recommended)
+This usually only makes sense if a low task number is used, .e.g \-t 1
+.TP
 .B \-4 / \-6 
 prefer IPv4 (default) or IPv6 addresses
 .TP
 .B \-v / \-V 
 verbose mode / show login+pass combination for each attempt
+.TP
 .B \-d
 debug mode
+.TP
+.B \-I
+ignore an existing restore file (don't wait 10 seconds)
 .TP
 .B \-h, \-\-help
 Show summary of options.
@@ -114,7 +140,7 @@ Show summary of options.
 The programs are documented fully by van Hauser <vh@thc.org>
 .SH AUTHOR
 hydra was written by van Hauser / THC <vh@thc.org>
-
+Find new versions or report bugs at https://github.com/vanhauser-thc/thc-hydra
 .PP
 This manual page was written by Daniel Echeverry <epsilon77@gmail.com>,
 for the Debian project (and may be used by others).

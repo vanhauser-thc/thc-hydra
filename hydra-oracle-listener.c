@@ -1,4 +1,3 @@
-
 /*
 david:
 
@@ -14,25 +13,23 @@ at http://marcellmajor.com/frame_listenerhash.html
 #include "hydra-mod.h"
 #ifndef LIBOPENSSL
 #include <stdio.h>
-void dummy_oracle_listener() {
-  printf("\n");
-}
+void dummy_oracle_listener() { printf("\n"); }
 #else
-#include <sasl.h>
+#include "sasl.h"
 #include <openssl/des.h>
 #define HASHSIZE 17
 
 extern char *HYDRA_EXIT;
 char *buf;
 unsigned char *hash;
-int sid_mechanism = AUTH_PLAIN;
+int32_t sid_mechanism = AUTH_PLAIN;
 
-int initial_permutation(unsigned char **result, char *p_str, int *sz) {
-  int k = 0;
-  int i = strlen(p_str);
+int32_t initial_permutation(unsigned char **result, char *p_str, int32_t *sz) {
+  int32_t k = 0;
+  int32_t i = strlen(p_str);
   char *buff;
 
-  //expand the string with zero so that length is a multiple of 4
+  // expand the string with zero so that length is a multiple of 4
   while ((i % 4) != 0) {
     i = i + 1;
   }
@@ -45,14 +42,14 @@ int initial_permutation(unsigned char **result, char *p_str, int *sz) {
   memset(buff, 0, i + 4);
   strcpy(buff, p_str);
 
-  //swap the order of every byte pair
+  // swap the order of every byte pair
   for (k = 0; k < i; k += 2) {
     char bck = buff[k + 1];
 
     buff[k + 1] = buff[k];
     buff[k] = bck;
   }
-  //convert to unicode
+  // convert to unicode
   if ((*result = malloc(2 * i)) == NULL) {
     hydra_report(stderr, "[ERROR] Can't allocate memory\n");
     free(buff);
@@ -67,8 +64,8 @@ int initial_permutation(unsigned char **result, char *p_str, int *sz) {
   return 0;
 }
 
-int ora_hash(unsigned char **orahash, unsigned char *buf, int len) {
-  int i;
+int32_t ora_hash(unsigned char **orahash, unsigned char *buf, int32_t len) {
+  int32_t i;
 
   if ((*orahash = malloc(HASHSIZE)) == NULL) {
     hydra_report(stderr, "[ERROR] Can't allocate memory\n");
@@ -76,13 +73,13 @@ int ora_hash(unsigned char **orahash, unsigned char *buf, int len) {
   }
 
   for (i = 0; i < 8; i++) {
-    sprintf(((char *) *orahash) + i * 2, "%02X", buf[len - 8 + i]);
+    sprintf(((char *)*orahash) + i * 2, "%02X", buf[len - 8 + i]);
   }
   return 0;
 }
 
-int convert_byteorder(unsigned char **result, int size) {
-  int i = 0;
+int32_t convert_byteorder(unsigned char **result, int32_t size) {
+  int32_t i = 0;
   char *buff;
 
   if ((buff = malloc(size)) == NULL) {
@@ -103,12 +100,12 @@ int convert_byteorder(unsigned char **result, int size) {
   return 0;
 }
 
-int ora_descrypt(unsigned char **rs, unsigned char *result, int siz) {
-  int i = 0;
+int32_t ora_descrypt(unsigned char **rs, unsigned char *result, int32_t siz) {
+  int32_t i = 0;
   char lastkey[8];
-  des_key_schedule ks1;
-  unsigned char key1[8] = { 0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF };
-  unsigned char ivec1[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+  DES_key_schedule ks1;
+  unsigned char key1[8] = {0x01, 0x23, 0x45, 0x67, 0x89, 0xAB, 0xCD, 0xEF};
+  unsigned char ivec1[] = {0, 0, 0, 0, 0, 0, 0, 0};
   unsigned char *desresult;
 
   memset(ivec1, 0, sizeof(ivec1));
@@ -116,17 +113,17 @@ int ora_descrypt(unsigned char **rs, unsigned char *result, int siz) {
     hydra_report(stderr, "[ERROR] Can't allocate memory\n");
     return 1;
   }
-  des_key_sched((C_Block *) key1, ks1);
-  des_ncbc_encrypt(result, desresult, siz, ks1, &ivec1, DES_ENCRYPT);
+  DES_key_sched((const_DES_cblock *)key1, &ks1);
+  DES_ncbc_encrypt(result, desresult, siz, &ks1, &ivec1, DES_ENCRYPT);
 
   for (i = 0; i < 8; i++) {
     lastkey[i] = desresult[siz - 8 + i];
   }
 
-  des_key_sched((C_Block *) lastkey, ks1);
+  DES_key_sched((const_DES_cblock *)lastkey, &ks1);
   memset(desresult, 0, siz);
   memset(ivec1, 0, sizeof(ivec1));
-  des_ncbc_encrypt(result, desresult, siz, ks1, &ivec1, DES_ENCRYPT);
+  DES_ncbc_encrypt(result, desresult, siz, &ks1, &ivec1, DES_ENCRYPT);
 
   if ((*rs = malloc(siz)) == NULL) {
     hydra_report(stderr, "[ERROR] Can't allocate memory\n");
@@ -138,16 +135,16 @@ int ora_descrypt(unsigned char **rs, unsigned char *result, int siz) {
   return 0;
 }
 
-int ora_hash_password(char *pass) {
+int32_t ora_hash_password(char *pass) {
   // secret hash function comes here, and written to char *hash
-  int siz = 0;
+  int32_t siz = 0;
   unsigned char *desresult;
   unsigned char *result;
   char buff[strlen(pass) + 5];
 
   memset(buff, 0, sizeof(buff));
 
-  //concatenate Arb string and convert the resulting string to uppercase
+  // concatenate Arb string and convert the resulting string to uppercase
   snprintf(buff, sizeof(buff), "Arb%s", pass);
   strupper(buff);
 
@@ -180,19 +177,17 @@ int ora_hash_password(char *pass) {
   return 0;
 }
 
-int start_oracle_listener(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
-  unsigned char tns_packet_begin[22] = {
-    "\x00\x00\x01\x00\x00\x00\x01\x36\x01\x2c\x00\x00\x08\x00\x7f\xff\x86\x0e\x00\x00\x01\x00"
-  };
-  unsigned char tns_packet_end[32] = {
-    "\x00\x3a\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" "\x00\x00\x09\x94\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00"
-  };
+int32_t start_oracle_listener(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
+  unsigned char tns_packet_begin[22] = {"\x00\x00\x01\x00\x00\x00\x01\x36\x01\x2c\x00\x00\x08\x00\x7f\xff\x86\x0e"
+                                        "\x00\x00\x01\x00"};
+  unsigned char tns_packet_end[32] = {"\x00\x3a\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+                                      "\x00\x00\x09\x94\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\x00"};
 
   char *empty = "";
   char *pass;
   char connect_string[200];
   char buffer2[260];
-  int siz = 0;
+  int32_t siz = 0;
 
   memset(connect_string, 0, sizeof(connect_string));
   memset(buffer2, 0, sizeof(buffer2));
@@ -211,9 +206,12 @@ int start_oracle_listener(int s, char *ip, int port, unsigned char options, char
       free(hash);
       return 1;
     }
-    pass = (char *) hash;
+    pass = (char *)hash;
   }
-  snprintf(connect_string, sizeof(connect_string), "(DESCRIPTION=(CONNECT_DATA=(CID=(PROGRAM=))(COMMAND=reload)(PASSWORD=%s)(SERVICE=)(VERSION=169869568)))", pass);
+  snprintf(connect_string, sizeof(connect_string),
+           "(DESCRIPTION=(CONNECT_DATA=(CID=(PROGRAM=))(COMMAND=reload)("
+           "PASSWORD=%s)(SERVICE=)(VERSION=169869568)))",
+           pass);
 
   if (hash != NULL)
     free(hash);
@@ -227,7 +225,7 @@ int start_oracle_listener(int s, char *ip, int port, unsigned char options, char
   } else {
     buffer2[1] = siz;
   }
-  memcpy(buffer2 + 2, (char *) tns_packet_begin, sizeof(tns_packet_begin));
+  memcpy(buffer2 + 2, (char *)tns_packet_begin, sizeof(tns_packet_begin));
   siz = strlen(connect_string);
   if (siz > 255) {
     buffer2[2 + sizeof(tns_packet_begin)] = 1;
@@ -235,7 +233,7 @@ int start_oracle_listener(int s, char *ip, int port, unsigned char options, char
   } else {
     buffer2[1 + 2 + sizeof(tns_packet_begin)] = siz;
   }
-  memcpy(buffer2 + 2 + sizeof(tns_packet_begin) + 2, (char *) tns_packet_end, sizeof(tns_packet_end));
+  memcpy(buffer2 + 2 + sizeof(tns_packet_begin) + 2, (char *)tns_packet_end, sizeof(tns_packet_end));
   memcpy(buffer2 + 2 + sizeof(tns_packet_begin) + 2 + sizeof(tns_packet_end), connect_string, strlen(connect_string));
   if (hydra_send(s, buffer2, 2 + sizeof(tns_packet_begin) + 2 + sizeof(tns_packet_end) + strlen(connect_string), 0) < 0) {
     return 1;
@@ -258,9 +256,9 @@ int start_oracle_listener(int s, char *ip, int port, unsigned char options, char
   return 1;
 }
 
-void service_oracle_listener(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  int run = 1, next_run = 1, sock = -1;
-  int myport = PORT_ORACLE, mysslport = PORT_ORACLE_SSL;
+void service_oracle_listener(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1;
+  int32_t myport = PORT_ORACLE, mysslport = PORT_ORACLE_SSL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -284,10 +282,10 @@ void service_oracle_listener(char *ip, int sp, unsigned char options, char *misc
 
   while (1) {
     switch (run) {
-    case 1:                    /* connect and service init function */
+    case 1: /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
-//      usleep(300000);
+      //      usleepn(300);
       if ((options & OPTION_SSL) == 0) {
         if (port != 0)
           myport = port;
@@ -296,18 +294,18 @@ void service_oracle_listener(char *ip, int sp, unsigned char options, char *misc
       } else {
         if (port != 0)
           mysslport = port;
-        sock = hydra_connect_ssl(ip, mysslport);
+        sock = hydra_connect_ssl(ip, mysslport, hostname);
         port = mysslport;
       }
       if (sock < 0) {
         if (verbose || debug)
-          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+          hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
         hydra_child_exit(1);
       }
       /* run the cracking function */
       next_run = start_oracle_listener(sock, ip, port, options, miscptr, fp);
       break;
-    case 3:                    /* clean exit */
+    case 3: /* clean exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       hydra_child_exit(0);
@@ -325,18 +323,23 @@ void service_oracle_listener(char *ip, int sp, unsigned char options, char *misc
   }
 }
 
-int service_oracle_listener_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int32_t service_oracle_listener_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
   //
   // fill if needed.
-  // 
+  //
   // return codes:
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here
 
   return 0;
+}
+
+void usage_oracle_listener(const char *service) {
+  printf("Module oracle-listener / tns is optionally taking the mode the "
+         "password is stored as, could be PLAIN (default) or CLEAR\n\n");
 }
 
 #endif

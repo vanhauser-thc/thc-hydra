@@ -1,0 +1,16 @@
+Makefile
+Makefile.in
+*.o
+hydra
+hydra.exe
+xhydra
+xhydra.exe
+hydra-gtk/config.log
+hydra-gtk/config.status
+hydra-gtk/errors
+hydra-gtk/src/.deps/
+hydra-gtk/stamp-h
+pw-inspector
+pw-inspector.exe
+hydra.restore
+*~

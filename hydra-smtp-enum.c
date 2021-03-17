@@ -16,15 +16,15 @@ passwd will be used as the domain name
 extern char *HYDRA_EXIT;
 char *buf;
 char *err = NULL;
-int tosent = 0;
+int32_t tosent = 0;
 
 #define VRFY 0
 #define EXPN 1
 #define RCPT 2
 
-int smtp_enum_cmd = VRFY;
+int32_t smtp_enum_cmd = VRFY;
 
-int start_smtp_enum(int s, char *ip, int port, unsigned char options, char *miscptr, FILE * fp) {
+int32_t start_smtp_enum(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";
   char *login, *pass, buffer[500];
 
@@ -55,7 +55,7 @@ int start_smtp_enum(int s, char *ip, int port, unsigned char options, char *misc
       return (1);
     if (debug)
       hydra_report(stderr, "DEBUG S: %s", buf);
-    /* good return values are something like 25x */
+      /* good return values are something like 25x */
 #ifdef HAVE_PCRE
     if (hydra_string_match(buf, "^25\\d\\s")) {
 #else
@@ -103,7 +103,7 @@ int start_smtp_enum(int s, char *ip, int port, unsigned char options, char *misc
     return (1);
   if (debug)
     hydra_report(stderr, "DEBUG S: %s", buf);
-  /* good return values are something like 25x */
+    /* good return values are something like 25x */
 #ifdef HAVE_PCRE
   if (hydra_string_match(buf, "^25\\d\\s")) {
 #else
@@ -119,21 +119,25 @@ int start_smtp_enum(int s, char *ip, int port, unsigned char options, char *misc
   err = strstr(buf, "Error");
   if (err || tosent || strncmp(buf, "50", 2) == 0) {
     // we should report command not identified by the server
-    //502 5.5.2 Error: command not recognized
-//#ifdef HAVE_PCRE
-//    if ((debug || hydra_string_match(buf, "\\scommand\\snot\\srecognized")) && err) {
-//#else
-//    if ((debug || strstr(buf, "command") != NULL) && err) {
-//#endif
-//      hydra_report(stderr, "Server %s", err);
-//    }
+    // 502 5.5.2 Error: command not recognized
+    //#ifdef HAVE_PCRE
+    //    if ((debug || hydra_string_match(buf,
+    //    "\\scommand\\snot\\srecognized")) && err) {
+    //#else
+    //    if ((debug || strstr(buf, "command") != NULL) && err) {
+    //#endif
+    //      hydra_report(stderr, "Server %s", err);
+    //    }
     if (strncmp(buf, "500 ", 4) == 0) {
-      hydra_report(stderr, "[ERROR] command is disabled on the server (choose different method): %s", buf);
+      hydra_report(stderr,
+                   "[ERROR] command is disabled on the server (choose "
+                   "different method): %s",
+                   buf);
       free(buf);
       return 3;
     }
     memset(buffer, 0, sizeof(buffer));
-    //503 5.5.1 Error: nested MAIL command
+    // 503 5.5.1 Error: nested MAIL command
     strncpy(buffer, "RSET\r\n", sizeof(buffer));
     free(buf);
     if (hydra_send(s, buffer, strlen(buffer), 0) < 0)
@@ -150,9 +154,9 @@ int start_smtp_enum(int s, char *ip, int port, unsigned char options, char *misc
   return 2;
 }
 
-void service_smtp_enum(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
-  int run = 1, next_run = 1, sock = -1, i = 0;
-  int myport = PORT_SMTP, mysslport = PORT_SMTP_SSL;
+void service_smtp_enum(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
+  int32_t run = 1, next_run = 1, sock = -1, i = 0;
+  int32_t myport = PORT_SMTP, mysslport = PORT_SMTP_SSL;
   char *buffer = "HELO hydra\r\n";
 
   hydra_register_socket(sp);
@@ -160,7 +164,7 @@ void service_smtp_enum(char *ip, int sp, unsigned char options, char *miscptr, F
     return;
   while (1) {
     switch (run) {
-    case 1:                    /* connect and service init function */
+    case 1: /* connect and service init function */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       if ((options & OPTION_SSL) == 0) {
@@ -171,31 +175,31 @@ void service_smtp_enum(char *ip, int sp, unsigned char options, char *miscptr, F
       } else {
         if (port != 0)
           mysslport = port;
-        sock = hydra_connect_ssl(ip, mysslport);
+        sock = hydra_connect_ssl(ip, mysslport, hostname);
         port = mysslport;
       }
       if (sock < 0) {
-        hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int) getpid());
+        hydra_report(stderr, "[ERROR] Child with pid %d terminating, can not connect\n", (int32_t)getpid());
         hydra_child_exit(1);
       }
       /* receive initial header */
       if ((buf = hydra_receive_line(sock)) == NULL)
         hydra_child_exit(2);
       if (strstr(buf, "220") == NULL) {
-        hydra_report(stderr, "Warning: SMTP does not allow to connect: %s\n", buf);
+        hydra_report(stderr, "Warning: SMTP does not allow connecting: %s\n", buf);
         hydra_child_exit(2);
       }
-//      while (strstr(buf, "220 ") == NULL) {
-//        free(buf);
-//        buf = hydra_receive_line(sock);
-//      }
+      //      while (strstr(buf, "220 ") == NULL) {
+      //        free(buf);
+      //        buf = hydra_receive_line(sock);
+      //      }
 
-//      if (buf[0] != '2') {
+      //      if (buf[0] != '2') {
       if (hydra_send(sock, buffer, strlen(buffer), 0) < 0) {
         free(buf);
         hydra_child_exit(2);
       }
-//      }
+      //      }
 
       free(buf);
       if ((buf = hydra_receive_line(sock)) == NULL)
@@ -207,7 +211,7 @@ void service_smtp_enum(char *ip, int sp, unsigned char options, char *miscptr, F
 
       if ((miscptr != NULL) && (strlen(miscptr) > 0)) {
         for (i = 0; i < strlen(miscptr); i++)
-          miscptr[i] = (char) toupper((int) miscptr[i]);
+          miscptr[i] = (char)toupper((int32_t)miscptr[i]);
 
         if (strncmp(miscptr, "EXPN", 4) == 0)
           smtp_enum_cmd = EXPN;
@@ -216,8 +220,8 @@ void service_smtp_enum(char *ip, int sp, unsigned char options, char *miscptr, F
           smtp_enum_cmd = RCPT;
       }
       if (debug) {
+        hydra_report(stdout, "[VERBOSE] ");
         switch (smtp_enum_cmd) {
-          hydra_report(stdout, "[VERBOSE] ");
         case VRFY:
           hydra_report(stdout, "using SMTP VRFY command\n");
           break;
@@ -232,10 +236,10 @@ void service_smtp_enum(char *ip, int sp, unsigned char options, char *miscptr, F
       free(buf);
       next_run = 2;
       break;
-    case 2:                    /* run the cracking function */
+    case 2: /* run the cracking function */
       next_run = start_smtp_enum(sock, ip, port, options, miscptr, fp);
       break;
-    case 3:                    /* clean exit */
+    case 3: /* clean exit */
       if (sock >= 0) {
         sock = hydra_disconnect(sock);
       }
@@ -249,16 +253,25 @@ void service_smtp_enum(char *ip, int sp, unsigned char options, char *miscptr, F
   }
 }
 
-int service_smtp_enum_init(char *ip, int sp, unsigned char options, char *miscptr, FILE * fp, int port) {
+int32_t service_smtp_enum_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
   // performed once only.
   //
   // fill if needed.
-  // 
+  //
   // return codes:
   //   0 all OK
   //   -1  error, hydra will exit, so print a good error message here
 
   return 0;
+}
+
+void usage_smtp_enum(const char *service) {
+  printf("Module smtp-enum is optionally taking one SMTP command of:\n\n"
+         "VRFY (default), EXPN, RCPT (which will connect using \"root\" account)\n"
+         "login parameter is used as username and password parameter as the "
+         "domain name\n"
+         "For example to test if john@localhost exists on 192.168.0.1:\n"
+         "hydra smtp-enum://192.168.0.1/vrfy -l john -p localhost\n\n");
 }
