@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=XHydra
+GenericName=Hydra very fast network log-on cracker
+Comment=GUI frontend for Hydra network log-on cracker
+Version=1.0
+Exec=xhydra
+Icon=xhydra
+Terminal=false
+Type=Application
+Categories=System;Security;GTK;
