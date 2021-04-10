@@ -1,0 +1,73 @@
+Diagnostic information for administrators:
+Generating server: DB8EUR05HT249.mail.protection.outlook.com
+passwd_bot@hotmail.com
+DM6NAM11FT021.mail.protection.outlook.com
+Remote Server returned '550 5.5.0 Requested action not taken: mailbox unavailable (S2017062302).'
+Original message headers:
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=ljeUmDVMArpxlbJ2SUUgsFLDsNOhoMESDWMmj/ZOJO9DmQSOZfKucjRVzQ95ORNULU0iKAQYMp5q0iIMlcdpuJaldnuHepU5PBiF68NOq2+4hXO8o23TAfazTy847nzPWZU2oNDojQyLLayBchqUC8PDGS5i/RDFihcWc4feY8x+5UWYOtW/BiFFR7JcUw8OBqX7HpsMHXbopdtTqF/voEWztorlEAU34YPbxMR6h19OFnqTAc9ZaR2E36zyY7argiVxyilA/j/cGNc62inOpGk33b8GqEwUQ+tWpsO5nuREz8vCFoanAlgGi3w0sT0XvHF7fjdcf+K6jTPhB/Gvsg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=lPXMWtjdUpFwB4n+ISZiSe0tqdfpQ3w0p44b2cPmTm0=;
+ b=CK1+wfN6CJT4hONhi8nZTV9PMrnwLpKWeiOyMbDZxmWHiCvl2pa73tImpg7x2pJlqkZx5q3UmfOumJDj344KnUJ7k4TOCCcql8J7fsP2uV1DBJWLGnxoeHodDdM2a2i8j8b6eUQ1InfXfg2EV0hHVLul4mXsh26OL6oRYcmv9ZVSA66bi1a0V4U8SKLK+kc4lOl5KejugZuaXzbssJibj+abb8bU/YFRJLAdiWnhayEQKx+90LwBJs15eKd7V+XVqAzl5fIzG1r4WPs2Tpr8wih9UIvNN8f48V9JWpCqttbQgvrB+Tdtl+IeH71oWi9+ODA4pDilTJ5+AWNsNI67ug==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=none; dmarc=none;
+ dkim=none; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=hotmail.com;
+ s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=lPXMWtjdUpFwB4n+ISZiSe0tqdfpQ3w0p44b2cPmTm0=;
+ b=ZLzWFtSXe8KRpDGaiUBmpQHvaqg8RRzr6Ll3EsZjCf9Ui9S31rgBlIh3v6TEk1r78CGnTG52jkcegFNWi2mhDi+yJ7M5b+0c7DKClWCOD7spJ4QFsQAZUh7hHlCR/APZOf/eNrJJQrAVoty3k9FFYjYWmeRnq24B8C5LbT4hspj6G/mo+MwwkTlipZArH/lGmc4QeTv9hegGJS6asyMp6MImwCH5JfUB7Jt356+f2sqw2iVjnU/fS9WDT0URxlCXSGzF8Aa+p92d/9YNGpQ8CHmEvE0CMqft2Lba/fM9JWHI+kd20wzvihPJCAVN6aDC/P5mt3cnUwv4iRS5AmwNlVA==
+Received: from DB8EUR05FT063.eop-eur05.prod.protection.outlook.com
+ (2a01:111:e400:fc0f::43) by
+ DB8EUR05HT249.eop-eur05.prod.protection.outlook.com (2a01:111:e400:fc0f::205)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3216.10; Sun, 26 Jul
+ 2020 02:34:35 +0000
+Received: from AM0PR10MB2484.EURPRD10.PROD.OUTLOOK.COM
+ (2a01:111:e400:fc0f::52) by DB8EUR05FT063.mail.protection.outlook.com
+ (2a01:111:e400:fc0f::195) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3216.10 via Frontend
+ Transport; Sun, 26 Jul 2020 02:34:35 +0000
+Received: from AM0PR10MB2484.EURPRD10.PROD.OUTLOOK.COM
+ ([fe80::842:7676:7805:8f49]) by AM0PR10MB2484.EURPRD10.PROD.OUTLOOK.COM
+ ([fe80::842:7676:7805:8f49%3]) with mapi id 15.20.3216.026; Sun, 26 Jul 2020
+ 02:34:35 +0000
+From: Nafhat Nassor <nafhatnassssor@hotmail.com>
+To: "passwd_bot@hotmail.com" <passwd_bot@hotmail.com>
+Subject: CHK PASSWD
+Thread-Topic: CHK PASSWD
+Thread-Index: AQHWYvSeYKOkg9LKwUGjHkq7KS7ZLA==
+Date: Sun, 26 Jul 2020 02:34:35 +0000
+Message-ID: <am0pr10mb24844ca7424ba8c269b24c1dc9750@am0pr10mb2484.eurprd10.prod.outlook.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+x-incomingtopheadermarker: OriginalChecksum:B4177070C660A75A2142CF0FB5C825849F2A237FC7F5AA48AF26B1BC2A295892;UpperCasedChecksum:8DD0098E79C9A2BE5C7903AB4633946CB4400AFD75F282D508711BD632ABC05F;SizeAsReceived:6573;Count:41
+x-tmn: [bNBWoxq6QEeBGcwD4GAPbB8fQMxVtjvL]
+x-ms-publictraffictype: Email
+x-incomingheadercount: 41
+x-eopattributedmessage: 0
+x-ms-office365-filtering-correlation-id: 5a395bc5-3eba-40cc-3757-08d8310c6f89
+x-ms-exchange-slblob-mailprops: IwGxJN8P79NQhUs3fOoDdnDf9xD9Z0ed5NSJpLrxacuGDsS0MkfWJ1tzrKHhizADcz9tKYEiBH0qn5IgzgBcV6fddhSBRz1+E262W++xy1x/9/XBfHZ+dYQkNnbjWjBkjcMz20oyWWGuH1e4jcC4HQVpKT5snWQqEvPXUKbk+8T1OXf05mVc8JjO0ffHccyEa7B2KllzRarYliQKIFSzhEiJmo/77ylX9kVaqeyjkhVZjbuu9KYkpupVgOykQ235wB9QDHQVWt0aaqMJVfQiNH8+XHrx8rAnO6iTAeiMvnT+mQVYa8wDKXA4J9oouhUMnnlDLS1tDwFHQpwDRJp05deVL61CA/QhCa/845cvUwOkLei2OlB7E+C86iV8cZdks6DUitOVDWPW+Icp27Ypay+hz4ejx91nu0xbIjW3ev0aizQz16VExJnXIYbouQ2EgGelqeqomJMN7w4Klc3d62wZ8KjdthxNwG1lBrsM5BYIWfk8UqwCw7/MWhw/dZrPZOQ31v2+Njf/rhCiIMkyblWPH4k9lqZn72iKBUekKpct3bYxDIn66VTSECDkHUV5duvcvuVMC/fK8xx0IcHGscu1QIfdO5faMNivo6jQ+Pc=
+x-ms-traffictypediagnostic: DB8EUR05HT249:
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: myBHJi38+pTRnpmym2ajfY+54OLLYClR8/s9l84yC8h0vZHOkKipktIj1TUatHQy6DKTHkjvj5l9TjazQVjJIBvJfzekYQe3+i0ewyQEj2KfkuhFnoitDbhXAuccXDe5xExDXTWW9tcPsSkAfd1ON2KaILeOPwE9Pz4o6gTSORtq5NI2XwdWoVP3HFtxCxETl9/XRvhj9jvm+d4Ob1rSpA==
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:0;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR10MB2484.EURPRD10.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFTY:;SFS:;DIR:OUT;SFP:1901;
+x-ms-exchange-antispam-messagedata: gRLnUFC00yD192RUg8S1zan7ddH+ioR9IO2OegB6FSMY4tcpb2rOPfRqQSpVtjqNGakU+Cde2QSoB+bitJW0P0UfKQ1QGnyfiSYmds2sQpwDEBcLnS5pWhoca+kuPnM/h76X+kgzCZeNol5RQjApLQ==
+x-ms-exchange-transport-forked: True
+Content-Type: multipart/alternative;
+	boundary="_000_AM0PR10MB24844CA7424BA8C269B24C1DC9750AM0PR10MB2484EURP_"
+MIME-Version: 1.0
+X-OriginatorOrg: hotmail.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-AuthSource: DB8EUR05FT063.eop-eur05.prod.protection.outlook.com
+X-MS-Exchange-CrossTenant-RMS-PersistedConsumerOrg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5a395bc5-3eba-40cc-3757-08d8310c6f89
+X-MS-Exchange-CrossTenant-rms-persistedconsumerorg: 00000000-0000-0000-0000-000000000000
+X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Jul 2020 02:34:35.2437
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Internet
+X-MS-Exchange-CrossTenant-id: 84df9e7f-e9f6-40af-b435-aaaaaaaaaaaa
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB8EUR05HT249x
