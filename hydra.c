@@ -226,7 +226,7 @@ char *SERVICES = "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp[s] "
 #define RESTOREFILE "./hydra.restore"
 
 #define PROGRAM "Hydra"
-#define VERSION "v9.2"
+#define VERSION "v9.3-dev"
 #define AUTHOR "van Hauser/THC"
 #define EMAIL "<vh@thc.org>"
 #define AUTHOR2 "David Maciejak"
@@ -807,7 +807,7 @@ void hydra_restore_read() {
     fprintf(stderr,
             "[WARNING] restore file was created by version %c.%c, this is "
             "version %s\n",
-            buf[0], buf[2], VERSION);
+            buf[0], buf[1], VERSION);
   if (buf[2] != sizeof(int32_t) % 256 || buf[3] != sizeof(hydra_head *) % 256) {
     fprintf(stderr, "[ERROR] restore file was created on a different, "
                     "incompatible processor platform!\n");
@@ -883,11 +883,19 @@ void hydra_restore_read() {
     printf("[DEBUG] reading restore file: Step 8 complete\n");
 
   login_ptr = malloc(hydra_brains.sizelogin + hydra_brains.countlogin + 8);
+  if (!login_ptr) {
+    fprintf(stderr, "Error: malloc(%u) failed\n", hydra_brains.sizelogin + hydra_brains.countlogin + 8);
+    exit(-1);
+  }
   fck = (int32_t)fread(login_ptr, hydra_brains.sizelogin + hydra_brains.countlogin + 8, 1, f);
   if (debug)
     printf("[DEBUG] reading restore file: Step 9 complete\n");
   if (!check_flag(hydra_options.mode, MODE_COLON_FILE)) { // NOT colonfile mode
     pass_ptr = malloc(hydra_brains.sizepass + hydra_brains.countpass + 8);
+    if (!pass_ptr) {
+      fprintf(stderr, "Error: malloc(%u) failed\n", hydra_brains.sizepass + hydra_brains.countpass + 8);
+      exit(-1);
+    }
     fck = (int32_t)fread(pass_ptr, hydra_brains.sizepass + hydra_brains.countpass + 8, 1, f);
   } else {                                 // colonfile mode
     hydra_options.colonfile = empty_login; // dummy
@@ -897,8 +905,16 @@ void hydra_restore_read() {
     printf("[DEBUG] reading restore file: Step 10 complete\n");
 
   hydra_targets = (hydra_target **)malloc((hydra_brains.targets + 3) * sizeof(hydra_target *));
+  if (!hydra_targets) {
+    fprintf(stderr, "Error: malloc(%u) failed\n", (hydra_brains.targets + 3) * sizeof(hydra_target *));
+    exit(-1);
+  }
   for (j = 0; j < hydra_brains.targets; j++) {
     hydra_targets[j] = malloc(sizeof(hydra_target));
+    if (!hydra_targets[j]) {
+      fprintf(stderr, "Error: malloc(%u) failed\n", sizeof(hydra_target));
+      exit(-1);
+    }
     fck = (int32_t)fread(hydra_targets[j], sizeof(hydra_target), 1, f);
     sck = fgets(out, sizeof(out), f);
     if (out[0] != 0 && out[strlen(out) - 1] == '\n')
@@ -950,8 +966,16 @@ void hydra_restore_read() {
   if (debug)
     printf("[DEBUG] reading restore file: Step 11 complete\n");
   hydra_heads = malloc(sizeof(hydra_head *) * hydra_options.max_use);
+  if (!hydra_heads) {
+    fprintf(stderr, "Error: malloc(%u) failed\n", sizeof(hydra_head *) * hydra_options.max_use);
+    exit(-1);
+  }
   for (j = 0; j < hydra_options.max_use; j++) {
     hydra_heads[j] = malloc(sizeof(hydra_head));
+    if (!hydra_heads[j]) {
+      fprintf(stderr, "Error: malloc(%u) failed\n", sizeof(hydra_head));
+      exit(-1);
+    }
     fck = (int32_t)fread(hydra_heads[j], sizeof(hydra_head), 1, f);
     hydra_heads[j]->sp[0] = -1;
     hydra_heads[j]->sp[1] = -1;
