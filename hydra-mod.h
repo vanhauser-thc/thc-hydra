@@ -67,7 +67,16 @@ char proxy_string_type[MAX_PROXY_COUNT][10];
 char *proxy_authentication[MAX_PROXY_COUNT];
 char *cmdlinetarget;
 
+#ifndef __APPLE__
 typedef int32_t BOOL;
+#else /* __APPLE__ */
+/* ensure compatibility with objc libraries */
+#if (TARGET_OS_IPHONE && __LP64__)  ||  TARGET_OS_WATCH
+typedef bool BOOL;
+#else
+typedef signed char BOOL;
+#endif
+#endif /* __APPLE__ */
 
 #define hydra_report fprintf
 
