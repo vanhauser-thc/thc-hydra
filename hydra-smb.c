@@ -1494,7 +1494,7 @@ int32_t service_smb_init(char *ip, int32_t sp, unsigned char options, char *misc
   ctime = time(NULL);
   do {
     usleepn(300);
-  } while ((ready = hydra_data_ready(sock)) <= 0 && ctime + 5 <= time(NULL));
+  } while ((ready = hydra_data_ready(sock)) <= 0 && ctime + 5 >= time(NULL));
 
   if (ready <= 0) {
     fprintf(stderr, "[ERROR] no reply from target smb://%s:%d/\n", hostname, port);
