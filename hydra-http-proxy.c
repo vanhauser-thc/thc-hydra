@@ -24,9 +24,9 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
     sprintf(url, "%.500s", miscptr);
     ptr = strstr(miscptr, "://"); // :// check is in hydra.c
     sprintf(host, "Host: %.50s", ptr + 3);
-    if ((ptr = index(host, '/')) != NULL)
+    if ((ptr = strchr(host, '/')) != NULL)
       *ptr = 0;
-    if ((ptr = index(host + 6, ':')) != NULL && host[0] != '[')
+    if ((ptr = strchr(host + 6, ':')) != NULL && host[0] != '[')
       *ptr = 0;
     strcat(host, "\r\n");
   }
@@ -232,7 +232,7 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
     }
   }
 
-  ptr = ((char *)index(http_proxy_buf, ' ')) + 1;
+  ptr = ((char *)strchr(http_proxy_buf, ' ')) + 1;
   if (*ptr == '2' || (*ptr == '3' && *(ptr + 2) == '1') || (*ptr == '3' && *(ptr + 2) == '2') || (*ptr == '4' && *(ptr + 2) == '4')) {
     hydra_report_found_host(port, ip, "http-proxy", fp);
     hydra_completed_pair_found();
@@ -240,7 +240,7 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
     http_proxy_buf = NULL;
   } else {
     if (*ptr != '4')
-      hydra_report(stderr, "[INFO] Unusual return code: %c for %s:%s\n", (char)*(index(http_proxy_buf, ' ') + 1), login, pass);
+      hydra_report(stderr, "[INFO] Unusual return code: %c for %s:%s\n", (char)*(strchr(http_proxy_buf, ' ') + 1), login, pass);
     else if (verbose && *(ptr + 2) == '3')
       hydra_report(stderr, "[INFO] Potential success, could be false positive: %s:%s\n", login, pass);
     hydra_completed_pair();

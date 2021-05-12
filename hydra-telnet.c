@@ -36,7 +36,7 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
     if ((buf = hydra_receive_line(s)) == NULL)
       return 1;
 
-    if (index(buf, '/') != NULL || index(buf, '>') != NULL || index(buf, '%') != NULL || index(buf, '$') != NULL || index(buf, '#') != NULL) {
+    if (strchr(buf, '/') != NULL || strchr(buf, '>') != NULL || strchr(buf, '%') != NULL || strchr(buf, '$') != NULL || strchr(buf, '#') != NULL) {
       hydra_report_found_host(port, ip, "telnet", fp);
       hydra_completed_pair_found();
       free(buf);
@@ -76,7 +76,7 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
 
   /*win7 answering with do terminal type = 0xfd 0x18 */
   while ((buf = hydra_receive_line(s)) != NULL && make_to_lower(buf) && (strstr(buf, "login:") == NULL || strstr(buf, "last login:") != NULL) && strstr(buf, "sername:") == NULL) {
-    if ((miscptr != NULL && strstr(buf, miscptr) != NULL) || (miscptr == NULL && strstr(buf, "invalid") == NULL && strstr(buf, "failed") == NULL && strstr(buf, "bad ") == NULL && (index(buf, '/') != NULL || index(buf, '>') != NULL || index(buf, '$') != NULL || index(buf, '#') != NULL || index(buf, '%') != NULL || ((buf[1] == '\xfd') && (buf[2] == '\x18'))))) {
+    if ((miscptr != NULL && strstr(buf, miscptr) != NULL) || (miscptr == NULL && strstr(buf, "invalid") == NULL && strstr(buf, "failed") == NULL && strstr(buf, "bad ") == NULL && (strchr(buf, '/') != NULL || strchr(buf, '>') != NULL || strchr(buf, '$') != NULL || strchr(buf, '#') != NULL || strchr(buf, '%') != NULL || ((buf[1] == '\xfd') && (buf[2] == '\x18'))))) {
       hydra_report_found_host(port, ip, "telnet", fp);
       hydra_completed_pair_found();
       free(buf);

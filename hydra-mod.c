@@ -295,13 +295,13 @@ int32_t internal__hydra_connect(char *host, int32_t port, int32_t type, int32_t 
 
         send(s, buf, strlen(buf), 0);
         if (debug) {
-          char *ptr = index(buf, '\r');
+          char *ptr = strchr(buf, '\r');
           if (ptr != NULL)
             *ptr = 0;
           printf("DEBUG_CONNECT_PROXY_SENT: %s\n", buf);
         }
         recv(s, buf, 4096, 0);
-        if (strncmp("HTTP/", buf, 5) == 0 && (tmpptr = index(buf, ' ')) != NULL && *++tmpptr == '2') {
+        if (strncmp("HTTP/", buf, 5) == 0 && (tmpptr = strchr(buf, ' ')) != NULL && *++tmpptr == '2') {
           if (debug)
             printf("DEBUG_CONNECT_PROXY_OK\n");
         } else {
