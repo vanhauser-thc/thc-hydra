@@ -208,7 +208,7 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   complete_line = 0;
   tmpreplybuf[0] = 0;
 
-  while (http_buf != NULL && (strstr(http_buf, "HTTP/1.") == NULL || (index(http_buf, '\n') == NULL && complete_line == 0))) {
+  while (http_buf != NULL && (strstr(http_buf, "HTTP/1.") == NULL || (strchr(http_buf, '\n') == NULL && complete_line == 0))) {
     if (debug)
       printf("il: %d, tmpreplybuf: %s, http_buf: %s\n", complete_line, tmpreplybuf, http_buf);
     if (tmpreplybuf[0] == 0 && strstr(http_buf, "HTTP/1.") != NULL) {
@@ -245,7 +245,7 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   if (debug)
     hydra_report(stderr, "S:%s\n", http_buf);
 
-  ptr = ((char *)index(http_buf, ' '));
+  ptr = ((char *)strchr(http_buf, ' '));
   if (ptr != NULL)
     ptr++;
   if (ptr != NULL && (*ptr == '2' || *ptr == '3' || strncmp(ptr, "403", 3) == 0 || strncmp(ptr, "404", 3) == 0)) {

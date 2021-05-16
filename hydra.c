@@ -1131,7 +1131,7 @@ void fill_mem(char *ptr, FILE *fd, int32_t colonmode) {
             tmp[len] = 0;
           }
           if (colonmode) {
-            if ((ptr2 = index(tmp, ':')) == NULL) {
+            if ((ptr2 = strchr(tmp, ':')) == NULL) {
               fprintf(stderr,
                       "[ERROR] invalid line in colon file (-C), missing colon "
                       "in line: %s\n",
@@ -1494,7 +1494,7 @@ void hydra_increase_fail_count(int32_t target_no, int32_t head_no) {
           fprintf(stderr,
                   "[ERROR] Too many connect errors to target, disabling "
                   "%s://%s%s%s:%d\n",
-                  hydra_options.service, hydra_targets[target_no]->ip[0] == 16 && index(hydra_targets[target_no]->target, ':') != NULL ? "[" : "", hydra_targets[target_no]->target, hydra_targets[target_no]->ip[0] == 16 && index(hydra_targets[target_no]->target, ':') != NULL ? "]" : "", hydra_targets[target_no]->port);
+                  hydra_options.service, hydra_targets[target_no]->ip[0] == 16 && strchr(hydra_targets[target_no]->target, ':') != NULL ? "[" : "", hydra_targets[target_no]->target, hydra_targets[target_no]->ip[0] == 16 && strchr(hydra_targets[target_no]->target, ':') != NULL ? "]" : "", hydra_targets[target_no]->port);
         }
         if (hydra_brains.targets > hydra_brains.finished)
           hydra_kill_head(head_no, 1, 0);
@@ -2047,11 +2047,11 @@ void process_proxy_line(int32_t type, char *string) {
   }
   *sep = 0;
   target_string = sep + 3;
-  if ((sep = index(target_string, '@')) != NULL) {
+  if ((sep = strchr(target_string, '@')) != NULL) {
     auth_string = target_string;
     *sep = 0;
     target_string = sep + 1;
-    if (index(auth_string, ':') == NULL) {
+    if (strchr(auth_string, ':') == NULL) {
       fprintf(stderr,
               "[WARNING] %s has an invalid authentication definition %s, must "
               "be in the format login:pass, entry ignored\n",
@@ -2059,14 +2059,14 @@ void process_proxy_line(int32_t type, char *string) {
       return;
     }
   }
-  if ((sep = index(target_string, ':')) != NULL) {
+  if ((sep = strchr(target_string, ':')) != NULL) {
     *sep = 0;
     port_string = sep + 1;
-    if ((sep = index(port_string, '%')) != NULL) {
+    if ((sep = strchr(port_string, '%')) != NULL) {
       *sep = 0;
       device_string = sep + 1;
     }
-    if ((sep = index(port_string, '/')) != NULL)
+    if ((sep = strchr(port_string, '/')) != NULL)
       *sep = 0;
     port = atoi(port_string);
     if (port < 1 || port > 65535) {
@@ -2595,23 +2595,23 @@ int main(int argc, char *argv[]) {
 
         if (*target_pos == '[') {
           target_pos++;
-          if ((param_pos = index(target_pos, ']')) == NULL)
+          if ((param_pos = strchr(target_pos, ']')) == NULL)
             bail("no closing ']' found in target definition");
           *param_pos++ = 0;
           if (*param_pos == ':')
             port_pos = ++param_pos;
-          if ((param_pos = index(param_pos, '/')) != NULL)
+          if ((param_pos = strchr(param_pos, '/')) != NULL)
             *param_pos++ = 0;
         } else {
-          port_pos = index(target_pos, ':');
-          param_pos = index(target_pos, '/');
+          port_pos = strchr(target_pos, ':');
+          param_pos = strchr(target_pos, '/');
           if (port_pos != NULL && param_pos != NULL && port_pos > param_pos)
             port_pos = NULL;
           if (port_pos != NULL)
             *port_pos++ = 0;
           if (param_pos != NULL)
             *param_pos++ = 0;
-          if (port_pos != NULL && index(port_pos, ':') != NULL) {
+          if (port_pos != NULL && strchr(port_pos, ':') != NULL) {
             if (prefer_ipv6)
               bail("Illegal IPv6 target definition must be written within '[' "
                    "']'");
@@ -2894,7 +2894,7 @@ int main(int argc, char *argv[]) {
                         "like parallel connections)\n");
         hydra_options.tasks = 1;
       }
-      if (hydra_options.login != NULL && (index(hydra_options.login, '\\') != NULL || index(hydra_options.login, '/') != NULL))
+      if (hydra_options.login != NULL && (strchr(hydra_options.login, '\\') != NULL || strchr(hydra_options.login, '/') != NULL))
         fprintf(stderr, "[WARNING] potential windows domain specification found in "
                         "login. You must use the -m option to pass a domain.\n");
       i = 1;
@@ -2918,7 +2918,7 @@ int main(int argc, char *argv[]) {
 #if !defined(LIBSMBCLIENT)
       bail("Compiled without LIBSMBCLIENT support, module not available!");
 #else
-      if (hydra_options.login != NULL && (index(hydra_options.login, '\\') != NULL || index(hydra_options.login, '/') != NULL))
+      if (hydra_options.login != NULL && (strchr(hydra_options.login, '\\') != NULL || strchr(hydra_options.login, '/') != NULL))
         fprintf(stderr, "[WARNING] potential windows domain specification found in "
                         "login. You must use the -m option to pass a domain.\n");
       if (hydra_options.miscptr == NULL || (strlen(hydra_options.miscptr) == 0)) {
@@ -3571,13 +3571,13 @@ int main(int argc, char *argv[]) {
         if (*tmpptr == '[') {
           tmpptr++;
           hydra_targets[i]->target = tmpptr;
-          if ((tmpptr2 = index(tmpptr, ']')) != NULL) {
+          if ((tmpptr2 = strchr(tmpptr, ']')) != NULL) {
             *tmpptr2++ = 0;
             tmpptr = tmpptr2;
           }
         } else
           hydra_targets[i]->target = tmpptr;
-        if ((tmpptr2 = index(hydra_targets[i]->target, ':')) != NULL) {
+        if ((tmpptr2 = strchr(hydra_targets[i]->target, ':')) != NULL) {
           *tmpptr2++ = 0;
           tmpptr = tmpptr2;
           hydra_targets[i]->port = atoi(tmpptr2);
@@ -3593,13 +3593,13 @@ int main(int argc, char *argv[]) {
     } else if (hydra_options.server == NULL) {
       fprintf(stderr, "Error: no target server given, nor -M option used\n");
       exit(-1);
-    } else if (index(hydra_options.server, '/') != NULL) {
+    } else if (strchr(hydra_options.server, '/') != NULL) {
       if (cmdlinetarget == NULL)
         bail("You seem to mix up \"service://target:port/options\" syntax with "
              "\"target service options\" syntax. Read the README on how to use "
              "hydra correctly!");
       if (strstr(cmdlinetarget, "://") != NULL) {
-        tmpptr = index(hydra_options.server, '/');
+        tmpptr = strchr(hydra_options.server, '/');
         if (tmpptr != NULL)
           *tmpptr = 0;
         countservers = hydra_brains.targets = 1;
@@ -3622,7 +3622,7 @@ int main(int argc, char *argv[]) {
           exit(-1);
         }
         strcpy(tmpptr, hydra_options.server);
-        tmpptr2 = index(tmpptr, '/');
+        tmpptr2 = strchr(tmpptr, '/');
         *tmpptr2++ = 0;
         if ((k = atoi(tmpptr2)) < 16 || k > 31) {
           fprintf(stderr, "Error: network size may only be between /16 and /31: %s\n", hydra_options.server);
@@ -3788,7 +3788,7 @@ int main(int argc, char *argv[]) {
   printf(" per task\n");
 
   if (hydra_brains.targets == 1) {
-    if (index(hydra_targets[0]->target, ':') == NULL) {
+    if (strchr(hydra_targets[0]->target, ':') == NULL) {
       printf("[DATA] attacking %s%s://%s:", hydra_options.service, hydra_options.ssl == 1 ? "s" : "", hydra_targets[0]->target);
       printf("%d%s%s\n", port, hydra_options.miscptr == NULL || hydra_options.miscptr[0] != '/' ? "/" : "", hydra_options.miscptr != NULL ? hydra_options.miscptr : "");
     } else {
@@ -3864,7 +3864,7 @@ int main(int argc, char *argv[]) {
 #ifdef AF_INET6
     ipv6 = NULL;
 #endif
-    if ((device = index(hydra_targets[i]->target, '%')) != NULL)
+    if ((device = strchr(hydra_targets[i]->target, '%')) != NULL)
       *device++ = 0;
     if (getaddrinfo(hydra_targets[i]->target, NULL, &hints, &res) != 0) {
       if (use_proxy == 0) {

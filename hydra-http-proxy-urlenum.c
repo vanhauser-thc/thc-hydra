@@ -28,17 +28,17 @@ int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned cha
     ptr++;
   strncpy(mhost, ptr, sizeof(mhost) - 1);
   mhost[sizeof(mhost) - 1] = 0;
-  if ((ptr = index(mhost, '/')) != NULL)
+  if ((ptr = strchr(mhost, '/')) != NULL)
     *ptr = 0;
-  if ((ptr = index(mhost, ']')) != NULL)
+  if ((ptr = strchr(mhost, ']')) != NULL)
     *ptr = 0;
-  else if ((ptr = index(mhost, ':')) != NULL)
+  else if ((ptr = strchr(mhost, ':')) != NULL)
     *ptr = 0;
 
-  if (miscptr != NULL && index(miscptr, ':') != NULL) {
+  if (miscptr != NULL && strchr(miscptr, ':') != NULL) {
     strncpy(mlogin, miscptr, sizeof(mlogin) - 1);
     mlogin[sizeof(mlogin) - 1] = 0;
-    ptr = index(mlogin, ':');
+    ptr = strchr(mlogin, ':');
     *ptr++ = 0;
     strncpy(mpass, ptr, sizeof(mpass) - 1);
     mpass[sizeof(mpass) - 1] = 0;
@@ -215,7 +215,7 @@ int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned cha
     }
   }
   // result analysis
-  ptr = ((char *)index(buf, ' ')) + 1;
+  ptr = ((char *)strchr(buf, ' ')) + 1;
   if (*ptr == '2' || (*ptr == '3' && (*(ptr + 2) == '1' || *(ptr + 2) == '2')) || strncmp(ptr, "404", 4) == 0 || strncmp(ptr, "403", 4) == 0) {
     hydra_report_found_host(port, ip, "http-proxy", fp);
     if (fp != stdout)

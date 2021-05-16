@@ -572,17 +572,17 @@ char *html_encode(char *string) {
   if (ret == NULL)
     return NULL;
 
-  if (index(ret, '%') != NULL)
+  if (strchr(ret, '%') != NULL)
     ret = hydra_strrep(ret, "%", "%25");
-  if (index(ret, ' ') != NULL)
+  if (strchr(ret, ' ') != NULL)
     ret = hydra_strrep(ret, " ", "%20");
-  if (index(ret, '&') != NULL)
+  if (strchr(ret, '&') != NULL)
     ret = hydra_strrep(ret, "&", "%26");
-  if (index(ret, '#') != NULL)
+  if (strchr(ret, '#') != NULL)
     ret = hydra_strrep(ret, "#", "%23");
-  if (index(ret, '=') != NULL)
+  if (strchr(ret, '=') != NULL)
     ret = hydra_strrep(ret, "=", "%3D");
-  if (index(ret, '+') != NULL)
+  if (strchr(ret, '+') != NULL)
     ret = hydra_strrep(ret, "+", "%2B");
 
   return ret;
@@ -646,10 +646,10 @@ int32_t analyze_server_response(int32_t s) {
         } else if (endcookie2 != NULL)
           *endcookie2 = 0;
         // is the cookie already there? if yes, remove it!
-        if (index(startcookie, '=') != NULL && (ptr = index(startcookie, '=')) - startcookie + 1 <= sizeof(tmpname)) {
+        if (strchr(startcookie, '=') != NULL && (ptr = strchr(startcookie, '=')) - startcookie + 1 <= sizeof(tmpname)) {
           strncpy(tmpname, startcookie, sizeof(tmpname) - 2);
           tmpname[sizeof(tmpname) - 2] = 0;
-          ptr = index(tmpname, '=');
+          ptr = strchr(tmpname, '=');
           *(++ptr) = 0;
           // is the cookie already in the cookiejar? (so, does it have to be
           // replaced?)
@@ -675,7 +675,7 @@ int32_t analyze_server_response(int32_t s) {
             strcpy(cookie, tmpcookie);
           }
         }
-        ptr = index(str, '=');
+        ptr = strchr(str, '=');
         // only copy the cookie if it has a value (otherwise the server wants to
         // delete the cookie)
         if (ptr != NULL && *(ptr + 1) != ';' && *(ptr + 1) != 0 && *(ptr + 1) != '\n' && *(ptr + 1) != '\r') {
@@ -1286,7 +1286,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
 
   cond = ptr;
 
-  if ((ptr2 = index(ptr, ':')) != NULL) {
+  if ((ptr2 = strchr(ptr, ':')) != NULL) {
     *ptr2++ = 0;
     if (*ptr2)
       optional1 = ptr2;
