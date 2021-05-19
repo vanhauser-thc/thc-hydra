@@ -1957,7 +1957,7 @@ void hydra_skip_user(int32_t target_no, char *username) {
     hydra_targets[target_no]->skipcnt++;
   }
   if (hydra_options.loop_mode == 0 && !check_flag(hydra_options.mode, MODE_COLON_FILE)) {
-    if (memcmp(username, hydra_targets[target_no]->login_ptr, strlen(username)) == 0) {
+    if (strcmp(username, hydra_targets[target_no]->login_ptr) == 0) {
       if (debug)
         printf("[DEBUG] skipping username %s\n", username);
       // increase count
