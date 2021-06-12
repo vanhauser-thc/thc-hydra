@@ -884,7 +884,7 @@ void hydra_restore_read() {
 
   login_ptr = malloc(hydra_brains.sizelogin + hydra_brains.countlogin + 8);
   if (!login_ptr) {
-    fprintf(stderr, "Error: malloc(%u) failed\n", hydra_brains.sizelogin + hydra_brains.countlogin + 8);
+    fprintf(stderr, "Error: malloc(%lu) failed\n", hydra_brains.sizelogin + hydra_brains.countlogin + 8);
     exit(-1);
   }
   fck = (int32_t)fread(login_ptr, hydra_brains.sizelogin + hydra_brains.countlogin + 8, 1, f);
@@ -893,7 +893,7 @@ void hydra_restore_read() {
   if (!check_flag(hydra_options.mode, MODE_COLON_FILE)) { // NOT colonfile mode
     pass_ptr = malloc(hydra_brains.sizepass + hydra_brains.countpass + 8);
     if (!pass_ptr) {
-      fprintf(stderr, "Error: malloc(%u) failed\n", hydra_brains.sizepass + hydra_brains.countpass + 8);
+      fprintf(stderr, "Error: malloc(%lu) failed\n", hydra_brains.sizepass + hydra_brains.countpass + 8);
       exit(-1);
     }
     fck = (int32_t)fread(pass_ptr, hydra_brains.sizepass + hydra_brains.countpass + 8, 1, f);
@@ -906,13 +906,13 @@ void hydra_restore_read() {
 
   hydra_targets = (hydra_target **)malloc((hydra_brains.targets + 3) * sizeof(hydra_target *));
   if (!hydra_targets) {
-    fprintf(stderr, "Error: malloc(%u) failed\n", (hydra_brains.targets + 3) * sizeof(hydra_target *));
+    fprintf(stderr, "Error: malloc(%lu) failed\n", (hydra_brains.targets + 3) * sizeof(hydra_target *));
     exit(-1);
   }
   for (j = 0; j < hydra_brains.targets; j++) {
     hydra_targets[j] = malloc(sizeof(hydra_target));
     if (!hydra_targets[j]) {
-      fprintf(stderr, "Error: malloc(%u) failed\n", sizeof(hydra_target));
+      fprintf(stderr, "Error: malloc(%lu) failed\n", sizeof(hydra_target));
       exit(-1);
     }
     fck = (int32_t)fread(hydra_targets[j], sizeof(hydra_target), 1, f);
@@ -967,13 +967,13 @@ void hydra_restore_read() {
     printf("[DEBUG] reading restore file: Step 11 complete\n");
   hydra_heads = malloc(sizeof(hydra_head *) * hydra_options.max_use);
   if (!hydra_heads) {
-    fprintf(stderr, "Error: malloc(%u) failed\n", sizeof(hydra_head *) * hydra_options.max_use);
+    fprintf(stderr, "Error: malloc(%lu) failed\n", sizeof(hydra_head *) * hydra_options.max_use);
     exit(-1);
   }
   for (j = 0; j < hydra_options.max_use; j++) {
     hydra_heads[j] = malloc(sizeof(hydra_head));
     if (!hydra_heads[j]) {
-      fprintf(stderr, "Error: malloc(%u) failed\n", sizeof(hydra_head));
+      fprintf(stderr, "Error: malloc(%lu) failed\n", sizeof(hydra_head));
       exit(-1);
     }
     fck = (int32_t)fread(hydra_heads[j], sizeof(hydra_head), 1, f);
