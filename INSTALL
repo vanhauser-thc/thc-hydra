@@ -6,6 +6,24 @@ you run "./configure":
   Redhat/Fedora:  yum install openssl-devel pcre-devel ncpfs-devel postgresql-devel libssh-devel subversion-devel libncurses-devel
   OpenSuSE:       zypper install libopenssl-devel pcre-devel libidn-devel ncpfs-devel libssh-devel postgresql-devel subversion-devel libncurses-devel
 
+
+###  Note:
+
+Due to the Android file system, the installation on it is different, please follow these steps:
+
+```
+# Necessary dependencies
+pkg install -y x11-repo
+pkg install -y clang make openssl openssl-tool wget openssh coreutils gtk2 gtk3
+# Compiling hydra
+./configure --prefix=$PREFIX
+make
+make install
+```
+
+To use xhydra, you will need to install a graphical output in termux, you can be guided from [this article](https://wiki.termux.com/wiki/Graphical_Environment)
+
+
 For the Oracle login module, install the basic and SDK packages:
  http://www.oracle.com/technetwork/database/features/instant-client/index.html
 
