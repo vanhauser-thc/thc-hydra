@@ -7,11 +7,10 @@ you run "./configure":
   OpenSuSE:       zypper install libopenssl-devel pcre-devel libidn-devel ncpfs-devel libssh-devel postgresql-devel subversion-devel libncurses-devel
 
 
-###  Note:
+Note:
 
 Due to the Android file system, the installation on it is different, please follow these steps:
 
-```
 # Necessary dependencies
 pkg install -y x11-repo
 pkg install -y clang make openssl openssl-tool wget openssh coreutils gtk2 gtk3
