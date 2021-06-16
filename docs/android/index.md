@@ -26,7 +26,9 @@ pkg install -y clang make openssl openssl-tool wget openssh coreutils gtk2 gtk3
 make && make install 
 ```
 
-To use xhydra, you will need to install a graphical output in termux, you can be guided from this article:
+then you can use hydra in the termux terminal 
+
+To use xhydra (GUI), you will need to install a graphical output in termux, you can be guided from this article:
 
 [https://wiki.termux.com/wiki/Graphical_Environment](https://wiki.termux.com/wiki/Graphical_Environment)
 
