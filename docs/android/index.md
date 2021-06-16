@@ -25,3 +25,16 @@ pkg install -y clang make openssl openssl-tool wget openssh coreutils gtk2 gtk3
 ./configure --prefix=$PREFIX
 make && make install 
 ```
+
+To use xhydra, you will need to install a graphical output in termux, you can be guided from this article:
+
+[https://wiki.termux.com/wiki/Graphical_Environment](https://wiki.termux.com/wiki/Graphical_Environment)
+
+If you have never used a GUI on Android or are not able to configure it, 
+you can use these projects from the termux community:
+
+- [openbox by adi1090x](https://github.com/adi1090x/termux-desktop) 
+
+- [lxqt by yisus](https://github.com/Yisus7u7/termux-desktop-lxqt)
+
+- [xfce4 by yisus](https://github.com/Yisus7u7/termux-desktop-xfce) 
