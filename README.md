@@ -73,6 +73,7 @@ make
 make install
 ```
 
+`Note`: To compile hydra on Android (termux) [follow this articule](https://vanhauser-thc.github.io/thc-hydra/docs/android) 
 If you want the ssh module, you have to setup libssh (not libssh2!) on your
 system,  get it from [http://www.libssh.org](http://www.libssh.org), for ssh v1 support you also need
 to add "-DWITH_SSH1=On" option in the cmake command line.
