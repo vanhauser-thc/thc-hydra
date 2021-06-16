@@ -52,12 +52,12 @@ Your help in writing, enhancing or fixing modules is highly appreciated!! :-)
 WHERE TO GET
 ------------
 You can always find the newest release/production version of hydra at its
-project page at https://github.com/vanhauser-thc/thc-hydra/releases
+project page at [https://github.com/vanhauser-thc/thc-hydra/releases](https://github.com/vanhauser-thc/thc-hydra/releases) 
 If you are interested in the current development state, the public development
 repository is at Github:
-  svn co https://github.com/vanhauser-thc/thc-hydra
+  svn co [https://github.com/vanhauser-thc/thc-hydra](https://github.com/vanhauser-thc/thc-hydra) 
  or
-  git clone https://github.com/vanhauser-thc/thc-hydra
+  git clone [https://github.com/vanhauser-thc/thc-hydra](https://github.com/vanhauser-thc/thc-hydra)
 Use the development version at your own risk. It contains new features and
 new bugs. Things might not work!
 
