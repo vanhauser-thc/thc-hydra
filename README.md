@@ -74,7 +74,7 @@ make install
 ```
 
 If you want the ssh module, you have to setup libssh (not libssh2!) on your
-system,  get it from http://www.libssh.org, for ssh v1 support you also need
+system,  get it from [http://www.libssh.org](http://www.libssh.org), for ssh v1 support you also need
 to add "-DWITH_SSH1=On" option in the cmake command line.
 IMPORTANT: If you compile on MacOS then you must do this - do not install libssh via brew!
 
