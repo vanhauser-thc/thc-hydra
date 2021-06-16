@@ -7,17 +7,16 @@ you run "./configure":
   OpenSuSE:       zypper install libopenssl-devel pcre-devel libidn-devel ncpfs-devel libssh-devel postgresql-devel subversion-devel libncurses-devel
 
 
-Note:
+For Termux/Android you need the following setup:
 
-Due to the Android file system, the installation on it is different, please follow these steps:
+Install the necessary dependencies
+  # pkg install -y x11-repo
+  # pkg install -y clang make openssl openssl-tool wget openssh coreutils gtk2 gtk3
+And then compiling hydra
+  # ./configure --prefix=$PREFIX
+  # make
+  # make install
 
-# Necessary dependencies
-pkg install -y x11-repo
-pkg install -y clang make openssl openssl-tool wget openssh coreutils gtk2 gtk3
-# Compiling hydra
-./configure --prefix=$PREFIX
-make
-make install
 
 To use xhydra, you will need to install a graphical output in termux, you can be guided from this article:
 
