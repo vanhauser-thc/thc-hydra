@@ -1,7 +1,7 @@
 ## thc-hydra
 ### How to compile hydra on Android
 
-Hydra is layers running on Android without rodent permission,
+Hydra can run on Android without root permissions,
 this is thanks to [Termux](https://termux.com/), A powerful emulator
 of terminal with an ecosystem of packages. 
 
