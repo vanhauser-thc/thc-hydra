@@ -1,3 +1,6 @@
+![image](https://opengraph.githubassets.com/91871daab983cd69e18846c4f5c40a547e91638b3fe6064d81d9bb4574d95e73/vanhauser-thc/thc-hydra) 
+
+
 
 				  H Y D R A
 
@@ -52,12 +55,12 @@ Your help in writing, enhancing or fixing modules is highly appreciated!! :-)
 WHERE TO GET
 ------------
 You can always find the newest release/production version of hydra at its
-project page at https://github.com/vanhauser-thc/thc-hydra/releases
+project page at [https://github.com/vanhauser-thc/thc-hydra/releases](https://github.com/vanhauser-thc/thc-hydra/releases) 
 If you are interested in the current development state, the public development
 repository is at Github:
-  svn co https://github.com/vanhauser-thc/thc-hydra
+  svn co [https://github.com/vanhauser-thc/thc-hydra](https://github.com/vanhauser-thc/thc-hydra) 
  or
-  git clone https://github.com/vanhauser-thc/thc-hydra
+  git clone [https://github.com/vanhauser-thc/thc-hydra](https://github.com/vanhauser-thc/thc-hydra)
 Use the development version at your own risk. It contains new features and
 new bugs. Things might not work!
 
@@ -73,8 +76,11 @@ make
 make install
 ```
 
+`Note`: To compile hydra on Android (termux) [follow this articule](https://vanhauser-thc.github.io/thc-hydra/docs/android)
+
+ 
 If you want the ssh module, you have to setup libssh (not libssh2!) on your
-system,  get it from http://www.libssh.org, for ssh v1 support you also need
+system,  get it from [http://www.libssh.org](http://www.libssh.org), for ssh v1 support you also need
 to add "-DWITH_SSH1=On" option in the cmake command line.
 IMPORTANT: If you compile on MacOS then you must do this - do not install libssh via brew!
 
