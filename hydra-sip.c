@@ -42,7 +42,7 @@ int32_t get_sip_code(char *buf) {
   int32_t code;
   char tmpbuf[SIP_MAX_BUF], word[SIP_MAX_BUF];
 
-  if (sscanf(buf, "%s %i %s", tmpbuf, &code, word) != 3)
+  if (sscanf(buf, "%256s %i %256s", tmpbuf, &code, word) != 3)
     return -1;
   return code;
 }
