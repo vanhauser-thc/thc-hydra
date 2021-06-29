@@ -3,6 +3,8 @@ Changelog for hydra
 
 Release 9.3-dev
 * fix for ssh to support -M or ip/range
+* for vnc/cisco/... protocols that only check for a password, skip host
+  after the password is found
 
 
 Release 9.2

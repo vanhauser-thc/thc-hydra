@@ -3310,6 +3310,9 @@ int main(int argc, char *argv[]) {
       hydra_options.port = port;
     }
 
+    if (hydra_options.login == NULL && hydra_options.loginfile == NULL)
+      hydra_options.exit_found = 1;
+
     if (hydra_options.ssl == 0 && hydra_options.port == 443)
       fprintf(stderr, "[WARNING] you specified port 443 for attacking a http "
                       "service, however did not specify the -S ssl switch nor "
