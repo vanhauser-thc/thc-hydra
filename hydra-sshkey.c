@@ -33,8 +33,9 @@ int32_t start_sshkey(int32_t s, char *ip, int32_t port, unsigned char options, c
   if (new_session) {
     if (session) {
       ssh_disconnect(session);
-      ssh_finalize();
       ssh_free(session);
+    } else {
+      ssh_init();
     }
 
     session = ssh_new();

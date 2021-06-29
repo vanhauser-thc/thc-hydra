@@ -34,11 +34,12 @@ int32_t start_ssh(int32_t s, char *ip, int32_t port, unsigned char options, char
   if (new_session) {
     if (session) {
       ssh_disconnect(session);
-      ssh_finalize();
+      //ssh_finalize();
       ssh_free(session);
+    } else {
+      ssh_init();
     }
 
-    ssh_init();
     session = ssh_new();
     ssh_options_set(session, SSH_OPTIONS_PORT, &port);
     ssh_options_set(session, SSH_OPTIONS_HOST, hydra_address2string(ip));
@@ -173,6 +174,7 @@ int32_t service_ssh_init(char *ip, int32_t sp, unsigned char options, char *misc
   //   3 skip target because its unreachable
 #ifdef LIBSSH
   int32_t rc, method;
+  ssh_init();
   ssh_session session = ssh_new();
 
   if (verbose || debug)

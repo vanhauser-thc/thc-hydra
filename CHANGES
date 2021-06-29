@@ -1,6 +1,9 @@
 Changelog for hydra
 -------------------
 
+Release 9.3-dev
+* fix for ssh to support -M or ip/range
+
 
 Release 9.2
 * fix for http-post-form optional parameters
