@@ -9,6 +9,7 @@ char *http_buf = NULL;
 #define END_CONDITION_MAX_LEN 100
 static char end_condition[END_CONDITION_MAX_LEN];
 int end_condition_type = -1;
+int match_status_code = 0;
 
 int32_t webport;
 int32_t http_auth_mechanism = AUTH_UNASSIGNED;
@@ -248,6 +249,25 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   ptr = ((char *)strchr(http_buf, ' '));
   if (ptr != NULL)
     ptr++;
+  // check status
+  if (match_status_code != 0) {
+    char *status_code;
+    memset(status_code, 0, 3);
+
+    for (int i = 0; i < 3; i++) {
+      *(status_code + i) = *(ptr + i);
+    }
+
+    if (match_status_code == atoi(status_code)) {
+      if (end_condition == -1) {
+        if (debug)
+          hydra_report(stderr, "Status code condition %d match.\n", status_code);
+        hydra_report_found_host(port, ip, "www", fp);
+        hydra_completed_pair_found();
+      }
+    }
+  }
+
   if (ptr != NULL && (*ptr == '2' || *ptr == '3' || strncmp(ptr, "403", 3) == 0 || strncmp(ptr, "404", 3) == 0)) {
 #ifdef HAVE_PCRE
     if (end_condition_type >= 0 && hydra_string_match(http_buf, end_condition) != end_condition_type) {
@@ -426,37 +446,67 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
   //   -1  error, hydra will exit, so print a good error message here
 
   /*POU CODE */
-  char *start = strstr(miscptr, "F=");
-  if (start == NULL)
-    start = strstr(miscptr, "S=");
 
-  if (start != NULL) {
-    if (start[0] == 'F')
-      end_condition_type = 0;
-    else
-      end_condition_type = 1;
+  char *delim = ":";
+  strtok(miscptr, delim);
+  char *p;
 
-    int condition_len = strlen(start);
-    memset(end_condition, 0, END_CONDITION_MAX_LEN);
-    if (condition_len >= END_CONDITION_MAX_LEN) {
-      hydra_report(stderr, "Condition string cannot be bigger than %u.", END_CONDITION_MAX_LEN);
-      return -1;
+  while ((p = strtok(NULL, delim))) {
+    if (strstr(p, "F=") != NULL || strstr(p, "S=") != NULL) {
+      char *match_text_start = strstr(p, "F=");
+      if (match_text_start == NULL)
+        match_text_start = strstr(p, "S=");
+
+      if (match_text_start != NULL) {
+        if (match_text_start[0] == 'F')
+          end_condition_type = 0;
+        else
+          end_condition_type = 1;
+
+        int condition_len = strlen(match_text_start);
+        memset(end_condition, 0, END_CONDITION_MAX_LEN);
+        if (condition_len >= END_CONDITION_MAX_LEN) {
+          hydra_report(stderr, "Condition string cannot be bigger than %u.", END_CONDITION_MAX_LEN);
+          return -1;
+        }
+        // copy condition witout starting string (F= or S=  2char)
+        strncpy(end_condition, match_text_start + 2, condition_len - 2);
+        if (debug)
+          hydra_report(stderr, "End condition is %s, mod is %d\n", end_condition, end_condition_type);
+
+        if (*(match_text_start - 1) == ' ')
+          match_text_start--;
+        memset(match_text_start, '\0', condition_len);
+        if (debug)
+          hydra_report(stderr, "Modificated options:%s\n", miscptr);
+      } else {
+        if (debug)
+          hydra_report(stderr, "Condition not found\n");
+      }
     }
-    // copy condition witout starting string (F= or S=  2char)
-    strncpy(end_condition, start + 2, condition_len - 2);
-    if (debug)
-      hydra_report(stderr, "End condition is %s, mod is %d\n", end_condition, end_condition_type);
 
-    if (*(start - 1) == ' ')
-      start--;
-    memset(start, '\0', condition_len);
-    if (debug)
-      hydra_report(stderr, "Modificated options:%s\n", miscptr);
-  } else {
-    if (debug)
-      hydra_report(stderr, "Condition not found\n");
+    if (strstr(p, "c=") != NULL || strstr(p, 'C=') != NULL) {
+      if (strlen(p) != 2 + 3) {
+        hydra_report(stderr, "Invalid status code, eg: 200.");
+        return -1;
+      }
+
+      char *status_code;
+      memset(status_code, 0, 3);
+
+      strncpy(status_code, p + 2, 3);
+
+      for (int i = 0; i < strlen(status_code); i++) {
+        if (!isdigit(*(status_code + i))) {
+          hydra_report(stderr, "Invalid status code, eg: 200");
+          return -1;
+        }
+      }
+
+      match_status_code = atoi(status_code);
+      free(status_code);
+    }
   }
-
   return 0;
 }
 
@@ -467,6 +517,8 @@ void usage_http(const char *service) {
          "NTLM or MD5\n"
          " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each "
          "request\n"
+         " (c|C)=check for status code in the HTTP reply. If the reply status "
+         " code matches it, it is judged as successful \n"
          " (F|S)=check for text in the HTTP reply. S= means if this text is "
          "found, a\n"
          "       valid account has been found, F= means if this string is "
