@@ -504,7 +504,10 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
       }
 
       match_status_code = atoi(status_code);
-      free(status_code);
+      
+      if (debug) {
+        hydra_report(stdout, "Find match reply status code: %d", match_status_code);
+      }
     }
   }
   return 0;
@@ -517,8 +520,8 @@ void usage_http(const char *service) {
          "NTLM or MD5\n"
          " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each "
          "request\n"
-         " (c|C)=check for status code in the HTTP reply. If the reply status "
-         " code matches it, it is judged as successful \n"
+         " (c|C)=check for status code in the HTTP reply. If the reply status code\n"
+         "       matches it, it is judged as successful \n"
          " (F|S)=check for text in the HTTP reply. S= means if this text is "
          "found, a\n"
          "       valid account has been found, F= means if this string is "
