@@ -97,7 +97,7 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
     fooptr = buffer2;
     result = sasl_digest_md5(fooptr, login, pass, buffer, miscptr, type, webtarget, webport, header);
     if (result == NULL) {
-      frefreeM(buffer);
+      freeM(buffer);
       freeM(header);
       return 3;
     }
