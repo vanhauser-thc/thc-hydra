@@ -501,8 +501,8 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
 
           match_status_code[pos++] = value;
 
-          if (pos > MAX_STATUS_CODE_SIZE) {
-            hydra_report(stderr, "Match up to %d status codes.", MAX_STATUS_CODE_SIZE);
+          if (pos >= MAX_STATUS_CODE_SIZE) {
+            hydra_report(stderr, "Status code quantity must be less than %d", MAX_STATUS_CODE_SIZE);
             free(cp);
             return -1;
           }
