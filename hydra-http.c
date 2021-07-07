@@ -263,6 +263,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   // check status
   if (match_status_code != NULL) {
     for (int i = 0; match_status_code[i]; i++) {
+      if(match_status_code[i] == 0)
+        continue;
       if (match_status_code[i] == atoi(ptr)) {
         if (end_condition_type == -1) {
           if (debug)
@@ -456,13 +458,14 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
 
 
 
-  char *misc = (char *)malloc(strlen(miscptr));
+  char *misc = (char *)malloc(strlen(miscptr) + 1);
+  char *cp = misc;
   memset(misc, '\0', strlen(miscptr));
   strcpy(misc, miscptr);
 
   char *delim = ":";
   char *p = NULL;
-  char *match_text_start = NULL;
+  char* match_text_start = NULL;
   memset(match_status_code, '\0', MAX_STATUS_CODE_SIZE);
 
 #if defined __APPLE__ || __linux__ || __unix__
@@ -476,7 +479,7 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
       if (strstr(p, "r=") != NULL || strstr(p, "R=") != NULL) {
         if (strlen(p) < 3) {
           hydra_report(stderr, "Invalid status code, eg: 200 or 200|400.");
-          free(misc);
+          free(cp);
           misc = NULL;
           return -1;
         }
@@ -492,7 +495,7 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
 
           if ((n != 1 && tmp != '|') || value > 1000) {
             hydra_report(stderr, "Invalid status code, eg: 200 or 200|400.");
-            free(misc);
+            free(cp);
             return -1;
           }
 
@@ -500,7 +503,7 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
 
           if (pos > MAX_STATUS_CODE_SIZE) {
             hydra_report(stderr, "Match up to %d status codes.", MAX_STATUS_CODE_SIZE);
-            free(misc);
+            free(cp);
             return -1;
           }
 
@@ -517,14 +520,17 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
       }
       if (strstr(p, "F=") != NULL || strstr(p, "S=") != NULL) {
         int size = 0;
-        if (misc != NULL) {
+        if (misc != NULL && strlen(misc) != 0) {
           size += strlen(misc) + 1;
         }
         size += strlen(p);
-        match_text_start = (char *)malloc(size);
-        memset(match_text_start, '\0', strlen(match_text_start));
-        strcat(match_text_start, p);
-        if (misc != NULL) {
+        if(size == strlen(p)) {
+          match_text_start = p;
+        } else {
+          match_text_start = (char *) realloc(p, size);
+        }
+      
+        if (misc != NULL && strlen(misc) != 0) {
           strcat(match_text_start, ":");
           strcat(match_text_start, misc);
         }
@@ -543,8 +549,8 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
 
       if (condition_len >= END_CONDITION_MAX_LEN) {
         hydra_report(stderr, "Condition string cannot be bigger than %u.", END_CONDITION_MAX_LEN);
-        free(misc);
-        free(match_text_start);
+        free(cp);
+        
         return -1;
       }
 
@@ -553,12 +559,11 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
       if (debug)
         hydra_report(stderr, "End condition is %s, mod is %d\n", end_condition, end_condition_type);
 
-      free(match_text_start);
-      match_text_start = NULL;
-
       if (debug)
         hydra_report(stderr, "Modificated options:%s\n", miscptr);
     }
+
+    free(cp);
 
     return 0;
   }
