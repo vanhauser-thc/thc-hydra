@@ -261,7 +261,7 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
     ptr++;
 
   // check status
-  if (match_status_code != NULL) {
+  if (match_status_code != NULL && match_status_code[0] != 0) {
     for (int i = 0; match_status_code[i]; i++) {
       if(match_status_code[i] == 0)
         continue;
@@ -272,9 +272,22 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
           hydra_report_found_host(port, ip, "www", fp);
           hydra_completed_pair_found();
 
+          if (http_buf != NULL) {
+            freeM(http_buf);
+          }
+
           goto finish;
         }
       }
+    }
+    
+    if (end_condition_type == -1) {
+      // Skip when status codes do not match
+      hydra_completed_pair();
+      if (http_buf != NULL) {
+        freeM(http_buf);
+      }
+      goto finish;
     }
   }
 
