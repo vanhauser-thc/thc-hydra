@@ -1,36 +1,28 @@
 
-				  H Y D R A
+# THC-Hydra
 
-                      (c) 2001-2021 by van Hauser / THC
-             <vh@thc.org> https://github.com/vanhauser-thc/thc-hydra
-       many modules were written by David (dot) Maciejak @ gmail (dot) com
-                 BFG code by Jan Dlabal <dlabaljan@gmail.com>
+(c) 2001-2021 by van Hauser / THC
+<vh@thc.org> https://github.com/vanhauser-thc/thc-hydra
 
-  		    Licensed under AGPLv3 (see LICENSE file)
+Many modules were written by David (dot) Maciejak @ gmail (dot) com
 
-           Please do not use in military or secret service organizations,
-                          or for illegal purposes.
-      (This is the wish of the author and non-binding. Many people working
-       in these organizations do not care for laws and ethics anyways.
-            You are not one of the "good" ones if you ignore this.)
+BFG code by Jan Dlabal <dlabaljan@gmail.com>
 
+Licensed under AGPLv3 (see LICENSE file)
 
+Please do not use in military or secret service organizations, or for illegal purposes. (This is the wish of the author and non-binding. Many people working in these organizations do not care for laws and ethics anyways. You are not one of the "good" ones if you ignore this.)
 
-INTRODUCTION
-------------
-Number one of the biggest security holes are passwords, as every password
-security study shows.
-This tool is a proof of concept code, to give researchers and security
-consultants the possibility to show how easy it would be to gain unauthorized
-access from remote to a system.
+# Introduction
+
+Passwords are a major security problem, as evident in many password security studies.
+This tool is a proof of concept code intended to allow researchers and security
+consultants to demonstrate the ease with which they may gain remote unauthorized access to a system.
 
 THIS TOOL IS FOR LEGAL PURPOSES ONLY!
 
-There are already several login hacker tools available, however, none does
-either support more than one protocol to attack or support parallelized
-connects.
+There are already several login hacker tools available; however, many do not support more than one protocol to attack or lack support for parallelized connections.
 
-It was tested to compile cleanly on Linux, Windows/Cygwin, Solaris,
+Hydra was tested to compile cleanly on Linux, Windows/Cygwin, Solaris,
 FreeBSD/OpenBSD, QNX (Blackberry 10) and MacOS.
 
 Currently this tool supports the following protocols:
@@ -43,16 +35,14 @@ Currently this tool supports the following protocols:
  SSH (v1 and v2), SSHKEY, Subversion, Teamspeak (TS2), Telnet, VMware-Auth,
  VNC and XMPP.
 
-However the module engine for new services is very easy so it won't take a
+However, the module engine for new services is very easy; it won't take a
 long time until even more services are supported.
 Your help in writing, enhancing or fixing modules is highly appreciated!! :-)
 
+# Where to Get
 
-
-WHERE TO GET
-------------
 You can always find the newest release/production version of hydra at its
-project page at https://github.com/vanhauser-thc/thc-hydra/releases
+[project page](https://github.com/vanhauser-thc/thc-hydra/releases). 
 If you are interested in the current development state, the public development
 repository is at Github:
   svn co https://github.com/vanhauser-thc/thc-hydra
@@ -61,10 +51,8 @@ repository is at Github:
 Use the development version at your own risk. It contains new features and
 new bugs. Things might not work!
 
+# How to Compile
 
-
-HOW TO COMPILE
---------------
 To configure, compile and install hydra, just type:
 
 ```
@@ -73,9 +61,9 @@ make
 make install
 ```
 
-If you want the ssh module, you have to setup libssh (not libssh2!) on your
-system,  get it from http://www.libssh.org, for ssh v1 support you also need
-to add "-DWITH_SSH1=On" option in the cmake command line.
+If you want the ssh module, you have to setup [libssh](http://www.libssh.org) (not libssh2!) on your
+system. For ssh v1 support you also need
+to add `-DWITH_SSH1=On` option in the cmake command line.
 IMPORTANT: If you compile on MacOS then you must do this - do not install libssh via brew!
 
 If you use Ubuntu/Debian, this will install supplementary libraries needed
@@ -97,20 +85,16 @@ software installer and look for similarly named libraries like in the
 command above. In all other cases, you have to download all source libraries
 and compile them manually.
 
+# Supported Platforms
 
-
-SUPPORTED PLATFORMS
--------------------
 - All UNIX platforms (Linux, *BSD, Solaris, etc.)
 - MacOS (basically a BSD clone)
 - Windows with Cygwin (both IPv4 and IPv6)
 - Mobile systems based on Linux, MacOS or QNX (e.g. Android, iPhone, Blackberry 10, Zaurus, iPaq)
 
+# How to Use
 
-
-HOW TO USE
-----------
-If you just enter `hydra`, you will see a short summary of the important
+Type `hydra` to view a short summary of the important
 options available.
 Type `./hydra -h` to see all available command line options.
 
@@ -121,8 +105,12 @@ a list.
 For Linux users, a GTK GUI is available, try `./xhydra`
 
 For the command line usage, the syntax is as follows:
- For attacking one target or a network, you can use the new "://" style:
+ For attacking one target or a network, you can use the new `://` style:
+
+```
   hydra [some command line options] PROTOCOL://TARGET:PORT/MODULE-OPTIONS
+```
+
  The old mode can be used for these too, and additionally if you want to
  specify your targets from a text file, you *must* use this one:
 
@@ -138,39 +126,49 @@ http-get or many others are available
 TARGET is the target you want to attack
 MODULE-OPTIONS are optional values which are special per PROTOCOL module
 
-FIRST - select your target
- you have three options on how to specify the target you want to attack:
+## Step 1: Select your target
+
+ You have three options on how to specify the target you want to attack:
  1. a single target on the command line: just put the IP or DNS address in
  2. a network range on the command line: CIDR specification like "192.168.0.0/24"
  3. a list of hosts in a text file: one line per entry (see below)
 
-SECOND - select your protocol
+## Step 2: Select your protocol
+
  Try to avoid telnet, as it is unreliable to detect a correct or false login attempt.
  Use a port scanner to see which protocols are enabled on the target.
 
-THIRD - check if the module has optional parameters
- hydra -U PROTOCOL
- e.g. hydra -U smtp
+## Step 3: Check if the module has optional parameters
 
-FOURTH - the destination port
- this is optional, if no port is supplied the default common port for the
+ `hydra -U PROTOCOL`
+ e.g. `hydra -U smtp`
+
+## Step 4: The destination port
+
+ This is optional, if no port is supplied the default common port for the
  PROTOCOL is used.
- If you specify SSL to use ("-S" option), the SSL common port is used by default.
+ If you specify SSL to use (`-S` option), the SSL common port is used by default.
 
+If you use `://` notation, you must use `[" "]` brackets if you want to supply
+IPv6 addresses or CIDR (`192.168.0.0/24`) notations to attack:
 
-If you use "://" notation, you must use "[" "]" brackets if you want to supply
-IPv6 addresses or CIDR ("192.168.0.0/24") notations to attack:
+```
   hydra [some command line options] ftp://[192.168.0.0/24]/
   hydra [some command line options] -6 smtps://[2001:db8::1]/NTLM
+```
 
-Note that everything hydra does is IPv4 only!
-If you want to attack IPv6 addresses, you must add the "-6" command line option.
+Note that everything hydra does is IPv4 only.
+If you want to attack IPv6 addresses, you must add the `-6` command line option.
 All attacks are then IPv6 only!
 
-If you want to supply your targets via a text file, you can not use the ://
+If you want to supply your targets via a text file, you can not use the `://`
 notation but use the old style and just supply the protocol (and module options):
-  hydra [some command line options] -M targets.txt ftp
-You can also supply the port for each target entry by adding ":<port>" after a
+
+```  
+hydra [some command line options] -M targets.txt ftp
+```
+
+You can also supply the port for each target entry by adding `:<port>` after a
 target entry in the file, e.g.:
 
 ```
@@ -194,13 +192,14 @@ target.com:21
 [2a01:24a:133:0:00:123:ff:1a]
 ```
 
-LOGINS AND PASSWORDS
---------------------
+# Logins and Passwords
+
 You have many options on how to attack with logins and passwords
-With -l for login and -p for password you tell hydra that this is the only
+With `-l` for login and `-p` for password, you tell hydra that this is the only
 login and/or password to try.
-With -L for logins and -P for passwords you supply text files with entries.
-e.g.:
+With `-L` for logins and `-P` for passwords, you supply text files with entries.
+
+E.g.:
 
 ```
 hydra -l admin -p password ftp://localhost/
@@ -209,8 +208,8 @@ hydra -l admin -P common_passwords.txt ftp://localhost/
 hydra -L logins.txt -P passwords.txt ftp://localhost/
 ```
 
-Additionally, you can try passwords based on the login via the "-e" option.
-The "-e" option has three parameters:
+Additionally, you can try passwords based on the login via the `-e` option.
+The `-e` option has three parameters:
 
 ```
 s - try the login as password
@@ -219,9 +218,9 @@ r - reverse the login and try it as password
 ```
 
 If you want to, e.g. try "try login as password and "empty password", you 
-specify "-e sn" on the command line.
+specify `-e sn` on the command line.
 
-But there are two more modes for trying passwords than -p/-P:
+But there are two more modes for trying passwords than `-p/-P`:
 You can use text file which where a login and password pair is separated by a colon,
 e.g.:
 
@@ -233,8 +232,8 @@ foo:bar
 
 This is a common default account style listing, that is also generated by the
 dpl4hydra.sh default account file generator supplied with hydra.
-You use such a text file with the -C option - note that in this mode you
-can not use -l/-L/-p/-P options (-e nsr however you can).
+You use such a text file with the `-C` option - note that in this mode you
+can not use `-l/-L/-p/-P` options (`-e nsr` however you can).
 Example:
 
 ```
@@ -264,22 +263,22 @@ Example:
 hydra -l ftp -x 3:3:a ftp://localhost/
 ```
 
-SPECIAL OPTIONS FOR MODULES
----------------------------
-Via the third command line parameter (TARGET SERVICE OPTIONAL) or the -m
+# Special Options for Modules
+
+Via the third command line parameter (TARGET SERVICE OPTIONAL) or the `-m`
 command line option, you can pass one option to a module.
 Many modules use this, a few require it!
 
 To see the special option of a module, type:
-
+```
   hydra -U <module>
-
+```
 e.g.
-
+```
   ./hydra -U http-post-form
-
-The special options can be passed via the -m parameter, as 3rd command line
-option or in the service://target/option format.
+```
+The special options can be passed via the `-m` parameter, as 3rd command line
+option or in the `service://target/option` format.
 
 Examples (they are all equal):
 
@@ -289,16 +288,16 @@ Examples (they are all equal):
 ./hydra -l test -p test imap://127.0.0.1/PLAIN
 ```
 
-RESTORING AN ABORTED/CRASHED SESSION
-------------------------------------
+# Restoring an Aborted or Crashed Session
+
 When hydra is aborted with Control-C, killed or crashes, it leaves a
 "hydra.restore" file behind which contains all necessary information to
 restore the session. This session file is written every 5 minutes.
 NOTE: the hydra.restore file can NOT be copied to a different platform (e.g.
 from little endian to big endian, or from Solaris to AIX)
 
-HOW TO SCAN/CRACK OVER A PROXY
-------------------------------
+# How to Scan or Crack Over a Proxy
+
 The environment variable HYDRA_PROXY_HTTP defines the web proxy (this works
 just for the http services!).
 The following syntax is valid:
@@ -327,46 +326,45 @@ HYDRA_PROXY=socks4://auth:pw@127.0.0.1:1080
 HYDRA_PROXY=socksproxylist.txt
 ```
 
-ADDITIONAL HINTS
-----------------
-* sort your password files by likelihood and use the -u option to find
-  passwords much faster!
-* uniq your dictionary files! this can save you a lot of time :-)
-    cat words.txt | sort | uniq > dictionary.txt
-* if you know that the target is using a password policy (allowing users
+# Additional Hints
+
+- Sort your password files by likelihood and use the -u option to find
+  passwords much faster.
+- Uniq your dictionary files! This can save you a lot of time :-)
+    `cat words.txt | sort | uniq > dictionary.txt`
+- If you know that the target is using a password policy (allowing users
   only to choose a password with a minimum length of 6, containing a least one
   letter and one number, etc. use the tool pw-inspector which comes along
   with the hydra package to reduce the password list:
     cat dictionary.txt | pw-inspector -m 6 -c 2 -n > passlist.txt
 
 
-RESULTS OUTPUT
---------------
+# Results Output
 
 The results are output to stdio along with the other information.  Via the -o
 command line option, the results can also be written to a file.  Using -b,
 the format of the output can be specified.  Currently, these are supported:
 
-* `text`   - plain text format
-* `jsonv1` - JSON data using version 1.x of the schema (defined below).
-* `json`   - JSON data using the latest version of the schema, currently there
+- `text`   - plain text format
+- `jsonv1` - JSON data using version 1.x of the schema (defined below).
+- `json`   - JSON data using the latest version of the schema, currently there
              is only version 1.
 
 If using JSON output, the results file may not be valid JSON if there are
 serious errors in booting Hydra.
 
 
-JSON Schema
------------
+# JSON Schema
+
 Here is an example of the JSON output.  Notes on some of the fields:
 
-* `errormessages` - an array of zero or more strings that are normally printed
+- `errormessages` - an array of zero or more strings that are normally printed
    to stderr at the end of the Hydra's run.  The text is very free form.
-* `success` - indication if Hydra ran correctly without error (**NOT** if
+- `success` - indication if Hydra ran correctly without error (**NOT** if
    passwords were detected).  This parameter is either the JSON value `true`
    or `false` depending on completion.  
-* `quantityfound` - How many username+password combinations discovered.
-* `jsonoutputversion` - Version of the schema, 1.00, 1.01, 1.11, 2.00,
+- `quantityfound` - How many username+password combinations discovered.
+- `jsonoutputversion` - Version of the schema, 1.00, 1.01, 1.11, 2.00,
    2.03, etc.  Hydra will make second tuple of the version to always be two
    digits to make it easier for downstream processors (as opposed to v1.1 vs
    v1.10).  The minor-level versions are additive, so 1.02 will contain more
@@ -411,19 +409,16 @@ Version 1.00 example:
 }
 ```
 
+# Speed
 
-SPEED
------
-through the parallelizing feature, this password cracker tool can be very
+Through the parallelizing feature, this password cracker tool can be very
 fast, however it depends on the protocol. The fastest are generally POP3
 and FTP.
 Experiment with the task option (-t) to speed things up! The higher - the
 faster ;-) (but too high - and it disables the service)
 
+# Statistics
 
-
-STATISTICS
-----------
 Run against a SuSE Linux 7.2 on localhost with a "-C FILE" containing
 295 entries (294 tries invalid logins, 1 valid). Every test was run three
 times (only for "1 task" just once), and the average noted down.
@@ -448,22 +443,20 @@ guesses per task (rounded up):
   295	74	38	19	10	6	5	3	3
 
 guesses possible per connect (depends on the server software and config):
-	
+```	
   telnet	4
-	ftp	6
+	ftp	    6
 	pop3	1
 	imap	3
+```
 
 
+# Bugs and Features
 
-BUGS & FEATURES
----------------
-Hydra:
 Email me or David if you find bugs or if you have written a new module.
 vh@thc.org (and put "antispam" in the subject line)
 
-
-You should use PGP to encrypt emails to vh@thc.org :
+You should use PGP to encrypt emails to vh@thc.org; please encrypt your email with the following public key:
 
 ```
 -----BEGIN PGP PUBLIC KEY BLOCK-----
