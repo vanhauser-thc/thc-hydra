@@ -10,8 +10,20 @@ char *http_buf = NULL;
 static char end_condition[END_CONDITION_MAX_LEN];
 int end_condition_type = -1;
 
+#define MAX_STATUS_CODE_SIZE 10
+int match_status_code[MAX_STATUS_CODE_SIZE];
+
 int32_t webport;
 int32_t http_auth_mechanism = AUTH_UNASSIGNED;
+
+void freeMemory(void **ptr) {
+  if (ptr != NULL && *ptr != NULL) {
+    free(*ptr);
+    *ptr = NULL;
+  }
+}
+
+#define freeM(p) freeMemory((void **)(&(p)))
 
 int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp, char *type, ptr_header_node ptr_head) {
   char *empty = "";
@@ -33,7 +45,7 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
   buffer_size = strlen(header) + 500;
   if (!(buffer = malloc(buffer_size))) {
-    free(header);
+    freeM(header);
     return 3;
   }
 
@@ -85,8 +97,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
     fooptr = buffer2;
     result = sasl_digest_md5(fooptr, login, pass, buffer, miscptr, type, webtarget, webport, header);
     if (result == NULL) {
-      free(buffer);
-      free(header);
+      freeM(buffer);
+      freeM(header);
       return 3;
     }
 
@@ -128,21 +140,21 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
     }
 
     if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
-      free(buffer);
-      free(header);
+      freeM(buffer);
+      freeM(header);
       return 1;
     }
 
     // receive challenge
     if (http_buf != NULL)
-      free(http_buf);
+      freeM(http_buf);
 
     http_buf = hydra_receive_line(s);
     if (http_buf == NULL) {
       if (verbose)
         hydra_report(stderr, "[ERROR] Server did not answer\n");
-      free(buffer);
-      free(header);
+      freeM(buffer);
+      freeM(header);
       return 3;
     }
 
@@ -164,8 +176,7 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
     // recover challenge
     from64tobits((char *)buf1, pos);
-    free(http_buf);
-    http_buf = NULL;
+    freeM(http_buf);
 
     // Send response
     buildAuthResponse((tSmbNtlmAuthChallenge *)buf1, (tSmbNtlmAuthResponse *)buf2, 0, login, pass, NULL, NULL);
@@ -197,13 +208,13 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   }
 
   if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
-    free(buffer);
-    free(header);
+    freeM(buffer);
+    freeM(header);
     return 1;
   }
 
   if (http_buf != NULL)
-    free(http_buf);
+    freeM(http_buf);
   http_buf = hydra_receive_line(s);
   complete_line = 0;
   tmpreplybuf[0] = 0;
@@ -214,20 +225,20 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
     if (tmpreplybuf[0] == 0 && strstr(http_buf, "HTTP/1.") != NULL) {
       strncpy(tmpreplybuf, http_buf, sizeof(tmpreplybuf) - 1);
       tmpreplybuf[sizeof(tmpreplybuf) - 1] = 0;
-      free(http_buf);
+      freeM(http_buf);
       http_buf = hydra_receive_line(s);
     } else if (tmpreplybuf[0] != 0) {
       complete_line = 1;
       if ((tmpreplybufptr = malloc(strlen(tmpreplybuf) + strlen(http_buf) + 1)) != NULL) {
         strcpy(tmpreplybufptr, tmpreplybuf);
         strcat(tmpreplybufptr, http_buf);
-        free(http_buf);
+        freeM(http_buf);
         http_buf = tmpreplybufptr;
         if (debug)
           printf("http_buf now: %s\n", http_buf);
       }
     } else {
-      free(http_buf);
+      freeM(http_buf);
       http_buf = hydra_receive_line(s);
     }
   }
@@ -237,8 +248,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   if (http_buf == NULL) {
     if (verbose)
       hydra_report(stderr, "[ERROR] Server did not answer\n");
-    free(buffer);
-    free(header);
+    freeM(buffer);
+    freeM(header);
     return 3;
   }
 
@@ -248,6 +259,38 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   ptr = ((char *)strchr(http_buf, ' '));
   if (ptr != NULL)
     ptr++;
+
+  // check status
+  if (match_status_code != NULL && match_status_code[0] != 0) {
+    for (int i = 0; match_status_code[i]; i++) {
+      if(match_status_code[i] == 0)
+        continue;
+      if (match_status_code[i] == atoi(ptr)) {
+        if (end_condition_type == -1) {
+          if (debug)
+            hydra_report(stderr, "Status code condition %d match.\n", match_status_code[i]);
+          hydra_report_found_host(port, ip, "www", fp);
+          hydra_completed_pair_found();
+
+          if (http_buf != NULL) {
+            freeM(http_buf);
+          }
+
+          goto finish;
+        }
+      }
+    }
+    
+    if (end_condition_type == -1) {
+      // Skip when status codes do not match
+      hydra_completed_pair();
+      if (http_buf != NULL) {
+        freeM(http_buf);
+      }
+      goto finish;
+    }
+  }
+
   if (ptr != NULL && (*ptr == '2' || *ptr == '3' || strncmp(ptr, "403", 3) == 0 || strncmp(ptr, "404", 3) == 0)) {
 #ifdef HAVE_PCRE
     if (end_condition_type >= 0 && hydra_string_match(http_buf, end_condition) != end_condition_type) {
@@ -264,8 +307,7 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
       hydra_completed_pair_found();
     }
     if (http_buf != NULL) {
-      free(http_buf);
-      http_buf = NULL;
+      freeM(http_buf);
     }
   } else {
     if (ptr != NULL && *ptr != '4')
@@ -290,8 +332,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
       if (find_auth) {
         //        free(http_buf);
         //        http_buf = NULL;
-        free(buffer);
-        free(header);
+        freeM(buffer);
+        freeM(header);
         return 1;
       }
     }
@@ -299,9 +341,9 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   }
   //  free(http_buf);
   //  http_buf = NULL;
-
-  free(buffer);
-  free(header);
+finish:
+  freeM(buffer);
+  freeM(header);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     return 3;
 
@@ -426,54 +468,135 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
   //   -1  error, hydra will exit, so print a good error message here
 
   /*POU CODE */
-  char *start = strstr(miscptr, "F=");
-  if (start == NULL)
-    start = strstr(miscptr, "S=");
 
-  if (start != NULL) {
-    if (start[0] == 'F')
-      end_condition_type = 0;
-    else
-      end_condition_type = 1;
 
-    int condition_len = strlen(start);
-    memset(end_condition, 0, END_CONDITION_MAX_LEN);
-    if (condition_len >= END_CONDITION_MAX_LEN) {
-      hydra_report(stderr, "Condition string cannot be bigger than %u.", END_CONDITION_MAX_LEN);
-      return -1;
+
+  char *misc = (char *)malloc(strlen(miscptr) + 1);
+  char *cp = misc;
+  memset(misc, '\0', strlen(miscptr));
+  strcpy(misc, miscptr);
+
+  char *delim = ":";
+  char *p = NULL;
+  char* match_text_start = NULL;
+  memset(match_status_code, '\0', MAX_STATUS_CODE_SIZE);
+
+#if defined __APPLE__ || __linux__ || __unix__
+  while ((p = strtok_r(NULL, delim, &misc))) {
+#endif
+
+#ifdef _WIN32
+    while ((p = strtok_s(NULL, delim, &misc))) {
+#endif
+
+      if (strstr(p, "r=") != NULL || strstr(p, "R=") != NULL) {
+        if (strlen(p) < 3) {
+          hydra_report(stderr, "Invalid status code, eg: 200 or 200|400.");
+          free(cp);
+          misc = NULL;
+          return -1;
+        }
+
+        char tmp;
+        int value, n;
+        int pos = 0;
+
+        p += 2;
+
+        while (p) {
+          n = sscanf(p, "%3d%c", &value, &tmp);
+
+          if ((n != 1 && tmp != '|') || value > 1000) {
+            hydra_report(stderr, "Invalid status code, eg: 200 or 200|400.");
+            free(cp);
+            return -1;
+          }
+
+          match_status_code[pos++] = value;
+
+          if (pos >= MAX_STATUS_CODE_SIZE) {
+            hydra_report(stderr, "Status code quantity must be less than %d", MAX_STATUS_CODE_SIZE);
+            free(cp);
+            return -1;
+          }
+
+          if (n == 1) {
+            break;
+          }
+
+          p = strchr(p, '|');
+
+          if (p) {
+            ++p;
+          }
+        }
+      }
+      if (strstr(p, "F=") != NULL || strstr(p, "S=") != NULL) {
+        int size = 0;
+        if (misc != NULL && strlen(misc) != 0) {
+          size += strlen(misc) + 1;
+        }
+        size += strlen(p);
+        if(size == strlen(p)) {
+          match_text_start = p;
+        } else {
+          match_text_start = (char *) realloc(p, size);
+        }
+      
+        if (misc != NULL && strlen(misc) != 0) {
+          strcat(match_text_start, ":");
+          strcat(match_text_start, misc);
+        }
+        break;
+      }
     }
-    // copy condition witout starting string (F= or S=  2char)
-    strncpy(end_condition, start + 2, condition_len - 2);
-    if (debug)
-      hydra_report(stderr, "End condition is %s, mod is %d\n", end_condition, end_condition_type);
 
-    if (*(start - 1) == ' ')
-      start--;
-    memset(start, '\0', condition_len);
-    if (debug)
-      hydra_report(stderr, "Modificated options:%s\n", miscptr);
-  } else {
-    if (debug)
-      hydra_report(stderr, "Condition not found\n");
+    if (match_text_start != NULL) {
+      if (match_text_start[0] == 'F')
+        end_condition_type = 0;
+      else
+        end_condition_type = 1;
+
+      int condition_len = strlen(match_text_start);
+      memset(end_condition, 0, END_CONDITION_MAX_LEN);
+
+      if (condition_len >= END_CONDITION_MAX_LEN) {
+        hydra_report(stderr, "Condition string cannot be bigger than %u.", END_CONDITION_MAX_LEN);
+        free(cp);
+        
+        return -1;
+      }
+
+      // copy condition witout starting string (F= or S=  2char)
+      strncpy(end_condition, match_text_start + 2, condition_len - 2);
+      if (debug)
+        hydra_report(stderr, "End condition is %s, mod is %d\n", end_condition, end_condition_type);
+
+      if (debug)
+        hydra_report(stderr, "Modificated options:%s\n", miscptr);
+    }
+
+    free(cp);
+
+    return 0;
   }
 
-  return 0;
-}
-
-void usage_http(const char *service) {
-  printf("Module %s requires the page to authenticate.\n"
-         "The following parameters are optional:\n"
-         " (a|A)=auth-type   specify authentication mechanism to use: BASIC, "
-         "NTLM or MD5\n"
-         " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each "
-         "request\n"
-         " (F|S)=check for text in the HTTP reply. S= means if this text is "
-         "found, a\n"
-         "       valid account has been found, F= means if this string is "
-         "present the\n"
-         "       combination is invalid. Note: this must be the last option "
-         "supplied.\n"
-         "For example:  \"/secret\" or \"http://bla.com/foo/bar:H=Cookie\\: "
-         "sessid=aaaa\" or \"https://test.com:8080/members:A=NTLM\"\n\n",
-         service);
-}
+  void usage_http(const char *service) {
+    printf("Module %s requires the page to authenticate.\n"
+           "The following parameters are optional:\n"
+           " (a|A)=auth-type   specify authentication mechanism to use: BASIC, "
+           "NTLM or MD5\n"
+           " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each "
+           "request\n"
+           " (r|R)=check for status code in the HTTP reply. If the reply status code\n"
+           "       matches it, it is judged as successful \n"
+           " (F|S)=check for text in the HTTP reply. S= means if this text is "
+           "found, a\n"
+           "       valid account has been found, F= means if this string is "
+           "present the\n"
+           "       combination is invalid. Note: this must be the last option "
+           "supplied.\n"
+           "For example:  \"/secret\" or \"http://bla.com/foo/bar:H=Cookie\\: "
+           "sessid=aaaa\" or \"https://test.com:8080/members:A=NTLM\"\n\n",
+           service);
+  }

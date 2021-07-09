@@ -37,12 +37,14 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
       return 1;
 
     if (strchr(buf, '/') != NULL || strchr(buf, '>') != NULL || strchr(buf, '%') != NULL || strchr(buf, '$') != NULL || strchr(buf, '#') != NULL) {
-      hydra_report_found_host(port, ip, "telnet", fp);
-      hydra_completed_pair_found();
-      free(buf);
-      if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
-        return 3;
-      return 1;
+      if (strstr(buf, "ailed") == NULL) {
+        hydra_report_found_host(port, ip, "telnet", fp);
+        hydra_completed_pair_found();
+        free(buf);
+        if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
+          return 3;
+        return 1;
+      }
     }
     (void)make_to_lower(buf);
 

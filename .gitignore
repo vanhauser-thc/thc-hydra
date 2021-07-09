@@ -14,3 +14,5 @@ pw-inspector
 pw-inspector.exe
 hydra.restore
 *~
+.vscode/
+build/
