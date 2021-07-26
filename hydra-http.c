@@ -270,9 +270,22 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
           hydra_report_found_host(port, ip, "www", fp);
           hydra_completed_pair_found();
 
+          if (http_buf != NULL) {
+            freeM(http_buf);
+          }
+
           goto finish;
         }
       }
+    }
+    
+    if (end_condition_type == -1) {
+      // Skip when status codes do not match
+      hydra_completed_pair();
+      if (http_buf != NULL) {
+        freeM(http_buf);
+      }
+      goto finish;
     }
   }
 
@@ -456,7 +469,8 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
 
 
 
-  char *misc = (char *)malloc(strlen(miscptr));
+  char *misc = (char *)malloc(strlen(miscptr) + 1);
+  char *cp = misc;
   memset(misc, '\0', strlen(miscptr));
   strcpy(misc, miscptr);
 
@@ -524,14 +538,17 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
 
       if (strstr(p, "F=") != NULL || strstr(p, "S=") != NULL) {
         int size = 0;
-        if (misc != NULL) {
+        if (misc != NULL && strlen(misc) != 0) {
           size += strlen(misc) + 1;
         }
         size += strlen(p);
-        match_text_start = (char *)malloc(size);
-        memset(match_text_start, '\0', strlen(match_text_start));
-        strcat(match_text_start, p);
-        if (misc != NULL) {
+        if(size == strlen(p)) {
+          match_text_start = p;
+        } else {
+          match_text_start = (char *) realloc(p, size);
+        }
+      
+        if (misc != NULL && strlen(misc) != 0) {
           strcat(match_text_start, ":");
           strcat(match_text_start, misc);
         }
@@ -565,6 +582,8 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
       if (debug)
         hydra_report(stderr, "Modificated options:%s\n", miscptr);
     }
+
+    free(cp);
 
     return 0;
   }
