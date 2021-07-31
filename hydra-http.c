@@ -477,6 +477,7 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
   const char *delim = ":";
   char *p = NULL;
   char *match_text_start = NULL;
+  int trun_flag = 0;
 
 #if defined __APPLE__ || __linux__ || __unix__
   while ((p = strtok_r(NULL, delim, &misc))) {
@@ -485,7 +486,6 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
 #ifdef _WIN32
     while ((p = strtok_s(NULL, delim, &misc))) {
 #endif
-
       if (strstr(p, "r=") != NULL || strstr(p, "R=") != NULL) {
         if (strlen(p) < 3) {
           hydra_report(stderr, "Invalid status code, eg: 200 or 200|400.");
@@ -498,6 +498,7 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
         char tmp;
         int value, n;
         int pos = 0;
+        int plen = strlen(p);
 
         p += 2;
 
@@ -534,9 +535,12 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
           match_status_code[i] = status_tmp[i];
         }
         freeM(status_tmp);
-      }
 
-      if (strstr(p, "F=") != NULL || strstr(p, "S=") != NULL) {
+        char *misc_tmp = (char *)malloc(strlen(miscptr) - plen);
+        sprintf(misc_tmp, "%.*s%.*s", trun_flag, miscptr, strlen(miscptr) - plen - trun_flag - 1, miscptr + trun_flag + plen + 1);
+        freeM(miscptr);
+        miscptr = misc_tmp;
+      } else if (strstr(p, "F=") != NULL || strstr(p, "S=") != NULL) {
         int size = 0;
         if (misc != NULL && strlen(misc) != 0) {
           size += strlen(misc) + 1;
@@ -552,7 +556,10 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
           strcat(match_text_start, ":");
           strcat(match_text_start, misc);
         }
+        memset(miscptr + trun_flag  + 1, '\0', size);
         break;
+      } else {
+        trun_flag += strlen(p);
       }
     }
 
@@ -568,7 +575,6 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
       if (condition_len >= END_CONDITION_MAX_LEN) {
         hydra_report(stderr, "Condition string cannot be bigger than %u.", END_CONDITION_MAX_LEN);
         freeM(misc);
-        freeM(match_text_start);
         return -1;
       }
 
@@ -577,7 +583,6 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
       if (debug)
         hydra_report(stderr, "End condition is %s, mod is %d\n", end_condition, end_condition_type);
 
-      freeM(match_text_start);
 
       if (debug)
         hydra_report(stderr, "Modificated options:%s\n", miscptr);

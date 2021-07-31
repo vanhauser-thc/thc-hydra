@@ -510,17 +510,8 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
       hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (H).\n");
       return 0;
     default:
-      while (*ptr != 0 && *ptr != ':')
-        ptr++;
-
-      if (*ptr != 0) {
-        *ptr = 0;
-        ptr += 1;
-      }
-
-      miscptr = ptr;
-      // hydra_report(stderr, "[ERROR] no valid optional parameter type given: %c\n", miscptr[0]);
-      // return 0;
+      hydra_report(stderr, "[ERROR] no valid optional parameter type given: %c\n", miscptr[0]);
+      return 0;
     }
   }
   return 1;
