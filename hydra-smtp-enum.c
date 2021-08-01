@@ -128,13 +128,13 @@ int32_t start_smtp_enum(int32_t s, char *ip, int32_t port, unsigned char options
     //#endif
     //      hydra_report(stderr, "Server %s", err);
     //    }
-    if (strncmp(buf, "500 ", 4) == 0) {
+    if (strncmp(buf, "500 ", 4) == 0 || strncmp(buf, "502 ", 4) == 0) {
       hydra_report(stderr,
                    "[ERROR] command is disabled on the server (choose "
                    "different method): %s",
                    buf);
       free(buf);
-      return 3;
+      return 4;
     }
     memset(buffer, 0, sizeof(buffer));
     // 503 5.5.1 Error: nested MAIL command
@@ -244,6 +244,12 @@ void service_smtp_enum(char *ip, int32_t sp, unsigned char options, char *miscpt
         sock = hydra_disconnect(sock);
       }
       hydra_child_exit(0);
+      return;
+    case 4: /* unsupported exit */
+      if (sock >= 0) {
+        sock = hydra_disconnect(sock);
+      }
+      hydra_child_exit(3);
       return;
     default:
       hydra_report(stderr, "[ERROR] Caught unknown return code, exiting!\n");

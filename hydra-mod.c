@@ -637,9 +637,11 @@ void hydra_child_exit(int32_t code) {
     __fck = write(intern_socket, "C", 1);
   else if (code == 2) /* application protocol error or service shutdown */
     __fck = write(intern_socket, "E", 1);
-  // code 3 means exit without telling mommy about it - a bad idea. mommy should
+  else if (code == 3) /* application protocol error or service shutdown */
+    __fck = write(intern_socket, "D", 1);
+  // code 4 means exit without telling mommy about it - a bad idea. mommy should
   // know
-  else if (code == -1 || code > 3) {
+  else if (code == -1 || code > 4) {
     fprintf(stderr, "[TOTAL FUCKUP] a module should not use "
                     "hydra_child_exit(-1) ! Fix it in the source please ...\n");
     __fck = write(intern_socket, "E", 1);
