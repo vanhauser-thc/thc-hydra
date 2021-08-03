@@ -16,6 +16,8 @@ int *match_status_code;
 int32_t webport;
 int32_t http_auth_mechanism = AUTH_UNASSIGNED;
 
+char *save_miscptr;
+
 void freeMemory(void **ptr) {
   if (ptr != NULL && *ptr != NULL) {
     free(*ptr);
@@ -32,6 +34,10 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   char *ptr, *fooptr;
   int32_t complete_line = 0, buffer_size;
   char tmpreplybuf[1024] = "", *tmpreplybufptr;
+
+  if (save_miscptr != miscptr) {
+    miscptr = save_miscptr;
+  }
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -357,6 +363,10 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
   unsigned char addr6[sizeof(struct in6_addr)];
 #endif
 
+if (save_miscptr != miscptr) {
+  miscptr = save_miscptr;
+}
+
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     return;
@@ -589,6 +599,8 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
     }
 
     free(cp);
+
+    save_miscptr = miscptr;
 
     return 0;
   }
