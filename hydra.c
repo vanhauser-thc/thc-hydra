@@ -4156,6 +4156,21 @@ int main(int argc, char *argv[]) {
                 fck = write(hydra_heads[head_no]->sp[1], "n", 1); // small hack
                 break;
 
+              case 'D': // disable target, unknown protocol or feature
+                for (j = 0; j < hydra_brains.targets; j++)
+                  if (hydra_targets[j]->done == TARGET_ACTIVE) {
+                    hydra_targets[j]->done = TARGET_FINISHED;
+                    hydra_brains.finished++;
+                  }
+                for (j = 0; j < hydra_options.max_use; j++)
+                  if (hydra_heads[j]->active >= 0 && hydra_heads[j]->target_no == target_no) {
+                    if (hydra_brains.targets > hydra_brains.finished)
+                      hydra_kill_head(j, 1, 0); // kill all heads working on the target
+                    else
+                      hydra_kill_head(j, 1, 2); // kill all heads working on the target
+                  }
+                break;
+
               // we do not make a difference between 'C' and 'E' results - yet
               case 'E': // head reports protocol error
               case 'C': // head reports connect error
