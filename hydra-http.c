@@ -537,7 +537,7 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
         freeM(status_tmp);
 
         char *misc_tmp = (char *)malloc(strlen(miscptr) - plen);
-        sprintf(misc_tmp, "%.*s%.*s", trun_flag, miscptr, strlen(miscptr) - plen - trun_flag - 1, miscptr + trun_flag + plen + 1);
+        sprintf(misc_tmp, "%.*s%.*s", trun_flag - 1, miscptr, strlen(miscptr) - plen - trun_flag - 1, miscptr + trun_flag + plen + 1);
         freeM(miscptr);
         miscptr = misc_tmp;
       } else if (strstr(p, "F=") != NULL || strstr(p, "S=") != NULL) {
@@ -559,7 +559,7 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
         memset(miscptr + trun_flag  + 1, '\0', size);
         break;
       } else {
-        trun_flag += strlen(p);
+        trun_flag += strlen(p) + 1;
       }
     }
 
