@@ -75,16 +75,53 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
   }
 
   /*win7 answering with do terminal type = 0xfd 0x18 */
-  while ((buf = hydra_receive_line(s)) != NULL && make_to_lower(buf) && (strstr(buf, "login:") == NULL || strstr(buf, "last login:") != NULL) && strstr(buf, "sername:") == NULL) {
-    if ((miscptr != NULL && strstr(buf, miscptr) != NULL) || (miscptr == NULL && strstr(buf, "invalid") == NULL && strstr(buf, "failed") == NULL && strstr(buf, "bad ") == NULL && (strchr(buf, '/') != NULL || strchr(buf, '>') != NULL || strchr(buf, '$') != NULL || strchr(buf, '#') != NULL || strchr(buf, '%') != NULL || ((buf[1] == '\xfd') && (buf[2] == '\x18'))))) {
+  while ((buf = hydra_receive_line(s)) != NULL && make_to_lower(buf) && (strstr(buf, "password:") == NULL || strstr(buf, "login:") == NULL || strstr(buf, "last login:") != NULL) && strstr(buf, "sername:") == NULL) {
+    if ((miscptr != NULL && strstr(buf, miscptr) != NULL) 
+    || (miscptr == NULL 
+          && strstr(buf, "invalid") == NULL 
+          && strstr(buf, "incorrect") == NULL 
+          && strstr(buf, "bad ") == NULL 
+              && (strchr(buf, '/') != NULL 
+              || strchr(buf, '>') != NULL 
+              || strchr(buf, '$') != NULL 
+              || strchr(buf, '#') != NULL 
+              || strchr(buf, '%') != NULL 
+              || ((buf[1] == '\xfd') 
+              && (buf[2] == '\x18')))
+          )) {
       hydra_report_found_host(port, ip, "telnet", fp);
       hydra_completed_pair_found();
       free(buf);
       if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
         return 3;
       return 1;
-    }
-    free(buf);
+    } else if (buf && strstr(buf, "assword:") ) {
+      hydra_completed_pair();
+      //printf("password prompt\n");
+      free(buf);
+      if (strlen(pass = hydra_get_next_password()) == 0)
+        pass = empty;
+      sprintf(buffer, "%s\r", pass);
+      if (no_line_mode) {
+        for (i = 0; i < strlen(buffer); i++) {
+          if (strcmp(&buffer[i], "\r") == 0) {
+            send(s, "\r\0", 2, 0);
+          } else {
+            send(s, &buffer[i], 1, 0);
+          }
+          usleepn(20);
+        }
+      } else {
+        if (hydra_send(s, buffer, strlen(buffer) + 1, 0) < 0) {
+          return 1;
+        }
+      }
+    } else if (buf && strstr(buf, "login:") ) {
+      free(buf);
+      hydra_completed_pair();
+      return 2;
+    } else
+      free(buf);
   }
 
   hydra_completed_pair();
