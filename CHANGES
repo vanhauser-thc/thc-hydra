@@ -5,6 +5,7 @@ Release 9.3-dev
 * fix for ssh to support -M or ip/range
 * for vnc/cisco/... protocols that only check for a password, skip host
   after the password is found
+* added "make uninstall"
 
 
 Release 9.2

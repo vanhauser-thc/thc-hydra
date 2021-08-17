@@ -89,3 +89,9 @@ clean:
 	rm -rf xhydra pw-inspector hydra *.o core *.core *.stackdump *~ Makefile.in Makefile dev_rfc hydra.restore arm/*.ipk arm/ipkg/usr/bin/* hydra-gtk/src/*.o hydra-gtk/src/xhydra hydra-gtk/stamp-h hydra-gtk/config.status hydra-gtk/errors hydra-gtk/config.log hydra-gtk/src/.deps hydra-gtk/src/Makefile hydra-gtk/Makefile
 	cp -f Makefile.orig Makefile
 
+uninstall:
+	-rm -f $(DESTDIR)$(PREFIX)$(BINDIR)/xhydra $(DESTDIR)$(PREFIX)$(BINDIR)/hydra $(DESTDIR)$(PREFIX)$(BINDIR)/pw-inspector $(DESTDIR)$(PREFIX)$(BINDIR)/hydra-wizard.sh $(DESTDIR)$(PREFIX)$(BINDIR)/dpl4hydra.sh
+	-rm -f $(DESTDIR)$(PREFIX)$(DATADIR)/dpl4hydra_full.csv $(DESTDIR)$(PREFIX)$(DATADIR)/dpl4hydra_local.csv
+	-rm -f $(DESTDIR)$(PREFIX)$(MANDIR)/hydra.1 $(DESTDIR)$(PREFIX)$(MANDIR)/xhydra.1 $(DESTDIR)$(PREFIX)$(MANDIR)/pw-inspector.1
+	-rm -f $(DESTDIR)$(PREFIX)$(PIXDIR)/xhydra.png
+	-rm -f $(DESTDIR)$(PREFIX)$(APPDIR)/xhydra.desktop
