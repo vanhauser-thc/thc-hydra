@@ -386,6 +386,7 @@ char *stringify_headers(ptr_header_node *ptr_head) {
     }
   }
 
+  
   return headers_str;
 }
 
