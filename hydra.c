@@ -204,13 +204,13 @@ extern int32_t service_rtsp_init(char *ip, int32_t sp, unsigned char options, ch
 extern int32_t service_rpcap_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 
 // ADD NEW SERVICES HERE
-char *SERVICES = "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp[s] "
+char *SERVICES = "adam6500 asterisk afp cisco cisco-enable cobaltstrike cvs firebird ftp[s] "
                  "http[s]-{head|get|post} http[s]-{get|post}-form http-proxy "
                  "http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] "
                  "memcached mongodb mssql mysql ncp nntp oracle oracle-listener oracle-sid "
                  "pcanywhere pcnfs pop3[s] postgres radmin2 rdp redis rexec rlogin rpcap "
                  "rsh rtsp s7-300 sapr3 sip smb smb2 smtp[s] smtp-enum snmp socks5 ssh "
-                 "sshkey svn teamspeak telnet[s] vmauthd vnc xmpp cobaltstrike";
+                 "sshkey svn teamspeak telnet[s] vmauthd vnc xmpp";
 
 #define MAXBUF 520
 #define MAXLINESIZE ((MAXBUF / 2) - 4)
