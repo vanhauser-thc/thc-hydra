@@ -1,6 +1,6 @@
 #include "hydra-mod.h"
 
-#define MSLEN 256
+#define CSLEN 256
 
 extern char *HYDRA_EXIT;
 char *buf;
@@ -8,7 +8,7 @@ char *buf;
 int32_t start_cobaltstrike(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";
   char *pass, buffer[4 + 1 + 256];
-  char ms_pass[MSLEN + 1];
+  char cs_pass[CSLEN + 1];
   unsigned char len_pass;
   unsigned char reply_byte_0;
   unsigned char reply_byte_1;
@@ -18,11 +18,11 @@ int32_t start_cobaltstrike(int32_t s, char *ip, int32_t port, unsigned char opti
 
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
-  if (strlen(pass) > MSLEN)
-    pass[MSLEN - 1] = 0;
+  if (strlen(pass) > CSLEN)
+    pass[CSLEN - 1] = 0;
   len_pass = strlen(pass);
-  memset(ms_pass, 0, MSLEN + 1);
-  strcpy(ms_pass, pass);
+  memset(cs_pass, 0, CSLEN + 1);
+  strcpy(cs_pass, pass);
 
   memset(buffer, 0x41, sizeof(buffer));
   buffer[0] = 0x00;
@@ -30,7 +30,7 @@ int32_t start_cobaltstrike(int32_t s, char *ip, int32_t port, unsigned char opti
   buffer[2] = 0xBE;
   buffer[3] = 0xEF;
   memcpy(buffer + 4, &len_pass, 1);
-  memcpy(buffer + 5, ms_pass, len_pass);
+  memcpy(buffer + 5, cs_pass, len_pass);
 
   if (hydra_send(s, buffer, sizeof(buffer), 0) < 0)
     return 1;
@@ -74,7 +74,7 @@ int32_t start_cobaltstrike(int32_t s, char *ip, int32_t port, unsigned char opti
 
 void service_cobaltstrike(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1;
-  int32_t myport = PORT_MSSQL, mysslport = PORT_MSSQL_SSL;
+  int32_t mysslport = PORT_COBALTSTRIKE_SSL;
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
