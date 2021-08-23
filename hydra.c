@@ -78,6 +78,7 @@ extern void service_http_post_form(char *ip, int32_t sp, unsigned char options, 
 extern void service_icq(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern void service_pcnfs(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern void service_mssql(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
+extern void service_cobaltstrike(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern void service_cvs(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern void service_snmp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
@@ -178,6 +179,7 @@ extern int32_t service_imap_init(char *ip, int32_t sp, unsigned char options, ch
 extern int32_t service_irc_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern int32_t service_ldap_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern int32_t service_mssql_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
+extern int32_t service_cobaltstrike_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern int32_t service_nntp_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern int32_t service_pcanywhere_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern int32_t service_pcnfs_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
@@ -202,7 +204,7 @@ extern int32_t service_rtsp_init(char *ip, int32_t sp, unsigned char options, ch
 extern int32_t service_rpcap_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 
 // ADD NEW SERVICES HERE
-char *SERVICES = "adam6500 asterisk afp cisco cisco-enable cvs firebird ftp[s] "
+char *SERVICES = "adam6500 asterisk afp cisco cisco-enable cobaltstrike cvs firebird ftp[s] "
                  "http[s]-{head|get|post} http[s]-{get|post}-form http-proxy "
                  "http-proxy-urlenum icq imap[s] irc ldap2[s] ldap3[-{cram|digest}md5][s] "
                  "memcached mongodb mssql mysql ncp nntp oracle oracle-listener oracle-sid "
@@ -402,6 +404,7 @@ static const struct {
                 {"memcached", service_mcached_init, service_mcached, NULL},
 #endif
                 SERVICE(mssql),
+                SERVICE(cobaltstrike),
 #ifdef LIBMONGODB
                 SERVICE3("mongodb", mongodb),
 #endif
@@ -1344,6 +1347,7 @@ int32_t hydra_lookup_port(char *service) {
                                       {"memcached", PORT_MCACHED, PORT_MCACHED_SSL},
                                       {"mongodb", PORT_MONGODB, PORT_MONGODB},
                                       {"mssql", PORT_MSSQL, PORT_MSSQL_SSL},
+                                      {"cobaltstrike", PORT_COBALTSTRIKE, PORT_COBALTSTRIKE_SSL},
                                       {"mysql", PORT_MYSQL, PORT_MYSQL_SSL},
                                       {"postgres", PORT_POSTGRES, PORT_POSTGRES_SSL},
                                       {"pcanywhere", PORT_PCANYWHERE, PORT_PCANYWHERE_SSL},
@@ -2800,6 +2804,8 @@ int main(int argc, char *argv[]) {
     }
     if (strcmp(hydra_options.service, "mssql") == 0)
       i = 1;
+    if (strcmp(hydra_options.service, "cobaltstrike") == 0)
+      i = 2;
     if ((strcmp(hydra_options.service, "oracle-listener") == 0) || (strcmp(hydra_options.service, "tns") == 0)) {
       i = 2;
       hydra_options.service = malloc(strlen("oracle-listener") + 1);
