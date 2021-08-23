@@ -2,6 +2,7 @@ Changelog for hydra
 -------------------
 
 Release 9.3-dev
+* New module: cobaltstrike by ultimaiiii, thank you!
 * fix for ssh to support -M or ip/range
 * for vnc/cisco/... protocols that only check for a password, skip host
   after the password is found

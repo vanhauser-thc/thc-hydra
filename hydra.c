@@ -1935,8 +1935,11 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
                 // the above line
     }
     if (debug || hydra_options.showAttempt) {
-      printf("[%sATTEMPT] target %s - login \"%s\" - pass \"%s\" - %" hPRIu64 " of %" hPRIu64 " [child %d] (%d/%d)\n", hydra_targets[target_no]->redo_state ? "REDO-" : snp_is_redo ? "RE-" : "", hydra_targets[target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr, hydra_targets[target_no]->sent, hydra_brains.todo + hydra_targets[target_no]->redo, head_no, hydra_targets[target_no]->redo_state ? hydra_targets[target_no]->redo_state - 1 : 0,
-             hydra_targets[target_no]->redo);
+      printf("[%sATTEMPT] target %s - login \"%s\" - pass \"%s\" - %" hPRIu64 " of %" hPRIu64 " [child %d] (%d/%d)\n",
+             hydra_targets[target_no]->redo_state ? "REDO-"
+             : snp_is_redo                        ? "RE-"
+                                                  : "",
+             hydra_targets[target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr, hydra_targets[target_no]->sent, hydra_brains.todo + hydra_targets[target_no]->redo, head_no, hydra_targets[target_no]->redo_state ? hydra_targets[target_no]->redo_state - 1 : 0, hydra_targets[target_no]->redo);
     }
     loop_cnt = 0;
     return 0;

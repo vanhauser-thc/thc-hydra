@@ -71,7 +71,7 @@ char *cmdlinetarget;
 typedef int32_t BOOL;
 #else /* __APPLE__ */
 /* ensure compatibility with objc libraries */
-#if (TARGET_OS_IPHONE && __LP64__)  ||  TARGET_OS_WATCH
+#if (TARGET_OS_IPHONE && __LP64__) || TARGET_OS_WATCH
 typedef bool BOOL;
 #else
 typedef signed char BOOL;

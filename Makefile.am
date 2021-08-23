@@ -17,7 +17,7 @@ APPDIR = /share/applications
 SRC = hydra-vnc.c hydra-pcnfs.c hydra-rexec.c hydra-nntp.c hydra-socks5.c \
       hydra-telnet.c hydra-cisco.c hydra-http.c hydra-ftp.c hydra-imap.c \
       hydra-pop3.c hydra-smb.c hydra-icq.c hydra-cisco-enable.c hydra-ldap.c \
-      hydra-memcached.c hydra-mongodb.c hydra-mysql.c hydra-mssql.c hydra-cobaltstrike.c hydra-xmpp.c \
+      hydra-memcached.c hydra-mongodb.c hydra-mysql.c hydra-mssql.c hydra-xmpp.c \
       hydra-http-proxy-urlenum.c hydra-snmp.c hydra-cvs.c hydra-smtp.c \
       hydra-smtp-enum.c hydra-sapr3.c hydra-ssh.c hydra-sshkey.c hydra-teamspeak.c \
       hydra-postgres.c hydra-rsh.c hydra-rlogin.c hydra-oracle-listener.c \
@@ -25,7 +25,7 @@ SRC = hydra-vnc.c hydra-pcnfs.c hydra-rexec.c hydra-nntp.c hydra-socks5.c \
       hydra-asterisk.c hydra-firebird.c hydra-afp.c hydra-ncp.c hydra-rdp.c \
       hydra-oracle-sid.c hydra-http-proxy.c hydra-http-form.c hydra-irc.c \
       hydra-s7-300.c hydra-redis.c hydra-adam6500.c hydra-rtsp.c \
-      hydra-rpcap.c hydra-radmin2.c \
+      hydra-rpcap.c hydra-radmin2.c hydra-cobaltstrike.c \
       hydra-time.c crc32.c d3des.c bfg.c ntlm.c sasl.c hmacmd5.c hydra-mod.c \
       hydra-smb2.c
 OBJ = hydra-vnc.o hydra-pcnfs.o hydra-rexec.o hydra-nntp.o hydra-socks5.o \

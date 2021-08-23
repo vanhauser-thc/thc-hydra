@@ -71,14 +71,12 @@ int32_t start_sip(int32_t s, char *ip, char *lip, int32_t port, int32_t lport, u
   }
 
   int32_t has_sip_cred = 0;
-  int32_t try
-    = 0;
+  int32_t try = 0;
 
   /* We have to check many times because server may begin to send "100 Trying"
    * before "401 Unauthorized" */
   while (try < 2 && !has_sip_cred) {
-    try
-      ++;
+    try++;
     if (hydra_data_ready_timed(s, 3, 0) > 0) {
       i = hydra_recv(s, (char *)buf, sizeof(buf) - 1);
       if (i > 0)
@@ -160,14 +158,12 @@ int32_t start_sip(int32_t s, char *ip, char *lip, int32_t port, int32_t lport, u
   if (hydra_send(s, buffer, strlen(buffer), 0) < 0) {
     return 3;
   }
-  try
-    = 0;
+  try = 0;
   int32_t has_resp = 0;
   int32_t sip_code = 0;
 
   while (try < 2 && !has_resp) {
-    try
-      ++;
+    try++;
     if (hydra_data_ready_timed(s, 5, 0) > 0) {
       memset(buf, 0, sizeof(buf));
       if ((i = hydra_recv(s, (char *)buf, sizeof(buf) - 1)) >= 0)

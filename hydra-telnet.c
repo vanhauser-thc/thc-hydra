@@ -76,28 +76,16 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
 
   /*win7 answering with do terminal type = 0xfd 0x18 */
   while ((buf = hydra_receive_line(s)) != NULL && make_to_lower(buf) && (strstr(buf, "password:") == NULL || strstr(buf, "login:") == NULL || strstr(buf, "last login:") != NULL) && strstr(buf, "sername:") == NULL) {
-    if ((miscptr != NULL && strstr(buf, miscptr) != NULL) 
-    || (miscptr == NULL 
-          && strstr(buf, "invalid") == NULL 
-          && strstr(buf, "incorrect") == NULL 
-          && strstr(buf, "bad ") == NULL 
-              && (strchr(buf, '/') != NULL 
-              || strchr(buf, '>') != NULL 
-              || strchr(buf, '$') != NULL 
-              || strchr(buf, '#') != NULL 
-              || strchr(buf, '%') != NULL 
-              || ((buf[1] == '\xfd') 
-              && (buf[2] == '\x18')))
-          )) {
+    if ((miscptr != NULL && strstr(buf, miscptr) != NULL) || (miscptr == NULL && strstr(buf, "invalid") == NULL && strstr(buf, "incorrect") == NULL && strstr(buf, "bad ") == NULL && (strchr(buf, '/') != NULL || strchr(buf, '>') != NULL || strchr(buf, '$') != NULL || strchr(buf, '#') != NULL || strchr(buf, '%') != NULL || ((buf[1] == '\xfd') && (buf[2] == '\x18'))))) {
       hydra_report_found_host(port, ip, "telnet", fp);
       hydra_completed_pair_found();
       free(buf);
       if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
         return 3;
       return 1;
-    } else if (buf && strstr(buf, "assword:") ) {
+    } else if (buf && strstr(buf, "assword:")) {
       hydra_completed_pair();
-      //printf("password prompt\n");
+      // printf("password prompt\n");
       free(buf);
       if (strlen(pass = hydra_get_next_password()) == 0)
         pass = empty;
@@ -116,7 +104,7 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
           return 1;
         }
       }
-    } else if (buf && strstr(buf, "login:") ) {
+    } else if (buf && strstr(buf, "login:")) {
       free(buf);
       hydra_completed_pair();
       return 2;

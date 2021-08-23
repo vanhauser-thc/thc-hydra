@@ -35,22 +35,22 @@ int32_t start_cobaltstrike(int32_t s, char *ip, int32_t port, unsigned char opti
   if (hydra_send(s, buffer, sizeof(buffer), 0) < 0)
     return 1;
 
-  reply_byte_0 = 0x00; 
+  reply_byte_0 = 0x00;
   ret = hydra_recv_nb(s, &reply_byte_0, 1);
   if (ret <= 0)
     return 3;
 
-  reply_byte_1 = 0x00; 
+  reply_byte_1 = 0x00;
   ret = hydra_recv_nb(s, &reply_byte_1, 1);
   if (ret <= 0)
     return 3;
 
-  reply_byte_2 = 0x00; 
+  reply_byte_2 = 0x00;
   ret = hydra_recv_nb(s, &reply_byte_2, 1);
   if (ret <= 0)
     return 3;
 
-  reply_byte_3 = 0x00; 
+  reply_byte_3 = 0x00;
   ret = hydra_recv_nb(s, &reply_byte_3, 1);
   if (ret <= 0)
     return 3;
