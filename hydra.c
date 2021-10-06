@@ -2220,6 +2220,10 @@ int main(int argc, char *argv[]) {
   SERVICES = hydra_string_replace(SERVICES, "radmin2 ", "");
   strcat(unsupported, "radmin2 ");
 #endif
+#ifndef LIBFREERDP
+  SERVICES = hydra_string_replace(SERVICES, "rdp ", "");
+  strcat(unsupported, "rdp ");
+#endif
 #ifndef LIBSAPR3
   SERVICES = hydra_string_replace(SERVICES, "sapr3 ", "");
   strcat(unsupported, "sapr3 ");
@@ -2265,11 +2269,6 @@ int main(int argc, char *argv[]) {
   // for oracle-sid
   SERVICES = hydra_string_replace(SERVICES, " oracle-sid", "");
   strcat(unsupported, "SSL-services (ftps, sip, rdp, oracle-services, ...) ");
-#endif
-
-#ifndef LIBFREERDP
-  // for rdp
-  SERVICES = hydra_string_replace(SERVICES, " rdp", "");
 #endif
 
 #ifndef HAVE_MATH_H
@@ -3940,9 +3939,10 @@ int main(int argc, char *argv[]) {
       }
       freeaddrinfo(res);
     }
-    // restore device information if present
+    // restore device information if present (overwrite null bytes)
     if (device != NULL) {
-      *(device - 1) = '%';
+      char *tmpptr = device - 1;
+      *tmpptr = '%';  // you can ignore the compiler warning
       fprintf(stderr, "[WARNING] not all modules support BINDTODEVICE for IPv6 "
                       "link local addresses, e.g. SSH does not\n");
     }

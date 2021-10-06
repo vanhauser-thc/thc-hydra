@@ -5,7 +5,7 @@
 #endif
 
 extern char *HYDRA_EXIT;
-char *buf = NULL;
+static char *buf = NULL;
 
 int32_t start_cisco(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";

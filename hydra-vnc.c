@@ -19,7 +19,7 @@ int32_t vnc_client_version = RFB33;
 int32_t failed_auth = 0;
 
 extern char *HYDRA_EXIT;
-char *buf;
+static char *buf;
 
 /*
  * Encrypt CHALLENGESIZE bytes in memory using a password.
