@@ -1362,6 +1362,10 @@ echo '#include <strings.h>' >> $TMPC.c
 echo "int main() { char *x = strrchr(\"test\", 'e'); if (x == NULL) return 0; else return 1; }" >> $TMPC.c
 $CC -o $TMPC $TMPC.c > /dev/null 2>&1
 test -x $TMPC && STRRCHR=""
+rm -f $TMPC
+$CC -o $TMPC -Wl,--allow-multiple-definition $TMPC.c > /dev/null 2>&1
+WALLOW="no"
+test -x $TMPC && WALLOW="yes"
 rm -f $TMPC $TMPC.c
 echo "                                  ... strrchr()$STRRCHR found"
 if [ -n "$CRYPTO_PATH" ]; then
@@ -1391,6 +1395,11 @@ test -x $TMPC && { LDSEC="yes" ; GCCSECOPT="$GCCSECOPT -Wl,-z,now -Wl,-z,relro" 
 rm -f $TMPC $TMPC.c $TMPC.c.err
 echo "                                                  Compiling... $GCCSEC"
 echo "                                                  Linking... $LDSEC"
+
+echo "Checking for --allow-multiple-definition linker option ... $WALLOW"
+if [ "$WALLOW" = "yes" ]; then
+  GCCSECOPT="$GCCSECOPT -Wl,--allow-multiple-definition"
+fi
 
 echo
 XDEFINES=""
