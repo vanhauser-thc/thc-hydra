@@ -22,7 +22,10 @@ BOOL rdp_connect(char *server, int32_t port, char *domain, char *login, char *pa
   instance->settings->Username = login;
   instance->settings->Password = password;
   instance->settings->IgnoreCertificate = TRUE;
-  instance->settings->AuthenticationOnly = TRUE;
+  if (password[0] == 0)
+    instance->settings->AuthenticationOnly = FALSE;
+  else
+    instance->settings->AuthenticationOnly = TRUE;
   instance->settings->ServerHostname = server;
   instance->settings->ServerPort = port;
   instance->settings->Domain = domain;
