@@ -8,6 +8,7 @@ Release 9.3-dev
 * fix for rdp to detect empty passwords
 * for vnc/cisco/... protocols that only check for a password, skip host
   after the password is found
+* fixe to support IPv6 addresses in -M
 * added "make uninstall"
 
 

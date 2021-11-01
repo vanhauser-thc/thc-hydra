@@ -3586,7 +3586,7 @@ int main(int argc, char *argv[]) {
           }
         } else
           hydra_targets[i]->target = tmpptr;
-        if ((tmpptr2 = strchr(hydra_targets[i]->target, ':')) != NULL) {
+        if ((tmpptr2 = strchr(tmpptr, ':')) != NULL) {
           *tmpptr2++ = 0;
           tmpptr = tmpptr2;
           hydra_targets[i]->port = atoi(tmpptr2);
