@@ -1,5 +1,5 @@
 /*
- * hydra (c) 2001-2021 by van Hauser / THC <vh@thc.org>
+ * hydra (c) 2001-2022 by van Hauser / THC <vh@thc.org>
  * https://github.com/vanhauser-thc/thc-hydra
  *
  * Parallized network login hacker.
@@ -2181,7 +2181,7 @@ int main(int argc, char *argv[]) {
   struct sockaddr_in6 *ipv6 = NULL;
   struct sockaddr_in *ipv4 = NULL;
 
-  printf("%s %s (c) 2021 by %s & %s - Please do not use in military or secret "
+  printf("%s %s (c) 2022 by %s & %s - Please do not use in military or secret "
          "service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).\n\n",
          PROGRAM, VERSION, AUTHOR, AUTHOR2);
 #ifndef LIBAFP
