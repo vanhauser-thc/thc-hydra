@@ -67,7 +67,7 @@ pw-inspector: pw-inspector.c
 	$(CC) $(OPTS) $(SEC) $(CFLAGS) $(CPPFLAGS) -c $< $(XDEFINES) $(XIPATHS)
 
 strip:	all
-	strip $(BINS)
+	-strip $(BINS)
 	-echo OK > /dev/null && test -x xhydra && strip xhydra || echo OK > /dev/null
 
 install:	strip
