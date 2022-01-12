@@ -3316,7 +3316,8 @@ int main(int argc, char *argv[]) {
       hydra_options.port = port;
     }
 
-    if (hydra_options.login == NULL && hydra_options.loginfile == NULL)
+    if (hydra_options.login == NULL && hydra_options.loginfile == NULL &&
+        hydra_options.colonfile == NULL)
       hydra_options.exit_found = 1;
 
     if (hydra_options.ssl == 0 && hydra_options.port == 443)

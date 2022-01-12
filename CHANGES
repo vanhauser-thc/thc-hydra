@@ -6,9 +6,11 @@ Release 9.3-dev
 * new module: cobaltstrike by ultimaiiii, thank you!
 * fix for ssh to support -M or ip/range
 * fix for rdp to detect empty passwords
+* fix for http on non-default ports when using with a proxy
 * for vnc/cisco/... protocols that only check for a password, skip host
   after the password is found
-* fixe to support IPv6 addresses in -M
+* fix to support IPv6 addresses in -M
+* fix to test all entries in -C files, not exiting after the first found
 * added "make uninstall"
 
 
