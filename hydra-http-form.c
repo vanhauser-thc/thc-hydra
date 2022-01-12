@@ -258,6 +258,9 @@ int32_t add_header(ptr_header_node *ptr_head, char *header, char *value, char ty
   ptr_header_node cur_ptr = NULL;
   ptr_header_node existing_hdr, new_ptr;
 
+  if (!header || !value || !strlen(header) || !strlen(value))
+    return;
+
   // get to the last header
   for (cur_ptr = *ptr_head; cur_ptr && cur_ptr->next; cur_ptr = cur_ptr->next)
     ;
