@@ -1487,7 +1487,7 @@ void hydra_increase_fail_count(int32_t target_no, int32_t head_no) {
         hydra_heads[head_no]->current_pass_ptr = empty_login;
       }
       if (hydra_targets[target_no]->fail_count >= MAXFAIL + hydra_options.tasks * hydra_targets[target_no]->ok) {
-        if (hydra_targets[target_no]->done == TARGET_ACTIVE && hydra_options.max_use == hydra_targets[target_no]->failed) {
+        if (hydra_targets[target_no]->done == TARGET_ACTIVE && hydra_options.max_use <= hydra_targets[target_no]->failed) {
           if (hydra_targets[target_no]->ok == 1)
             hydra_targets[target_no]->done = TARGET_ERROR; // mark target as done by errors
           else
@@ -1497,12 +1497,15 @@ void hydra_increase_fail_count(int32_t target_no, int32_t head_no) {
                   "[ERROR] Too many connect errors to target, disabling "
                   "%s://%s%s%s:%d\n",
                   hydra_options.service, hydra_targets[target_no]->ip[0] == 16 && strchr(hydra_targets[target_no]->target, ':') != NULL ? "[" : "", hydra_targets[target_no]->target, hydra_targets[target_no]->ip[0] == 16 && strchr(hydra_targets[target_no]->target, ':') != NULL ? "]" : "", hydra_targets[target_no]->port);
+        } else {
+          hydra_targets[target_no]->failed++;
         }
-        if (hydra_brains.targets > hydra_brains.finished)
+        if (hydra_brains.targets <= hydra_brains.finished)
           hydra_kill_head(head_no, 1, 0);
         else
           hydra_kill_head(head_no, 1, 2);
-      } // we keep the last one alive as long as it make sense
+      }
+      // we keep the last one alive as long as it make sense
     } else {
       // we need to put this in a list, otherwise we fail one login+pw test
       if (hydra_targets[target_no]->done == TARGET_ACTIVE && hydra_options.skip_redo == 0 && hydra_targets[target_no]->redo <= hydra_options.max_use * 2 && ((hydra_heads[head_no]->current_login_ptr != empty_login && hydra_heads[head_no]->current_pass_ptr != empty_login) || (hydra_heads[head_no]->current_login_ptr != NULL && hydra_heads[head_no]->current_pass_ptr != NULL))) {
@@ -1517,12 +1520,14 @@ void hydra_increase_fail_count(int32_t target_no, int32_t head_no) {
         hydra_heads[head_no]->current_login_ptr = empty_login;
         hydra_heads[head_no]->current_pass_ptr = empty_login;
       }
+/*
       hydra_targets[target_no]->fail_count--;
       if (k < 5 && hydra_targets[target_no]->ok)
         hydra_targets[target_no]->fail_count--;
       if (k == 2 && hydra_targets[target_no]->ok)
         hydra_targets[target_no]->fail_count--;
-      if (hydra_brains.targets > hydra_brains.finished)
+*/
+      if (hydra_brains.targets <= hydra_brains.finished)
         hydra_kill_head(head_no, 1, 0);
       else {
         hydra_kill_head(head_no, 1, 2);
