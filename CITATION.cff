@@ -1,9 +1,9 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 authors:
-  - given-names: Heuse
-    family-names: Marc
-    name-particle: van Hauser
+  - given-names: Marc
+    family-names: Heuse
+    name-particle: "van Hauser"
     email: vh@thc.org
     affiliation: The Hacker's Choice
 title: "hydra"
