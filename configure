@@ -998,11 +998,9 @@ echo "Checking for Memcached (libmemcached/memcached.h) ..."
     if [ "X" = "X$MCACHED_IPATH" ]; then
         if [ -f "$i/memcached.h" ]; then
             MCACHED_IPATH="$i"
-        fi
-        if [ -f "$i/libmemcached/memcached.h" ]; then
+        elif [ -f "$i/libmemcached/memcached.h" ]; then
             MCACHED_IPATH="$i/libmemcached"
-        fi
-        if [ -f "$i/libmemcached-1.0/memcached.h" ]; then
+        elif [ -f "$i/libmemcached-1.0/memcached.h" ]; then
             MCACHED_IPATH="$i/libmemcached-1.0"
         fi
     fi
