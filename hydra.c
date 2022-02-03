@@ -4390,6 +4390,7 @@ int main(int argc, char *argv[]) {
     strncat(json_error, tmp_str, STRMAX);
     strncat(json_error, "\"", STRMAX);
     error = 1;
+    hydra_restore_write(1);
   }
   // yeah we did it
   printf("%s (%s) finished at %s\n", PROGRAM, RESOURCE, hydra_build_time());
