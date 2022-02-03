@@ -1,7 +1,7 @@
 Changelog for hydra
 -------------------
 
-Release 9.3-dev
+Release 9.3
 * support Xcode compilation
 * new module: cobaltstrike by ultimaiiii, thank you!
 * fix for ssh to support -M or ip/range
@@ -12,7 +12,7 @@ Release 9.3-dev
   after the password is found
 * fix to support IPv6 addresses in -M
 * fix to test all entries in -C files, not exiting after the first found
-* attempt to make disappearing targets faster to terminate on
+* make disappearing targets faster to terminate on
 * added "make uninstall"
 
 
