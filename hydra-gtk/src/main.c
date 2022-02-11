@@ -17,6 +17,8 @@
 char *hydra_path1 = "./hydra";
 char *hydra_path2 = "/usr/local/bin/hydra";
 char *hydra_path3 = "/usr/bin/hydra";
+char *hydra_path4 = "/data/data/com.termux/files/usr/bin/hydra";
+char *hydra_path5 = "/data/data/com.termux/files/usr/local/bin/hydra";
 
 GtkWidget *wndMain;
 char *HYDRA_BIN;
@@ -53,6 +55,10 @@ int main(int argc, char *argv[]) {
     HYDRA_BIN = hydra_path2;
   } else if (g_file_test(hydra_path3, G_FILE_TEST_IS_EXECUTABLE)) {
     HYDRA_BIN = hydra_path3;
+  } else if (g_file_test(hydra_path4, G_FILE_TEST_IS_EXECUTABLE)) {
+    HYDRA_BIN = hydra_path4;
+  } else if (g_file_test(hydra_path5, G_FILE_TEST_IS_EXECUTABLE)) {
+    HYDRA_BIN = hydra_path5;
   } else {
     g_error("Please tell me where hydra is, use --hydra-path\n");
     return -1;
