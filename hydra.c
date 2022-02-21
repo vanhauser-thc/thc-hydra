@@ -1597,7 +1597,7 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
   snp_is_redo = 0;
   snpdont = 0;
   loop_cnt++;
-  if (hydra_heads[head_no]->redo && hydra_heads[head_no]->current_login_ptr != NULL && hydra_heads[head_no]->current_pass_ptr != NULL) {
+  if (hydra_heads[head_no]->redo == 1 && hydra_heads[head_no]->current_login_ptr != NULL && hydra_heads[head_no]->current_pass_ptr != NULL) {
     hydra_heads[head_no]->redo = 0;
     snp_is_redo = 1;
     snpdone = 1;
@@ -1629,7 +1629,7 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
     return -1;
   }
 
-  if (hydra_heads[head_no]->redo && hydra_heads[head_no]->current_login_ptr != NULL && hydra_heads[head_no]->current_pass_ptr != NULL) {
+  if (hydra_heads[head_no]->redo == 1 && hydra_heads[head_no]->current_login_ptr != NULL && hydra_heads[head_no]->current_pass_ptr != NULL) {
     hydra_heads[head_no]->redo = 0;
     snp_is_redo = 1;
     snpdone = 1;
@@ -1638,7 +1638,7 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
       printf("[COMPLETED] target %s - login \"%s\" - pass \"%s\" - child %d - "
              "%" hPRIu64 " of %" hPRIu64 "\n",
              hydra_targets[target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr, head_no, hydra_targets[target_no]->sent, hydra_brains.todo + hydra_targets[target_no]->redo);
-    hydra_heads[head_no]->redo = 0;
+    //hydra_heads[head_no]->redo = 0;
     if (hydra_targets[target_no]->redo_state > 0) {
       if (hydra_targets[target_no]->redo_state <= hydra_targets[target_no]->redo) {
         hydra_heads[head_no]->current_pass_ptr = hydra_targets[target_no]->redo_pass[hydra_targets[target_no]->redo_state - 1];
