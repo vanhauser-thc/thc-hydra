@@ -7,7 +7,8 @@
 #include <openssl/ssl.h>
 #endif
 #ifdef HAVE_PCRE
-#include <pcre.h>
+#define PCRE2_CODE_UNIT_WIDTH 8
+#include <pcre2.h>
 #endif
 
 #define MAX_CONNECT_RETRY 1
@@ -1291,19 +1292,23 @@ void hydra_set_srcport(int32_t port) { src_port = port; }
 
 #ifdef HAVE_PCRE
 int32_t hydra_string_match(char *str, const char *regex) {
-  pcre *re = NULL;
-  int32_t offset_error = 0;
-  const char *error = NULL;
+  pcre2_code *re = NULL;
+  int32_t error_code = 0;
+  PCRE2_SIZE error_offset;
   int32_t rc = 0;
 
-  re = pcre_compile(regex, PCRE_CASELESS | PCRE_DOTALL, &error, &offset_error, NULL);
+  re = pcre2_compile(regex, PCRE2_ZERO_TERMINATED, PCRE2_CASELESS | PCRE2_DOTALL, &error_code, &error_offset, NULL);
   if (re == NULL) {
-    fprintf(stderr, "[ERROR] PCRE compilation failed at offset %d: %s\n", offset_error, error);
+    fprintf(stderr, "[ERROR] PCRE compilation failed at offset %d: %d\n", error_offset, error_code);
     return 0;
   }
 
-  rc = pcre_exec(re, NULL, str, strlen(str), 0, 0, NULL, 0);
-  if (rc >= 0) {
+  pcre2_match_data *match_data = pcre2_match_data_create_from_pattern(re, NULL);
+  rc = pcre2_match(re, str, PCRE2_ZERO_TERMINATED, 0, 0, match_data, NULL);
+  pcre2_match_data_free(match_data);
+  pcre2_code_free(re);
+
+  if (rc >= 1) {
     return 1;
   }
   return 0;

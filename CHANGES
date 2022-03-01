@@ -2,7 +2,7 @@ Changelog for hydra
 -------------------
 
 Release 9.4-dev
-  * your patch?
+* Switched from pcre/pcre3 to pcre2 as pcre/pcre3 will be dropped from Debian
 
 
 Release 9.3

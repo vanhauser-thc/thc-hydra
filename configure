@@ -380,21 +380,21 @@ if [ "X" = "X$CURSES_PATH" -o "X" = "X$CURSES_IPATH" ]; then
     CURSES_IPATH=""
 fi
 
-echo "Checking for pcre (libpcre/pcre.h) ..."
+echo "Checking for pcre2 (libpcre/pcre.h) ..."
 for i in $LIBDIRS ; do
     if [ "X" = "X$PCRE_PATH" ]; then
-        if [ -f "$i/libpcre.so" -o -f "$i/libpcre.dylib" -o -f "$i/libpcre.a"   ]; then
+        if [ -f "$i/libpcre2-8.so" -o -f "$i/libpcre2-8.dylib" -o -f "$i/libpcre2-8.a"   ]; then
             PCRE_PATH="$i"
         fi
     fi
     if [ "X" = "X$PCRE_PATH" ]; then
-        TMP_LIB=`/bin/ls $i/libpcre.so* 2> /dev/null | grep libpcre.`
+        TMP_LIB=`/bin/ls $i/libpcre2*.so* 2> /dev/null | grep libpcre.`
         if [ -n "$TMP_LIB" ]; then
           PCRE_PATH="$i"
         fi
     fi
     if [ "X" = "X$PCRE_PATH" ]; then
-        TMP_LIB=`/bin/ls $i/libpcre.dll* 2> /dev/null | grep libpcre.`
+        TMP_LIB=`/bin/ls $i/libpcre2*.dll* 2> /dev/null | grep libpcre.`
         if [ -n "$TMP_LIB" ]; then
           PCRE_PATH="$i"
         fi
@@ -402,20 +402,20 @@ for i in $LIBDIRS ; do
 done
 for i in $INCDIRS ; do
     if [ "X" != "X$PCRE_PATH" ]; then
-        if [ -f "$i/pcre.h" ]; then
+        if [ -f "$i/pcre2.h" ]; then
             PCRE_IPATH="$i"
         fi
     fi
 done
 if [ "X" != "X$DEBUG" ]; then
    echo DEBUG: PCRE_PATH=$PCRE_PATH/libpcre
-   echo DEBUG: PCRE_IPATH=$PCRE_IPATH/pcre.h
+   echo DEBUG: PCRE_IPATH=$PCRE_IPATH/pcre2.h
 fi
 if [ -n "$PCRE_PATH" -a -n "$PCRE_IPATH" ]; then
-    echo "                                   ... found"
+    echo "                                    ... found"
 fi
 if [ "X" = "X$PCRE_PATH" -o "X" = "X$PCRE_IPATH" ]; then
-    echo "                                   ... NOT found, server response checks will be less reliable"
+    echo "                                    ... NOT found, server response checks will be less reliable"
     PCRE_PATH=""
     PCRE_IPATH=""
 fi
@@ -1649,7 +1649,7 @@ if [ -n "$IDN_PATH" ]; then
     XLIBS="$XLIBS -lidn"
 fi
 if [ -n "$PCRE_PATH" ]; then
-    XLIBS="$XLIBS -lpcre"
+    XLIBS="$XLIBS -lpcre2-8"
 fi
 if [ -n "$MYSQL_PATH" ]; then
     XLIBS="$XLIBS -lmysqlclient"
