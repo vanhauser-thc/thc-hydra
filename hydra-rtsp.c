@@ -104,42 +104,37 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
   } else {
     create_core_packet(1, ip, port);
 
-    if (use_Basic_Auth(lresp) == 1) {
+    if (use_Digest_Auth(lresp) == 1) {
+      char aux[500] = "", dbuf[500] = "", *result = NULL;
+      char *pbuffer = hydra_strcasestr(lresp, "WWW-Authenticate: Digest ");
+
+      strncpy(aux, pbuffer + strlen("WWW-Authenticate: Digest "), sizeof(aux));
+      aux[sizeof(aux) - 1] = '\0';
+      free(lresp);
+#ifdef LIBOPENSSL
+      result = sasl_digest_md5(dbuf, login, pass, aux, miscptr, "rtsp", hydra_address2string(ip), port, "");
+#else
+      hydra_report(stderr, "[ERROR] Digest auth required but compiled "
+                           "without OpenSSL/MD5 support\n");
+      return 3;
+#endif
+      if (result == NULL) {
+        hydra_report(stderr, "[ERROR] digest generation failed\n");
+        return 3;
+      }
+      sprintf(buffer, "%.500sAuthorization: Digest %.500s\r\n\r\n", packet2, dbuf);
+      if (debug)
+        hydra_report(stderr, "C:%s\n", buffer);
+    } else if (use_Basic_Auth(lresp) == 1) {
       free(lresp);
       sprintf(buffer2, "%.249s:%.249s", login, pass);
       hydra_tobase64((unsigned char *)buffer2, strlen(buffer2), sizeof(buffer2));
-
       sprintf(buffer, "%.500sAuthorization: : Basic %.500s\r\n\r\n", packet2, buffer2);
-
-      if (debug) {
+      if (debug)
         hydra_report(stderr, "C:%s\n", buffer);
-      }
     } else {
-      if (use_Digest_Auth(lresp) == 1) {
-        char aux[500] = "", dbuf[500] = "", *result = NULL;
-        char *pbuffer = hydra_strcasestr(lresp, "WWW-Authenticate: Digest ");
-
-        strncpy(aux, pbuffer + strlen("WWW-Authenticate: Digest "), sizeof(aux));
-        aux[sizeof(aux) - 1] = '\0';
-        free(lresp);
-#ifdef LIBOPENSSL
-        result = sasl_digest_md5(dbuf, login, pass, aux, miscptr, "rtsp", hydra_address2string(ip), port, "");
-#else
-        hydra_report(stderr, "[ERROR] Digest auth required but compiled "
-                             "without OpenSSL/MD5 support\n");
-        return 3;
-#endif
-
-        if (result == NULL) {
-          hydra_report(stderr, "[ERROR] digest generation failed\n");
-          return 3;
-        }
-        sprintf(buffer, "%.500sAuthorization: Digest %.500s\r\n\r\n", packet2, dbuf);
-
-        if (debug) {
-          hydra_report(stderr, "C:%s\n", buffer);
-        }
-      }
+      hydra_report(stderr, "[ERROR] unknown authentication protocol\n");
+      return 1;
     }
 
     if (strlen(buffer) == 0) {

@@ -3,6 +3,7 @@ Changelog for hydra
 
 Release 9.4-dev
 * Switched from pcre/pcre3 to pcre2 as pcre/pcre3 will be dropped from Debian
+* Small fix for weird RTSP servers
 
 
 Release 9.3
