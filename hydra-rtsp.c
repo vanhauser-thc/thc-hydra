@@ -104,8 +104,6 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
   } else {
     create_core_packet(1, ip, port);
 
-    printf("[DEBUG] checking for auth type\n");
-
     if (use_Digest_Auth(lresp) == 1) {
       char aux[500] = "", dbuf[500] = "", *result = NULL;
       char *pbuffer = hydra_strcasestr(lresp, "WWW-Authenticate: Digest ");
@@ -156,7 +154,7 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
       return 1;
     }
 
-    if ((is_NotFound(lresp))) {
+    if (is_NotFound(lresp) || is_Authorized(lresp)) {
       free(lresp);
       hydra_completed_pair_found();
 
