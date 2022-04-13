@@ -16,8 +16,8 @@
 
 
 
-INTRODUCTION
-------------
+## INTRODUCTION
+
 Number one of the biggest security holes are passwords, as every password
 security study shows.
 This tool is a proof of concept code, to give researchers and security
@@ -34,6 +34,7 @@ It was tested to compile cleanly on Linux, Windows/Cygwin, Solaris,
 FreeBSD/OpenBSD, QNX (Blackberry 10) and MacOS.
 
 Currently this tool supports the following protocols:
+```
  Asterisk, AFP, Cisco AAA, Cisco auth, Cisco enable, CVS, Firebird, FTP,
  HTTP-FORM-GET, HTTP-FORM-POST, HTTP-GET, HTTP-HEAD, HTTP-POST, HTTP-PROXY,
  HTTPS-FORM-GET, HTTPS-FORM-POST, HTTPS-GET, HTTPS-HEAD, HTTPS-POST,
@@ -42,6 +43,7 @@ Currently this tool supports the following protocols:
  Rsh, RTSP, SAP/R3, SIP, SMB, SMTP, SMTP Enum, SNMP v1+v2+v3, SOCKS5,
  SSH (v1 and v2), SSHKEY, Subversion, Teamspeak (TS2), Telnet, VMware-Auth,
  VNC and XMPP.
+```
 
 However the module engine for new services is very easy so it won't take a
 long time until even more services are supported.
@@ -49,22 +51,22 @@ Your help in writing, enhancing or fixing modules is highly appreciated!! :-)
 
 
 
-WHERE TO GET
-------------
+## WHERE TO GET
+
 You can always find the newest release/production version of hydra at its
 project page at https://github.com/vanhauser-thc/thc-hydra/releases
 If you are interested in the current development state, the public development
 repository is at Github:
-  svn co https://github.com/vanhauser-thc/thc-hydra
+  `svn co https://github.com/vanhauser-thc/thc-hydra`
  or
-  git clone https://github.com/vanhauser-thc/thc-hydra
+  `git clone https://github.com/vanhauser-thc/thc-hydra`
 Use the development version at your own risk. It contains new features and
 new bugs. Things might not work!
 
 
 
-HOW TO COMPILE
---------------
+## HOW TO COMPILE
+
 To configure, compile and install hydra, just type:
 
 ```
@@ -99,8 +101,8 @@ and compile them manually.
 
 
 
-SUPPORTED PLATFORMS
--------------------
+## SUPPORTED PLATFORMS
+
 - All UNIX platforms (Linux, *BSD, Solaris, etc.)
 - MacOS (basically a BSD clone)
 - Windows with Cygwin (both IPv4 and IPv6)
@@ -108,8 +110,8 @@ SUPPORTED PLATFORMS
 
 
 
-HOW TO USE
-----------
+## HOW TO USE
+
 If you just enter `hydra`, you will see a short summary of the important
 options available.
 Type `./hydra -h` to see all available command line options.
@@ -289,16 +291,16 @@ Examples (they are all equal):
 ./hydra -l test -p test imap://127.0.0.1/PLAIN
 ```
 
-RESTORING AN ABORTED/CRASHED SESSION
-------------------------------------
+## RESTORING AN ABORTED/CRASHED SESSION
+
 When hydra is aborted with Control-C, killed or crashes, it leaves a
 "hydra.restore" file behind which contains all necessary information to
 restore the session. This session file is written every 5 minutes.
 NOTE: the hydra.restore file can NOT be copied to a different platform (e.g.
 from little endian to big endian, or from Solaris to AIX)
 
-HOW TO SCAN/CRACK OVER A PROXY
-------------------------------
+## HOW TO SCAN/CRACK OVER A PROXY
+
 The environment variable HYDRA_PROXY_HTTP defines the web proxy (this works
 just for the http services!).
 The following syntax is valid:
@@ -327,8 +329,8 @@ HYDRA_PROXY=socks4://auth:pw@127.0.0.1:1080
 HYDRA_PROXY=socksproxylist.txt
 ```
 
-ADDITIONAL HINTS
-----------------
+## ADDITIONAL HINTS
+
 * sort your password files by likelihood and use the -u option to find
   passwords much faster!
 * uniq your dictionary files! this can save you a lot of time :-)
@@ -340,8 +342,7 @@ ADDITIONAL HINTS
     cat dictionary.txt | pw-inspector -m 6 -c 2 -n > passlist.txt
 
 
-RESULTS OUTPUT
---------------
+## RESULTS OUTPUT
 
 The results are output to stdio along with the other information.  Via the -o
 command line option, the results can also be written to a file.  Using -b,
@@ -356,8 +357,8 @@ If using JSON output, the results file may not be valid JSON if there are
 serious errors in booting Hydra.
 
 
-JSON Schema
------------
+## JSON Schema
+
 Here is an example of the JSON output.  Notes on some of the fields:
 
 * `errormessages` - an array of zero or more strings that are normally printed
@@ -412,8 +413,8 @@ Version 1.00 example:
 ```
 
 
-SPEED
------
+## SPEED
+
 through the parallelizing feature, this password cracker tool can be very
 fast, however it depends on the protocol. The fastest are generally POP3
 and FTP.
@@ -422,8 +423,8 @@ faster ;-) (but too high - and it disables the service)
 
 
 
-STATISTICS
-----------
+## STATISTICS
+
 Run against a SuSE Linux 7.2 on localhost with a "-C FILE" containing
 295 entries (294 tries invalid logins, 1 valid). Every test was run three
 times (only for "1 task" just once), and the average noted down.
@@ -456,8 +457,8 @@ guesses possible per connect (depends on the server software and config):
 
 
 
-BUGS & FEATURES
----------------
+## BUGS & FEATURES
+
 Hydra:
 Email me or David if you find bugs or if you have written a new module.
 vh@thc.org (and put "antispam" in the subject line)
