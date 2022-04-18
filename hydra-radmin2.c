@@ -366,6 +366,7 @@ void service_radmin2(char *ip, int32_t sp, unsigned char options, char *miscptr,
       hydra_report(stderr, "Error: Child with pid %d terminating, protocol error\n", (int32_t)getpid());
       hydra_child_exit(2);
     }
+    free(msg);
   }
 #endif
 }
