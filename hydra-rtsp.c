@@ -9,6 +9,7 @@
 #include "hydra-mod.h"
 #include "sasl.h"
 #include <stdio.h>
+#define _GNU_SOURCE
 #include <string.h>
 
 extern char *HYDRA_EXIT;
@@ -16,7 +17,7 @@ char packet[500];
 char packet2[500];
 
 int32_t is_Unauthorized(char *s) {
-  if (strstr(s, "401 Unauthorized") != NULL) {
+  if (strcasestr(s, "401 Unauthorized") != NULL) {
     return 1;
   } else {
     return 0;
@@ -24,7 +25,7 @@ int32_t is_Unauthorized(char *s) {
 }
 
 int32_t is_NotFound(char *s) {
-  if (strstr(s, "404 Stream Not Found") != NULL) {
+  if (strcasestr(s, "404 Stream") != NULL || strcasestr(s, "404 Not") != NULL) {
     return 1;
   } else {
     return 0;
@@ -32,7 +33,7 @@ int32_t is_NotFound(char *s) {
 }
 
 int32_t is_Authorized(char *s) {
-  if (strstr(s, "200 OK") != NULL) {
+  if (strcasestr(s, "200 OK") != NULL) {
     return 1;
   } else {
     return 0;
@@ -40,7 +41,7 @@ int32_t is_Authorized(char *s) {
 }
 
 int32_t use_Basic_Auth(char *s) {
-  if (strstr(s, "WWW-Authenticate: Basic") != NULL) {
+  if (strcasestr(s, "WWW-Authenticate: Basic") != NULL) {
     return 1;
   } else {
     return 0;
@@ -48,7 +49,7 @@ int32_t use_Basic_Auth(char *s) {
 }
 
 int32_t use_Digest_Auth(char *s) {
-  if (strstr(s, "WWW-Authenticate: Digest") != NULL) {
+  if (strcasestr(s, "WWW-Authenticate: Digest") != NULL) {
     return 1;
   } else {
     return 0;

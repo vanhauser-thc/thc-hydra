@@ -58,7 +58,8 @@ int32_t start_rdp(char *ip, int32_t port, unsigned char options, char *miscptr, 
   }
 
   login_result = rdp_connect(server, port, domain, login, pass);
-  if (debug) hydra_report(stderr, "[DEBUG] rdp reported %08x\n", login_result);
+  if (debug)
+    hydra_report(stderr, "[DEBUG] rdp reported %08x\n", login_result);
   switch (login_result) {
   case 0:
     // login success

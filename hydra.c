@@ -1520,13 +1520,13 @@ void hydra_increase_fail_count(int32_t target_no, int32_t head_no) {
         hydra_heads[head_no]->current_login_ptr = empty_login;
         hydra_heads[head_no]->current_pass_ptr = empty_login;
       }
-/*
-      hydra_targets[target_no]->fail_count--;
-      if (k < 5 && hydra_targets[target_no]->ok)
-        hydra_targets[target_no]->fail_count--;
-      if (k == 2 && hydra_targets[target_no]->ok)
-        hydra_targets[target_no]->fail_count--;
-*/
+      /*
+            hydra_targets[target_no]->fail_count--;
+            if (k < 5 && hydra_targets[target_no]->ok)
+              hydra_targets[target_no]->fail_count--;
+            if (k == 2 && hydra_targets[target_no]->ok)
+              hydra_targets[target_no]->fail_count--;
+      */
       if (hydra_brains.targets <= hydra_brains.finished)
         hydra_kill_head(head_no, 1, 0);
       else {
@@ -1638,7 +1638,7 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
       printf("[COMPLETED] target %s - login \"%s\" - pass \"%s\" - child %d - "
              "%" hPRIu64 " of %" hPRIu64 "\n",
              hydra_targets[target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr, head_no, hydra_targets[target_no]->sent, hydra_brains.todo + hydra_targets[target_no]->redo);
-    //hydra_heads[head_no]->redo = 0;
+    // hydra_heads[head_no]->redo = 0;
     if (hydra_targets[target_no]->redo_state > 0) {
       if (hydra_targets[target_no]->redo_state <= hydra_targets[target_no]->redo) {
         hydra_heads[head_no]->current_pass_ptr = hydra_targets[target_no]->redo_pass[hydra_targets[target_no]->redo_state - 1];
@@ -3321,8 +3321,7 @@ int main(int argc, char *argv[]) {
       hydra_options.port = port;
     }
 
-    if (hydra_options.login == NULL && hydra_options.loginfile == NULL &&
-        hydra_options.colonfile == NULL)
+    if (hydra_options.login == NULL && hydra_options.loginfile == NULL && hydra_options.colonfile == NULL)
       hydra_options.exit_found = 1;
 
     if (hydra_options.ssl == 0 && hydra_options.port == 443)
@@ -3948,7 +3947,7 @@ int main(int argc, char *argv[]) {
     // restore device information if present (overwrite null bytes)
     if (device != NULL) {
       char *tmpptr = device - 1;
-      *tmpptr = '%';  // you can ignore the compiler warning
+      *tmpptr = '%'; // you can ignore the compiler warning
       fprintf(stderr, "[WARNING] not all modules support BINDTODEVICE for IPv6 "
                       "link local addresses, e.g. SSH does not\n");
     }
