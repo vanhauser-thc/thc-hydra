@@ -75,6 +75,7 @@ typedef struct cookie_node {
 int32_t success_cond = 0;
 int32_t getcookie = 1;
 int32_t auth_flag = 0;
+int32_t code_302_is_success = 0;
 
 char cookie[4096] = "", cmiscptr[1024];
 
@@ -440,6 +441,9 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
         *ptr++ = 0;
       sprintf(cookieurl, "%.1000s", hydra_strrep(miscptr + 2, "\\:", ":"));
       miscptr = ptr;
+      break;
+    case '2':
+      code_302_is_success = 1;
       break;
     case 'g': // fall through
     case 'G':
@@ -951,12 +955,16 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
 
   found = analyze_server_response(s);
 
+  if (redirected_flag && code_302_is_success) {
+    found = success_cond;
+  }
+
   if (auth_flag) { // we received a 401 error - user is using wrong module
     hydra_report(stderr,
                  "[ERROR] the target is using HTTP auth, not a web form, received HTTP "
                  "error code 401. Use module \"http%s-get\" instead.\n",
                  (options & OPTION_SSL) > 0 ? "s" : "");
-    return 4;
+    return 2;
   }
 
   if (strlen(cookie) > 0)
@@ -967,7 +975,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
   if (debug)
     printf("[DEBUG] attempt result: found %d, redirect %d, location: %s\n", found, redirected_flag, redirected_url_buff);
 
-  while (found == 0 && redirected_flag && (redirected_url_buff[0] != 0) && (redirected_cpt > 0)) {
+  while (found == 0 && redirected_flag && !code_302_is_success && (redirected_url_buff[0] != 0) && (redirected_cpt > 0)) {
     // we have to split the location
     char *startloc, *endloc;
     char str[2048];
@@ -1108,7 +1116,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
   }
 
   // if the last status is still 3xx, set it as a false
-  if (found != -1 && found == success_cond && (redirected_flag == 0 || success_cond == 1) && redirected_cpt >= 0) {
+  if (found != -1 && found == success_cond && ((redirected_flag && code_302_is_success) || redirected_flag == 0 || success_cond == 1) && redirected_cpt >= 0) {
     hydra_report_found_host(port, ip, "www-form", fp);
     hydra_completed_pair_found();
   } else {
@@ -1436,8 +1444,9 @@ void usage_http_form(const char *service) {
          " login check must be preceded by \"S=\".\n"
          " This is where most people get it wrong. You have to check the webapp "
          "what a\n"
-         " failed string looks like and put it in this parameter!\n"
-         "The following parameters are optional:\n"
+         " failed string looks like and put it in this parameter! Add the -d switch to see\nthe sent/received data!\n"
+         "\nThe following parameters are optional:\n"
+         " 2=                  302 page forward return codes identify a successful attempt\n"
          " (c|C)=/page/uri     to define a different page to gather initial "
          "cookies from\n"
          " (g|G)=              skip pre-requests - only use this when no pre-cookies are required\n"
@@ -1451,8 +1460,7 @@ void usage_http_form(const char *service) {
          "exists, by the\n"
          "                 one supplied by the user, or add the header at the "
          "end\n"
-         "Note that if you are going to put colons (:) in your headers you should "
-         "escape them with a backslash (\\).\n"
+         "\nNote that if you are going to put colons (:) in your headers you should escape them with a backslash (\\).\n"
          " All colons that are not option separators should be escaped (see the "
          "examples above and below).\n"
          " You can specify a header without escaping the colons, but that way you "
