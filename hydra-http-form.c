@@ -404,7 +404,7 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
    * Beware of the backslashes (\)!
    */
   while (*miscptr != 0) {
-    if (strlen(miscptr) < 3 || miscptr[1] != '=') {
+    if (strlen(miscptr) < 2 || miscptr[1] != '=') {
       hydra_report(stderr, "[ERROR] optional parameters must have the format X=value: %s\n", miscptr);
       return 0;
     }
@@ -444,6 +444,11 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
       break;
     case '2':
       code_302_is_success = 1;
+      char *tmp = strchr(miscptr, ':');
+      if (tmp)
+        miscptr = tmp + 1;
+      else
+        miscptr += strlen(miscptr);
       break;
     case 'g': // fall through
     case 'G':
@@ -1281,8 +1286,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
   ptr = ptr2 = NULL;
 
   sprintf(bufferurl, "%.6096s", miscptr);
-  url = bufferurl;
-  ptr = url;
+  ptr = url = bufferurl;
 
   while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
     ptr++;
@@ -1295,15 +1299,19 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
   if (*ptr != 0)
     *ptr++ = 0;
 
-  cond = ptr;
+  optional1 = cond = ptr;
 
-  if ((ptr2 = strchr(ptr, ':')) != NULL) {
+  ptr2 = ptr + strlen(ptr);
+
+  while (ptr2 > ptr && (*ptr2 != ':' || *(ptr2 - 1) == '\\'))
+    ptr2--;
+
+  if (*ptr2 == ':') {
     *ptr2++ = 0;
-    if (*ptr2)
-      optional1 = ptr2;
-    else
-      optional1 = NULL;
-  } else
+    cond = ptr2;
+  }
+
+  if (optional1 == cond)
     optional1 = NULL;
 
   if (strstr(url, "\\:") != NULL) {
@@ -1325,9 +1333,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     }
   }
 
-  // printf("ptr: %s  ptr2: %s  cond: %s  url: %s  variables: %s  optional1:
-  // %s\n", ptr, ptr2, cond, url, variables, optional1 == NULL ? "null" :
-  // optional1);
+  // printf("ptr: %s  ptr2: %s  cond: %s  url: %s  variables: %s  optional1: %s\n", ptr, ptr2, cond, url, variables, optional1 == NULL ? "null" : optional1);
 
   if (url == NULL || variables == NULL || cond == NULL /*|| optional1 == NULL */)
     hydra_child_exit(2);
@@ -1351,8 +1357,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     success_cond = 0;
   }
 
-  // printf("miscptr: %s, url=%s, variables=%s, ptr=%s, optional1: %s, cond: %s
-  // (%d)\n", miscptr, url, variables, ptr, optional1, cond, success_cond);
+  // printf("miscptr: %s, url=%s, variables=%s, ptr=%s, optional1: %s, cond: %s (%d)\n", miscptr, url, variables, ptr, optional1, cond, success_cond);
 
   /*
    * Parse the user-supplied options.
