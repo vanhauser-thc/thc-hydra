@@ -41,4 +41,4 @@ echo
 read -p "Do you want to run the command now? [Y/n] " yn
 test "$yn" = "n" -o "$yn" = "N" && { echo Exiting. ; exit 0 ; }
 echo
-hydra $users $passs -u $pws $ports $opts $targets $service
+eval hydra $users $passs -u $pws $ports $opts $targets $service
