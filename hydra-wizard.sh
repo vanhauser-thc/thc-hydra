@@ -33,10 +33,10 @@ test -e "$pass" && passs="-P $pass"
 test -e "$pass" || passs="-p $pass"
 test -n "$port" && ports="-s $port"
 test -n "$pw" && pws="-e $pw"
-test -n "$opt" && opts="-m '$opt'"
+test -n "$opt" && { opts="-m $opt" ; dopts="-m '$opt'" ; }
 
 echo The following command will be executed now:
-echo " hydra $users $passs -u $pws $ports $opts $targets $service"
+echo " hydra $users $passs -u $pws $ports $dopts $targets $service"
 echo
 read -p "Do you want to run the command now? [Y/n] " yn
 test "$yn" = "n" -o "$yn" = "N" && { echo Exiting. ; exit 0 ; }
