@@ -38,7 +38,7 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
           build-args: HYDRA_VERSION="${{ steps.slug.outputs.version-semantic }}"
           tags: |
-            ghcr.io/${{ github.actor }}/hydra:${{ steps.slug.outputs.version-semantic }}
+            ghcr.io/${{ github.repository }}:${{ steps.slug.outputs.version-semantic }}
           # append the following line to the list above for publishing on hub.docker.com
           # (and don't forget to change on a real repo/user name)
           # vanhauser-thc/thc-hydra:${{ steps.slug.outputs.version-semantic }}
