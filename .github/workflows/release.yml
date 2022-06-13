@@ -8,10 +8,6 @@ on:
   pull_request:
     paths-ignore: [README, TODO, PROBLEMS]
 
-concurrency:
-  group: ${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
   docker-image:
     name: Build the docker image
@@ -36,7 +32,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7,linux/arm64
-          build-args: HYDRA_VERSION="${{ steps.slug.outputs.version-semantic }}"
+          platforms: linux/amd64
+#          ,linux/arm64,linux/arm/v6,linux/arm/v7,linux/arm64
           tags: vanhauser/hydra:latest
         
