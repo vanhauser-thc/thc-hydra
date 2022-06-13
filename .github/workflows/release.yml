@@ -1,8 +1,16 @@
 name: release
 
 on:
-  release: # Docs: <https://help.github.com/en/articles/events-that-trigger-workflows#release-event-release>
-    types: [published]
+  push:
+    branches: [master, main]
+    tags-ignore: ['**']
+    paths-ignore: [README, TODO, PROBLEMS]
+  pull_request:
+    paths-ignore: [README, TODO, PROBLEMS]
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   docker-image:
@@ -28,7 +36,7 @@ jobs:
           context: .
           file: Dockerfile
           push: true
-          platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
+          platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7,linux/arm64
           build-args: HYDRA_VERSION="${{ steps.slug.outputs.version-semantic }}"
           tags: vanhauser/hydra:latest
         
