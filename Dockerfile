@@ -1,6 +1,6 @@
 FROM debian:buster-slim
 
-ARG HYDRA_VERSION="unknown"
+ARG HYDRA_VERSION="github"
 
 LABEL \
     org.opencontainers.image.url="https://github.com/vanhauser-thc/thc-hydra" \
