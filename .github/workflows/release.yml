@@ -1,0 +1,45 @@
+name: release
+
+on:
+  release: # Docs: <https://help.github.com/en/articles/events-that-trigger-workflows#release-event-release>
+    types: [published]
+
+jobs:
+  docker-image:
+    name: Build the docker image
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: docker/setup-qemu-action@v2
+
+      - uses: docker/setup-buildx-action@v2
+
+      # uncomment for publishing on hub.docker.com (don't forget to fillup the repository secrets)
+      #- uses: docker/login-action@v2
+      #  with:
+      #    username: ${{ secrets.DOCKER_LOGIN }}
+      #    password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: gacts/github-slug@v1 # Action page: <https://github.com/gacts/github-slug>
+        id: slug
+
+      - uses: docker/build-push-action@v3 # Action page: <https://github.com/docker/build-push-action>
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          platforms: linux/amd64,linux/arm64,linux/arm/v6,linux/arm/v7
+          build-args: HYDRA_VERSION="${{ steps.slug.outputs.version-semantic }}"
+          tags: |
+            ghcr.io/${{ github.actor }}/hydra:${{ steps.slug.outputs.version-semantic }}
+          # append the following line to the list above for publishing on hub.docker.com
+          # (and don't forget to change on a real repo/user name)
+          # vanhauser-thc/thc-hydra:${{ steps.slug.outputs.version-semantic }}
+        
