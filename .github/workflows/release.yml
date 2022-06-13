@@ -1,5 +1,3 @@
-# build docker image
-
 name: release
 
 on:
