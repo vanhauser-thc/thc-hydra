@@ -16,7 +16,7 @@ jobs: # Docs: <https://git.io/JvxXE>
   docker-build:
     name: Build the docker image
     runs-on: ubuntu-20.04
-    timeout-minutes: 25
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v3
 
@@ -29,5 +29,5 @@ jobs: # Docs: <https://git.io/JvxXE>
           context: .
           file: Dockerfile
           platforms: linux/amd64,linux/arm/v7
-          push: false
+          push: true
           tags: hydra:ci

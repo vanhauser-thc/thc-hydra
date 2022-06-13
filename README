@@ -17,6 +17,11 @@
            NOTE: no this is not meant to be a markdown doc! old school!
 
 
+Hydra in the most current github state can be directly downloaded via docker:
+```
+docker pull vanhauser/hydra
+```
+
 
 INTRODUCTION
 ------------
@@ -63,6 +68,10 @@ repository is at Github:
 Use the development version at your own risk. It contains new features and
 new bugs. Things might not work!
 
+Alternatively (and easier) to can pull it as a docker container:
+```
+docker pull vanhauser/hydra
+```
 
 
 HOW TO COMPILE
