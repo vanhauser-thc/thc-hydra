@@ -1026,7 +1026,7 @@ void killed_childs(int32_t signo) {
   int32_t pid, i;
 
   killed++;
-  pid = wait3(NULL, WNOHANG, NULL);
+  pid = waitpid(-1, NULL, WNOHANG);
   for (i = 0; i < hydra_options.max_use; i++) {
     if (pid == hydra_heads[i]->pid) {
       hydra_heads[i]->pid = -1;
@@ -1447,7 +1447,7 @@ void hydra_kill_head(int32_t head_no, int32_t killit, int32_t fail) {
     //    hydra_targets[hydra_heads[head_no]->target_no]->bfg_ptr[head_no] =
     //    NULL;
   }
-  (void)wait3(NULL, WNOHANG, NULL);
+  (void)waitpid(-1, NULL, WNOHANG);
 }
 
 void hydra_increase_fail_count(int32_t target_no, int32_t head_no) {
@@ -4251,7 +4251,7 @@ int main(int argc, char *argv[]) {
     // hydra_brains.sent);
 
     usleepn(USLEEP_LOOP);
-    (void)wait3(NULL, WNOHANG, NULL);
+    (void)waitpid(-1, NULL, WNOHANG);
     // write restore file and report status
     if (process_restore == 1 && time(NULL) - elapsed_restore > 299) {
       hydra_restore_write(0);
@@ -4354,7 +4354,7 @@ int main(int argc, char *argv[]) {
   for (i = 0; i < hydra_options.max_use; i++)
     if (hydra_heads[i]->active == HEAD_ACTIVE && hydra_heads[i]->pid > 0)
       hydra_kill_head(i, 1, 3);
-  (void)wait3(NULL, WNOHANG, NULL);
+  (void)waitpid(-1, NULL, WNOHANG);
 
 #define STRMAX (10 * 1024)
   char json_error[STRMAX + 2], tmp_str[STRMAX + 2];

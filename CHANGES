@@ -6,6 +6,7 @@ Release 9.4-dev
 * Small fix for weird RTSP servers
 * Added "2=" optional parameter to http-post-form module to tell hydra that
   a "302" HTTP return code means success
+* replaced wait3 with waitpid for better compatability
 
 
 Release 9.3
