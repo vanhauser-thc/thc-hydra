@@ -983,9 +983,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
   while (found == 0 && redirected_flag && !code_302_is_success && (redirected_url_buff[0] != 0) && (redirected_cpt > 0)) {
     // we have to split the location
     char *startloc, *endloc;
-    char str[2048];
-    char str2[2048];
-    char str3[2048];
+    char str[2048], str2[2048], str3[2048], str4[2048];
 
     redirected_cpt--;
     redirected_flag = 0;
@@ -1004,19 +1002,21 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
         startloc += strlen("://");
 
         if ((endloc = strchr(startloc, '\r')) != NULL) {
-          startloc[endloc - startloc] = 0;
+          *endloc = 0;
         }
         if ((endloc = strchr(startloc, '\n')) != NULL) {
-          startloc[endloc - startloc] = 0;
+          *endloc = 0;
         }
-        strcpy(str, startloc);
+        strncpy(str, startloc, sizeof(str) - 1);
+        str[sizeof(str) - 1] = 0;
 
         endloc = strchr(str, '/');
         if (endloc != NULL) {
           strncpy(str2, str, endloc - str);
           str2[endloc - str] = 0;
-        } else
-          strncpy(str2, str, sizeof(str));
+        } else {
+          strcpy(str2, str);
+        }
 
         if (strlen(str) - strlen(str2) == 0) {
           strcpy(str3, "/");
@@ -1025,7 +1025,8 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
           str3[strlen(str) - strlen(str2)] = 0;
         }
       } else {
-        strncpy(str2, webtarget, sizeof(str2));
+        strncpy(str2, webtarget, sizeof(str2) - 1);
+        str2[sizeof(str2) - 1] = 0;
         if (redirected_url_buff[0] != '/') {
           // it's a relative path, so we have to concatenate it
           // with the path from the first url given
@@ -1041,8 +1042,10 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
           } else {
             sprintf(str3, "%.1000s/%.1000s", url, redirected_url_buff);
           }
-        } else
-          strncpy(str3, redirected_url_buff, sizeof(str3));
+        } else {
+          strncpy(str3, redirected_url_buff, sizeof(str3) - 1);
+          str3[sizeof(str3) - 1] = 0;
+        }
         if (debug)
           hydra_report(stderr, "[DEBUG] host=%s redirect=%s origin=%s\n", str2, str3, url);
       }
@@ -1054,12 +1057,13 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
         str3[0] = '/';
       }
 
-      if (strrchr(url, ':') == NULL && port != 80) {
-        sprintf(str2, "%.2040s:%d", str2, port);
+      if (strrchr(str2, ':') == NULL && (port != 80 || port != 443)) {
+        sprintf(str4, "%.2000s:%d", str2, port);
+        strcpy(str2, str4);
       }
 
       if (verbose)
-        hydra_report(stderr, "[VERBOSE] Page redirected to http://%s%s\n", str2, str3);
+        hydra_report(stderr, "[VERBOSE] Page redirected to http[s]://%s%s\n", str2, str3);
 
       if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
         hdrrepv(&ptr_head, "Content-Length", "0");
@@ -1315,19 +1319,19 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     optional1 = NULL;
 
   if (strstr(url, "\\:") != NULL) {
-    if ((ptr = malloc(strlen(url))) != NULL) {
+    if ((ptr = malloc(strlen(url) + 1)) != NULL) {
       strcpy(ptr, hydra_strrep(url, "\\:", ":"));
       url = ptr;
     }
   }
   if (strstr(variables, "\\:") != NULL) {
-    if ((ptr = malloc(strlen(variables))) != NULL) {
+    if ((ptr = malloc(strlen(variables) + 1)) != NULL) {
       strcpy(ptr, hydra_strrep(variables, "\\:", ":"));
       variables = ptr;
     }
   }
   if (strstr(cond, "\\:") != NULL) {
-    if ((ptr = malloc(strlen(cond))) != NULL) {
+    if ((ptr = malloc(strlen(cond) + 1)) != NULL) {
       strcpy(ptr, hydra_strrep(cond, "\\:", ":"));
       cond = ptr;
     }
