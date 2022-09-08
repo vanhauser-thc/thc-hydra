@@ -228,7 +228,7 @@ char *SERVICES = "adam6500 asterisk afp cisco cisco-enable cobaltstrike cvs fire
 #define RESTOREFILE "./hydra.restore"
 
 #define PROGRAM "Hydra"
-#define VERSION "v9.4"
+#define VERSION "v9.5-dev"
 #define AUTHOR "van Hauser/THC"
 #define EMAIL "<vh@thc.org>"
 #define AUTHOR2 "David Maciejak"
