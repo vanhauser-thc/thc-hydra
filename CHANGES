@@ -2,7 +2,8 @@ Changelog for hydra
 -------------------
 
 Release 9.5-dev
-* ... your patch? :)
+* The help for http forms was wrong. the condition variable must always be
+  the *last* parameter, not the third
 
 
 Release 9.4
