@@ -35,18 +35,23 @@ RUN set -x \
         gcc \
         1>/dev/null \
     # The next line fixes the curl "SSL certificate problem: unable to get local issuer certificate" for linux/arm
-    && c_rehash \
-    # Get hydra sources and compile
-    && cd /src \
-        && ./configure 1>/dev/null \
-        && make 1>/dev/null \
-        && make install \
-    # Make clean
-    && apt-get purge -y make gcc libgpg-error-dev libgcrypt-dev \
+    && c_rehash
+
+# Get hydra sources and compile
+RUN cd /src \
+        && make clean \
+        && ./configure \
+        && make \
+        && make install
+
+# Make clean
+RUN apt-get purge -y make gcc \
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* \
-    # Verify hydra installation
-    && hydra -h || error_code=$? \
+    && rm -rf /src
+
+# Verify hydra installation
+RUN hydra -h || error_code=$? \
     && if [ ! "${error_code}" -eq 255 ]; then echo "Wrong exit code for 'hydra help' command"; exit 1; fi \
     # Unprivileged user creation
     && echo 'hydra:x:10001:10001::/tmp:/sbin/nologin' > /etc/passwd \
