@@ -126,6 +126,7 @@ bool smb2_run_test(creds_t *cr, const char *server, uint16_t port) {
 
   */
   switch (errno) {
+  case 0: break;
   case ENOENT:
     // Noticed this when connecting to older samba servers on linux
     // where any credentials are accepted.
