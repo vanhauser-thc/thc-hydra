@@ -2,10 +2,11 @@ Changelog for hydra
 -------------------
 
 Release 9.5-dev
+* The help for http-form was wrong. the condition variable must always be
+  the *last* parameter, not the third
 * smb2: fix for updated libsmb2 which resulted in correct guessing attempts
   not being detected
-* The help for http forms was wrong. the condition variable must always be
-  the *last* parameter, not the third
+* smtp: break early if the server does not allow authentication
 
 
 Release 9.4

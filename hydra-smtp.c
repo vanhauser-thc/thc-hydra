@@ -61,6 +61,10 @@ int32_t start_smtp(int32_t s, char *ip, int32_t port, unsigned char options, cha
       return 1;
     if (strstr(buf, "334") == NULL) {
       hydra_report(stderr, "[ERROR] SMTP PLAIN AUTH : %s\n", buf);
+      if (strstr(buf, "503") != NULL) {
+        free(buf);
+        return 4;
+      }
       free(buf);
       return 3;
     }
@@ -437,6 +441,12 @@ void service_smtp(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
         sock = hydra_disconnect(sock);
       }
       hydra_child_exit(0);
+      return;
+    case 4: /* error exit */
+      if (sock >= 0) {
+        sock = hydra_disconnect(sock);
+      }
+      hydra_child_exit(3);
       return;
     default:
       hydra_report(stderr, "[ERROR] Caught unknown return code, exiting!\n");
