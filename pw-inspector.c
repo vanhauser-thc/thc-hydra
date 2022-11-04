@@ -30,7 +30,7 @@ void help() {
   printf("  -l         lowcase characters (a,b,c,d, etc.)\n");
   printf("  -u         upcase characters (A,B,C,D, etc.)\n");
   printf("  -n         numbers (1,2,3,4, etc.)\n");
-  printf("  -p         printable characters (which are not -l/-n/-p, e.g. "
+  printf("  -p         printable characters (which are not -l/-u/-n, e.g. "
          "$,!,/,(,*, etc.)\n");
   printf("  -s         special characters - all others not within the sets "
          "above\n");
