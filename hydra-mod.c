@@ -662,10 +662,10 @@ char *hydra_get_next_pair() {
     pair[sizeof(pair) - 1] = 0;
     __fck = read(intern_socket, pair, sizeof(pair) - 1);
     // if (debug) hydra_dump_data(pair, __fck, "CHILD READ PAIR");
-    if (memcmp(&HYDRA_EXIT, &pair, sizeof(HYDRA_EXIT)) == 0)
-      return HYDRA_EXIT;
-    if (pair[0] == 0)
+    if (pair[0] == 0 || __fck <= 0)
       return HYDRA_EMPTY;
+    if (__fck >=  sizeof(HYDRA_EXIT) && memcmp(&HYDRA_EXIT, &pair, sizeof(HYDRA_EXIT)) == 0)
+      return HYDRA_EXIT;
   }
   return pair;
 }
