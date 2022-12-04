@@ -30,6 +30,7 @@ BOOL rdp_connect(char *server, int32_t port, char *domain, char *login, char *pa
   instance->settings->ServerPort = port;
   instance->settings->Domain = domain;
   instance->settings->MaxTimeInCheckLoop = 100;
+  instance->settings->TlsSecLevel = 0;
   freerdp_connect(instance);
   err = freerdp_get_last_error(instance->context);
   return err;
