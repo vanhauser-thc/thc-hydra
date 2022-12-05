@@ -9,6 +9,7 @@
 
 #include "hydra-mod.h"
 
+extern hydra_option hydra_options;
 extern char *HYDRA_EXIT;
 #ifndef LIBFREERDP
 void dummy_rdp() { printf("\n"); }
@@ -18,6 +19,7 @@ void dummy_rdp() { printf("\n"); }
 freerdp *instance = 0;
 BOOL rdp_connect(char *server, int32_t port, char *domain, char *login, char *password) {
   int32_t err = 0;
+  int32_t waittime = hydra_options.waittime;
 
   instance->settings->Username = login;
   instance->settings->Password = password;
@@ -30,6 +32,11 @@ BOOL rdp_connect(char *server, int32_t port, char *domain, char *login, char *pa
   instance->settings->ServerPort = port;
   instance->settings->Domain = domain;
   instance->settings->MaxTimeInCheckLoop = 100;
+  // hydra_options.waittime default value -> 32
+  if (waittime != 32) {
+    // freerdp timeout format is microseconds -> default:15000
+    instance->settings->TcpConnectTimeout = waittime * 1000;
+  }
   instance->settings->TlsSecLevel = 0;
   freerdp_connect(instance);
   err = freerdp_get_last_error(instance->context);
