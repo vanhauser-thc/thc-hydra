@@ -1356,7 +1356,7 @@ echo "Checking for Android specialities ..."
 TMPC=comptest$$
 STRRCHR=" not"
 echo '#include <stdio.h>' > $TMPC.c
-echo '#include <strings.h>' >> $TMPC.c
+echo '#include <string.h>' >> $TMPC.c
 echo "int main() { char *x = strrchr(\"test\", 'e'); if (x == NULL) return 0; else return 1; }" >> $TMPC.c
 $CC -o $TMPC $TMPC.c > /dev/null 2>&1
 test -x $TMPC && STRRCHR=""
