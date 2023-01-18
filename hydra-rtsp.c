@@ -6,10 +6,11 @@
 //
 //
 
+#define _GNU_SOURCE
+
 #include "hydra-mod.h"
 #include "sasl.h"
 #include <stdio.h>
-#define _GNU_SOURCE
 #include <string.h>
 
 extern char *HYDRA_EXIT;
