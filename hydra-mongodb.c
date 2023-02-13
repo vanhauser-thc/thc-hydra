@@ -72,10 +72,17 @@ int32_t start_mongodb(int32_t s, char *ip, int32_t port, unsigned char options, 
   mongoc_log_set_handler(NULL, NULL);
   bson_init(&q);
 
-  snprintf(uri, sizeof(uri), "mongodb://%s:%s@%s:%d/?authSource=%s", login, pass, hydra_address2string(ip), port, miscptr);
+  if (login[0] == '\0' && pass[0] == '\0') {
+    snprintf(uri, sizeof(uri), "mongodb://%s:%d/?authSource=%s", hydra_address2string(ip), port, miscptr);
+  } else {
+    snprintf(uri, sizeof(uri), "mongodb://%s:%s@%s:%d/?authSource=%s", login, pass, hydra_address2string(ip), port, miscptr);
+  }
+
   client = mongoc_client_new(uri);
-  if (!client)
+  if (!client) {
+    hydra_completed_pair_skip();
     return 3;
+  }
 
   mongoc_client_set_appname(client, "hydra");
   collection = mongoc_client_get_collection(client, miscptr, "test");
