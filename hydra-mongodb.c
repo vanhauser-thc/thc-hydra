@@ -97,11 +97,11 @@ int32_t start_mongodb(int32_t s, char *ip, int32_t port, unsigned char options, 
       mongoc_collection_destroy(collection);
       mongoc_client_destroy(client);
       mongoc_cleanup();
-      hydra_completed_pair_skip();
+      hydra_completed_pair();
       if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0) {
         return 3;
       }
-      return 2;
+      return 1;
     }
   }
 
