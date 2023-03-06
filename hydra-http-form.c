@@ -20,33 +20,23 @@ Here's a couple of examples: -
 ./hydra -S -s 443 -l "<username>" -P pass.txt 10.221.64.2 https-get-form
 "/irmlab1/vulnapp.php:username=^USER^&pass=^PASS^:incorrect"
 
-The option field (following the service field) takes three ":" separated
-values and an optional fourth value, the first is the page on the server
-to GET or POST to, the second is the POST/GET variables (taken from either
-the browser, or a proxy such as PAROS) with the varying usernames and passwords
-in the "^USER^" and "^PASS^" placeholders, the third is the string that it
-checks for an *invalid* or *valid* login - any exception to this is counted
-as a success.
+The option field (following the service field) takes ":" separated values:
+The first is the page on the server to GET or POST to.
+The second is the POST/GET variables (taken from either the browser, or a proxy
+such as ZAP) with the varying usernames and passwords in the "^USER^" and
+"^PASS^" placeholders.
+The third + are optional parameters like C=, H= etc. (see below)
+The final(!) parameter is the string that it checks for an *invalid* or *valid*
+login
 So please:
  * invalid condition login should be preceded by "F="
  * valid condition login should be preceded by "S=".
-By default, if no header is found the condition is assume to be a fail,
-so checking for *invalid* login.
-The fourth optional value, can be a 'C' to define a different page to GET
-initial cookies from.
+By default, if no header is found the condition is assume to be a fail (F=),
+so checking for an *invalid* login string.
 
-If you specify the verbose flag (-v) it will show you the response from the
+If you specify the debug flag (-d) it will show you the response from the
 HTTP server which is useful for checking the result of a failed login to
-find something to pattern match against.
-
-Module initially written by Phil Robinson, IRM Plc (releases@irmplc.com),
-rewritten by David Maciejak
-
-Fix and issue with strtok use and implement 1 step location follow if HTTP
-3xx code is returned (david dot maciejak at gmail dot com)
-
-Added fail or success condition, getting cookies, and allow 5 redirections by
-david
+find something to pattern match against. This should be done together with -t 1.
 
 */
 
@@ -1434,8 +1424,8 @@ void usage_http_form(const char *service) {
          "redirections in\n"
          "a row. It always gathers a new cookie from the same URL without "
          "variables\n"
-         "The parameters requires three \":\" separated values, plus optional "
-         "values.\n"
+         "The parameters requires at a minimum three \":\" separated values,\n"
+         "plus optional values.\n"
          "(Note: if you need a colon in the option string as value, escape it "
          "with \"\\:\", but do not escape a \"\\\" with \"\\\\\".)\n"
          "\nSyntax: <url>:<form parameters>[:<optional>[:<optional>]:<condition string>\n"
@@ -1480,11 +1470,11 @@ void usage_http_form(const char *service) {
          "login.php:user=^USER64^&pass=^PASS64^&colon=colon\\:escape:S=result="
          "success\"\n"
          " \"/login.php:user=^USER^&pass=^PASS^&mid=123:authlog=.*failed\"\n"
-         " \"/:user=^USER&pass=^PASS^:failed:H=Authorization\\: Basic "
+         " \"/:user=^USER&pass=^PASS^:H=Authorization\\: Basic "
          "dT1w:H=Cookie\\: sessid=aaaa:h=X-User\\: ^USER^:H=User-Agent\\: wget\"\n"
-         " \"/exchweb/bin/auth/"
+         " \"/exchweb/bin/auth/:F=failed"
          "owaauth.dll:destination=http%%3A%%2F%%2F<target>%%2Fexchange&flags=0&"
          "username=<domain>%%5C^USER^&password=^PASS^&SubmitCreds=x&trusted=0:"
-         "reason=:C=/exchweb\"\n",
+         "C=/exchweb\":reason=\n",
          service);
 }
