@@ -761,7 +761,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
   if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL) {
     if (getcookie) {
       memset(proxy_string, 0, sizeof(proxy_string));
-      snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s:%d%.600s", webtarget, webport, cookieurl);
+      snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s%.600s", webtarget, cookieurl);
       if (http_request != NULL)
         free(http_request);
       http_request = prepare_http_request("GET", proxy_string, NULL, cookie_request);
@@ -775,7 +775,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
     // now prepare for the "real" request
     if (strcmp(type, "POST") == 0) {
       memset(proxy_string, 0, sizeof(proxy_string));
-      snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s:%d%.600s", webtarget, webport, url);
+      snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s%.600s", webtarget, url);
       snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int32_t)strlen(upd3variables));
       if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
         hdrrepv(&ptr_head, "Content-Length", content_length);
@@ -823,7 +823,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
       if (getcookie) {
         // doing a GET to get cookies
         memset(proxy_string, 0, sizeof(proxy_string));
-        snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s:%d%.600s", webtarget, webport, cookieurl);
+        snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s%.600s", webtarget, cookieurl);
         if (http_request != NULL)
           free(http_request);
         http_request = prepare_http_request("GET", proxy_string, NULL, cookie_request);
@@ -837,7 +837,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
       // now prepare for the "real" request
       if (strcmp(type, "POST") == 0) {
         memset(proxy_string, 0, sizeof(proxy_string));
-        snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s:%d%.600s", webtarget, webport, url);
+        snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s%.600s", webtarget, url);
         snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int32_t)strlen(upd3variables));
         if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
           hdrrepv(&ptr_head, "Content-Length", content_length);
@@ -1072,7 +1072,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
         // proxy with authentication
         hdrrepv(&ptr_head, "Host", str2);
         memset(proxy_string, 0, sizeof(proxy_string));
-        snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s:%d%.600s", webtarget, webport, str3);
+        snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s%.600s", webtarget, str3);
         if (normal_request != NULL)
           free(normal_request);
         normal_request = stringify_headers(&ptr_head);
@@ -1084,7 +1084,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
           // proxy without authentication
           hdrrepv(&ptr_head, "Host", str2);
           memset(proxy_string, 0, sizeof(proxy_string));
-          snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s:%d%.600s", webtarget, webport, str3);
+          snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s%.600s", webtarget, str3);
           if (normal_request != NULL)
             free(normal_request);
           normal_request = stringify_headers(&ptr_head);
