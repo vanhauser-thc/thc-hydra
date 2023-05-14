@@ -267,6 +267,7 @@ Examples:
 -x 1:3:a generate passwords from length 1 to 3 with all lowercase letters
 -x 2:5:/ generate passwords from length 2 to 5 containing only slashes
 -x 5:8:A1 generate passwords from length 5 to 8 with uppercase and numbers
+-x '3:3:aA1&~#\\ "\'<{([-|_^@)]=}>$%*?./§,;:!`' -v generates lenght 3 passwords with all 95 characters, and verbose. 
 ```
 
 Example:
