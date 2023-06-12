@@ -9,6 +9,7 @@ Release 9.5-dev
 * smb2: fix for updated libsmb2 which resulted in correct guessing attempts
   not being detected
 * smtp: break early if the server does not allow authentication
+* rdp: detect more return codes that say a user is disabled etc.
 
 
 Release 9.4
