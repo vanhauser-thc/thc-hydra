@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
   int32_t sets = 0, countsets = 0, minlen = 0, maxlen = MAXLENGTH, count = 0;
   int32_t set_low = 0, set_up = 0, set_no = 0, set_print = 0, set_other = 0;
   FILE *in = stdin, *out = stdout;
-  char buf[MAXLENGTH + 1];
+  unsigned char buf[MAXLENGTH + 1];
 
   prg = argv[0];
   if (argc < 2)
@@ -124,9 +124,9 @@ int main(int argc, char *argv[]) {
   if (countsets == 0)
     countsets = sets;
 
-  while (fgets(buf, sizeof(buf), in) != NULL) {
-    i = -1;
-    if (buf[0] == 0)
+  while (fgets((void *)buf, sizeof(buf), in) != NULL) {
+    int is_low = 0, is_up = 0, is_no = 0, is_print = 0, is_other = 0;
+    if (!buf[0])
       continue;
     if (buf[strlen(buf) - 1] == '\n')
       buf[strlen(buf) - 1] = 0;
@@ -134,40 +134,31 @@ int main(int argc, char *argv[]) {
       buf[strlen(buf) - 1] = 0;
     if (strlen(buf) >= minlen && strlen(buf) <= maxlen) {
       i = 0;
-      if (countsets > 0) {
-        if (set_low)
-          if (strpbrk(buf, "abcdefghijklmnopqrstuvwxyz") != NULL)
-            i++;
-        if (set_up)
-          if (strpbrk(buf, "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != NULL)
-            i++;
-        if (set_no)
-          if (strpbrk(buf, "0123456789") != NULL)
-            i++;
-        if (set_print) {
-          j = 0;
-          for (k = 0; k < strlen(buf); k++)
-            if (isprint((int32_t)buf[k]) != 0 && isalnum((int32_t)buf[k]) == 0)
-              j = 1;
-          if (j)
-            i++;
-        }
-        if (set_other) {
-          j = 0;
-          for (k = 0; k < strlen(buf); k++)
-            if (isprint((int32_t)buf[k]) == 0 && isalnum((int32_t)buf[k]) == 0)
-              j = 1;
-          if (j)
-            i++;
+      j = 1;
+      for (i = 0; i < strlen(buf) && j; i++) {
+        j = 0;
+        if (set_low && islower(buf[i])) {
+          j = 1;
+          is_low = 1;
+        } else if (set_up && isupper(buf[i])) {
+          j = 1;
+          is_up = 1;
+        } else if (set_no && isdigit(buf[i])) {
+          j = 1;
+          is_no = 1;
+        } else if (set_print && isprint(buf[i]) && !isalnum(buf[i])) {
+          j = 1;
+          is_print = 1;
+        } else if (set_other && !isprint(buf[i])) {
+          j = 1;
+          is_other = 1;
         }
       }
-      if (i >= countsets) {
+      if (j && countsets <= is_low + is_up + is_no + is_print + is_other) {
         fprintf(out, "%s\n", buf);
         count++;
       }
     }
-    /* fprintf(stderr, "[DEBUG] i: %d  minlen: %d  maxlen: %d  len: %d\n", i,
-     * minlen, maxlen, strlen(buf)); */
   }
   fclose(in);
   fclose(out);
