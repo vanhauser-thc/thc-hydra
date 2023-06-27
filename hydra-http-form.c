@@ -796,8 +796,10 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
       if (http_request != NULL)
         free(http_request);
       http_request = prepare_http_request("POST", proxy_string, upd3variables, normal_request);
-      if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
+      if (hydra_send(s, http_request, strlen(http_request), 0) < 0) {
+        free(cookie_header);
         return 1;
+      } 
     } else {
       if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
         hdrrepv(&ptr_head, "Content-Length", "0");
@@ -814,8 +816,10 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
       if (http_request != NULL)
         free(http_request);
       http_request = prepare_http_request("GET", proxy_string, upd3variables, normal_request);
-      if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
+      if (hydra_send(s, http_request, strlen(http_request), 0) < 0) {
+        free(cookie_header);
         return 1;
+      }
     }
   } else {
     if (use_proxy == 1) {
@@ -858,8 +862,10 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
         if (http_request != NULL)
           free(http_request);
         http_request = prepare_http_request("POST", proxy_string, upd3variables, normal_request);
-        if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
+        if (hydra_send(s, http_request, strlen(http_request), 0) < 0) {
+          free(cookie_header);
           return 1;
+        }
       } else {
         if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
           hdrrepv(&ptr_head, "Content-Length", "0");
@@ -876,8 +882,10 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
         if (http_request != NULL)
           free(http_request);
         http_request = prepare_http_request("GET", proxy_string, upd3variables, normal_request);
-        if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
+        if (hydra_send(s, http_request, strlen(http_request), 0) < 0) {
+          free(cookie_header);
           return 1;
+        }
       }
     } else {
       // direct web server, no proxy
@@ -921,8 +929,10 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
         if (http_request != NULL)
           free(http_request);
         http_request = prepare_http_request("POST", url, upd3variables, normal_request);
-        if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
+        if (hydra_send(s, http_request, strlen(http_request), 0) < 0) {
+          free(cookie_header);
           return 1;
+        }
       } else {
         if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
           hdrrepv(&ptr_head, "Content-Length", "0");
@@ -939,8 +949,10 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
         if (http_request != NULL)
           free(http_request);
         http_request = prepare_http_request("GET", url, upd3variables, normal_request);
-        if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
+        if (hydra_send(s, http_request, strlen(http_request), 0) < 0) {
+          free(cookie_header);
           return 1;
+        }
       }
     }
   }
@@ -1105,8 +1117,10 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
 
       hydra_reconnect(s, ip, port, options, hostname);
 
-      if (hydra_send(s, http_request, strlen(http_request), 0) < 0)
+      if (hydra_send(s, http_request, strlen(http_request), 0) < 0) {
+        free(cookie_header);
         return 1;
+      }
 
       found = analyze_server_response(s);
       if (strlen(cookie) > 0)
