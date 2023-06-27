@@ -2045,7 +2045,7 @@ void process_proxy_line(int32_t type, char *string) {
     string[strlen(string) - 1] = 0;
   if (string[strlen(string) - 1] == '\r')
     string[strlen(string) - 1] = 0;
-  if (proxy_count > MAX_PROXY_COUNT) {
+  if (proxy_count >= MAX_PROXY_COUNT) {
     fprintf(stderr, "[WARNING] maximum amount of proxies loaded, ignoring this entry: %s\n", string);
     return;
   }
