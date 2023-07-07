@@ -314,9 +314,15 @@ void hdrrep(ptr_header_node *ptr_head, char *oldvalue, char *newvalue) {
 
   for (cur_ptr = *ptr_head; cur_ptr; cur_ptr = cur_ptr->next) {
     if ((cur_ptr->type == HEADER_TYPE_USERHEADER || cur_ptr->type == HEADER_TYPE_USERHEADER_REPL) && strstr(cur_ptr->value, oldvalue)) {
-      cur_ptr->value = (char *)realloc(cur_ptr->value, strlen(newvalue) + 1);
-      if (cur_ptr->value)
-        strcpy(cur_ptr->value, newvalue);
+      size_t oldlen = strlen(oldvalue);
+      size_t newlen = strlen(newvalue);
+      if (oldlen != newlen)
+        cur_ptr->value = (char *)realloc(cur_ptr->value, strlen(cur_ptr->value) - oldlen + newlen + 1);
+      if (cur_ptr->value) {
+        char *p = strstr(cur_ptr->value, oldvalue);
+        memmove(p + newlen, p + oldlen, strlen(p + oldlen) + 1);
+        memcpy(p, newvalue, newlen);
+      }
       else {
         hydra_report(stderr, "[ERROR] Out of memory (hddrep).\n");
         hydra_child_exit(0);
