@@ -6,7 +6,9 @@
 //
 //
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include "hydra-mod.h"
 #include "sasl.h"
