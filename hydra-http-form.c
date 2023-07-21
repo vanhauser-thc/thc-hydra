@@ -322,8 +322,7 @@ void hdrrep(ptr_header_node *ptr_head, char *oldvalue, char *newvalue) {
         char *p = strstr(cur_ptr->value, oldvalue);
         memmove(p + newlen, p + oldlen, strlen(p + oldlen) + 1);
         memcpy(p, newvalue, newlen);
-      }
-      else {
+      } else {
         hydra_report(stderr, "[ERROR] Out of memory (hddrep).\n");
         hydra_child_exit(0);
       }
@@ -805,7 +804,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
       if (hydra_send(s, http_request, strlen(http_request), 0) < 0) {
         free(cookie_header);
         return 1;
-      } 
+      }
     } else {
       if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
         hdrrepv(&ptr_head, "Content-Length", "0");

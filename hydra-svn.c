@@ -4,7 +4,9 @@
 #ifdef LIBSVN
 
 /* needed on openSUSE */
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #if !defined PATH_MAX && defined HAVE_SYS_PARAM_H
 #include <sys/param.h>

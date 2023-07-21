@@ -664,7 +664,7 @@ char *hydra_get_next_pair() {
     // if (debug) hydra_dump_data(pair, __fck, "CHILD READ PAIR");
     if (pair[0] == 0 || __fck <= 0)
       return HYDRA_EMPTY;
-    if (__fck >=  sizeof(HYDRA_EXIT) && memcmp(&HYDRA_EXIT, &pair, sizeof(HYDRA_EXIT)) == 0)
+    if (__fck >= sizeof(HYDRA_EXIT) && memcmp(&HYDRA_EXIT, &pair, sizeof(HYDRA_EXIT)) == 0)
       return HYDRA_EXIT;
   }
   return pair;
