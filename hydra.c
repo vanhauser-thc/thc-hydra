@@ -388,7 +388,7 @@ static const struct {
                 {"http-get-form", service_http_form_init, service_http_get_form, usage_http_form},
                 {"http-head", service_http_init, service_http_head, NULL},
                 {"http-form", service_http_form_init, NULL, usage_http_form},
-                {"http-post", NULL, service_http_post, usage_http},
+                {"http-post", service_http_init, service_http_post, usage_http},
                 {"http-post-form", service_http_form_init, service_http_post_form, usage_http_form},
                 SERVICE3("http-proxy", http_proxy),
                 SERVICE3("http-proxy-urlenum", http_proxy_urlenum),
