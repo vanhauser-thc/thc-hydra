@@ -16,6 +16,7 @@ void dummy_oracle_sid() { printf("\n"); }
 #include <openssl/des.h>
 #define HASHSIZE 16
 
+extern hydra_option hydra_options;
 extern char *HYDRA_EXIT;
 char *buf;
 unsigned char *hash;
@@ -113,6 +114,8 @@ void service_oracle_sid(char *ip, int32_t sp, unsigned char options, char *miscp
       }
       /* run the cracking function */
       next_run = start_oracle_sid(sock, ip, port, options, miscptr, fp);
+      if (next_run == 1 && hydra_options.conwait)
+        sleep(hydra_options.conwait);
       break;
     case 3: /* clean exit */
       if (sock >= 0)

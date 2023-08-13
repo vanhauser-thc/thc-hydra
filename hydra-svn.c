@@ -32,6 +32,7 @@ void dummy_svn() { printf("\n"); }
 
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
+extern hydra_option hydra_options;
 extern char *HYDRA_EXIT;
 
 #define DEFAULT_BRANCH "trunk"
@@ -197,6 +198,8 @@ void service_svn(char *ip, int32_t sp, unsigned char options, char *miscptr, FIL
       break;
     case 2:
       next_run = start_svn(sock, ip, port, options, miscptr, fp);
+      if ((next_run == 1 || next_run == 2) && hydra_options.conwait)
+        sleep(hydra_options.conwait);
       break;
     case 3:
       if (sock >= 0)

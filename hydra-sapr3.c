@@ -14,6 +14,7 @@ const int32_t *__ctype_b;
 
 extern void flood(); /* for -lm */
 
+extern hydra_option hydra_options;
 extern char *HYDRA_EXIT;
 RFC_ERROR_INFO_EX error_info;
 
@@ -99,6 +100,8 @@ void service_sapr3(char *ip, int32_t sp, unsigned char options, char *miscptr, F
     switch (run) {
     case 1: /* connect and service init function */
       next_run = start_sapr3(sock, ip, port, options, miscptr, fp);
+      if (next_run == 1 && hydra_options.conwait)
+        sleep(hydra_options.conwait);
       break;
     case 2:
       hydra_child_exit(0);

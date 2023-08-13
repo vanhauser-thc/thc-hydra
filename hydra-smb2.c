@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 
+extern hydra_option hydra_options;
 extern char *HYDRA_EXIT;
 
 typedef struct creds {
@@ -173,9 +174,14 @@ bool smb2_run_test(creds_t *cr, const char *server, uint16_t port) {
 }
 
 void service_smb2(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
+  static int first_run = 0;
   hydra_register_socket(sp);
+
   while (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT))) {
     char *login, *pass;
+
+    if (first_run && hydra_options.conwait)
+      sleep(hydra_options.conwait);
 
     login = hydra_get_next_login();
     pass = hydra_get_next_password();
@@ -191,6 +197,8 @@ void service_smb2(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
     } else {
       hydra_completed_pair();
     }
+
+    first_run = 1;
   }
   EXIT_NORMAL;
 }

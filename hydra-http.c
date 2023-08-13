@@ -451,7 +451,7 @@ int32_t service_http_init(char *ip, int32_t sp, unsigned char options, char *mis
       start--;
     memset(start, '\0', condition_len);
     if (debug)
-      hydra_report(stderr, "Modificated options:%s\n", miscptr);
+      hydra_report(stderr, "Modified options:%s\n", miscptr);
   } else {
     if (debug)
       hydra_report(stderr, "Condition not found\n");

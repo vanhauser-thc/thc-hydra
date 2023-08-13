@@ -13,6 +13,7 @@ void dummy_mcached() { printf("\n"); }
 
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
+extern hydra_option hydra_options;
 extern char *HYDRA_EXIT;
 
 int mcached_send_com_quit(int32_t sock) {
@@ -117,6 +118,8 @@ void service_mcached(char *ip, int32_t sp, unsigned char options, char *miscptr,
     switch (run) {
     case 1:
       next_run = start_mcached(sock, ip, port, options, miscptr, fp);
+      if (next_run == 1 && hydra_options.conwait)
+        sleep(hydra_options.conwait);
       break;
     case 2:
       hydra_child_exit(0);

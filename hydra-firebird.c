@@ -22,6 +22,7 @@ void dummy_firebird() { printf("\n"); }
 
 #define DEFAULT_DB "C:\\Program Files\\Firebird\\Firebird_1_5\\security.fdb"
 
+extern hydra_option hydra_options;
 extern char *HYDRA_EXIT;
 
 int32_t start_firebird(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
@@ -124,6 +125,8 @@ void service_firebird(char *ip, int32_t sp, unsigned char options, char *miscptr
        */
 
       next_run = start_firebird(sock, ip, port, options, miscptr, fp);
+      if ((next_run == 1 || next_run == 2) && hydra_options.conwait)
+        sleep(hydra_options.conwait);
       break;
     case 3:
 

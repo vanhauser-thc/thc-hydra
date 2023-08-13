@@ -16,6 +16,7 @@ void dummy_postgres() { printf("\n"); }
 
 #define DEFAULT_DB "template1"
 
+extern hydra_option hydra_options;
 extern char *HYDRA_EXIT;
 
 int32_t start_postgres(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
@@ -99,6 +100,8 @@ void service_postgres(char *ip, int32_t sp, unsigned char options, char *miscptr
        *      Here we start the password cracking process
        */
       next_run = start_postgres(sock, ip, port, options, miscptr, fp);
+      if ((next_run == 2 || next_run == 1) && hydra_options.conwait)
+        sleep(hydra_options.conwait);
       break;
     case 3:
       if (sock >= 0)

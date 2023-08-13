@@ -35,6 +35,7 @@ char *hydra_scramble(char *to, const char *message, const char *password);
 extern int32_t internal__hydra_recv(int32_t socket, char *buf, int32_t length);
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
+extern hydra_option hydra_options;
 extern char *HYDRA_EXIT;
 char mysqlsalt[9];
 
@@ -332,6 +333,8 @@ void service_mysql(char *ip, int32_t sp, unsigned char options, char *miscptr, F
       break;
     case 2: /* run the cracking function */
       next_run = start_mysql(sock, ip, port, options, miscptr, fp);
+      if ((next_run == 1 || next_run == 2) && hydra_options.conwait)
+        sleep(hydra_options.conwait);
       break;
     case 3: /* clean exit */
       if (sock >= 0) {

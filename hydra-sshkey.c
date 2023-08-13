@@ -16,6 +16,7 @@ void dummy_sshkey() { printf("\n"); }
 #if LIBSSH_VERSION_MAJOR >= 0 && LIBSSH_VERSION_MINOR >= 4
 
 extern ssh_session session;
+extern hydra_option hydra_options;
 extern char *HYDRA_EXIT;
 extern int32_t new_session;
 
@@ -117,6 +118,8 @@ void service_sshkey(char *ip, int32_t sp, unsigned char options, char *miscptr, 
     switch (run) {
     case 1: /* connect and service init function */
       next_run = start_sshkey(sock, ip, port, options, miscptr, fp);
+      if (next_run == 1 && hydra_options.conwait)
+        sleep(hydra_options.conwait);
       break;
     case 2:
       ssh_disconnect(session);

@@ -125,6 +125,8 @@ void service_rdp(char *ip, int32_t sp, unsigned char options, char *miscptr, FIL
       else
         sleep(hydra_options.conwait);
       next_run = start_rdp(ip, myport, options, miscptr, fp);
+      if (next_run == 1 && hydra_options.conwait)
+        sleep(hydra_options.conwait);
       break;
     case 2: /* clean exit */
       freerdp_disconnect(instance);

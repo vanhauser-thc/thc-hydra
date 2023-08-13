@@ -21,6 +21,7 @@ void dummy_oracle() { printf("\n"); }
 #include <stdbool.h>
 #include <sys/types.h>
 
+extern hydra_option hydra_options;
 extern char *HYDRA_EXIT;
 
 OCIEnv *o_environment;
@@ -165,6 +166,8 @@ void service_oracle(char *ip, int32_t sp, unsigned char options, char *miscptr, 
       break;
     case 2:
       next_run = start_oracle(sock, ip, port, options, miscptr, fp);
+      if ((next_run == 1 || next_run == 2) && hydra_options.conwait)
+        sleep(hydra_options.conwait);
       break;
     case 3: /* clean exit */
       if (sock >= 0)
