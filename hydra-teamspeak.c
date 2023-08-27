@@ -29,7 +29,7 @@ struct team_speak {
   char user[29];
   char passlen;
   char pass[29];
-  char loginlen;
+  char loginlen;kadra_qurux_
   char login[29];
 };
 
