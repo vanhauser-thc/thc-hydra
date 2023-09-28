@@ -66,6 +66,7 @@ int32_t success_cond = 0;
 int32_t getcookie = 1;
 int32_t auth_flag = 0;
 int32_t code_302_is_success = 0;
+int32_t code_401_is_failure = 0;
 
 char cookie[4096] = "", cmiscptr[1024];
 
@@ -436,6 +437,14 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
         *ptr++ = 0;
       sprintf(cookieurl, "%.1000s", hydra_strrep(miscptr + 2, "\\:", ":"));
       miscptr = ptr;
+      break;
+    case '1':
+      code_401_is_failure = 1;
+      char *tmp = strchr(miscptr, ':');
+      if (tmp)
+        miscptr = tmp + 1;
+      else
+        miscptr += strlen(miscptr);
       break;
     case '2':
       code_302_is_success = 1;
@@ -971,12 +980,17 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
     found = success_cond;
   }
 
-  if (auth_flag) { // we received a 401 error - user is using wrong module
-    hydra_report(stderr,
-                 "[ERROR] the target is using HTTP auth, not a web form, received HTTP "
-                 "error code 401. Use module \"http%s-get\" instead.\n",
-                 (options & OPTION_SSL) > 0 ? "s" : "");
-    return 2;
+  if (auth_flag) { // we received a 401 error - user may be using wrong module
+    if (code_401_is_failure) { // apparently they don't think so  -- treat 401 as failure
+      hydra_completed_pair();
+      return 1;
+    } else {
+      hydra_report(stderr,
+                   "[ERROR] received HTTP error code 401. The target may be using HTTP auth, "
+                   "not a web form.  Use module \"http%s-get\" instead, or set \"1=\".\n",
+                   (options & OPTION_SSL) > 0 ? "s" : "");
+      return 2;
+    }
   }
 
   if (strlen(cookie) > 0)
