@@ -47,6 +47,9 @@ int32_t start_ssh(int32_t s, char *ip, int32_t port, unsigned char options, char
     ssh_options_set(session, SSH_OPTIONS_TIMEOUT, &hydra_options.waittime);
     ssh_options_set(session, SSH_OPTIONS_COMPRESSION_C_S, "none");
     ssh_options_set(session, SSH_OPTIONS_COMPRESSION_S_C, "none");
+    // might be better to add the legacy (first two for KEX and HOST) to the default instead of specifying the full list
+    ssh_options_set(session, SSH_OPTIONS_KEY_EXCHANGE, "diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group18-sha512,diffie-hellman-group16-sha512,diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha256");
+    ssh_options_set(session, SSH_OPTIONS_HOSTKEYS, "ssh-rsa,ssh-dss,ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com,rsa-sha2-512,rsa-sha2-256");
     if (ssh_connect(session) != 0) {
       // if the connection was drop, exit and let hydra main handle it
       if (verbose)
@@ -192,6 +195,9 @@ int32_t service_ssh_init(char *ip, int32_t sp, unsigned char options, char *misc
   ssh_options_set(session, SSH_OPTIONS_TIMEOUT, &hydra_options.waittime);
   ssh_options_set(session, SSH_OPTIONS_COMPRESSION_C_S, "none");
   ssh_options_set(session, SSH_OPTIONS_COMPRESSION_S_C, "none");
+  // might be better to add the legacy (first two for KEX and HOST) to the default instead of specifying the full list
+  ssh_options_set(session, SSH_OPTIONS_KEY_EXCHANGE, "diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,curve25519-sha256,curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group18-sha512,diffie-hellman-group16-sha512,diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha256");
+  ssh_options_set(session, SSH_OPTIONS_HOSTKEYS, "ssh-rsa,ssh-dss,ssh-ed25519,ecdsa-sha2-nistp521,ecdsa-sha2-nistp384,ecdsa-sha2-nistp256,sk-ssh-ed25519@openssh.com,sk-ecdsa-sha2-nistp256@openssh.com,rsa-sha2-512,rsa-sha2-256");
   if (ssh_connect(session) != 0) {
     fprintf(stderr, "[ERROR] could not connect to ssh://%s:%d - %s\n", hydra_address2string_beautiful(ip), port, ssh_get_error(session));
     return 2;
