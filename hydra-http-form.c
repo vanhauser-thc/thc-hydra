@@ -440,7 +440,7 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
       break;
     case '1':
       code_401_is_failure = 1;
-      *tmp = strchr(miscptr, ':');
+      tmp = strchr(miscptr, ':');
       if (tmp)
         miscptr = tmp + 1;
       else
@@ -448,7 +448,7 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
       break;
     case '2':
       code_302_is_success = 1;
-      *tmp = strchr(miscptr, ':');
+      tmp = strchr(miscptr, ':');
       if (tmp)
         miscptr = tmp + 1;
       else
