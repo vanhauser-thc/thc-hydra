@@ -1280,8 +1280,8 @@ int32_t start_smb(int32_t s, char *ip, int32_t port, unsigned char options, char
   } else if (SMBerr == 0x000193) { /* Valid password, account expired  */
     hydra_report(stdout, "[%d][smb] Host: %s Account: %s Valid password, account expired\n", port, ipaddr_str, login);
     hydra_report_found_host(port, ip, "smb", fp);
-    hydra_completed_pair_found();
-  } else if ((SMBerr == 0x000224) || (SMBerr == 0xC20002)) { /* Valid password, account expired  */
+    hydra_completed_pair_skip();
+  } else if ((SMBerr == 0x000224) || (SMBerr == 0xC20002)) { /* Valid password, password expired  */
     hydra_report(stdout,
                  "[%d][smb] Host: %s Account: %s Valid password, password "
                  "expired and must be changed on next logon\n",
@@ -1311,7 +1311,7 @@ int32_t start_smb(int32_t s, char *ip, int32_t port, unsigned char options, char
   } else if (SMBerr == 0x000071) { /* password expired */
     if (verbose)
       fprintf(stderr, "[%d][smb] Host: %s Account: %s Error: PASSWORD EXPIRED\n", port, ipaddr_str, login);
-    hydra_completed_pair_skip();
+    hydra_completed_pair_found();
   } else if ((SMBerr == 0x000072) || (SMBerr == 0xBF0002)) { /* account disabled */ /* BF0002 on w2k */
     if (verbose)
       fprintf(stderr, "[%d][smb] Host: %s Account: %s Error: ACCOUNT_DISABLED\n", port, ipaddr_str, login);
