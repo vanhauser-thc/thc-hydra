@@ -1304,13 +1304,12 @@ int32_t start_smb(int32_t s, char *ip, int32_t port, unsigned char options, char
       hydra_report(stderr, "[INFO] LM dialect may be disabled, try LMV2 instead\n");
     hydra_completed_pair_skip();
   } else if (SMBerr == 0x000024) { /* change password on next login [success] */
-    hydra_report(stdout, "[%d][smb] Host: %s Account: %s Error: ACCOUNT_CHANGE_PASSWORD\n", port, ipaddr_str, login);
+    hydra_report(stdout, "[%d][smb] Host: %s Account: %s Information: ACCOUNT_CHANGE_PASSWORD\n", port, ipaddr_str, login);
     hydra_completed_pair_found();
   } else if (SMBerr == 0x00006D) { /* STATUS_LOGON_FAILURE */
     hydra_completed_pair();
   } else if (SMBerr == 0x000071) { /* password expired */
-    if (verbose)
-      fprintf(stderr, "[%d][smb] Host: %s Account: %s Error: PASSWORD EXPIRED\n", port, ipaddr_str, login);
+    hydra_report(stdout, "[%d][smb] Host: %s Account: %s Information: PASSWORD EXPIRED\n", port, ipaddr_str, login);
     hydra_completed_pair_found();
   } else if ((SMBerr == 0x000072) || (SMBerr == 0xBF0002)) { /* account disabled */ /* BF0002 on w2k */
     if (verbose)
