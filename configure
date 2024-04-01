@@ -966,7 +966,7 @@ if [ -n "$ORACLE_PATH" -a -n "$ORACLE_IPATH" ]; then
 fi
 if [ "X" = "X$ORACLE_PATH" -o "X" = "X$ORACLE_IPATH" ]; then
     echo "                                                            ... NOT found, module Oracle disabled"
-    echo "Get basic and sdk package from http://www.oracle.com/technetwork/database/features/instant-client/index.html"
+    echo "Get basic and sdk package from https://www.oracle.com/database/technologies/instant-client/downloads.html"
     ORACLE_PATH=""
     ORACLE_IPATH=""
 fi
