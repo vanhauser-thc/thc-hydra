@@ -16,24 +16,34 @@ void dummy_rdp() { printf("\n"); }
 #else
 
 #include <freerdp/freerdp.h>
+#include <freerdp/version.h>
 freerdp *instance = 0;
 BOOL rdp_connect(char *server, int32_t port, char *domain, char *login, char *password) {
   int32_t err = 0;
 
-  instance->settings->Username = login;
-  instance->settings->Password = password;
-  instance->settings->IgnoreCertificate = TRUE;
+#if FREERDP_VERSION_MAJOR == 3
+  rdpSettings* settings = instance->context->settings;
+#else
+  rdpSettings* settings = instance->settings;
+#endif
+
+  settings->Username = login;
+  settings->Password = password;
+  settings->IgnoreCertificate = TRUE;
   if (password[0] == 0)
-    instance->settings->AuthenticationOnly = FALSE;
+    settings->AuthenticationOnly = FALSE;
   else
-    instance->settings->AuthenticationOnly = TRUE;
-  instance->settings->ServerHostname = server;
-  instance->settings->ServerPort = port;
-  instance->settings->Domain = domain;
-  instance->settings->MaxTimeInCheckLoop = 100;
+    settings->AuthenticationOnly = TRUE;
+  settings->ServerHostname = server;
+  settings->ServerPort = port;
+  settings->Domain = domain;
+
+#if FREERDP_VERSION_MAJOR == 2
+  settings->MaxTimeInCheckLoop = 100;
+#endif
   // freerdp timeout format is microseconds -> default:15000
-  instance->settings->TcpConnectTimeout = hydra_options.waittime * 1000;
-  instance->settings->TlsSecLevel = 0;
+  settings->TcpConnectTimeout = hydra_options.waittime * 1000;
+  settings->TlsSecLevel = 0;
   freerdp_connect(instance);
   err = freerdp_get_last_error(instance->context);
   return err;
