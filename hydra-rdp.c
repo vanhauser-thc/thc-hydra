@@ -21,11 +21,7 @@ freerdp *instance = 0;
 BOOL rdp_connect(char *server, int32_t port, char *domain, char *login, char *password) {
   int32_t err = 0;
 
-#if FREERDP_VERSION_MAJOR == 3
   rdpSettings* settings = instance->context->settings;
-#else
-  rdpSettings* settings = instance->settings;
-#endif
 
   settings->Username = login;
   settings->Password = password;
