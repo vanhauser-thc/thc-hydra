@@ -11,13 +11,14 @@
 #define WEB "https://github.com/vanhauser-thc/thc-hydra"
 
 #define MAXLENGTH 256
+#define DEFAULT_MAX_CONSECUTIVE_CHARS 3
 
 char *prg;
 
 void help() {
   printf("%s %s (c) 2005 by van Hauser / THC %s [%s]\n\n", PROGRAM, VERSION, EMAIL, WEB);
   printf("Syntax: %s [-i FILE] [-o FILE] [-m MINLEN] [-M MAXLEN] [-c MINSETS] "
-         "-l -u -n -p -s\n\n",
+         "-l -u -n -p -s [-x MAX_CONSECUTIVE_CHARS]\n\n",
          prg);
   printf("Options:\n");
   printf("  -i FILE    file to read passwords from (default: stdin)\n");
@@ -34,6 +35,9 @@ void help() {
          "$,!,/,(,*, etc.)\n");
   printf("  -s         special characters - all others not within the sets "
          "above\n");
+  printf("  -x         max consecutive characters "
+         "(default: %d)\n",
+         DEFAULT_MAX_CONSECUTIVE_CHARS);
   printf("\n%s reads passwords in and prints those which meet the requirements.\n", PROGRAM);
   printf("The return code is the number of valid passwords found, 0 if none "
          "was found.\n");
@@ -45,10 +49,39 @@ void help() {
   exit(-1);
 }
 
+int has_consecutive_or_sequential(const char *str, int max_consecutive) {
+  if (str == NULL || max_consecutive <= 0) {
+    return -1;
+  }
+
+  int consecutive = 1;
+  char prev = '\0';
+
+  for (size_t i = 0; str[i] != '\0'; i++) {
+    if (i > 0) {
+      if (str[i] == prev || (unsigned char)str[i] == (unsigned char)prev + 1) {
+        if (++consecutive > max_consecutive) {
+          return 1;
+        }
+      } else {
+        consecutive = 1;
+      }
+    }
+    prev = str[i];
+
+    if (i == SIZE_MAX) {
+      break;
+    }
+  }
+
+  return 0;
+}
+
 int main(int argc, char *argv[]) {
   int32_t i, j, k;
   int32_t sets = 0, countsets = 0, minlen = 0, maxlen = MAXLENGTH, count = 0;
   int32_t set_low = 0, set_up = 0, set_no = 0, set_print = 0, set_other = 0;
+  int32_t max_consecutive_chars = DEFAULT_MAX_CONSECUTIVE_CHARS;
   FILE *in = stdin, *out = stdout;
   unsigned char buf[MAXLENGTH + 1];
 
@@ -109,6 +142,13 @@ int main(int argc, char *argv[]) {
         sets++;
       }
       break;
+    case 'x':
+      max_consecutive_chars = atoi(optarg);
+      if (max_consecutive_chars <= 0) {
+        fprintf(stderr, "Error: -x MAX_CONSECUTIVE_CHARS must be a positive integer\n");
+        exit(-1);
+      }
+      break;
     default:
       help();
     }
@@ -156,7 +196,10 @@ int main(int argc, char *argv[]) {
       }
       if (j && countsets <= is_low + is_up + is_no + is_print + is_other) {
         fprintf(out, "%s\n", buf);
-        count++;
+        if (!has_consecutive_or_sequential(buf, max_consecutive_chars)) {
+          fprintf(out, "%s\n", buf);
+          count++;
+        }
       }
     }
   }
