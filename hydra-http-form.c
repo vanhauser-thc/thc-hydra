@@ -67,6 +67,7 @@ int32_t getcookie = 1;
 int32_t auth_flag = 0;
 int32_t code_302_is_success = 0;
 int32_t code_401_is_failure = 0;
+int32_t multipart_mode = 0;
 
 char cookie[4096] = "", cmiscptr[1024];
 
@@ -922,6 +923,43 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
         hydra_reconnect(s, ip, port, options, hostname);
       }
       // now prepare for the "real" request
+      // first handle multipart/form-data, which is always POST
+      if (multipart_mode){
+        char *multipart_body = NULL;
+        char multipart_boundary[64] = "----THC-HydraBoundaryz2Z2z";
+        multipart_body = build_multipart_body(variables, multipart_boundary);
+        if (multipart_body == NULL) {
+          hydra_report(stderr, "[ERROR] FAiled to build multipart body. \n");
+          return 0;
+        }
+        snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int32_t)strlen(multipart_body));
+        if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
+          hdrrepv(&ptr_head, "Content-Length", content_length);
+        else 
+          add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
+        
+        char content_type[256];
+        snprintf(content_type, sizeof(content_type) - 1, "multipart/for/data; boundary=%s", multipart_body);
+        if (!header_exists(&ptr_head, "Content-Type", HEADER_TYPE_DEFAULT))
+          add_header(&ptr_head, "Content-Type", content_type, HEADER_TYPE_DEFAULT);
+        else
+          hdrrepv(&ptr_head, "Content-type", content_type);
+        
+        if (cookie_header != NULL)
+          free(cookie_header);
+        cookie_header = stringify_cookies(ptr_cookie);
+        if (!header_exists(&ptr_head, "Cookie", HEADER_TYPE_DEFAULT))
+          add_header(&ptr_head, "Cookie", cookie_header, HEADER_TYPE_DEFAULT);
+        else
+          hdrrepv(&ptr_head, "Cookie", cookie_header);
+        if (normal_request != NULL)
+          free(normal_request);
+        http_request = prepare_http_request("POST", url, multipart_body, normal_request);
+        free(multipart_body);
+        return 1;
+      }
+
+      // for "normal" non-multipart POST forms
       if (strcmp(type, "POST") == 0) {
         snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int32_t)strlen(upd3variables));
         if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
