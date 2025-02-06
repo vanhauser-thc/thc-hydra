@@ -456,6 +456,15 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
       else
         miscptr += strlen(miscptr);
       break;
+    case 'm': //fall through
+    case 'M':
+      multipart_mode = 1;
+      tmp = strchr(miscptr, ':');
+      if (tmp)
+        miscptr = tmp + 1;
+      else
+        miscptr += strlen(miscptr);
+      break;
     case 'g': // fall through
     case 'G':
       ptr = miscptr + 2;
@@ -959,7 +968,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
       // first handle multipart/form-data, which is always POST
       if (multipart_mode){
         char *multipart_body = NULL;
-        char multipart_boundary[64] = "----THC-HydraBoundaryz2Z2z\r\n";
+        char multipart_boundary[32] = "----THC-HydraBoundaryz2Z2z\r\n";
         multipart_body = build_multipart_body(multipart_boundary);
         if (multipart_body == NULL) {
           hydra_report(stderr, "[ERROR] Failed to build multipart body. \n");
