@@ -1038,7 +1038,6 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
         hydra_report(stderr, "[ERROR] Failed to build multipart body.\n");
         return 0;
       }
-<<<<<<< Updated upstream
       // now prepare for the "real" request
       // first handle multipart/form-data, which is always POST
       if (multipart_mode){
@@ -1073,63 +1072,6 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
           free(normal_request);
         http_request = prepare_http_request("POST", url, multipart_body, normal_request);
         free(multipart_body);
-=======
-      /* Mettre à jour Content-Length pour le corps multipart */
-      snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int32_t)strlen(multipart_body));
-      if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
-        hdrrepv(&ptr_head, "Content-Length", content_length);
-      else 
-        add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
-      
-      /* Mettre à jour Content-Type avec le boundary */
-      char content_type[256];
-      snprintf(content_type, sizeof(content_type) - 1, "multipart/form-data; boundary=%s", multipart_boundary);
-      if (!header_exists(&ptr_head, "Content-Type", HEADER_TYPE_DEFAULT))
-        add_header(&ptr_head, "Content-Type", content_type, HEADER_TYPE_DEFAULT);
-      else
-        hdrrepv(&ptr_head, "Content-Type", content_type);
-      
-      /* Mettre à jour l'en-tête Cookie */
-      if (cookie_header != NULL)
-        free(cookie_header);
-      cookie_header = stringify_cookies(ptr_cookie);
-      if (!header_exists(&ptr_head, "Cookie", HEADER_TYPE_DEFAULT))
-        add_header(&ptr_head, "Cookie", cookie_header, HEADER_TYPE_DEFAULT);
-      else
-        hdrrepv(&ptr_head, "Cookie", cookie_header);
-      
-      if (normal_request != NULL)
-        free(normal_request);
-      /* Préparer la requête POST avec le corps multipart */
-      http_request = prepare_http_request("POST", url, multipart_body, normal_request);
-      free(multipart_body);
-      return 1;
-    }
-    /* --- Traitement classique non-multipart --- */
-    if (strcmp(type, "POST") == 0) {
-      snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int32_t)strlen(upd3variables));
-      if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
-        hdrrepv(&ptr_head, "Content-Length", content_length);
-      else
-        add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
-      if (!header_exists(&ptr_head, "Content-Type", HEADER_TYPE_DEFAULT))
-        add_header(&ptr_head, "Content-Type", "application/x-www-form-urlencoded", HEADER_TYPE_DEFAULT);
-      if (cookie_header != NULL)
-        free(cookie_header);
-      cookie_header = stringify_cookies(ptr_cookie);
-      if (!header_exists(&ptr_head, "Cookie", HEADER_TYPE_DEFAULT))
-        add_header(&ptr_head, "Cookie", cookie_header, HEADER_TYPE_DEFAULT);
-      else
-        hdrrepv(&ptr_head, "Cookie", cookie_header);
-      if (normal_request != NULL)
-        free(normal_request);
-      normal_request = stringify_headers(&ptr_head);
-      if (http_request != NULL)
-        free(http_request);
-      http_request = prepare_http_request("POST", url, upd3variables, normal_request);
-      if (hydra_send(s, http_request, strlen(http_request), 0) < 0) {
-        free(cookie_header);
->>>>>>> Stashed changes
         return 1;
       }
     } else {
