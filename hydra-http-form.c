@@ -8,7 +8,7 @@ web-based login forms that require username and password variables via
 either a GET or POST request.
 
 The module works similarly to the HTTP basic auth module and will honour
-proxy mode (with authenticaion) as well as SSL. The module can be invoked
+proxy mode (with authentication) as well as SSL. The module can be invoked
 with the service names of "http-get-form", "http-post-form",
 "https-get-form" and "https-post-form".
 
@@ -76,6 +76,7 @@ char bufferurl[6096 + 24], cookieurl[6096 + 24] = "", userheader[6096 + 24] = ""
 
 #define MAX_REDIRECT 8
 #define MAX_CONTENT_LENGTH 20
+#define MAX_CONTENT_DISPOSITION 200
 #define MAX_PROXY_LENGTH 2048 // sizeof(cookieurl) * 2
 
 char redirected_url_buff[2048] = "";
@@ -533,6 +534,38 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
   return 1;
 }
 
+char *build_multipart_body(char multipart_boundary){
+  char *ptr, *param1, *param2, *value1, *value2;
+  char *body = NULL;
+  char content_disposition[MAX_CONTENT_DISPOSITION];
+  memcpy(ptr, variables, sizeof(variables));
+  param1 = ptr;
+  
+  if (1){
+    while (*ptr != 0 && (*ptr != '='))
+      ptr++;
+    if (*ptr != 0)
+      *ptr++ = 0;
+    value1 = ptr;
+
+    while (*ptr != 0 && (*ptr != '&'))
+      ptr++;
+    if (*ptr != 0)
+      *ptr++ = 0;
+    param2 = ptr;
+
+    while (*ptr != 0 && (*ptr != '='))
+      ptr++;
+    if (*ptr != 0)
+      *ptr++ = 0;
+    value2 = ptr;
+
+    strcat(body, multipart_boundary);
+    snprintf(content_disposition, MAX_CONTENT_DISPOSITION - 1, "%d", (int32_t)strlen(upd3variables));
+
+  }
+}
+
 char *prepare_http_request(char *type, char *path, char *params, char *headers) {
   uint32_t reqlen = 0;
   char *http_request = NULL;
@@ -926,10 +959,10 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
       // first handle multipart/form-data, which is always POST
       if (multipart_mode){
         char *multipart_body = NULL;
-        char multipart_boundary[64] = "----THC-HydraBoundaryz2Z2z";
-        multipart_body = build_multipart_body(variables, multipart_boundary);
+        char multipart_boundary[64] = "----THC-HydraBoundaryz2Z2z\r\n";
+        multipart_body = build_multipart_body(multipart_boundary);
         if (multipart_body == NULL) {
-          hydra_report(stderr, "[ERROR] FAiled to build multipart body. \n");
+          hydra_report(stderr, "[ERROR] Failed to build multipart body. \n");
           return 0;
         }
         snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int32_t)strlen(multipart_body));
@@ -939,7 +972,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
           add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
         
         char content_type[256];
-        snprintf(content_type, sizeof(content_type) - 1, "multipart/for/data; boundary=%s", multipart_body);
+        snprintf(content_type, sizeof(content_type) - 1, "multipart/for/data; boundary=%s", multipart_boundary);
         if (!header_exists(&ptr_head, "Content-Type", HEADER_TYPE_DEFAULT))
           add_header(&ptr_head, "Content-Type", content_type, HEADER_TYPE_DEFAULT);
         else
