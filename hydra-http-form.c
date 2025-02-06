@@ -85,6 +85,11 @@ int32_t redirected_cpt = MAX_REDIRECT;
 
 char *cookie_request = NULL, *normal_request = NULL; // Buffers for HTTP headers
 
+
+void service_http_form(char *ip, int32_t sp, unsigned char options, char *miscptr,
+                       FILE *fp, int32_t port, char *hostname, char *type,
+                       ptr_header_node *ptr_head, ptr_cookie_node *ptr_cookie);
+
 /*
  * Function to perform some initial setup.
  */
@@ -102,6 +107,8 @@ ptr_header_node header_exists(ptr_header_node *ptr_head, char *header_name, char
 
   return found_header;
 }
+
+
 
 #if defined(__sun)
 
@@ -545,31 +552,31 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
 
 char *build_multipart_body(char *multipart_boundary) {
     if (!variables)
-        return NULL;  // Pas de paramètres à traiter
+        return NULL;
 
-    char *body = NULL;      // Chaîne résultat
-    size_t body_size = 0;   // Taille actuelle du corps
+    char *body = NULL;
+    size_t body_size = 0;
 
-    // Dupliquer la chaîne "variables" afin de pouvoir la tokeniser
+    // Duplicate "variables" for tokenizing
     char *vars_dup = strdup(variables);
     if (!vars_dup)
         return NULL;
 
-    // Tokeniser la chaîne sur le caractère '&'
+    // Tokenize the string using '&' as a delimiter
     char *pair = strtok(vars_dup, "&");
     while (pair != NULL) {
-        // Pour chaque paire, rechercher le séparateur '='
+        // Find the '=' separator in each pair
         char *equal_sign = strchr(pair, '=');
         if (!equal_sign) {
             pair = strtok(NULL, "&");
             continue;
         }
-        *equal_sign = '\0';  // Terminer la clé
+        *equal_sign = '\0';
         char *key = pair;
         char *value = equal_sign + 1;
 
-        // Construire la section multipart pour ce champ.
-        // Format attendu :
+        // Build the multipart section for the field
+        // Expected format:
         // --<boundary>\r\n
         // Content-Disposition: form-data; name="<key>"\r\n
         // \r\n
@@ -594,9 +601,9 @@ char *build_multipart_body(char *multipart_boundary) {
             "%s\r\n",
             multipart_boundary, key, value);
 
-        // Réallouer le buffer "body" pour y ajouter cette section
+        // Reallocate the body buffer to add this section
         size_t new_body_size = body_size + section_len;
-        char *new_body = realloc(body, new_body_size + 1); // +1 pour le '\0'
+        char *new_body = realloc(body, new_body_size + 1); // +1 for null terminator
         if (!new_body) {
             free(section);
             free(body);
@@ -604,21 +611,18 @@ char *build_multipart_body(char *multipart_boundary) {
             return NULL;
         }
         body = new_body;
-        if (body_size == 0) {
+        if (body_size == 0)
             strcpy(body, section);
-        } else {
+        else
             strcat(body, section);
-        }
         body_size = new_body_size;
         free(section);
 
-        // Passage à la paire suivante
         pair = strtok(NULL, "&");
     }
     free(vars_dup);
 
-    // Ajouter la fermeture du multipart :
-    // --<boundary>--\r\n
+    // Append the closing boundary: --<boundary>--\r\n
     int closing_len = snprintf(NULL, 0, "--%s--\r\n", multipart_boundary);
     char *closing = malloc(closing_len + 1);
     if (!closing) {
@@ -853,12 +857,11 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
   char content_length[MAX_CONTENT_LENGTH], proxy_string[MAX_PROXY_LENGTH];
 
   memset(header, 0, sizeof(header));
-  cookie[0] = 0; // Réinitialiser les cookies d'une tentative antérieure
+  cookie[0] = 0;
 
   if (use_proxy > 0 && proxy_count > 0)
     selected_proxy = random() % proxy_count;
 
-  /* Récupération du prochain login/mot de passe */
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
   if (strlen(pass = hydra_get_next_password()) == 0)
@@ -876,15 +879,12 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
   upd3variables = hydra_strrep(upd3variables, "^USER64^", b64login);
   upd3variables = hydra_strrep(upd3variables, "^PASS64^", b64pass);
 
-  // Mise à jour des en‐têtes utilisateur (substitution dans les headers)
   hdrrep(&ptr_head, "^USER^", clogin);
   hdrrep(&ptr_head, "^PASS^", cpass);
   hdrrep(&ptr_head, "^USER64^", b64login);
   hdrrep(&ptr_head, "^PASS64^", b64pass);
 
-  /* Gestion du proxy (cas avec proxy authentifié ou non) */
   if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL) {
-    /* --- Bloc pour proxy avec authentification --- */
     if (getcookie) {
       memset(proxy_string, 0, sizeof(proxy_string));
       snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s%.600s", webtarget, cookieurl);
@@ -926,7 +926,6 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
         return 1;
       }
     } else {
-      /* Cas GET avec proxy authentifié */
       if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
         hdrrepv(&ptr_head, "Content-Length", "0");
       if (cookie_header != NULL)
@@ -948,7 +947,6 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
       }
     }
   } else if (use_proxy == 1) {
-    /* --- Bloc pour proxy sans authentification --- */
     if (getcookie) {
       memset(proxy_string, 0, sizeof(proxy_string));
       snprintf(proxy_string, MAX_PROXY_LENGTH - 1, "http://%s%.600s", webtarget, cookieurl);
@@ -1011,7 +1009,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
       }
     }
   } else {
-    /* --- Bloc pour accès direct au serveur (sans proxy) --- */
+    /* Direct access to the server (no proxy) */
     normal_request = NULL;
     if (getcookie) {
       if (http_request != NULL)
@@ -1028,50 +1026,64 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
       }
       hydra_reconnect(s, ip, port, options, hostname);
     }
-    /* --- Traitement multipart --- */
     if (multipart_mode) {
       char *multipart_body = NULL;
-      /* Définir le boundary (ici, une valeur fixe, sans '\r\n') */
       char multipart_boundary[64] = "----THC-HydraBoundaryz2Z2z";
       multipart_body = build_multipart_body(multipart_boundary);
       if (multipart_body == NULL) {
         hydra_report(stderr, "[ERROR] Failed to build multipart body.\n");
         return 0;
       }
-      // now prepare for the "real" request
-      // first handle multipart/form-data, which is always POST
-      if (multipart_mode){
-        char *multipart_body = NULL;
-        char multipart_boundary[32] = "----THC-HydraBoundaryz2Z2z\r\n";
-        multipart_body = build_multipart_body(multipart_boundary);
-        if (multipart_body == NULL) {
-          hydra_report(stderr, "[ERROR] Failed to build multipart body. \n");
-          return 0;
-        }
-        snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int32_t)strlen(multipart_body));
-        if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
-          hdrrepv(&ptr_head, "Content-Length", content_length);
-        else 
-          add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
-        
-        char content_type[256];
-        snprintf(content_type, sizeof(content_type) - 1, "multipart/for/data; boundary=%s", multipart_boundary);
-        if (!header_exists(&ptr_head, "Content-Type", HEADER_TYPE_DEFAULT))
-          add_header(&ptr_head, "Content-Type", content_type, HEADER_TYPE_DEFAULT);
-        else
-          hdrrepv(&ptr_head, "Content-type", content_type);
-        
-        if (cookie_header != NULL)
-          free(cookie_header);
-        cookie_header = stringify_cookies(ptr_cookie);
-        if (!header_exists(&ptr_head, "Cookie", HEADER_TYPE_DEFAULT))
-          add_header(&ptr_head, "Cookie", cookie_header, HEADER_TYPE_DEFAULT);
-        else
-          hdrrepv(&ptr_head, "Cookie", cookie_header);
-        if (normal_request != NULL)
-          free(normal_request);
-        http_request = prepare_http_request("POST", url, multipart_body, normal_request);
-        free(multipart_body);
+      snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int32_t)strlen(multipart_body));
+      if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
+        hdrrepv(&ptr_head, "Content-Length", content_length);
+      else 
+        add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
+      
+      char content_type[256];
+      snprintf(content_type, sizeof(content_type) - 1, "multipart/form-data; boundary=%s", multipart_boundary);
+      if (!header_exists(&ptr_head, "Content-Type", HEADER_TYPE_DEFAULT))
+        add_header(&ptr_head, "Content-Type", content_type, HEADER_TYPE_DEFAULT);
+      else
+        hdrrepv(&ptr_head, "Content-Type", content_type);
+      
+      if (cookie_header != NULL)
+        free(cookie_header);
+      cookie_header = stringify_cookies(ptr_cookie);
+      if (!header_exists(&ptr_head, "Cookie", HEADER_TYPE_DEFAULT))
+        add_header(&ptr_head, "Cookie", cookie_header, HEADER_TYPE_DEFAULT);
+      else
+        hdrrepv(&ptr_head, "Cookie", cookie_header);
+      
+      if (normal_request != NULL)
+        free(normal_request);
+      http_request = prepare_http_request("POST", url, multipart_body, normal_request);
+      free(multipart_body);
+      return 1;
+    }
+    if (strcmp(type, "POST") == 0) {
+      snprintf(content_length, MAX_CONTENT_LENGTH - 1, "%d", (int32_t)strlen(upd3variables));
+      if (header_exists(&ptr_head, "Content-Length", HEADER_TYPE_DEFAULT))
+        hdrrepv(&ptr_head, "Content-Length", content_length);
+      else
+        add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
+      if (!header_exists(&ptr_head, "Content-Type", HEADER_TYPE_DEFAULT))
+        add_header(&ptr_head, "Content-Type", "application/x-www-form-urlencoded", HEADER_TYPE_DEFAULT);
+      if (cookie_header != NULL)
+        free(cookie_header);
+      cookie_header = stringify_cookies(ptr_cookie);
+      if (!header_exists(&ptr_head, "Cookie", HEADER_TYPE_DEFAULT))
+        add_header(&ptr_head, "Cookie", cookie_header, HEADER_TYPE_DEFAULT);
+      else
+        hdrrepv(&ptr_head, "Cookie", cookie_header);
+      if (normal_request != NULL)
+        free(normal_request);
+      normal_request = stringify_headers(&ptr_head);
+      if (http_request != NULL)
+        free(http_request);
+      http_request = prepare_http_request("POST", url, upd3variables, normal_request);
+      if (hydra_send(s, http_request, strlen(http_request), 0) < 0) {
+        free(cookie_header);
         return 1;
       }
     } else {
@@ -1105,7 +1117,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
   if (redirected_flag && code_302_is_success)
     found = success_cond;
 
-  if (auth_flag) { // 401 error
+  if (auth_flag) {
     if (code_401_is_failure) {
       hydra_completed_pair();
       return 1;
@@ -1121,15 +1133,13 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
   if (strlen(cookie) > 0)
     process_cookies(&ptr_cookie, cookie);
 
-  // Gérer les redirections
   redirected_cpt = MAX_REDIRECT;
   if (debug)
     printf("[DEBUG] attempt result: found %d, redirect %d, location: %s\n", found, redirected_flag, redirected_url_buff);
 
   while (found == 0 && redirected_flag && !code_302_is_success &&
          (redirected_url_buff[0] != 0) && (redirected_cpt > 0)) {
-    // Traitement de la redirection (code non modifié ici)
-    // ...
+    // Processing redirection (code omitted)
   }
 
   if (found != -1 && found == success_cond &&
@@ -1142,6 +1152,18 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
   }
 
   return 1;
+}
+
+void service_http_post_form(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
+  ptr_cookie_node ptr_cookie = NULL;
+  ptr_header_node ptr_head = initialize(ip, options, miscptr);
+
+  if (ptr_head)
+    service_http_form(ip, sp, options, miscptr, fp, port, hostname, "POST", &ptr_head, &ptr_cookie);
+  else {
+    hydra_report(stderr, "[ERROR] Could not launch head. Error while initializing.\n");
+    hydra_child_exit(2);
+  }
 }
 
 void service_http_post_form(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
