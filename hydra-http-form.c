@@ -1166,18 +1166,6 @@ void service_http_post_form(char *ip, int32_t sp, unsigned char options, char *m
   }
 }
 
-void service_http_post_form(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
-  ptr_cookie_node ptr_cookie = NULL;
-  ptr_header_node ptr_head = initialize(ip, options, miscptr);
-
-  if (ptr_head)
-    service_http_form(ip, sp, options, miscptr, fp, port, hostname, "POST", &ptr_head, &ptr_cookie);
-  else {
-    hydra_report(stderr, "[ERROR] Could not launch head. Error while initializing.\n");
-    hydra_child_exit(2);
-  }
-}
-
 int32_t service_http_form_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   // called before the childrens are forked off, so this is the function
   // which should be filled if initial connections and service setup has to be
