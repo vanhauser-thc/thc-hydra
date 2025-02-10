@@ -863,25 +863,19 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
   cpass[sizeof(cpass) - 1] = 0;
 
   if (multipart_mode) {
-    char multipart_boundary[32] = "----THC-HydraBoundaryz2Z2z";
-
-    snprintf(content_type, sizeof(content_type), "multipart/form-data; boundary=%s", multipart_boundary);
-    char *multipart_body = build_multipart_body(multipart_boundary);
+    snprintf(content_type, sizeof(content_type), "multipart/form-data; boundary=----THC-HydraBoundaryz2Z2z");
+    char *multipart_body = build_multipart_body("----THC-HydraBoundaryz2Z2z");
     upd3variables = multipart_body;
+
+}else{
+    snprintf(content_type, sizeof(content_type), "application/x-www-form-urlencoded");
+    upd3variables = variables;
+}
 
     upd3variables = hydra_strrep(upd3variables, "^USER^", clogin);
     upd3variables = hydra_strrep(upd3variables, "^PASS^", cpass);
     upd3variables = hydra_strrep(upd3variables, "^USER64^", b64login);
     upd3variables = hydra_strrep(upd3variables, "^PASS64^", b64pass);
-
-}else{
-    snprintf(content_type, sizeof(content_type), "application/x-www-form-urlencoded");
-
-    upd3variables = hydra_strrep(variables, "^USER^", clogin);
-    upd3variables = hydra_strrep(upd3variables, "^PASS^", cpass);
-    upd3variables = hydra_strrep(upd3variables, "^USER64^", b64login);
-    upd3variables = hydra_strrep(upd3variables, "^PASS64^", b64pass);
-}
 
   
 
@@ -916,9 +910,6 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
       else
         add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
       if (!header_exists(&ptr_head, "Content-Type", HEADER_TYPE_DEFAULT))
-        if (multipart_mode)
-          add_header(&ptr_head, "Content-Type", content_type, HEADER_TYPE_DEFAULT);
-        else
           add_header(&ptr_head, "Content-Type", content_type, HEADER_TYPE_DEFAULT);
       if (cookie_header != NULL)
         free(cookie_header);
