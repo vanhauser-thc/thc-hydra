@@ -1591,6 +1591,15 @@ char *hydra_reverse_login(int32_t head_no, char *login) {
   return hydra_heads[head_no]->reverse;
 }
 
+void skip_passwords(int skips){
+  for(int i=0; i<skips; i++){
+    //if(*hydra_target[target_no]->pass_no >= hydra_brains.countpass)
+    while(*hydra_target[target_no]->pass_ptr != 0)
+      hydra_target[target_no]->pass_ptr++;
+    hydra_target[target_no]->pass_ptr++;
+  }
+}
+
 int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
   // variables moved to save stack
   snpdone = 0;
@@ -1750,9 +1759,7 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
                   return hydra_send_next_pair(target_no, head_no);
               } else {
                 hydra_targets[target_no]->pass_ptr++;
-                while (*hydra_targets[target_no]->pass_ptr != 0)
-                  hydra_targets[target_no]->pass_ptr++;
-                hydra_targets[target_no]->pass_ptr++;
+                skip_passwords(1);
               }
               if ((hydra_options.try_password_same_as_login && strcmp(hydra_heads[head_no]->current_pass_ptr, hydra_heads[head_no]->current_login_ptr) == 0) || (hydra_options.try_null_password && strlen(hydra_heads[head_no]->current_pass_ptr) == 0) || (hydra_options.try_password_reverse_login && strcmp(hydra_heads[head_no]->current_pass_ptr, hydra_reverse_login(head_no, hydra_heads[head_no]->current_login_ptr)) == 0)) {
                 hydra_brains.sent++;
