@@ -342,6 +342,8 @@ char *sck = NULL;
 int32_t prefer_ipv6 = 0, conwait = 0, loop_cnt = 0, fck = 0, options = 0, killed = 0;
 int32_t child_head_no = -1, child_socket;
 int32_t total_redo_count = 0;
+int32_t total_distributed_machines = 2;
+int32_t distributed_machine_rank = 2;
 
 // moved for restore feature
 int32_t process_restore = 0, dont_unlink;
@@ -1591,12 +1593,12 @@ char *hydra_reverse_login(int32_t head_no, char *login) {
   return hydra_heads[head_no]->reverse;
 }
 
-void skip_passwords(int skips){
+void skip_passwords(int32_t skips, int32_t target_no){
   for(int i=0; i<skips; i++){
-    //if(*hydra_target[target_no]->pass_no >= hydra_brains.countpass)
-    while(*hydra_target[target_no]->pass_ptr != 0)
-      hydra_target[target_no]->pass_ptr++;
-    hydra_target[target_no]->pass_ptr++;
+    //if(*hydra_targets[target_no]->pass_no >= hydra_brains.countpass)
+    while(*hydra_targets[target_no]->pass_ptr != 0)
+      hydra_targets[target_no]->pass_ptr++;
+    hydra_targets[target_no]->pass_ptr++;
   }
 }
 
@@ -1752,6 +1754,9 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
                   hydra_targets[target_no]->login_ptr++;
                 hydra_targets[target_no]->login_ptr++;
                 hydra_targets[target_no]->pass_ptr = pass_ptr;
+                hydra_targets[target_no]->pass_ptr++;
+                //initialise the password to start with depending on the machine's rank if using distributed computing
+                skip_passwords(distributed_machine_rank-1, target_no);
                 hydra_targets[target_no]->login_no++;
                 hydra_targets[target_no]->pass_no = 0;
                 hydra_targets[target_no]->pass_state = 0;
@@ -1759,7 +1764,8 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
                   return hydra_send_next_pair(target_no, head_no);
               } else {
                 hydra_targets[target_no]->pass_ptr++;
-                skip_passwords(1);
+                //number of passwords in the wordlist to skip depending on the number of parallel machines
+                skip_passwords(total_distributed_machines, target_no);
               }
               if ((hydra_options.try_password_same_as_login && strcmp(hydra_heads[head_no]->current_pass_ptr, hydra_heads[head_no]->current_login_ptr) == 0) || (hydra_options.try_null_password && strlen(hydra_heads[head_no]->current_pass_ptr) == 0) || (hydra_options.try_password_reverse_login && strcmp(hydra_heads[head_no]->current_pass_ptr, hydra_reverse_login(head_no, hydra_heads[head_no]->current_login_ptr)) == 0)) {
                 hydra_brains.sent++;
