@@ -1597,7 +1597,6 @@ char *hydra_reverse_login(int32_t head_no, char *login) {
 
 
 FILE *hydra_divide_file(FILE *file, uint32_t my_segment, uint32_t num_segments){
-  fprintf(stdout, "Dividing file...\n");
 
   if(my_segment > num_segments){
     fprintf(stderr, "[ERROR] in option -D XofY, X must not be greater than Y: %s\n", hydra_options.passfile);
@@ -1610,11 +1609,7 @@ FILE *hydra_divide_file(FILE *file, uint32_t my_segment, uint32_t num_segments){
 
   uint32_t line_number = 0;
 
-  double total_lines;
-  if (total_lines = countlines(file,0))
-    fprintf(stdout, "There are %f lines int the wordlist", total_lines);
-  else
-    fprintf(stderr, "Something went wrong in the counting of lines");
+  double total_lines = countlines(file,0);
 
   if(num_segments > total_lines){
     fprintf(stderr, "[ERROR] in option -D XofY, Y must not be greater than the total number of lines in the file to be divided: %s\n", hydra_options.passfile);
@@ -2395,7 +2390,7 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
       else{
-        fprintf(stdout, "successfully set X to %d and Y to %d\n", my_segment, num_segments);
+        fprintf(stdout, "-D: successfully set X to %d and Y to %d\n", my_segment, num_segments);
       }
       break;
     case 'h':
