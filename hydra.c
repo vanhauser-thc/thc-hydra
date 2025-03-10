@@ -342,8 +342,8 @@ char *sck = NULL;
 int32_t prefer_ipv6 = 0, conwait = 0, loop_cnt = 0, fck = 0, options = 0, killed = 0;
 int32_t child_head_no = -1, child_socket;
 int32_t total_redo_count = 0;
-int32_t total_distributed_machines = 2;
-int32_t distributed_machine_rank = 2;
+int32_t num_segments = 0;
+int32_t my_segment = 0;
 
 // moved for restore feature
 int32_t process_restore = 0, dont_unlink;
@@ -1593,14 +1593,66 @@ char *hydra_reverse_login(int32_t head_no, char *login) {
   return hydra_heads[head_no]->reverse;
 }
 
-void skip_passwords(int32_t skips, int32_t target_no){
-  for(int i=0; i<skips; i++){
-    //if(*hydra_targets[target_no]->pass_no >= hydra_brains.countpass)
-    while(*hydra_targets[target_no]->pass_ptr != 0)
-      hydra_targets[target_no]->pass_ptr++;
-    hydra_targets[target_no]->pass_ptr++;
+
+FILE *hydra_divide_file(FILE *file, uint32_t my_segment, uint32_t num_segments){
+  fprintf(stdout, "Dividing file...\n");
+
+  if(my_segment > num_segments){
+    fprintf(stderr, "[ERROR] in option -D XofY, X must not be greater than Y: %s\n", hydra_options.passfile);
+    return NULL;
+    }
+
+  FILE *output_file;
+  char line[500];
+  char output_file_name[20];
+
+  uint32_t line_number = 0;
+
+  double total_lines;
+  if (total_lines = countlines(file,0))
+    fprintf(stdout, "There are %f lines int the wordlist", total_lines);
+  else
+    fprintf(stderr, "Something went wrong in the counting of lines");
+
+  if(num_segments > total_lines){
+    fprintf(stderr, "[ERROR] in option -D XofY, Y must not be greater than the total number of lines in the file to be divided: %s\n", hydra_options.passfile);
+    return NULL;
   }
-}
+
+  double segment_size_double = total_lines / num_segments;
+
+  // round up segment_size_float to integer
+  uint64_t segment_size = (uint64_t)segment_size_double;
+  if(segment_size < segment_size_double)
+    segment_size++;
+
+  uint64_t segment_start = segment_size * (my_segment - 1) + 1;
+  uint64_t segment_end = segment_size * my_segment;
+
+  
+  sprintf(output_file_name, "segment_%d.txt", my_segment);
+  output_file = fopen(output_file_name, "w");
+
+  if(!output_file){
+    fprintf(stderr, "[ERROR] Segment file empty: %s\n", hydra_options.passfile);
+    return NULL;
+  }
+
+  while(fgets(line, sizeof line, file) != NULL && line_number < segment_end){
+    line_number++;
+
+    if(line_number >= segment_start && line_number <= segment_end)
+      fprintf(output_file, "%s", line);
+    
+    }
+
+  rewind(file);
+  fclose(output_file);
+  output_file = fopen(output_file_name, "r");
+
+  return output_file;
+
+    }
 
 int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
   // variables moved to save stack
@@ -1754,9 +1806,6 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
                   hydra_targets[target_no]->login_ptr++;
                 hydra_targets[target_no]->login_ptr++;
                 hydra_targets[target_no]->pass_ptr = pass_ptr;
-                hydra_targets[target_no]->pass_ptr++;
-                //initialise the password to start with depending on the machine's rank if using distributed computing
-                skip_passwords(distributed_machine_rank-1, target_no);
                 hydra_targets[target_no]->login_no++;
                 hydra_targets[target_no]->pass_no = 0;
                 hydra_targets[target_no]->pass_state = 0;
@@ -1764,8 +1813,9 @@ int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
                   return hydra_send_next_pair(target_no, head_no);
               } else {
                 hydra_targets[target_no]->pass_ptr++;
-                //number of passwords in the wordlist to skip depending on the number of parallel machines
-                skip_passwords(total_distributed_machines, target_no);
+                while (*hydra_targets[target_no]->pass_ptr != 0)
+                  hydra_targets[target_no]->pass_ptr++;
+                hydra_targets[target_no]->pass_ptr++;
               }
               if ((hydra_options.try_password_same_as_login && strcmp(hydra_heads[head_no]->current_pass_ptr, hydra_heads[head_no]->current_login_ptr) == 0) || (hydra_options.try_null_password && strlen(hydra_heads[head_no]->current_pass_ptr) == 0) || (hydra_options.try_password_reverse_login && strcmp(hydra_heads[head_no]->current_pass_ptr, hydra_reverse_login(head_no, hydra_heads[head_no]->current_login_ptr)) == 0)) {
                 hydra_brains.sent++;
@@ -2184,7 +2234,7 @@ void process_proxy_line(int32_t type, char *string) {
 int main(int argc, char *argv[]) {
   char *proxy_string = NULL, *device = NULL, *memcheck;
   char *outfile_format_tmp;
-  FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL, *proxyfp;
+  FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL, *proxyfp, *filecloser=NULL;
   size_t countinfile = 1, sizeinfile = 0;
   uint64_t math2;
   int32_t i = 0, j = 0, k, error = 0, modusage = 0, ignore_restore = 0, do_switch;
@@ -2320,6 +2370,7 @@ int main(int argc, char *argv[]) {
   hydra_options.loginfile = NULL;
   hydra_options.pass = NULL;
   hydra_options.passfile = NULL;
+  hydra_options.distributed = NULL;
   hydra_options.tasks = TASKS;
   hydra_options.max_use = MAXTASKS;
   hydra_options.outfile_format = FORMAT_PLAIN_TEXT;
@@ -2333,8 +2384,18 @@ int main(int argc, char *argv[]) {
     help(1);
   if (argc < 2)
     help(0);
-  while ((i = getopt(argc, argv, "hIq64Rrde:vVl:fFg:L:p:OP:o:b:M:C:t:T:m:w:W:s:SUux:yc:K")) >= 0) {
+  while ((i = getopt(argc, argv, "hIq64Rrde:vVl:fFg:D:L:p:OP:o:b:M:C:t:T:m:w:W:s:SUux:yc:K")) >= 0) {
     switch (i) {
+    case 'D':
+      hydra_options.distributed = optarg;
+      if (sscanf(hydra_options.distributed, "%dof%d", &my_segment, &num_segments) != 2) {
+            fprintf(stderr, "Invalid format. Expected format -D XofY where X and Y are integers.\n");
+            exit(EXIT_FAILURE);
+        }
+      else{
+        fprintf(stdout, "successfully set X to %d and Y to %d\n", my_segment, num_segments);
+      }
+      break;
     case 'h':
       help(1);
       break;
@@ -3415,6 +3476,13 @@ int main(int argc, char *argv[]) {
           fprintf(stderr, "[ERROR] File for logins not found: %s\n", hydra_options.loginfile);
           exit(-1);
         }
+        else if (hydra_options.passfile == NULL){
+                if(my_segment && num_segments){
+                  filecloser = lfp;
+                  lfp = hydra_divide_file(lfp, my_segment, num_segments);
+                  fclose(filecloser);
+                }
+              }
         hydra_brains.countlogin = countlines(lfp, 0);
         hydra_brains.sizelogin = size_of_data;
         if (hydra_brains.countlogin == 0) {
@@ -3447,6 +3515,11 @@ int main(int argc, char *argv[]) {
           fprintf(stderr, "[ERROR] File for passwords not found: %s\n", hydra_options.passfile);
           exit(-1);
         }
+        else if(my_segment && num_segments){
+                  filecloser = pfp;
+                  pfp = hydra_divide_file(pfp, my_segment, num_segments);
+                  fclose(filecloser);
+                }
         hydra_brains.countpass = countlines(pfp, 0);
         hydra_brains.sizepass = size_of_data;
         if (hydra_brains.countpass == 0) {
@@ -3500,6 +3573,11 @@ int main(int argc, char *argv[]) {
       if ((cfp = fopen(hydra_options.colonfile, "r")) == NULL) {
         fprintf(stderr, "[ERROR] File for colon files (login:pass) not found: %s\n", hydra_options.colonfile);
         exit(-1);
+      }
+      else if(my_segment && num_segments){
+        filecloser = cfp;
+        cfp = hydra_divide_file(cfp, my_segment, num_segments);
+        fclose(filecloser);
       }
       hydra_brains.countlogin = countlines(cfp, 1);
       hydra_brains.sizelogin = size_of_data;
