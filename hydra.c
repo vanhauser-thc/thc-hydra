@@ -521,6 +521,8 @@ void help(int32_t ext) {
                     "instead of -L/-P options\n"
                     "  -M FILE   list of servers to attack, one entry per "
                     "line, ':' to specify port\n");
+  PRINT_NORMAL(ext, "  -D XofY   Divide wordlist into Y segments and use the "
+                    "Xth segment.\n");
   PRINT_EXTEND(ext, "  -o FILE   write found login/password pairs to FILE instead of stdout\n"
                     "  -b FORMAT specify the format for the -o FILE: text(default), json, "
                     "jsonv1\n"
