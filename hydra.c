@@ -342,8 +342,12 @@ char *sck = NULL;
 int32_t prefer_ipv6 = 0, conwait = 0, loop_cnt = 0, fck = 0, options = 0, killed = 0;
 int32_t child_head_no = -1, child_socket;
 int32_t total_redo_count = 0;
-int32_t num_segments = 0;
-int32_t my_segment = 0;
+
+// requred for distributed attack capability
+uint32_t num_segments = 0;
+uint32_t my_segment = 0;
+uint32_t junk_file_count = 0;
+char junk_files[20][16];
 
 // moved for restore feature
 int32_t process_restore = 0, dont_unlink;
@@ -1595,8 +1599,12 @@ char *hydra_reverse_login(int32_t head_no, char *login) {
   return hydra_heads[head_no]->reverse;
 }
 
+void delete_junk_files(){
+  for(int i=0; i<junk_file_count; i++)
+    remove(junk_files[i]);
+}
 
-FILE *hydra_divide_file(FILE *file, uint32_t my_segment, uint32_t num_segments){
+FILE *hydra_divide_file(FILE *file, uint32_t target_no, uint32_t my_segment, uint32_t num_segments){
 
   if(my_segment > num_segments){
     fprintf(stderr, "[ERROR] in option -D XofY, X must not be greater than Y: %s\n", hydra_options.passfile);
@@ -1627,13 +1635,20 @@ FILE *hydra_divide_file(FILE *file, uint32_t my_segment, uint32_t num_segments){
   uint64_t segment_end = segment_size * my_segment;
 
   
-  sprintf(output_file_name, "segment_%d.txt", my_segment);
+  fprintf(stdout, "writing filename\n");
+  sprintf(output_file_name, "segment_%d_%d.txt",target_no, my_segment);
+  fprintf(stdout, "writing successful\n");
   output_file = fopen(output_file_name, "w");
 
   if(!output_file){
     fprintf(stderr, "[ERROR] Segment file empty: %s\n", hydra_options.passfile);
     return NULL;
   }
+
+  if(strcpy(junk_files[junk_file_count], output_file_name))
+    junk_file_count++;
+
+  atexit(delete_junk_files);
 
   while(fgets(line, sizeof line, file) != NULL && line_number < segment_end){
     line_number++;
@@ -2390,7 +2405,7 @@ int main(int argc, char *argv[]) {
             exit(EXIT_FAILURE);
         }
       else{
-        fprintf(stdout, "-D: successfully set X to %d and Y to %d\n", my_segment, num_segments);
+        fprintf(stdout, "Option \'D\': successfully set X to %d and Y to %d\n", my_segment, num_segments);
       }
       break;
     case 'h':
@@ -3476,7 +3491,7 @@ int main(int argc, char *argv[]) {
         else if (hydra_options.passfile == NULL){
                 if(my_segment && num_segments){
                   filecloser = lfp;
-                  lfp = hydra_divide_file(lfp, my_segment, num_segments);
+                  lfp = hydra_divide_file(lfp, target_no, my_segment, num_segments);
                   fclose(filecloser);
                 }
               }
@@ -3514,7 +3529,7 @@ int main(int argc, char *argv[]) {
         }
         else if(my_segment && num_segments){
                   filecloser = pfp;
-                  pfp = hydra_divide_file(pfp, my_segment, num_segments);
+                  pfp = hydra_divide_file(pfp, target_no, my_segment, num_segments);
                   fclose(filecloser);
                 }
         hydra_brains.countpass = countlines(pfp, 0);
@@ -3573,7 +3588,7 @@ int main(int argc, char *argv[]) {
       }
       else if(my_segment && num_segments){
         filecloser = cfp;
-        cfp = hydra_divide_file(cfp, my_segment, num_segments);
+        cfp = hydra_divide_file(cfp, target_no, my_segment, num_segments);
         fclose(filecloser);
       }
       hydra_brains.countlogin = countlines(cfp, 1);
