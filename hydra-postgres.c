@@ -41,7 +41,7 @@ int32_t start_postgres(int32_t s, char *ip, int32_t port, unsigned char options,
    *      Building the connection string
    */
 
-  snprintf(connection_string, sizeof(connection_string), "host = '%s' dbname = '%s' user = '%s' password = '%s' ", hydra_address2string(ip), database, login, pass);
+  snprintf(connection_string, sizeof(connection_string), "host = '%s' port = '%d' dbname = '%s' user = '%s' password = '%s' ", hydra_address2string(ip), port, database, login, pass);
 
   if (verbose)
     hydra_report(stderr, "connection string: %s\n", connection_string);
