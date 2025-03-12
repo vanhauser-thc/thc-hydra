@@ -194,6 +194,7 @@ typedef struct {
   int32_t cidr;
   int32_t time_next_attempt;
   output_format_t outfile_format;
+  char *distributed; // Use distributed computing by splitting user files on the fly
   char *login;
   char *loginfile;
   char *pass;
