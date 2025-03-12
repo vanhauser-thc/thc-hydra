@@ -1638,7 +1638,6 @@ FILE *hydra_divide_file(FILE *file, uint32_t my_segment, uint32_t num_segments){
   int filetag = rand();
 
   sprintf(output_file_name, "segment_%d_%d.txt",filetag, my_segment);
-  fprintf(stdout, "writing successful\n");
   output_file = fopen(output_file_name, "w");
 
   if(!output_file){
