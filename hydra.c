@@ -346,8 +346,7 @@ int32_t total_redo_count = 0;
 // requred for distributed attack capability
 uint32_t num_segments = 0;
 uint32_t my_segment = 0;
-uint32_t junk_file_count = 0;
-char junk_files[20][16];
+char junk_file[50];
 
 // moved for restore feature
 int32_t process_restore = 0, dont_unlink;
@@ -1600,11 +1599,10 @@ char *hydra_reverse_login(int32_t head_no, char *login) {
 }
 
 void delete_junk_files(){
-  for(int i=0; i<junk_file_count; i++)
-    remove(junk_files[i]);
+  remove(junk_file);
 }
 
-FILE *hydra_divide_file(FILE *file, uint32_t target_no, uint32_t my_segment, uint32_t num_segments){
+FILE *hydra_divide_file(FILE *file, uint32_t my_segment, uint32_t num_segments){
 
   if(my_segment > num_segments){
     fprintf(stderr, "[ERROR] in option -D XofY, X must not be greater than Y: %s\n", hydra_options.passfile);
@@ -1613,7 +1611,7 @@ FILE *hydra_divide_file(FILE *file, uint32_t target_no, uint32_t my_segment, uin
 
   FILE *output_file;
   char line[500];
-  char output_file_name[20];
+  char output_file_name[50];
 
   uint32_t line_number = 0;
 
@@ -1635,8 +1633,11 @@ FILE *hydra_divide_file(FILE *file, uint32_t target_no, uint32_t my_segment, uin
   uint64_t segment_end = segment_size * my_segment;
 
   
-  fprintf(stdout, "writing filename\n");
-  sprintf(output_file_name, "segment_%d_%d.txt",target_no, my_segment);
+  
+  srand(time(NULL));
+  int filetag = rand();
+
+  sprintf(output_file_name, "segment_%d_%d.txt",filetag, my_segment);
   fprintf(stdout, "writing successful\n");
   output_file = fopen(output_file_name, "w");
 
@@ -1645,8 +1646,7 @@ FILE *hydra_divide_file(FILE *file, uint32_t target_no, uint32_t my_segment, uin
     return NULL;
   }
 
-  if(strcpy(junk_files[junk_file_count], output_file_name))
-    junk_file_count++;
+  strcpy(junk_file, output_file_name);
 
   atexit(delete_junk_files);
 
@@ -3491,7 +3491,7 @@ int main(int argc, char *argv[]) {
         else if (hydra_options.passfile == NULL){
                 if(my_segment && num_segments){
                   filecloser = lfp;
-                  lfp = hydra_divide_file(lfp, target_no, my_segment, num_segments);
+                  lfp = hydra_divide_file(lfp, my_segment, num_segments);
                   fclose(filecloser);
                 }
               }
@@ -3529,7 +3529,7 @@ int main(int argc, char *argv[]) {
         }
         else if(my_segment && num_segments){
                   filecloser = pfp;
-                  pfp = hydra_divide_file(pfp, target_no, my_segment, num_segments);
+                  pfp = hydra_divide_file(pfp, my_segment, num_segments);
                   fclose(filecloser);
                 }
         hydra_brains.countpass = countlines(pfp, 0);
@@ -3588,7 +3588,7 @@ int main(int argc, char *argv[]) {
       }
       else if(my_segment && num_segments){
         filecloser = cfp;
-        cfp = hydra_divide_file(cfp, target_no, my_segment, num_segments);
+        cfp = hydra_divide_file(cfp, my_segment, num_segments);
         fclose(filecloser);
       }
       hydra_brains.countlogin = countlines(cfp, 1);
