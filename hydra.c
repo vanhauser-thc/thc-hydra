@@ -3201,77 +3201,79 @@ int main(int argc, char *argv[]) {
         bail("Compiled without SSL support, module not available");
 #endif
       }
-      if (hydra_options.miscptr == NULL) {
-        fprintf(stderr, "[WARNING] You must supply the web page as an "
-                        "additional option or via -m, default path set to /\n");
-        hydra_options.miscptr = malloc(2);
-        hydra_options.miscptr = "/";
-      }
-      // if (*hydra_options.miscptr != '/' && strstr(hydra_options.miscptr,
-      // "://") == NULL)
-      //  bail("The web page you supplied must start with a \"/\", \"http://\"
-      //  or \"https://\", e.g. \"/protected/login\"");
-      if (hydra_options.miscptr[0] != '/')
-        bail("optional parameter must start with a '/' slash!\n");
-      if (getenv("HYDRA_PROXY_HTTP") && getenv("HYDRA_PROXY"))
-        bail("Found HYDRA_PROXY_HTTP *and* HYDRA_PROXY environment variables - "
-             "you can use only ONE for the service http-head/http-get!");
-      if (getenv("HYDRA_PROXY_HTTP")) {
-        printf("[INFO] Using HTTP Proxy: %s\n", getenv("HYDRA_PROXY_HTTP"));
-        use_proxy = 1;
-      }
-      if (strstr(hydra_options.miscptr, "\\:") != NULL) {
-        fprintf(stderr, "[INFORMATION] escape sequence \\: detected in module "
-                        "option, no parameter verification is performed.\n");
-      } else {
-        sprintf(bufferurl, "%.6000s", hydra_options.miscptr);
-        url = strtok(bufferurl, ":");
-        variables = strtok(NULL, ":");
-        cond = strtok(NULL, ":");
-        optional1 = strtok(NULL, "\n");
-        if ((variables == NULL) || (strstr(variables, "^USER^") == NULL && strstr(variables, "^PASS^") == NULL && strstr(variables, "^USER64^") == NULL && strstr(variables, "^PASS64^") == NULL)) {
-          fprintf(stderr,
-                  "[ERROR] the variables argument needs at least the strings "
-                  "^USER^, ^PASS^, ^USER64^ or ^PASS64^: %s\n",
-                  STR_NULL(variables));
-          exit(-1);
+      if (hydra_options.infile_ptr == NULL) {
+        if (hydra_options.miscptr == NULL) {
+          fprintf(stderr, "[WARNING] You must supply the web page as an "
+                          "additional option or via -m, default path set to /\n");
+          hydra_options.miscptr = malloc(2);
+          hydra_options.miscptr = "/";
         }
-        if ((url == NULL) || (cond == NULL)) {
-          fprintf(stderr,
-                  "[ERROR] Wrong syntax, requires three arguments separated by "
-                  "a colon which may not be null: %s\n",
-                  bufferurl);
-          exit(-1);
+        // if (*hydra_options.miscptr != '/' && strstr(hydra_options.miscptr,
+        // "://") == NULL)
+        //  bail("The web page you supplied must start with a \"/\", \"http://\"
+        //  or \"https://\", e.g. \"/protected/login\"");
+        if (hydra_options.miscptr[0] != '/')
+          bail("optional parameter must start with a '/' slash!\n");
+        if (getenv("HYDRA_PROXY_HTTP") && getenv("HYDRA_PROXY"))
+          bail("Found HYDRA_PROXY_HTTP *and* HYDRA_PROXY environment variables - "
+              "you can use only ONE for the service http-head/http-get!");
+        if (getenv("HYDRA_PROXY_HTTP")) {
+          printf("[INFO] Using HTTP Proxy: %s\n", getenv("HYDRA_PROXY_HTTP"));
+          use_proxy = 1;
         }
-        while ((optional1 = strtok(NULL, ":")) != NULL) {
-          if (optional1[1] != '=' && optional1[1] != ':' && optional1[1] != 0) {
-            fprintf(stderr, "[ERROR] Wrong syntax of optional argument: %s\n", optional1);
+        if (strstr(hydra_options.miscptr, "\\:") != NULL) {
+          fprintf(stderr, "[INFORMATION] escape sequence \\: detected in module "
+                          "option, no parameter verification is performed.\n");
+        } else {
+          sprintf(bufferurl, "%.6000s", hydra_options.miscptr);
+          url = strtok(bufferurl, ":");
+          variables = strtok(NULL, ":");
+          cond = strtok(NULL, ":");
+          optional1 = strtok(NULL, "\n");
+          if ((variables == NULL) || (strstr(variables, "^USER^") == NULL && strstr(variables, "^PASS^") == NULL && strstr(variables, "^USER64^") == NULL && strstr(variables, "^PASS64^") == NULL)) {
+            fprintf(stderr,
+                    "[ERROR] the variables argument needs at least the strings "
+                    "^USER^, ^PASS^, ^USER64^ or ^PASS64^: %s\n",
+                    STR_NULL(variables));
             exit(-1);
           }
+          if ((url == NULL) || (cond == NULL)) {
+            fprintf(stderr,
+                    "[ERROR] Wrong syntax, requires three arguments separated by "
+                    "a colon which may not be null: %s\n",
+                    bufferurl);
+            exit(-1);
+          }
+          while ((optional1 = strtok(NULL, ":")) != NULL) {
+            if (optional1[1] != '=' && optional1[1] != ':' && optional1[1] != 0) {
+              fprintf(stderr, "[ERROR] Wrong syntax of optional argument: %s\n", optional1);
+              exit(-1);
+            }
 
-          switch (optional1[0]) {
-          case 'C': // fall through
-          case 'c':
-            if (optional1[1] != '=' || optional1[2] != '/') {
-              fprintf(stderr,
-                      "[ERROR] Wrong syntax of parameter C, must look like "
-                      "'C=/url/of/page', not http:// etc.: %s\n",
-                      optional1);
-              exit(-1);
+            switch (optional1[0]) {
+            case 'C': // fall through
+            case 'c':
+              if (optional1[1] != '=' || optional1[2] != '/') {
+                fprintf(stderr,
+                        "[ERROR] Wrong syntax of parameter C, must look like "
+                        "'C=/url/of/page', not http:// etc.: %s\n",
+                        optional1);
+                exit(-1);
+              }
+              break;
+            case 'H': // fall through
+            case 'h':
+              if (optional1[1] != '=' || strtok(NULL, ":") == NULL) {
+                fprintf(stderr,
+                        "[ERROR] Wrong syntax of parameter H, must look like "
+                        "'H=X-My-Header: MyValue', no http:// : %s\n",
+                        optional1);
+                exit(-1);
+              }
+              break;
+            default:
+              fprintf(stderr, "[ERROR] Unknown optional argument: %s\n", optional1);
             }
-            break;
-          case 'H': // fall through
-          case 'h':
-            if (optional1[1] != '=' || strtok(NULL, ":") == NULL) {
-              fprintf(stderr,
-                      "[ERROR] Wrong syntax of parameter H, must look like "
-                      "'H=X-My-Header: MyValue', no http:// : %s\n",
-                      optional1);
-              exit(-1);
-            }
-            break;
-          default:
-            fprintf(stderr, "[ERROR] Unknown optional argument: %s\n", optional1);
           }
         }
       }
