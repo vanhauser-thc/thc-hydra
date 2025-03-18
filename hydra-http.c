@@ -474,6 +474,12 @@ void usage_http(const char *service) {
          "       combination is invalid. Note: this must be the last option "
          "supplied.\n"
          "For example:  \"/secret\" or \"http://bla.com/foo/bar:H=Cookie\\: "
-         "sessid=aaaa\" or \"https://test.com:8080/members:A=NTLM\"\n\n",
+         "sessid=aaaa\" or \"https://test.com:8080/members:A=NTLM\"\n"
+         "To attack multiple targets, you can use the -M option with a file "
+         "containing the targets and their parameters.\n"
+         "Example file content:\n"
+         "  localhost:5000/protected:A=BASIC\n"
+         "  localhost:5002/protected_path:A=NTLM\n"
+         "  ...\n\n",
          service);
 }

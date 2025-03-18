@@ -267,6 +267,7 @@ typedef struct {
 
 typedef struct {
   char *target;
+  char *miscptr;
   char ip[36];
   char *login_ptr;
   char *pass_ptr;
@@ -1181,13 +1182,12 @@ void hydra_service_init(int32_t target_no) {
   int32_t x = 99;
   int32_t i;
   hydra_target *t = hydra_targets[target_no];
-  char *miscptr = hydra_options.miscptr;
   FILE *ofp = hydra_brains.ofp;
 
   for (i = 0; x == 99 && i < sizeof(services) / sizeof(services[0]); i++) {
     if (strcmp(hydra_options.service, services[i].name) == 0) {
       if (services[i].init) {
-        x = services[i].init(t->ip, -1, options, miscptr, ofp, t->port, t->target);
+        x = services[i].init(t->ip, -1, options, t->miscptr, ofp, t->port, t->target);
         break;
       }
     }
@@ -1271,13 +1271,13 @@ int32_t hydra_spawn_head(int32_t head_no, int32_t target_no) {
 
       hydra_target *t = hydra_targets[target_no];
       int32_t sp = hydra_heads[head_no]->sp[1];
-      char *miscptr = hydra_options.miscptr;
+      // char *miscptr = hydra_options.miscptr;
       FILE *ofp = hydra_brains.ofp;
       hydra_target *head_target = hydra_targets[hydra_heads[head_no]->target_no];
       for (i = 0; i < sizeof(services) / sizeof(services[0]); i++) {
         if (strcmp(hydra_options.service, services[i].name) == 0) {
           if (services[i].exec) {
-            services[i].exec(t->ip, sp, options, miscptr, ofp, t->port, head_target->target);
+            services[i].exec(t->ip, sp, options, t->miscptr, ofp, t->port, head_target->target);
             // just in case a module returns (which it shouldnt) we let it exit
             // here
             exit(-1);
@@ -2251,7 +2251,7 @@ int main(int argc, char *argv[]) {
   int32_t i = 0, j = 0, k, error = 0, modusage = 0, ignore_restore = 0, do_switch;
   int32_t head_no = 0, target_no = 0, exit_condition = 0, readres;
   time_t starttime, elapsed_status, elapsed_restore, status_print = 59, tmp_time;
-  char *tmpptr, *tmpptr2;
+  char *tmpptr, *tmpptr2, *tmpptr3;
   char rc, buf[MAXBUF];
   time_t last_attempt = 0;
   fd_set fdreadheads;
@@ -3286,77 +3286,79 @@ int main(int argc, char *argv[]) {
         bail("Compiled without SSL support, module not available");
 #endif
       }
-      if (hydra_options.miscptr == NULL) {
-        fprintf(stderr, "[WARNING] You must supply the web page as an "
-                        "additional option or via -m, default path set to /\n");
-        hydra_options.miscptr = malloc(2);
-        hydra_options.miscptr = "/";
-      }
-      // if (*hydra_options.miscptr != '/' && strstr(hydra_options.miscptr,
-      // "://") == NULL)
-      //  bail("The web page you supplied must start with a \"/\", \"http://\"
-      //  or \"https://\", e.g. \"/protected/login\"");
-      if (hydra_options.miscptr[0] != '/')
-        bail("optional parameter must start with a '/' slash!\n");
-      if (getenv("HYDRA_PROXY_HTTP") && getenv("HYDRA_PROXY"))
-        bail("Found HYDRA_PROXY_HTTP *and* HYDRA_PROXY environment variables - "
-             "you can use only ONE for the service http-head/http-get!");
-      if (getenv("HYDRA_PROXY_HTTP")) {
-        printf("[INFO] Using HTTP Proxy: %s\n", getenv("HYDRA_PROXY_HTTP"));
-        use_proxy = 1;
-      }
-      if (strstr(hydra_options.miscptr, "\\:") != NULL) {
-        fprintf(stderr, "[INFORMATION] escape sequence \\: detected in module "
-                        "option, no parameter verification is performed.\n");
-      } else {
-        sprintf(bufferurl, "%.6000s", hydra_options.miscptr);
-        url = strtok(bufferurl, ":");
-        variables = strtok(NULL, ":");
-        cond = strtok(NULL, ":");
-        optional1 = strtok(NULL, "\n");
-        if ((variables == NULL) || (strstr(variables, "^USER^") == NULL && strstr(variables, "^PASS^") == NULL && strstr(variables, "^USER64^") == NULL && strstr(variables, "^PASS64^") == NULL)) {
-          fprintf(stderr,
-                  "[ERROR] the variables argument needs at least the strings "
-                  "^USER^, ^PASS^, ^USER64^ or ^PASS64^: %s\n",
-                  STR_NULL(variables));
-          exit(-1);
+      if (hydra_options.infile_ptr == NULL) {
+        if (hydra_options.miscptr == NULL) {
+          fprintf(stderr, "[WARNING] You must supply the web page as an "
+                          "additional option or via -m, default path set to /\n");
+          hydra_options.miscptr = malloc(2);
+          hydra_options.miscptr = "/";
         }
-        if ((url == NULL) || (cond == NULL)) {
-          fprintf(stderr,
-                  "[ERROR] Wrong syntax, requires three arguments separated by "
-                  "a colon which may not be null: %s\n",
-                  bufferurl);
-          exit(-1);
+        // if (*hydra_options.miscptr != '/' && strstr(hydra_options.miscptr,
+        // "://") == NULL)
+        //  bail("The web page you supplied must start with a \"/\", \"http://\"
+        //  or \"https://\", e.g. \"/protected/login\"");
+        if (hydra_options.miscptr[0] != '/')
+          bail("optional parameter must start with a '/' slash!\n");
+        if (getenv("HYDRA_PROXY_HTTP") && getenv("HYDRA_PROXY"))
+          bail("Found HYDRA_PROXY_HTTP *and* HYDRA_PROXY environment variables - "
+              "you can use only ONE for the service http-head/http-get!");
+        if (getenv("HYDRA_PROXY_HTTP")) {
+          printf("[INFO] Using HTTP Proxy: %s\n", getenv("HYDRA_PROXY_HTTP"));
+          use_proxy = 1;
         }
-        while ((optional1 = strtok(NULL, ":")) != NULL) {
-          if (optional1[1] != '=' && optional1[1] != ':' && optional1[1] != 0) {
-            fprintf(stderr, "[ERROR] Wrong syntax of optional argument: %s\n", optional1);
+        if (strstr(hydra_options.miscptr, "\\:") != NULL) {
+          fprintf(stderr, "[INFORMATION] escape sequence \\: detected in module "
+                          "option, no parameter verification is performed.\n");
+        } else {
+          sprintf(bufferurl, "%.6000s", hydra_options.miscptr);
+          url = strtok(bufferurl, ":");
+          variables = strtok(NULL, ":");
+          cond = strtok(NULL, ":");
+          optional1 = strtok(NULL, "\n");
+          if ((variables == NULL) || (strstr(variables, "^USER^") == NULL && strstr(variables, "^PASS^") == NULL && strstr(variables, "^USER64^") == NULL && strstr(variables, "^PASS64^") == NULL)) {
+            fprintf(stderr,
+                    "[ERROR] the variables argument needs at least the strings "
+                    "^USER^, ^PASS^, ^USER64^ or ^PASS64^: %s\n",
+                    STR_NULL(variables));
             exit(-1);
           }
+          if ((url == NULL) || (cond == NULL)) {
+            fprintf(stderr,
+                    "[ERROR] Wrong syntax, requires three arguments separated by "
+                    "a colon which may not be null: %s\n",
+                    bufferurl);
+            exit(-1);
+          }
+          while ((optional1 = strtok(NULL, ":")) != NULL) {
+            if (optional1[1] != '=' && optional1[1] != ':' && optional1[1] != 0) {
+              fprintf(stderr, "[ERROR] Wrong syntax of optional argument: %s\n", optional1);
+              exit(-1);
+            }
 
-          switch (optional1[0]) {
-          case 'C': // fall through
-          case 'c':
-            if (optional1[1] != '=' || optional1[2] != '/') {
-              fprintf(stderr,
-                      "[ERROR] Wrong syntax of parameter C, must look like "
-                      "'C=/url/of/page', not http:// etc.: %s\n",
-                      optional1);
-              exit(-1);
+            switch (optional1[0]) {
+            case 'C': // fall through
+            case 'c':
+              if (optional1[1] != '=' || optional1[2] != '/') {
+                fprintf(stderr,
+                        "[ERROR] Wrong syntax of parameter C, must look like "
+                        "'C=/url/of/page', not http:// etc.: %s\n",
+                        optional1);
+                exit(-1);
+              }
+              break;
+            case 'H': // fall through
+            case 'h':
+              if (optional1[1] != '=' || strtok(NULL, ":") == NULL) {
+                fprintf(stderr,
+                        "[ERROR] Wrong syntax of parameter H, must look like "
+                        "'H=X-My-Header: MyValue', no http:// : %s\n",
+                        optional1);
+                exit(-1);
+              }
+              break;
+            default:
+              fprintf(stderr, "[ERROR] Unknown optional argument: %s\n", optional1);
             }
-            break;
-          case 'H': // fall through
-          case 'h':
-            if (optional1[1] != '=' || strtok(NULL, ":") == NULL) {
-              fprintf(stderr,
-                      "[ERROR] Wrong syntax of parameter H, must look like "
-                      "'H=X-My-Header: MyValue', no http:// : %s\n",
-                      optional1);
-              exit(-1);
-            }
-            break;
-          default:
-            fprintf(stderr, "[ERROR] Unknown optional argument: %s\n", optional1);
           }
         }
       }
@@ -3645,7 +3647,7 @@ int main(int argc, char *argv[]) {
       fclose(rfp);
     }
 
-    if (hydra_options.infile_ptr != NULL) {
+    if (hydra_options.infile_ptr != NULL) {      
       if ((ifp = fopen(hydra_options.infile_ptr, "r")) == NULL) {
         fprintf(stderr, "[ERROR] File for targets not found: %s\n", hydra_options.infile_ptr);
         exit(-1);
@@ -3693,6 +3695,7 @@ int main(int argc, char *argv[]) {
           }
         } else
           hydra_targets[i]->target = tmpptr;
+        
         if ((tmpptr2 = strchr(tmpptr, ':')) != NULL) {
           *tmpptr2++ = 0;
           tmpptr = tmpptr2;
@@ -3702,6 +3705,13 @@ int main(int argc, char *argv[]) {
         }
         if (hydra_targets[i]->port == 0)
           hydra_targets[i]->port = hydra_options.port;
+
+        if ((tmpptr3 = strchr(tmpptr, '/')) != NULL) {
+          hydra_targets[i]->miscptr = tmpptr3;
+        }
+        else
+          hydra_targets[i]->miscptr = "/";
+
         while (*tmpptr != 0)
           tmpptr++;
         tmpptr++;
@@ -3724,6 +3734,7 @@ int main(int argc, char *argv[]) {
         memset(hydra_targets[0], 0, sizeof(hydra_target));
         hydra_targets[0]->target = servers_ptr = hydra_options.server;
         hydra_targets[0]->port = hydra_options.port;
+        hydra_targets[0]->miscptr = hydra_options.miscptr;
         sizeservers = strlen(hydra_options.server) + 1;
       } else {
         /* CIDR notation on command line, e.g. 192.168.0.0/24 */
@@ -3768,6 +3779,7 @@ int main(int argc, char *argv[]) {
           memcpy(&target.sin_addr.s_addr, (char *)&addr_cur2, 4);
           hydra_targets[i]->target = strdup(inet_ntoa((struct in_addr)target.sin_addr));
           hydra_targets[i]->port = hydra_options.port;
+          hydra_targets[i]->miscptr = hydra_options.miscptr;
           addr_cur++;
           i++;
         }
@@ -3783,6 +3795,7 @@ int main(int argc, char *argv[]) {
       memset(hydra_targets[0], 0, sizeof(hydra_target));
       hydra_targets[0]->target = servers_ptr = hydra_options.server;
       hydra_targets[0]->port = hydra_options.port;
+      hydra_targets[0]->miscptr = hydra_options.miscptr;
       sizeservers = strlen(hydra_options.server) + 1;
     }
     for (i = 0; i < hydra_brains.targets; i++) {
@@ -4215,7 +4228,7 @@ int main(int argc, char *argv[]) {
                   } else if (hydra_heads[head_no]->current_pass_ptr == NULL || strlen(hydra_heads[head_no]->current_pass_ptr) == 0) {
                     printf("[%d][%s] host: %s   login: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service, hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr);
                   } else
-                    printf("[%d][%s] host: %s   login: %s   password: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service, hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr);
+                    printf("[%d][%s] host: %s   misc: %s   login: %s   password: %s\n", hydra_targets[hydra_heads[head_no]->target_no]->port, hydra_options.service, hydra_targets[hydra_heads[head_no]->target_no]->target, hydra_targets[hydra_heads[head_no]->target_no]->miscptr, hydra_heads[head_no]->current_login_ptr, hydra_heads[head_no]->current_pass_ptr);
                 }
                 if (hydra_options.outfile_format == FORMAT_JSONV1 && hydra_options.outfile_ptr != NULL && hydra_brains.ofp != NULL) {
                   fprintf(hydra_brains.ofp,

@@ -1624,6 +1624,12 @@ void usage_http_form(const char *service) {
          " \"/exchweb/bin/auth/:F=failed"
          "owaauth.dll:destination=http%%3A%%2F%%2F<target>%%2Fexchange&flags=0&"
          "username=<domain>%%5C^USER^&password=^PASS^&SubmitCreds=x&trusted=0:"
-         "C=/exchweb\":reason=\n",
+         "C=/exchweb\":reason=\n"
+         "To attack multiple targets, you can use the -M option with a file "
+         "containing the targets and their parameters.\n"
+         "Example file content:\n"
+         "  localhost:8443/login:type=login&login=^USER^&password=^PASS^:h=test\\: header:F=401\n"
+         "  localhost:9443/login2:type=login&login=^USER^&password=^PASS^:h=test\\: header:F=302\n"
+         "  ...\n\n",
          service);
 }
