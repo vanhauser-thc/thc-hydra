@@ -1,9 +1,54 @@
 #include "hydra-mod.h"
-
-#define MSLEN 30
-
 extern char *HYDRA_EXIT;
 char *buf;
+
+#if defined(HAVE_SYBFRONT) && defined(HAVE_SYBDB)
+#include <sybdb.h>
+#include <sybfront.h>
+int32_t start_mssql(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
+  char *empty = "";
+  char *login, *pass;
+  char *ipaddr_str = hydra_address2string(ip);
+
+  if (strlen(login = hydra_get_next_login()) == 0)
+    login = empty;
+  if (strlen(pass = hydra_get_next_password()) == 0)
+    pass = empty;
+
+  DBPROCESS *dbproc;
+  LOGINREC *attempt;
+
+  dbinit();
+
+  attempt = dblogin();
+
+  DBSETLUSER(attempt, login);
+  DBSETLPWD(attempt, pass);
+
+  // Connect without specifying a database
+  dbproc = dbopen(attempt, ipaddr_str);  
+
+  if (dbproc != NULL) {
+    dbclose(dbproc);
+    dbexit();
+    hydra_report_found_host(port, ip, "mssql", fp);
+    hydra_completed_pair_found();
+    if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
+      return 2;
+    return 1;
+  }
+
+  hydra_completed_pair();
+  dbclose(dbproc);
+  dbexit();
+  if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
+    return 2;
+
+  return 1;
+}
+#else
+
+#define MSLEN 30
 
 unsigned char p_hdr[] = "\x02\x00\x02\x00\x00\x00\x02\x00\x00\x00"
                         "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -114,6 +159,8 @@ int32_t start_mssql(int32_t s, char *ip, int32_t port, unsigned char options, ch
 
   return 1;
 }
+
+#endif
 
 void service_mssql(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1;

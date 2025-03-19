@@ -96,7 +96,7 @@ for a few optional modules (note that some might not be available on your distri
 apt-get install libssl-dev libssh-dev libidn11-dev libpcre3-dev \
                  libgtk2.0-dev libmysqlclient-dev libpq-dev libsvn-dev \
                  firebird-dev libmemcached-dev libgpg-error-dev \
-                 libgcrypt11-dev libgcrypt20-dev
+                 libgcrypt11-dev libgcrypt20-dev freetds-dev
 ```
 
 This enables all optional modules and features with the exception of Oracle,

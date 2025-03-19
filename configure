@@ -185,6 +185,32 @@ else
    echo "                                ... zlib not found, gzip support disabled"
 fi
 
+echo "Checking for sybdb (sybdb.h) ..."
+for i in $INCDIRS; do
+   if [ -f "$i/sybdb.h" ]; then
+	HAVE_SYBDB="y"
+   fi
+done
+
+if [ -n "$HAVE_SYBDB" ]; then
+   echo "                                ... found"
+else
+   echo "                                ... sybdb not found, MSSQL module will lack TDSv7 support"
+fi
+
+echo "Checking for sybfront (sybfront.h) ..."
+for i in $INCDIRS; do
+   if [ -f "$i/sybfront.h" ]; then
+	HAVE_SYBFRONT="y"
+   fi
+done
+
+if [ -n "$HAVE_SYBFRONT" ]; then
+   echo "                                ... found"
+else
+   echo "                                ... sybfront not found, MSSQL module will lack TDSv7 support"
+fi
+
 echo "Checking for openssl (libssl/libcrypto/ssl.h/sha.h) ..."
 if [ "X" != "X$DEBUG" ]; then
    echo DEBUG: SSL_LIB=$LIBDIRS `ls -d /*ssl /usr/*ssl /opt/*ssl /usr/local/*ssl /opt/local/*ssl /*ssl/lib /usr/*ssl/lib /opt/*ssl/lib /usr/local/*ssl/lib /opt/local/*ssl/lib 2> /dev/null`
@@ -1496,6 +1522,12 @@ fi
 if [ -n "$RSA" ]; then
     XDEFINES="$XDEFINES -DNO_RSA_LEGACY"
 fi
+if [ -n "$HAVE_SYBDB" ]; then
+    XDEFINES="$XDEFINES -DHAVE_SYBDB"
+fi
+if [ -n "$HAVE_SYBFRONT" ]; then
+    XDEFINES="$XDEFINES -DHAVE_SYBFRONT"
+fi
 if [ -n "$HAVE_ZLIB" ]; then
     XDEFINES="$XDEFINES -DHAVE_ZLIB"
 fi
@@ -1626,6 +1658,9 @@ if [ -n "$HAVE_GCRYPT" ]; then
 fi
 if [ -n "$HAVE_ZLIB" ]; then
     XLIBS="$XLIBS -lz"
+fi
+if [ -n "$HAVE_SYBDB" ]; then
+    XLIBS="$XLIBS -lsybdb"
 fi
 if [ -n "$CURSES_PATH" ]; then
     XLIBS="$XLIBS -lcurses"
