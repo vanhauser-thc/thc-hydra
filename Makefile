@@ -1,6 +1,6 @@
 STRIP=strip
-XDEFINES= -DLIBOPENSSL -DLIBNCURSES -DHAVE_PCRE -DHAVE_ZLIB -DHAVE_MATH_H -DHAVE_SYS_PARAM_H
-XLIBS= -lz -lcurses -lssl -lpcre2-8 -lcrypto -lsybdb
+XDEFINES= -DLIBOPENSSL -DLIBNCURSES -DHAVE_PCRE -DHAVE_SYBDB -DHAVE_SYBFRONT -DHAVE_ZLIB -DHAVE_MATH_H -DHAVE_SYS_PARAM_H
+XLIBS= -lz -lsybdb -lcurses -lssl -lpcre2-8 -lcrypto
 XLIBPATHS=-L/usr/lib -L/usr/local/lib -L/lib -L/lib/x86_64-linux-gnu
 XIPATHS= -I/usr/include -I/usr/include
 PREFIX=/usr/local
