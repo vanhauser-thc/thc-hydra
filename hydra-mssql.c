@@ -19,7 +19,9 @@ int32_t start_mssql(int32_t s, char *ip, int32_t port, unsigned char options, ch
   LOGINREC *attempt;
 
   dbinit();
+
   attempt = dblogin();
+
   DBSETLUSER(attempt, login);
   DBSETLPWD(attempt, pass);
 
@@ -27,6 +29,8 @@ int32_t start_mssql(int32_t s, char *ip, int32_t port, unsigned char options, ch
   dbproc = dbopen(attempt, ipaddr_str);  
 
   if (dbproc != NULL) {
+    dbclose(dbproc);
+    dbexit();
     hydra_report_found_host(port, ip, "mssql", fp);
     hydra_completed_pair_found();
     if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -35,12 +39,15 @@ int32_t start_mssql(int32_t s, char *ip, int32_t port, unsigned char options, ch
   }
 
   hydra_completed_pair();
+  dbclose(dbproc);
+  dbexit();
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
     return 2;
 
   return 1;
 }
 #else
+
 #define MSLEN 30
 
 unsigned char p_hdr[] = "\x02\x00\x02\x00\x00\x00\x02\x00\x00\x00"
