@@ -1,9 +1,13 @@
 #include "hydra-mod.h"
-
-#define MSLEN 30
-
 extern char *HYDRA_EXIT;
 char *buf;
+
+#if defined(HAVE_SYBFRONT) && defined(HAVE_SYBDB)
+#include <sybdb.h>
+#include <sybfront.h>
+#endif
+
+#define MSLEN 30
 
 unsigned char p_hdr[] = "\x02\x00\x02\x00\x00\x00\x02\x00\x00\x00"
                         "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -56,6 +60,7 @@ unsigned char p_lng[] = "\x02\x01\x00\x47\x00\x00\x02\x00\x00\x00\x00"
 int32_t start_mssql(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";
   char *login, *pass, buffer[1024];
+  char *ipaddr_str = hydra_address2string(ip);
   char ms_login[MSLEN + 1];
   char ms_pass[MSLEN + 1];
   unsigned char len_login, len_pass;
@@ -65,6 +70,42 @@ int32_t start_mssql(int32_t s, char *ip, int32_t port, unsigned char options, ch
     login = empty;
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
+#if defined(HAVE_SYBFRONT) && defined(HAVE_SYBDB)
+  if ((strlen(login) > MSLEN) || (strlen(pass) > MSLEN)){
+
+    DBPROCESS *dbproc;
+    LOGINREC *attempt;
+  
+    attempt = dblogin();
+  
+    DBSETLUSER(attempt, login);
+    DBSETLPWD(attempt, pass);
+  
+    // Connect without specifying a database
+    dbproc = dbopen(attempt, ipaddr_str);  
+  
+    if (dbproc != NULL) {
+      dbclose(dbproc);
+      dbexit();
+      hydra_report_found_host(port, ip, "mssql", fp);
+      hydra_completed_pair_found();
+      if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
+        return 2;
+      return 1;
+    }
+  
+    hydra_completed_pair();
+    if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
+      return 2;
+  
+    return 1;
+
+  }
+#else
+  if ((strlen(login) > MSLEN) || (strlen(pass) > MSLEN)){
+    fprintf(stderr,"[WARNING] To crack credentials longer than 30 characters, install freetds and recompile\n");
+  }
+#endif
   if (strlen(login) > MSLEN)
     login[MSLEN - 1] = 0;
   if (strlen(pass) > MSLEN)
@@ -118,6 +159,10 @@ int32_t start_mssql(int32_t s, char *ip, int32_t port, unsigned char options, ch
 void service_mssql(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_MSSQL, mysslport = PORT_MSSQL_SSL;
+
+  #if defined(HAVE_SYBFRONT) && defined(HAVE_SYBDB)
+  dbinit();
+  #endif
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
