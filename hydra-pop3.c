@@ -109,7 +109,7 @@ char *pop3_read_server_capacity(int32_t sock) {
           buf[strlen(buf) - 1] = 0;
         if (buf[strlen(buf) - 1] == '\r')
           buf[strlen(buf) - 1] = 0;
-        if (*(ptr) == '.' || *(ptr) == '-')
+        if (buf[strlen(buf) - 1] == '.' || *(ptr) == '.' || *(ptr) == '-')
           resp = 1;
       }
     }
