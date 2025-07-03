@@ -24,6 +24,11 @@ int32_t start_redis(int32_t s, char *ip, int32_t port, unsigned char options, ch
     return 1;
   }
   buf = hydra_receive_line(s);
+  if (buf == NULL) {
+    hydra_report(stderr, "[ERROR] Failed to receive response from Redis server.\n");
+    return 3;
+  }
+
   if (buf[0] == '+') {
     hydra_report_found_host(port, ip, "redis", fp);
     hydra_completed_pair_found();
