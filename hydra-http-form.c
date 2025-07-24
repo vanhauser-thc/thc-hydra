@@ -1590,7 +1590,7 @@ void usage_http_form(const char *service) {
          " the sent/received data!\n"
          " Note that using invalid login condition checks can result in false positives!\n"
          "\nThe following parameters are optional and are put between the form parameters\n"
-         "and the condition string; seperate them too with colons:\n"
+         "and the condition string; separate them too with colons:\n"
          " 1=                  401 error response is interpreted as user/pass wrong\n"
          " 2=                  302 page forward return codes identify a successful attempt\n"
          " M=                  attack forms that use multipart format\n"
