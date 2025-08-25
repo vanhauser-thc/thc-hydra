@@ -1588,6 +1588,7 @@ void usage_http_form(const char *service) {
          " This is where most people get it wrong! You have to check the webapp what a\n"
          " failed string looks like and put it in this parameter! Add the -d switch to see\n"
          " the sent/received data!\n"
+         " Important: you can only define S= *OR* F= - not both\n",
          " Note that using invalid login condition checks can result in false positives!\n"
          "\nThe following parameters are optional and are put between the form parameters\n"
          "and the condition string; separate them too with colons:\n"
