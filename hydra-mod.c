@@ -60,7 +60,8 @@ RSA *rsa = NULL;
 int32_t my_select(int32_t fd, fd_set *fdread, fd_set *fdwrite, fd_set *fdex, long sec, long usec);
 
 /* ----------------- alarming functions ---------------- */
-void alarming() {
+void alarming(int signal) {
+  (signal);
   fail++;
   alarm_went_off++;
 
