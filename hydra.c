@@ -3710,7 +3710,7 @@ int main(int argc, char *argv[]) {
           hydra_targets[i]->miscptr = tmpptr3;
         }
         else
-          hydra_targets[i]->miscptr = "/";
+          hydra_targets[i]->miscptr = hydra_options.miscptr;
 
         while (*tmpptr != 0)
           tmpptr++;
