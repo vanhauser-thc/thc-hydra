@@ -103,7 +103,7 @@ This enables all optional modules and features with the exception of Oracle,
 SAP R/3, NCP and the apple filing protocol - which you will need to download and
 install from the vendor's web sites.
 
-For all other Linux derivates and BSD based systems, use the system
+For all other Linux derivatives and BSD based systems, use the system
 software installer and look for similarly named libraries like in the
 command above. In all other cases, you have to download all source libraries
 and compile them manually.
