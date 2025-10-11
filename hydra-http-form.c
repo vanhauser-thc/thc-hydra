@@ -81,6 +81,7 @@ char bufferurl[6096 + 24], cookieurl[6096 + 24] = "", userheader[6096 + 24] = ""
 char redirected_url_buff[2048] = "";
 int32_t redirected_flag = 0;
 int32_t redirected_cpt = MAX_REDIRECT;
+int32_t uses_random_ip = 0;
 
 char *cookie_request = NULL, *normal_request = NULL; // Buffers for HTTP headers
 
@@ -305,6 +306,30 @@ int32_t add_header(ptr_header_node *ptr_head, char *header, char *value, char ty
   }
 
   return 1;
+}
+
+/*
+ * Skip 0.0.0.0/8
+ * Skip 127.0.0.0/8 (loopback)
+ * Skip 224.0.0.0/4 (multicast)
+ * Skip 240.0.0.0/4 (reserved)
+ */
+char *generate_random_ip() {
+  static char ip_str[16]; // xxx.xxx.xxx.xxx\0 = 16 chars
+  static int32_t initialized = 0;
+  if (!initialized) {
+    srand(time(NULL) ^ getpid());
+    initialized = 1;
+  }
+  unsigned char octet1, octet2, octet3, octet4;
+  do {
+    octet1 = (unsigned char)(rand() % 256);
+  } while (octet1 == 0 || octet1 == 127 || octet1 >= 224);
+  octet2 = (unsigned char)(rand() % 256);
+  octet3 = (unsigned char)(rand() % 256);
+  octet4 = (unsigned char)(rand() % 256);
+  snprintf(ip_str, sizeof(ip_str), "%u.%u.%u.%u", octet1, octet2, octet3, octet4);
+  return ip_str;
 }
 
 /*
@@ -842,6 +867,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
   int32_t found = !success_cond, i, j;
   char content_length[MAX_CONTENT_LENGTH], proxy_string[MAX_PROXY_LENGTH];
   char content_type[256];
+  static char last_random_ip[16]; // xxx.xxx.xxx.xxx\0 = 16 chars
   memset(header, 0, sizeof(header));
   cookie[0] = 0; // reset cookies from potential previous attempt
 
@@ -884,6 +910,17 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
   hdrrep(&ptr_head, "^PASS^", cpass);
   hdrrep(&ptr_head, "^USER64^", b64login);
   hdrrep(&ptr_head, "^PASS64^", b64pass);
+
+  if (uses_random_ip) {
+    char *random_ip = generate_random_ip();
+    if (last_random_ip[0] == '\0') { // First attempt: replace placeholder with random IP
+      hdrrep(&ptr_head, "^RAND_IP^", random_ip);
+    } else { // Subsequent attempts: replace previous IP with new random IP
+      hdrrep(&ptr_head, last_random_ip, random_ip);
+    }
+    strncpy(last_random_ip, random_ip, sizeof(last_random_ip) - 1);
+    last_random_ip[sizeof(last_random_ip) - 1] = '\0';
+  }
 
   /* again: no snprintf to be portable. don't worry, buffer can't overflow */
   if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL) {
@@ -1562,6 +1599,14 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
     }
   }
 
+  ptr_header_node cur_ptr = NULL;
+  for (cur_ptr = ptr_head; cur_ptr; cur_ptr = cur_ptr->next) {
+    if ((cur_ptr->type == HEADER_TYPE_USERHEADER || cur_ptr->type == HEADER_TYPE_USERHEADER_REPL) && strstr(cur_ptr->value, "^RAND_IP^")) {
+      uses_random_ip = 1;
+      break;
+    }
+  }
+
   return ptr_head;
 }
 
@@ -1600,8 +1645,10 @@ void usage_http_form(const char *service) {
          " (g|G)=              skip pre-requests - only use this when no pre-cookies are required\n"
          " (h|H)=My-Hdr\\: foo   to send a user defined HTTP header with each "
          "request\n"
-         "                 ^USER[64]^ and ^PASS[64]^ can also be put into these "
+         "                 ^USER[64]^, ^PASS[64]^, and ^RAND_IP^ can also be put into these "
          "headers!\n"
+         "                 ^RAND_IP^ generates a random IP address for each login attempt,\n"
+         "                 useful for testing rate limit bypass (e.g. h=X-Forwarded-For\\: ^RAND_IP^).\n"
          "                 Note: 'h' will add the user-defined header at the end\n"
          "                 regardless it's already being sent by Hydra or not.\n"
          "                 'H' will replace the value of that header if it "
@@ -1620,7 +1667,7 @@ void usage_http_form(const char *service) {
          "login.php:user=^USER64^&pass=^PASS64^&colon=colon\\:escape:S=result="
          "success\"\n"
          " \"/login.php:user=^USER^&pass=^PASS^&mid=123:authlog=.*failed\"\n"
-         " \"/:user=^USER&pass=^PASS^:H=Authorization\\: Basic "
+         " \"/:user=^USER^&pass=^PASS^:H=Authorization\\: Basic "
          "dT1w:H=Cookie\\: sessid=aaaa:h=X-User\\: ^USER^:H=User-Agent\\: wget\"\n"
          " \"/exchweb/bin/auth/:F=failed"
          "owaauth.dll:destination=http%%3A%%2F%%2F<target>%%2Fexchange&flags=0&"
