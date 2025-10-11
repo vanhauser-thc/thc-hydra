@@ -1667,7 +1667,7 @@ void usage_http_form(const char *service) {
          "login.php:user=^USER64^&pass=^PASS64^&colon=colon\\:escape:S=result="
          "success\"\n"
          " \"/login.php:user=^USER^&pass=^PASS^&mid=123:authlog=.*failed\"\n"
-         " \"/:user=^USER&pass=^PASS^:H=Authorization\\: Basic "
+         " \"/:user=^USER^&pass=^PASS^:H=Authorization\\: Basic "
          "dT1w:H=Cookie\\: sessid=aaaa:h=X-User\\: ^USER^:H=User-Agent\\: wget\"\n"
          " \"/exchweb/bin/auth/:F=failed"
          "owaauth.dll:destination=http%%3A%%2F%%2F<target>%%2Fexchange&flags=0&"
