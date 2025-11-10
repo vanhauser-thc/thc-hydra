@@ -53,6 +53,10 @@ MYSQL_PATH=""
 MYSQL_IPATH=""
 MCACHED_PATH=""
 MCACHED_IPATH=""
+MONGODB2_PATH=""
+MONGODB2_IPATH=""
+BSON2_PATH=""
+BSON2_IPATH=""
 MONGODB_PATH=""
 MONGODB_IPATH=""
 BSON_PATH=""
@@ -1191,95 +1195,191 @@ echo "Checking for Freerdp3 (libfreerdp3/freerdp.h/libwinpr3/winpr.h) ..."
     fi
 fi
 
-echo "Checking for Mongodb (libmongoc-1.0/mongoc.h/libbson-1.0/bson.h) ..."
+echo "Checking for Mongodb2 (mongoc-2.x.x/mongoc/mongoc.h/bson-2.x.x/bson/bson.h) ..."
 
   for i in $LIBDIRS ; do
-    if [ "X" = "X$MONGODB_PATH" ]; then
-        if [ -f "$i/libmongoc-1.0.so" -o -f "$i/libmongoc-1.0.dylib" -o -f "$i/libmongoc-1.0.a" ]; then
-            MONGODB_PATH="$i"
+    if [ "X" = "X$MONGODB2_PATH" ]; then
+        if [ -f "$i/libmongoc2.so" -o -f "$i/libmongoc2.dylib" -o -f "$i/libmongoc2.a" ]; then
+            MONGODB2_PATH="$i"
         fi
     fi
-    if [ "X" = "X$MONGODB_PATH" ]; then
-        TMP_LIB=`/bin/ls $i/libmongoc-*.so* 2> /dev/null | grep mongoc`
+    if [ "X" = "X$MONGODB2_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libmongoc2.so* 2> /dev/null | grep mongoc`
         if [ -n "$TMP_LIB" ]; then
-          MONGODB_PATH="$i"
+          MONGODB2_PATH="$i"
         fi
     fi
-    if [ "X" = "X$MONGODB_PATH" ]; then
-        TMP_LIB=`/bin/ls $i/libmongoc.dll* 2> /dev/null | grep mongoc`
+    if [ "X" = "X$MONGODB2_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libmongoc2.dll* 2> /dev/null | grep mongoc`
         if [ -n "$TMP_LIB" ]; then
-          MONGODB_PATH="$i"
+          MONGODB2_PATH="$i"
         fi
     fi
   done
 
-  MONGODB_IPATH=
+  MONGODB2_IPATH=
   for i in $INCDIRS ; do
-    if [ "X" = "X$MONGODB_IPATH" ]; then
+    if [ "X" = "X$MONGODB2_IPATH" ]; then
         if [ -f "$i/mongoc.h" ]; then
-            MONGODB_IPATH="$i"
+            MONGODB2_IPATH="$i"
         fi
-        if [ -f "$i/libmongoc/mongoc.h" ]; then
-            MONGODB_IPATH="$i/libmongoc"
+        if [ -f "$i/mongoc/mongoc.h" ]; then
+            MONGODB2_IPATH="$i/libmongoc"
         fi
-        if [ -f "$i/libmongoc-1.0/mongoc.h" ]; then
-            MONGODB_IPATH="$i/libmongoc-1.0"
-        fi
+        for ii in `ls -1d $i/mongoc-2.*`; do
+            if [ -f "${ii}/mongoc/mongoc.h" ]; then
+                MONGODB2_IPATH="$ii"
+            fi
+        done
     fi
   done
 
  for i in $LIBDIRS ; do
-    if [ "X" = "X$BSON_PATH" ]; then
-        if [ -f "$i/libbson-1.0.so" -o -f "$i/libbson-1.0.dylib" -o -f "$i/libbson-1.0.a" ]; then
-            BSON_PATH="$i"
+    if [ "X" = "X$BSON2_PATH" ]; then
+        if [ -f "$i/libbson2.so" -o -f "$i/libbson2.dylib" -o -f "$i/libbson2.a" ]; then
+            BSON2_PATH="$i"
         fi
     fi
-    if [ "X" = "X$BSON_PATH" ]; then
-        TMP_LIB=`/bin/ls $i/libbson-*.so* 2> /dev/null | grep mongoc`
+    if [ "X" = "X$BSON2_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libbson2*.so* 2> /dev/null | grep mongoc`
         if [ -n "$TMP_LIB" ]; then
-          BSON_PATH="$i"
+          BSON2_PATH="$i"
         fi
     fi
-    if [ "X" = "X$BSON_PATH" ]; then
-        TMP_LIB=`/bin/ls $i/libbson.dll* 2> /dev/null | grep mongoc`
+    if [ "X" = "X$BSON2_PATH" ]; then
+        TMP_LIB=`/bin/ls $i/libbson2.dll* 2> /dev/null | grep mongoc`
         if [ -n "$TMP_LIB" ]; then
-          BSON_PATH="$i"
+          BSON2_PATH="$i"
         fi
     fi
   done
 
-  BSON_IPATH=
+  BSON2_IPATH=
   for i in $INCDIRS ; do
-    if [ "X" = "X$BSON_IPATH" ]; then
+    if [ "X" = "X$BSON2_IPATH" ]; then
         if [ -f "$i/bson.h" ]; then
-            BSON_IPATH="$i"
+            BSON2_IPATH="$i"
         fi
         if [ -f "$i/libbson/bson.h" ]; then
-            BSON_IPATH="$i/libbson"
+            BSON2_IPATH="$i/libbson"
         fi
-        if [ -f "$i/libbson-1.0/bson.h" ]; then
-            BSON_IPATH="$i/libbson-1.0"
-        fi
+        for ii in `ls -1d $i/bson-2.*`; do
+            if [ -f "${ii}/bson/bson.h" ]; then
+                BSON2_IPATH="$ii"
+            fi
+        done
     fi
   done
 
 if [ "X" != "X$DEBUG" ]; then
-   echo DEBUG: MONGODB_PATH=$MONGODB_PATH/libmongoc
-   echo DEBUG: MONGODB_IPATH=$MONGODB_IPATH/libmongoc.h
-   echo DEBUG: BSON_PATH=$BSON_PATH/libbson
-   echo DEBUG: BSON_IPATH=$BSON_IPATH/libbson.h
+   echo DEBUG: MONGODB2_PATH=$MONGODB2_PATH
+   echo DEBUG: MONGODB2_IPATH=$MONGODB2_IPATH
+   echo DEBUG: BSON2_PATH=$BSON2_PATH
+   echo DEBUG: BSON2_IPATH=$BSON2_IPATH
 fi
 
-  if [ -n "$MONGODB_PATH" -a -n "$MONGODB_IPATH" -a -n "$BSON_PATH" -a -n "$BSON_IPATH" ]; then
+  if [ -n "$MONGODB2_PATH" -a -n "$MONGODB2_IPATH" -a -n "$BSON2_PATH" -a -n "$BSON2_IPATH" ]; then
     echo "                                                                 ... found"
   fi
-  if [ "X" = "X$MONGODB_PATH" -o "X" = "X$MONGODB_IPATH" -o "X" = "X$BSON_PATH" -o "X" = "X$BSON_IPATH" ]; then
-    echo "                                                                 ... NOT found, module mongodb disabled"
-    MONGODB_PATH=""
-    MONGODB_IPATH=""
-    BSON_PATH=""
-    BSON_IPATH=""
+  if [ "X" = "X$MONGODB2_PATH" -o "X" = "X$MONGODB2_IPATH" -o "X" = "X$BSON2_PATH" -o "X" = "X$BSON2_IPATH" ]; then
+    echo "                                                                 ... NOT found, module mongodb2 disabled"
+    MONGODB2_PATH=""
+    MONGODB2_IPATH=""
+    BSON2_PATH=""
+    BSON2_IPATH=""
   fi
+
+if [ "X" = "X$MONGODB2_PATH" -o "X" = "X$MONGODB2_IPATH" -o "X" = "X$BSON2_PATH" -o "X" = "X$BSON2_IPATH" ]; then
+    echo "Checking for Mongodb (libmongoc-1.0/mongoc.h/libbson-1.0/bson.h) ..."
+
+      for i in $LIBDIRS ; do
+        if [ "X" = "X$MONGODB_PATH" ]; then
+            if [ -f "$i/libmongoc-1.0.so" -o -f "$i/libmongoc-1.0.dylib" -o -f "$i/libmongoc-1.0.a" ]; then
+                MONGODB_PATH="$i"
+            fi
+        fi
+        if [ "X" = "X$MONGODB_PATH" ]; then
+            TMP_LIB=`/bin/ls $i/libmongoc-*.so* 2> /dev/null | grep mongoc`
+            if [ -n "$TMP_LIB" ]; then
+              MONGODB_PATH="$i"
+            fi
+        fi
+        if [ "X" = "X$MONGODB_PATH" ]; then
+            TMP_LIB=`/bin/ls $i/libmongoc.dll* 2> /dev/null | grep mongoc`
+            if [ -n "$TMP_LIB" ]; then
+              MONGODB_PATH="$i"
+            fi
+        fi
+      done
+
+      MONGODB_IPATH=
+      for i in $INCDIRS ; do
+        if [ "X" = "X$MONGODB_IPATH" ]; then
+            if [ -f "$i/mongoc.h" ]; then
+                MONGODB_IPATH="$i"
+            fi
+            if [ -f "$i/libmongoc/mongoc.h" ]; then
+                MONGODB_IPATH="$i/libmongoc"
+            fi
+            if [ -f "$i/libmongoc-1.0/mongoc.h" ]; then
+                MONGODB_IPATH="$i/libmongoc-1.0"
+            fi
+        fi
+      done
+
+     for i in $LIBDIRS ; do
+        if [ "X" = "X$BSON_PATH" ]; then
+            if [ -f "$i/libbson-1.0.so" -o -f "$i/libbson-1.0.dylib" -o -f "$i/libbson-1.0.a" ]; then
+                BSON_PATH="$i"
+            fi
+        fi
+        if [ "X" = "X$BSON_PATH" ]; then
+            TMP_LIB=`/bin/ls $i/libbson-*.so* 2> /dev/null | grep mongoc`
+            if [ -n "$TMP_LIB" ]; then
+              BSON_PATH="$i"
+            fi
+        fi
+        if [ "X" = "X$BSON_PATH" ]; then
+            TMP_LIB=`/bin/ls $i/libbson.dll* 2> /dev/null | grep mongoc`
+            if [ -n "$TMP_LIB" ]; then
+              BSON_PATH="$i"
+            fi
+        fi
+      done
+
+      BSON_IPATH=
+      for i in $INCDIRS ; do
+        if [ "X" = "X$BSON_IPATH" ]; then
+            if [ -f "$i/bson.h" ]; then
+                BSON_IPATH="$i"
+            fi
+            if [ -f "$i/libbson/bson.h" ]; then
+                BSON_IPATH="$i/libbson"
+            fi
+            if [ -f "$i/libbson-1.0/bson.h" ]; then
+                BSON_IPATH="$i/libbson-1.0"
+            fi
+        fi
+      done
+
+    if [ "X" != "X$DEBUG" ]; then
+       echo DEBUG: MONGODB_PATH=$MONGODB_PATH/libmongoc
+       echo DEBUG: MONGODB_IPATH=$MONGODB_IPATH/libmongoc.h
+       echo DEBUG: BSON_PATH=$BSON_PATH/libbson
+       echo DEBUG: BSON_IPATH=$BSON_IPATH/libbson.h
+    fi
+
+      if [ -n "$MONGODB_PATH" -a -n "$MONGODB_IPATH" -a -n "$BSON_PATH" -a -n "$BSON_IPATH" ]; then
+        echo "                                                                 ... found"
+      fi
+      if [ "X" = "X$MONGODB_PATH" -o "X" = "X$MONGODB_IPATH" -o "X" = "X$BSON_PATH" -o "X" = "X$BSON_IPATH" ]; then
+        echo "                                                                 ... NOT found, module mongodb disabled"
+        MONGODB_PATH=""
+        MONGODB_IPATH=""
+        BSON_PATH=""
+        BSON_IPATH=""
+      fi
+fi
 
 echo "Checking for smbclient (libsmbclient/libsmbclient.h) ..."
 
@@ -1537,6 +1637,12 @@ fi
 if [ -n "$MCACHED_PATH" ]; then
     XDEFINES="$XDEFINES -DLIBMCACHED"
 fi
+if [ -n "$MONGODB2_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBMONGODB2"
+fi
+if [ -n "$BSON2_PATH" ]; then
+    XDEFINES="$XDEFINES -DLIBBSON2"
+fi
 if [ -n "$MONGODB_PATH" ]; then
     XDEFINES="$XDEFINES -DLIBMONGODB"
 fi
@@ -1579,6 +1685,8 @@ for i in $SSL_PATH \
              $AFP_PATH \
              $MYSQL_PATH \
              $MCACHED_PATH \
+             $MONGODB2_PATH \
+             $BSON2_PATH \
              $MONGODB_PATH \
              $BSON_PATH \
              $FREERDP2_PATH \
@@ -1640,6 +1748,9 @@ if [ -n "$ORACLE_IPATH" ]; then
 fi
 if [ -n "$MCACHED_IPATH" ]; then
     XIPATHS="$XIPATHS -I$MCACHED_IPATH"
+fi
+if [ -n "$MONGODB2_IPATH" ]; then
+    XIPATHS="$XIPATHS -I$MONGODB2_IPATH -I$BSON2_IPATH"
 fi
 if [ -n "$MONGODB_IPATH" ]; then
     XIPATHS="$XIPATHS -I$MONGODB_IPATH -I$BSON_IPATH"
@@ -1724,6 +1835,12 @@ if [ -n "$RESOLV_PATH" ]; then
 fi
 if [ -n "$MCACHED_PATH" ]; then
     XLIBS="$XLIBS -lmemcached"
+fi
+if [ -n "$MONGODB2_PATH" ]; then
+    XLIBS="$XLIBS -lmongoc2"
+fi
+if [ -n "$BSON2_PATH" ]; then
+    XLIBS="$XLIBS -lbson2"
 fi
 if [ -n "$MONGODB_PATH" ]; then
     XLIBS="$XLIBS -lmongoc-1.0"
