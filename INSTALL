@@ -2,7 +2,7 @@ type "./configure", then "make" and finally "sudo make install"
 
 For special modules you need to install software packages before
 you run "./configure":
-  Ubuntu/Debian:  apt-get install libssl-dev libssh-dev libidn11-dev libpcre3-dev libgtk2.0-dev libmysqlclient-dev libpq-dev libsvn-dev firebird-dev libncurses5-dev
+  Ubuntu/Debian:  apt-get install libssl-dev libssh-dev libidn11-dev libpcre3-dev libgtk-3-dev libmysqlclient-dev libpq-dev libsvn-dev firebird-dev libncurses5-dev
   Redhat/Fedora:  yum install openssl-devel pcre-devel ncpfs-devel postgresql-devel libssh-devel subversion-devel libncurses-devel
   OpenSuSE:       zypper install libopenssl-devel pcre-devel libidn-devel ncpfs-devel libssh-devel postgresql-devel subversion-devel libncurses-devel
 
@@ -11,7 +11,7 @@ For Termux/Android you need the following setup:
 
 Install the necessary dependencies
   # pkg install -y x11-repo
-  # pkg install -y clang make openssl openssl-tool wget openssh coreutils gtk2 gtk3
+  # pkg install -y clang make openssl openssl-tool wget openssh coreutils gtk3
 And then compiling hydra
   # ./configure --prefix=$PREFIX
   # make

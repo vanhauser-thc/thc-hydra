@@ -15,14 +15,13 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 
 #include "callbacks.h"
 #include "interface.h"
 #include "support.h"
 
-#define GLADE_HOOKUP_OBJECT(component, widget, name) g_object_set_data_full(G_OBJECT(component), name, gtk_widget_ref(widget), (GDestroyNotify)gtk_widget_unref)
+#define GLADE_HOOKUP_OBJECT(component, widget, name) g_object_set_data_full(G_OBJECT(component), name, g_object_ref(G_OBJECT(widget)), (GDestroyNotify) g_object_unref)
 
 #define GLADE_HOOKUP_OBJECT_NO_REF(component, widget, name) g_object_set_data(G_OBJECT(component), name, widget)
 
@@ -36,10 +35,9 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *frame11;
   GtkWidget *table8;
   GtkWidget *cmbProtocol;
-  GList *cmbProtocol_items = NULL;
   GtkWidget *entProtocol;
   GtkWidget *label7;
-  GtkObject *spnPort_adj;
+  GtkAdjustment *spnPort_adj;
   GtkWidget *spnPort;
   GtkWidget *label6;
   GtkWidget *radioTarget2;
@@ -111,9 +109,9 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *frame13;
   GtkWidget *table10;
   GtkWidget *chkExitf;
-  GtkObject *spnTimeout_adj;
+  GtkAdjustment *spnTimeout_adj;
   GtkWidget *spnTimeout;
-  GtkObject *spnTasks_adj;
+  GtkAdjustment *spnTasks_adj;
   GtkWidget *spnTasks;
   GtkWidget *label32;
   GtkWidget *label31;
@@ -141,7 +139,7 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *chkNTLM;
   GtkWidget *label18;
   GtkWidget *frame7;
-  GtkObject *spnSAPR3_adj;
+  GtkAdjustment *spnSAPR3_adj;
   GtkWidget *spnSAPR3;
   GtkWidget *label19;
   GtkWidget *frame15;
@@ -172,9 +170,6 @@ GtkWidget *create_wndMain(void) {
   GtkWidget *entSMB2Workgroup;
   GtkWidget *fraSMB2;
   GtkAccelGroup *accel_group;
-  GtkTooltips *tooltips;
-
-  tooltips = gtk_tooltips_new();
 
   accel_group = gtk_accel_group_new();
 
@@ -217,81 +212,78 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(table8);
   gtk_container_add(GTK_CONTAINER(frame11), table8);
 
-  cmbProtocol = gtk_combo_new();
-  g_object_set_data(G_OBJECT(GTK_COMBO(cmbProtocol)->popwin), "GladeParentKey", cmbProtocol);
+  cmbProtocol = gtk_combo_box_text_new_with_entry();
   gtk_widget_set_name(cmbProtocol, "cmbProtocol");
   gtk_widget_show(cmbProtocol);
   gtk_table_attach(GTK_TABLE(table8), cmbProtocol, 1, 2, 4, 5, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "adam6500");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "afp");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "asterisk");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "cisco");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "cisco-enable");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "cvs");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "firebird");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "ftp");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "ftps");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "http-head");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "http-get");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "http-get-form");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "http-post-form");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "http-proxy");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "http-proxy-urlenum");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "https-head");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "https-get");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "https-get-form");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "https-post-form");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "icq");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "irc");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "imap");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "ldap2");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "ldap3");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "ldap3-crammd5");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "ldap3-digestmd5");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "memcached");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "mongodb");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "mssql");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "mysql");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "ncp");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "nntp");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "oracle");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "oracle-listener");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "oracle-sid");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "pcnfs");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "pop3");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "pcanywhere");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "postgres");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "radmin2");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rdp");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "redis");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rexec");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rlogin");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rpcap");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rsh");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "rtsp");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "s7-300");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "sapr3");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "sip");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "smb");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "smb2");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "smtp");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "snmp");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "socks5");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "ssh");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "sshkey");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "svn");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "teamspeak");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "telnet");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "vnc");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "vmauthd");
-  cmbProtocol_items = g_list_append(cmbProtocol_items, (gpointer) "xmpp");
-  gtk_combo_set_popdown_strings(GTK_COMBO(cmbProtocol), cmbProtocol_items);
-  g_list_free(cmbProtocol_items);
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "adam6500");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "afp");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "asterisk");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "cisco");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "cisco-enable");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "cvs");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "firebird");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "ftp");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "ftps");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "http-head");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "http-get");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "http-get-form");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "http-post-form");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "http-proxy");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "http-proxy-urlenum");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "https-head");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "https-get");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "https-get-form");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "https-post-form");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "icq");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "irc");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "imap");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "ldap2");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "ldap3");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "ldap3-crammd5");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "ldap3-digestmd5");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "memcached");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "mongodb");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "mssql");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "mysql");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "ncp");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "nntp");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "oracle");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "oracle-listener");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "oracle-sid");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "pcnfs");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "pop3");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "pcanywhere");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "postgres");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "radmin2");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "rdp");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "redis");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "rexec");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "rlogin");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "rpcap");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "rsh");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "rtsp");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "s7-300");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "sapr3");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "sip");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "smb");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "smb2");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "smtp");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "snmp");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "socks5");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "ssh");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "sshkey");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "svn");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "teamspeak");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "telnet");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "vnc");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "vmauthd");
+  gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(cmbProtocol), "xmpp");
 
-  entProtocol = GTK_COMBO(cmbProtocol)->entry;
+  entProtocol = gtk_bin_get_child(GTK_BIN(cmbProtocol));
   gtk_widget_set_name(entProtocol, "entProtocol");
   gtk_widget_show(entProtocol);
-  gtk_tooltips_set_tip(tooltips, entProtocol, "The protocol to use for the login/password cracking attempt", NULL);
+  gtk_widget_set_tooltip_text(entProtocol, "The protocol to use for the login/password cracking attempt");
 
   label7 = gtk_label_new("Protocol");
   gtk_widget_set_name(label7, "label7");
@@ -304,7 +296,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(spnPort, "spnPort");
   gtk_widget_show(spnPort);
   gtk_table_attach(GTK_TABLE(table8), spnPort, 1, 2, 3, 4, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, spnPort, "select the port on which the daemon you want to brute force runs, 0 means default", NULL);
+  gtk_widget_set_tooltip_text(spnPort, "select the port on which the daemon you want to brute force runs, 0 means default");
 
   label6 = gtk_label_new("Port");
   gtk_widget_set_name(label6, "label6");
@@ -316,7 +308,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(chkIPV6, "chkIPV6");
   gtk_widget_show(chkIPV6);
   gtk_table_attach(GTK_TABLE(table8), chkIPV6, 0, 2, 2, 3, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkIPV6, "Enable to use IPV6", NULL);
+  gtk_widget_set_tooltip_text(chkIPV6, "Enable to use IPV6");
 
   radioTarget2 = gtk_radio_button_new_with_mnemonic(NULL, "Target List");
   gtk_widget_set_name(radioTarget2, "radioTarget2");
@@ -329,13 +321,13 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entTargetFile, "entTargetFile");
   gtk_widget_show(entTargetFile);
   gtk_table_attach(GTK_TABLE(table8), entTargetFile, 1, 2, 1, 2, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, entTargetFile, "A file which contains the targets to attack. One entry per line. IP\naddresses and/or DNS names.", NULL);
+  gtk_widget_set_tooltip_text(entTargetFile, "A file which contains the targets to attack. One entry per line. IP\naddresses and/or DNS names.");
 
   entTarget = gtk_entry_new();
   gtk_widget_set_name(entTarget, "entTarget");
   gtk_widget_show(entTarget);
   gtk_table_attach(GTK_TABLE(table8), entTarget, 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, entTarget, "The target to attack - DNS name or IP address", NULL);
+  gtk_widget_set_tooltip_text(entTarget, "The target to attack - DNS name or IP address");
   gtk_entry_set_text(GTK_ENTRY(entTarget), "127.0.0.1");
 
   radioTarget1 = gtk_radio_button_new_with_mnemonic(NULL, "Single Target");
@@ -365,43 +357,43 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(chkVerbose, "chkVerbose");
   gtk_widget_show(chkVerbose);
   gtk_table_attach(GTK_TABLE(table9), chkVerbose, 2, 3, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkVerbose, "be verbose", NULL);
+  gtk_widget_set_tooltip_text(chkVerbose, "be verbose");
 
   chkDebug = gtk_check_button_new_with_mnemonic("Debug");
   gtk_widget_set_name(chkDebug, "chkDebug");
   gtk_widget_show(chkDebug);
   gtk_table_attach(GTK_TABLE(table9), chkDebug, 2, 3, 1, 2, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkDebug, "Enable debug mode", NULL);
+  gtk_widget_set_tooltip_text(chkDebug, "Enable debug mode");
 
   chkAttempts = gtk_check_button_new_with_mnemonic("Show Attempts");
   gtk_widget_set_name(chkAttempts, "chkAttempts");
   gtk_widget_show(chkAttempts);
   gtk_table_attach(GTK_TABLE(table9), chkAttempts, 0, 2, 1, 2, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkAttempts, "Show attempts", NULL);
+  gtk_widget_set_tooltip_text(chkAttempts, "Show attempts");
 
   chkSSL = gtk_check_button_new_with_mnemonic("Use SSL");
   gtk_widget_set_name(chkSSL, "chkSSL");
   gtk_widget_show(chkSSL);
   gtk_table_attach(GTK_TABLE(table9), chkSSL, 0, 1, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkSSL, "Enable to use SSL (the target must have SSL enabled!)", NULL);
+  gtk_widget_set_tooltip_text(chkSSL, "Enable to use SSL (the target must have SSL enabled!)");
 
   chkServiceDetails = gtk_check_button_new_with_mnemonic("Service Module Usage Details");
   gtk_widget_set_name(chkServiceDetails, "chkServiceDetails");
   gtk_widget_show(chkServiceDetails);
   gtk_table_attach(GTK_TABLE(table9), chkServiceDetails, 2, 3, 2, 3, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkServiceDetails, "Service Module Usage Details", NULL);
+  gtk_widget_set_tooltip_text(chkServiceDetails, "Service Module Usage Details");
 
   chkCompleteHelp = gtk_check_button_new_with_mnemonic("COMPLETE HELP");
   gtk_widget_set_name(chkCompleteHelp, "chkCompleteHelp");
   gtk_widget_show(chkCompleteHelp);
   gtk_table_attach(GTK_TABLE(table9), chkCompleteHelp, 0, 2, 2, 3, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkCompleteHelp, "Complete Help", NULL);
+  gtk_widget_set_tooltip_text(chkCompleteHelp, "Complete Help");
 
   chkOldSSL = gtk_check_button_new_with_mnemonic("Use old SSL");
   gtk_widget_set_name(chkOldSSL, "chkOldSSL");
   gtk_widget_show(chkOldSSL);
   gtk_table_attach(GTK_TABLE(table9), chkOldSSL, 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkOldSSL, "Enable to use old SSL (the target must have SSL enabled!)", NULL);
+  gtk_widget_set_tooltip_text(chkOldSSL, "Enable to use old SSL (the target must have SSL enabled!)");
 
   label29 = gtk_label_new("Output Options");
   gtk_widget_set_name(label29, "label29");
@@ -432,13 +424,13 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entUsernameFile, "entUsernameFile");
   gtk_widget_show(entUsernameFile);
   gtk_table_attach(GTK_TABLE(table2), entUsernameFile, 1, 2, 1, 2, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), 0, 0);
-  gtk_tooltips_set_tip(tooltips, entUsernameFile, "File with user logins, one entry per line", NULL);
+  gtk_widget_set_tooltip_text(entUsernameFile, "File with user logins, one entry per line");
 
   entUsername = gtk_entry_new();
   gtk_widget_set_name(entUsername, "entUsername");
   gtk_widget_show(entUsername);
   gtk_table_attach(GTK_TABLE(table2), entUsername, 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), 0, 0);
-  gtk_tooltips_set_tip(tooltips, entUsername, "The login to use", NULL);
+  gtk_widget_set_tooltip_text(entUsername, "The login to use");
   gtk_entry_set_text(GTK_ENTRY(entUsername), "yourname");
 
   radioUsername1 = gtk_radio_button_new_with_mnemonic(NULL, "Username");
@@ -460,13 +452,13 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(chkUsernameLoop, "chkUsernameLoop");
   gtk_widget_show(chkUsernameLoop);
   gtk_table_attach(GTK_TABLE(table2), chkUsernameLoop, 0, 1, 2, 3, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkUsernameLoop, "Enable this option to loop around users not passwords", NULL);
+  gtk_widget_set_tooltip_text(chkUsernameLoop, "Enable this option to loop around users not passwords");
 
   chkDisUser = gtk_check_button_new_with_mnemonic("Protocol does not require usernames");
   gtk_widget_set_name(chkDisUser, "chkDisUser");
   gtk_widget_show(chkDisUser);
   gtk_table_attach(GTK_TABLE(table2), chkDisUser, 1, 2, 2, 3, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkDisUser, "Protocols like Cisco, Cisco enable, redis, Oracle listener, SNMP, S7-300, VNC etc. are not using usernames", NULL);
+  gtk_widget_set_tooltip_text(chkDisUser, "Protocols like Cisco, Cisco enable, redis, Oracle listener, SNMP, S7-300, VNC etc. are not using usernames");
 
   label8 = gtk_label_new("Username");
   gtk_widget_set_name(label8, "label8");
@@ -487,13 +479,13 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entPassFile, "entPassFile");
   gtk_widget_show(entPassFile);
   gtk_table_attach(GTK_TABLE(table3), entPassFile, 1, 2, 1, 2, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), 0, 0);
-  gtk_tooltips_set_tip(tooltips, entPassFile, "File with passwords to try, one entry per line", NULL);
+  gtk_widget_set_tooltip_text(entPassFile, "File with passwords to try, one entry per line");
 
   entPass = gtk_entry_new();
   gtk_widget_set_name(entPass, "entPass");
   gtk_widget_show(entPass);
   gtk_table_attach(GTK_TABLE(table3), entPass, 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), 0, 0);
-  gtk_tooltips_set_tip(tooltips, entPass, "The password to try", NULL);
+  gtk_widget_set_tooltip_text(entPass, "The password to try");
   gtk_entry_set_text(GTK_ENTRY(entPass), "yourpass");
 
   radioPass1 = gtk_radio_button_new_with_mnemonic(NULL, "Password");
@@ -521,7 +513,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entGeneration, "entGeneration");
   gtk_widget_show(entGeneration);
   gtk_table_attach(GTK_TABLE(table3), entGeneration, 1, 2, 2, 3, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), 0, 0);
-  gtk_tooltips_set_tip(tooltips, entGeneration, "Generate passwords", NULL);
+  gtk_widget_set_tooltip_text(entGeneration, "Generate passwords");
   gtk_entry_set_text(GTK_ENTRY(entGeneration), "1:1:a");
 
   labelpass = gtk_label_new("Password");
@@ -543,13 +535,13 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(chkColon, "chkColon");
   gtk_widget_show(chkColon);
   gtk_table_attach(GTK_TABLE(table5), chkColon, 0, 1, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkColon, "Enable this option to use a colon file for login/password attempts", NULL);
+  gtk_widget_set_tooltip_text(chkColon, "Enable this option to use a colon file for login/password attempts");
 
   entColonFile = gtk_entry_new();
   gtk_widget_set_name(entColonFile, "entColonFile");
   gtk_widget_show(entColonFile);
   gtk_table_attach(GTK_TABLE(table5), entColonFile, 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, entColonFile, "The colon file to use, each line has to be structured like \"mylogin:mypass\"", NULL);
+  gtk_widget_set_tooltip_text(entColonFile, "The colon file to use, each line has to be structured like \"mylogin:mypass\"");
 
   label20 = gtk_label_new("Colon separated file");
   gtk_widget_set_name(label20, "label20");
@@ -565,19 +557,19 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(chkPassLogin, "chkPassLogin");
   gtk_widget_show(chkPassLogin);
   gtk_table_attach(GTK_TABLE(table6), chkPassLogin, 0, 1, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkPassLogin, "Enable this option to try the login as password, in addition to the password/file", NULL);
+  gtk_widget_set_tooltip_text(chkPassLogin, "Enable this option to try the login as password, in addition to the password/file");
 
   chkPassNull = gtk_check_button_new_with_mnemonic("Try empty password");
   gtk_widget_set_name(chkPassNull, "chkPassNull");
   gtk_widget_show(chkPassNull);
   gtk_table_attach(GTK_TABLE(table6), chkPassNull, 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkPassNull, "Enable this option to try an empty password, in addition to the password/file", NULL);
+  gtk_widget_set_tooltip_text(chkPassNull, "Enable this option to try an empty password, in addition to the password/file");
 
   chkPassReverse = gtk_check_button_new_with_mnemonic("Try reversed login");
   gtk_widget_set_name(chkPassReverse, "chkPassReverse");
   gtk_widget_show(chkPassReverse);
   gtk_table_attach(GTK_TABLE(table6), chkPassReverse, 2, 3, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkPassReverse, "Enable this option to try an reverse password, in addition to the password/file", NULL);
+  gtk_widget_set_tooltip_text(chkPassReverse, "Enable this option to try an reverse password, in addition to the password/file");
 
   label2 = gtk_label_new("Passwords");
   gtk_widget_set_name(label2, "label2");
@@ -609,14 +601,14 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entHTTPProxy, "entHTTPProxy");
   gtk_widget_show(entHTTPProxy);
   gtk_table_attach(GTK_TABLE(table7), entHTTPProxy, 1, 2, 1, 2, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, entHTTPProxy, "The address of the proxy. Syntax: \"http://123.45.67.89:8080\"", NULL);
+  gtk_widget_set_tooltip_text(entHTTPProxy, "The address of the proxy. Syntax: \"http://123.45.67.89:8080\"");
   gtk_entry_set_text(GTK_ENTRY(entHTTPProxy), "http://127.0.0.1:8080");
 
   chkProxyAuth = gtk_check_button_new_with_mnemonic("Proxy needs authentication");
   gtk_widget_set_name(chkProxyAuth, "chkProxyAuth");
   gtk_widget_show(chkProxyAuth);
   gtk_table_attach(GTK_TABLE(table7), chkProxyAuth, 0, 1, 2, 3, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkProxyAuth, "Enable this if the proxy requires authenticatio", NULL);
+  gtk_widget_set_tooltip_text(chkProxyAuth, "Enable this if the proxy requires authenticatio");
 
   label23 = gtk_label_new("Username");
   gtk_widget_set_name(label23, "label23");
@@ -628,7 +620,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entProxyUser, "entProxyUser");
   gtk_widget_show(entProxyUser);
   gtk_table_attach(GTK_TABLE(table7), entProxyUser, 1, 2, 3, 4, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, entProxyUser, "The user name for proxy authentication", NULL);
+  gtk_widget_set_tooltip_text(entProxyUser, "The user name for proxy authentication");
   gtk_entry_set_text(GTK_ENTRY(entProxyUser), "yourname");
 
   label24 = gtk_label_new("Password");
@@ -641,7 +633,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entProxyPass, "entProxyPass");
   gtk_widget_show(entProxyPass);
   gtk_table_attach(GTK_TABLE(table7), entProxyPass, 1, 2, 4, 5, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, entProxyPass, "The password for proxy authentication", NULL);
+  gtk_widget_set_tooltip_text(entProxyPass, "The password for proxy authentication");
   gtk_entry_set_text(GTK_ENTRY(entProxyPass), "yourpass");
 
   label26 = gtk_label_new("");
@@ -667,7 +659,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(radioProxy2, "radioProxy2");
   gtk_widget_show(radioProxy2);
   gtk_box_pack_start(GTK_BOX(hbox3), radioProxy2, TRUE, TRUE, 0);
-  gtk_tooltips_set_tip(tooltips, radioProxy2, "Enable this to use a proxy for scanning ( Only for HTTP Module )", NULL);
+  gtk_widget_set_tooltip_text(radioProxy2, "Enable this to use a proxy for scanning ( Only for HTTP Module )");
   gtk_radio_button_set_group(GTK_RADIO_BUTTON(radioProxy2), radioProxy_group);
   radioProxy_group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(radioProxy2));
 
@@ -675,7 +667,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(radioProxy3, "radioProxy3");
   gtk_widget_show(radioProxy3);
   gtk_box_pack_start(GTK_BOX(hbox3), radioProxy3, TRUE, TRUE, 0);
-  gtk_tooltips_set_tip(tooltips, radioProxy3, "Enable this to use a proxy for scanning", NULL);
+  gtk_widget_set_tooltip_text(radioProxy3, "Enable this to use a proxy for scanning");
   gtk_radio_button_set_group(GTK_RADIO_BUTTON(radioProxy3), radioProxy_group);
   radioProxy_group = gtk_radio_button_get_group(GTK_RADIO_BUTTON(radioProxy3));
 
@@ -698,21 +690,21 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(chkExitf, "chkExitf");
   gtk_widget_show(chkExitf);
   gtk_table_attach(GTK_TABLE(table10), chkExitf, 0, 2, 2, 3, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkExitf, "Enable this to stop all attacking processes once a valid login/password pair is found (per host)", NULL);
+  gtk_widget_set_tooltip_text(chkExitf, "Enable this to stop all attacking processes once a valid login/password pair is found (per host)");
 
   spnTimeout_adj = gtk_adjustment_new(30, 0, 295, 1, 10, 0);
   spnTimeout = gtk_spin_button_new(GTK_ADJUSTMENT(spnTimeout_adj), 1, 0);
   gtk_widget_set_name(spnTimeout, "spnTimeout");
   gtk_widget_show(spnTimeout);
   gtk_table_attach(GTK_TABLE(table10), spnTimeout, 1, 2, 1, 2, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, spnTimeout, "The maximum timeout an attack process is waiting for a response from the target", NULL);
+  gtk_widget_set_tooltip_text(spnTimeout, "The maximum timeout an attack process is waiting for a response from the target");
 
   spnTasks_adj = gtk_adjustment_new(16, 0, 128, 1, 10, 0);
   spnTasks = gtk_spin_button_new(GTK_ADJUSTMENT(spnTasks_adj), 1, 0);
   gtk_widget_set_name(spnTasks, "spnTasks");
   gtk_widget_show(spnTasks);
   gtk_table_attach(GTK_TABLE(table10), spnTasks, 1, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, spnTasks, "The number of attack tasks to run in parallel. The more the faster, the most: computer lockup :-) 16-64 is a good choice", NULL);
+  gtk_widget_set_tooltip_text(spnTasks, "The number of attack tasks to run in parallel. The more the faster, the most: computer lockup :-) 16-64 is a good choice");
 
   label32 = gtk_label_new("Timeout");
   gtk_widget_set_name(label32, "label32");
@@ -730,13 +722,13 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(chkExitF, "chkExitF");
   gtk_widget_show(chkExitF);
   gtk_table_attach(GTK_TABLE(table10), chkExitF, 0, 2, 3, 4, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkExitF, "Enable this to stop all attacking processes once a valid login/password pair is found (global)", NULL);
+  gtk_widget_set_tooltip_text(chkExitF, "Enable this to stop all attacking processes once a valid login/password pair is found (global)");
 
   chkNoErr = gtk_check_button_new_with_mnemonic("Do not print messages about connection errors");
   gtk_widget_set_name(chkNoErr, "chkNoErr");
   gtk_widget_show(chkNoErr);
   gtk_table_attach(GTK_TABLE(table10), chkNoErr, 0, 2, 4, 5, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK), (GtkAttachOptions)(GTK_EXPAND), 0, 0);
-  gtk_tooltips_set_tip(tooltips, chkNoErr, "Do not print messages about connection errors", NULL);
+  gtk_widget_set_tooltip_text(chkNoErr, "Do not print messages about connection errors");
 
   label30 = gtk_label_new("Performance Options");
   gtk_widget_set_name(label30, "label30");
@@ -762,7 +754,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entHTTPProxyURL, "entHTTPProxyURL");
   gtk_widget_show(entHTTPProxyURL);
   gtk_container_add(GTK_CONTAINER(frame10), entHTTPProxyURL);
-  gtk_tooltips_set_tip(tooltips, entHTTPProxyURL, "URL to connect to via the proxy", NULL);
+  gtk_widget_set_tooltip_text(entHTTPProxyURL, "URL to connect to via the proxy");
   gtk_entry_set_text(GTK_ENTRY(entHTTPProxyURL), "www.suse.com");
 
   label27 = gtk_label_new("http-proxy url / http-proxy-urlenum credential module");
@@ -779,7 +771,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entHTTPURL, "entHTTPURL");
   gtk_widget_show(entHTTPURL);
   gtk_container_add(GTK_CONTAINER(frame3), entHTTPURL);
-  gtk_tooltips_set_tip(tooltips, entHTTPURL, "The protected URL you want to access", NULL);
+  gtk_widget_set_tooltip_text(entHTTPURL, "The protected URL you want to access");
   gtk_entry_set_text(GTK_ENTRY(entHTTPURL), "/foo/bar/protected.html");
 
   label15 = gtk_label_new("http / https url");
@@ -796,7 +788,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entCiscoPass, "entCiscoPass");
   gtk_widget_show(entCiscoPass);
   gtk_container_add(GTK_CONTAINER(frame4), entCiscoPass);
-  gtk_tooltips_set_tip(tooltips, entCiscoPass, "The password to the cisco device", NULL);
+  gtk_widget_set_tooltip_text(entCiscoPass, "The password to the cisco device");
   gtk_entry_set_text(GTK_ENTRY(entCiscoPass), "password");
 
   label16 = gtk_label_new("Cisco Enable, Login for Cisco device");
@@ -813,7 +805,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entLDAPDN, "entLDAPDN");
   gtk_widget_show(entLDAPDN);
   gtk_container_add(GTK_CONTAINER(frame5), entLDAPDN);
-  gtk_tooltips_set_tip(tooltips, entLDAPDN, "The DN scope of ldap to authenticate against", NULL);
+  gtk_widget_set_tooltip_text(entLDAPDN, "The DN scope of ldap to authenticate against");
   gtk_entry_set_text(GTK_ENTRY(entLDAPDN), "dn-scope");
 
   label17 = gtk_label_new("LDAP DN");
@@ -835,19 +827,19 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(chkLocal, "chkLocal");
   gtk_widget_show(chkLocal);
   gtk_box_pack_start(GTK_BOX(hbox2), chkLocal, TRUE, TRUE, 0);
-  gtk_tooltips_set_tip(tooltips, chkLocal, "Just attack local accounts (only valid for smb module)", NULL);
+  gtk_widget_set_tooltip_text(chkLocal, "Just attack local accounts (only valid for smb module)");
 
   chkDomain = gtk_check_button_new_with_mnemonic("domain accounts");
   gtk_widget_set_name(chkDomain, "chkDomain");
   gtk_widget_show(chkDomain);
   gtk_box_pack_start(GTK_BOX(hbox2), chkDomain, TRUE, TRUE, 0);
-  gtk_tooltips_set_tip(tooltips, chkDomain, "Attack domain and local accounts (only valid for smb module)", NULL);
+  gtk_widget_set_tooltip_text(chkDomain, "Attack domain and local accounts (only valid for smb module)");
 
   chkNTLM = gtk_check_button_new_with_mnemonic("Interpret passes as NTLM hashes");
   gtk_widget_set_name(chkNTLM, "chkNTLM");
   gtk_widget_show(chkNTLM);
   gtk_box_pack_start(GTK_BOX(hbox2), chkNTLM, FALSE, FALSE, 0);
-  gtk_tooltips_set_tip(tooltips, chkNTLM, "Interpret passes as NTML hashes  (valid for both smb and smb2 modules)", NULL);
+  gtk_widget_set_tooltip_text(chkNTLM, "Interpret passes as NTML hashes  (valid for both smb and smb2 modules)");
 
   label18 = gtk_label_new("SMB");
   gtk_widget_set_name(label18, "label18");
@@ -863,7 +855,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entSMB2Workgroup, "entSMB2Workgroup");
   gtk_widget_show(entSMB2Workgroup);
   gtk_container_add(GTK_CONTAINER(fraSMB2), entSMB2Workgroup);
-  gtk_tooltips_set_tip(tooltips, entSMB2Workgroup, "Workgroup to use for SMB authentication (only valid for smb2 module)", NULL);
+  gtk_widget_set_tooltip_text(entSMB2Workgroup, "Workgroup to use for SMB authentication (only valid for smb2 module)");
   gtk_entry_set_text(GTK_ENTRY(entSMB2Workgroup), "WORKGROUP");
 
   lblSMB2 = gtk_label_new("SMB2 Workgroup");
@@ -881,7 +873,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(spnSAPR3, "spnSAPR3");
   gtk_widget_show(spnSAPR3);
   gtk_container_add(GTK_CONTAINER(frame7), spnSAPR3);
-  gtk_tooltips_set_tip(tooltips, spnSAPR3, "The client id you want to attack, something between 0 and 99", NULL);
+  gtk_widget_set_tooltip_text(spnSAPR3, "The client id you want to attack, something between 0 and 99");
 
   label19 = gtk_label_new("sapr3 client id");
   gtk_widget_set_name(label19, "label19");
@@ -897,7 +889,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entCVS, "entCVS");
   gtk_widget_show(entCVS);
   gtk_container_add(GTK_CONTAINER(frame15), entCVS);
-  gtk_tooltips_set_tip(tooltips, entCVS, "Directory of the CVS/SVN repository", NULL);
+  gtk_widget_set_tooltip_text(entCVS, "Directory of the CVS/SVN repository");
   gtk_entry_set_text(GTK_ENTRY(entCVS), "trunk");
 
   label34 = gtk_label_new("CVS/SVN Repository");
@@ -919,7 +911,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entTelnet, "entTelnet");
   gtk_widget_show(entTelnet);
   gtk_container_add(GTK_CONTAINER(alignment1), entTelnet);
-  gtk_tooltips_set_tip(tooltips, entTelnet, "Insert the return string for a successful login", NULL);
+  gtk_widget_set_tooltip_text(entTelnet, "Insert the return string for a successful login");
 
   label36 = gtk_label_new("Telnet - Successful Login String");
   gtk_widget_set_name(label36, "label36");
@@ -936,7 +928,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(entSNMP, "entSNMP");
   gtk_widget_show(entSNMP);
   gtk_container_add(GTK_CONTAINER(frame16), entSNMP);
-  gtk_tooltips_set_tip(tooltips, entSNMP, "SNMP options", NULL);
+  gtk_widget_set_tooltip_text(entSNMP, "SNMP options");
   gtk_entry_set_text(GTK_ENTRY(entSNMP), "3:SHA:AES:READ");
 
   label35 = gtk_label_new("SNMP");
@@ -990,25 +982,25 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(btnStart, "btnStart");
   gtk_widget_show(btnStart);
   gtk_box_pack_start(GTK_BOX(hbox1), btnStart, TRUE, FALSE, 0);
-  gtk_tooltips_set_tip(tooltips, btnStart, "start hydra", NULL);
+  gtk_widget_set_tooltip_text(btnStart, "start hydra");
 
   btnStop = gtk_button_new_with_mnemonic("Stop");
   gtk_widget_set_name(btnStop, "btnStop");
   gtk_widget_show(btnStop);
   gtk_box_pack_start(GTK_BOX(hbox1), btnStop, TRUE, FALSE, 0);
-  gtk_tooltips_set_tip(tooltips, btnStop, "stop hydra", NULL);
+  gtk_widget_set_tooltip_text(btnStop, "stop hydra");
 
   btnSave = gtk_button_new_with_mnemonic("Save Output");
   gtk_widget_set_name(btnSave, "btnSave");
   gtk_widget_show(btnSave);
   gtk_box_pack_start(GTK_BOX(hbox1), btnSave, TRUE, FALSE, 0);
-  gtk_tooltips_set_tip(tooltips, btnSave, "save output", NULL);
+  gtk_widget_set_tooltip_text(btnSave, "save output");
 
   btnClear = gtk_button_new_with_mnemonic("Clear Output");
   gtk_widget_set_name(btnClear, "btnClear");
   gtk_widget_show(btnClear);
   gtk_box_pack_start(GTK_BOX(hbox1), btnClear, TRUE, FALSE, 0);
-  gtk_tooltips_set_tip(tooltips, btnClear, "clear screen", NULL);
+  gtk_widget_set_tooltip_text(btnClear, "clear screen");
 
   label4 = gtk_label_new("Start");
   gtk_widget_set_name(label4, "label4");
@@ -1021,13 +1013,13 @@ GtkWidget *create_wndMain(void) {
   gtk_box_pack_start(GTK_BOX(vbox1), statusbar, FALSE, FALSE, 0);
 
   g_signal_connect((gpointer)wndMain, "destroy", G_CALLBACK(on_wndMain_destroy), NULL);
-  g_signal_connect((gpointer)quit1, "button-press-event", G_CALLBACK(on_quit1_activate), NULL);
-  g_signal_connect((gpointer)entTargetFile, "button_press_event", G_CALLBACK(on_entTargetFile_button_press_event), NULL);
-  g_signal_connect((gpointer)entUsernameFile, "button_press_event", G_CALLBACK(on_entUsernameFile_button_press_event), NULL);
+  g_signal_connect((gpointer)quit1, "activate", G_CALLBACK(on_quit1_activate), NULL);
+  g_signal_connect((gpointer)entTargetFile, "button-press-event", G_CALLBACK(on_entTargetFile_button_press_event), NULL);
+  g_signal_connect((gpointer)entUsernameFile, "button-press-event", G_CALLBACK(on_entUsernameFile_button_press_event), NULL);
   g_signal_connect((gpointer)chkDisUser, "toggled", G_CALLBACK(on_chkDisUser_toggled), NULL);
-  g_signal_connect((gpointer)entPassFile, "button_press_event", G_CALLBACK(on_entPassFile_button_press_event), NULL);
+  g_signal_connect((gpointer)entPassFile, "button-press-event", G_CALLBACK(on_entPassFile_button_press_event), NULL);
   g_signal_connect((gpointer)chkColon, "toggled", G_CALLBACK(on_chkColon_toggled), NULL);
-  g_signal_connect((gpointer)entColonFile, "button_press_event", G_CALLBACK(on_entColonFile_button_press_event), NULL);
+  g_signal_connect((gpointer)entColonFile, "button-press-event", G_CALLBACK(on_entColonFile_button_press_event), NULL);
   g_signal_connect((gpointer)btnStart, "clicked", G_CALLBACK(on_btnStart_clicked), NULL);
   g_signal_connect((gpointer)btnStop, "clicked", G_CALLBACK(on_btnStop_clicked), NULL);
   g_signal_connect((gpointer)btnSave, "clicked", G_CALLBACK(on_btnSave_clicked), NULL);
@@ -1166,7 +1158,6 @@ GtkWidget *create_wndMain(void) {
   GLADE_HOOKUP_OBJECT(wndMain, btnClear, "btnClear");
   GLADE_HOOKUP_OBJECT(wndMain, label4, "label4");
   GLADE_HOOKUP_OBJECT(wndMain, statusbar, "statusbar");
-  GLADE_HOOKUP_OBJECT_NO_REF(wndMain, tooltips, "tooltips");
   GLADE_HOOKUP_OBJECT(wndMain, entSMB2Workgroup, "entSMB2Workgroup");
 
   gtk_window_add_accel_group(GTK_WINDOW(wndMain), accel_group);

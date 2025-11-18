@@ -30,7 +30,6 @@ int main(int argc, char *argv[]) {
   GtkWidget *output;
   GtkTextBuffer *outputbuf;
 
-  gtk_set_locale();
   gtk_init(&argc, &argv);
 
   add_pixmap_directory(PACKAGE_DATA_DIR "/" PACKAGE "/pixmaps");
