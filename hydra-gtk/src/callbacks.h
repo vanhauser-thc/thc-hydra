@@ -1,6 +1,6 @@
 #include <gtk/gtk.h>
 
-int update_statusbar();
+gboolean update_statusbar(gpointer user_data);
 
 void on_quit1_activate(GtkMenuItem *menuitem, gpointer user_data);
 
@@ -8,7 +8,7 @@ void on_about1_activate(GtkMenuItem *menuitem, gpointer user_data);
 
 void on_btnStart_clicked(GtkButton *button, gpointer user_data);
 
-void on_wndMain_destroy(GtkObject *object, gpointer user_data);
+void on_wndMain_destroy(GtkWidget *object, gpointer user_data);
 
 void on_btnStop_clicked(GtkButton *button, gpointer user_data);
 

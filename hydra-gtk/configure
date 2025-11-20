@@ -3836,7 +3836,7 @@ _ACEOF
 fi
 
 
-pkg_modules="gtk+-2.0 >= 2.0.0"
+pkg_modules="gtk+-3.0 >= 3.24.24"
 
   succeeded=no
 

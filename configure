@@ -1330,10 +1330,10 @@ echo "Checking for smbclient (libsmbclient/libsmbclient.h) ..."
 
 
 if [ "X" = "X$XHYDRA_SUPPORT" ]; then
-    echo "Checking for GUI req's (pkg-config/gtk+-2.0) ..."
+    echo "Checking for GUI req's (pkg-config/gtk+-3.0) ..."
   XHYDRA_SUPPORT=`$PKG_CONFIG --help > /dev/null 2>&1 || echo disabled`
   if [ "X" = "X$XHYDRA_SUPPORT" ]; then
-     XHYDRA_SUPPORT=`$PKG_CONFIG --modversion gtk+-2.0 2> /dev/null`
+     XHYDRA_SUPPORT=`$PKG_CONFIG --modversion gtk+-3.0 2> /dev/null`
   else
      XHYDRA_SUPPORT=""
   fi

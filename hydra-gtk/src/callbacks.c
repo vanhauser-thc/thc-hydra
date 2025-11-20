@@ -385,7 +385,7 @@ int hydra_get_options(char *options[]) {
   return i;
 }
 
-int update_statusbar() {
+gboolean update_statusbar(gpointer user_data) {
   int i, j;
   char *options[128];
   guint context_id;
@@ -469,7 +469,7 @@ int read_into(int fd) {
 
 /* wait for hydra output */
 
-static int wait_hydra_output(gpointer data) {
+static gboolean wait_hydra_output(gpointer data) {
   static int stdout_ok = TRUE, stderr_ok = TRUE;
   fd_set rset;
   struct timeval tv;
@@ -544,7 +544,7 @@ int *popen_re_unbuffered(char *command) {
 
   hydra_pid = 0;
 
-  update_statusbar();
+  update_statusbar(NULL);
 
   /* only allocate once */
   if (NULL == pfd)
@@ -624,7 +624,7 @@ void on_btnStop_clicked(GtkButton *button, gpointer user_data) {
   }
 }
 
-void on_wndMain_destroy(GtkObject *object, gpointer user_data) {
+void on_wndMain_destroy(GtkWidget *object, gpointer user_data) {
   if (hydra_pid != 0) {
     kill(hydra_pid, SIGTERM);
     hydra_pid = 0;

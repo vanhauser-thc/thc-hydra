@@ -711,7 +711,7 @@ addresses and/or DNS names.</property>
 			  <property name="has_frame">True</property>
 			  <property name="invisible_char" translatable="yes">*</property>
 			  <property name="activates_default">False</property>
-			  <signal name="button_press_event" handler="on_entTargetFile_button_press_event" last_modification_time="Sun, 18 Apr 2004 18:11:47 GMT"/>
+			  <signal name="button-press-event" handler="on_entTargetFile_button_press_event" last_modification_time="Sun, 18 Apr 2004 18:11:47 GMT"/>
 			</widget>
 			<packing>
 			  <property name="left_attach">1</property>
@@ -992,7 +992,7 @@ addresses and/or DNS names.</property>
 			  <property name="has_frame">True</property>
 			  <property name="invisible_char" translatable="yes">*</property>
 			  <property name="activates_default">False</property>
-			  <signal name="button_press_event" handler="on_entUsernameFile_button_press_event" last_modification_time="Sun, 18 Apr 2004 18:15:20 GMT"/>
+			  <signal name="button-press-event" handler="on_entUsernameFile_button_press_event" last_modification_time="Sun, 18 Apr 2004 18:15:20 GMT"/>
 			</widget>
 			<packing>
 			  <property name="left_attach">1</property>
@@ -1128,7 +1128,7 @@ addresses and/or DNS names.</property>
 			  <property name="has_frame">True</property>
 			  <property name="invisible_char" translatable="yes">*</property>
 			  <property name="activates_default">False</property>
-			  <signal name="button_press_event" handler="on_entPassFile_button_press_event" last_modification_time="Sun, 18 Apr 2004 18:15:27 GMT"/>
+			  <signal name="button-press-event" handler="on_entPassFile_button_press_event" last_modification_time="Sun, 18 Apr 2004 18:15:27 GMT"/>
 			</widget>
 			<packing>
 			  <property name="left_attach">1</property>
@@ -1288,7 +1288,7 @@ addresses and/or DNS names.</property>
 			  <property name="has_frame">True</property>
 			  <property name="invisible_char" translatable="yes">*</property>
 			  <property name="activates_default">False</property>
-			  <signal name="button_press_event" handler="on_entColonFile_button_press_event" last_modification_time="Fri, 23 Apr 2004 10:36:11 GMT"/>
+			  <signal name="button-press-event" handler="on_entColonFile_button_press_event" last_modification_time="Fri, 23 Apr 2004 10:36:11 GMT"/>
 			</widget>
 			<packing>
 			  <property name="left_attach">1</property>

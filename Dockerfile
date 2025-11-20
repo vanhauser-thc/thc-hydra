@@ -22,7 +22,7 @@ RUN set -x \
         #libgcrypt11-dev \
         libgcrypt-dev \
         #libgcrypt20-dev \
-        #libgtk2.0-dev \
+        #libgtk-3-dev \
         libpcre3-dev \
         #firebird-dev \
         libidn11-dev \
