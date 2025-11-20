@@ -1300,7 +1300,7 @@ int32_t hydra_string_match(char *str, const char *regex) {
 
   re = pcre2_compile(regex, PCRE2_ZERO_TERMINATED, PCRE2_CASELESS | PCRE2_DOTALL, &error_code, &error_offset, NULL);
   if (re == NULL) {
-    fprintf(stderr, "[ERROR] PCRE compilation failed at offset %d: %d\n", error_offset, error_code);
+    fprintf(stderr, "[ERROR] PCRE compilation failed at offset %d: %d\n", (int)error_offset, (int)error_code);
     return 0;
   }
 

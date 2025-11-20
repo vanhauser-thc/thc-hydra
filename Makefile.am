@@ -5,7 +5,7 @@ WARN_CLANG=-Wformat-nonliteral -Wstrncat-size -Wformat-security -Wsign-conversio
 WARN_GCC=-Wformat=2 -Wformat-overflow=2 -Wformat-nonliteral -Wformat-truncation=2 -Wnull-dereference -Wstrict-overflow=2 -Wstringop-overflow=4 -Walloca-larger-than=4096 -Wtype-limits -Wconversion -Wtrampolines -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -fno-common -Wcast-align
 CFLAGS ?= -g
 OPTS=-I. -O3 $(CFLAGS) -fcommon -Wno-deprecated-declarations
-CPPFLAGS += -D_GNU_SOURCE -Wno-deprecated-declarations -Wno-unused-command-line-argument
+CPPFLAGS += -D_GNU_SOURCE -Wno-deprecated-declarations -Wno-pointer-sign -Wno-format-truncation -Wno-format-overflow
 # -Wall -g -pedantic
 LIBS=-lm
 DESTDIR ?=
@@ -53,7 +53,7 @@ all:	pw-inspector hydra $(XHYDRA_SUPPORT)
 	@echo Now type "make install"
 
 hydra:	hydra.c $(OBJ)
-	$(CC) $(OPTS) $(SEC) $(LIBS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o hydra $(HYDRA_LOGO) hydra.c $(OBJ) $(LIBS) $(XLIBS) $(XLIBPATHS) $(XIPATHS) $(XDEFINES)
+	$(CC) $(OPTS) $(SEC) $(LDSEC) $(LIBS) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o hydra $(HYDRA_LOGO) hydra.c $(OBJ) $(LIBS) $(XLIBS) $(XLIBPATHS) $(XIPATHS) $(XDEFINES)
 	@echo
 	@echo If men could get pregnant, abortion would be a sacrament
 	@echo

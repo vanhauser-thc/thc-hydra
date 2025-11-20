@@ -1408,21 +1408,28 @@ echo "Checking for secure compile option support in $CC ..."
 GCCSEC="no"
 LDSEC="no"
 GCCSECOPT="-fstack-protector-all --param ssp-buffer-size=4 -D_FORTIFY_SOURCE=2"
+LDSECOPT=""
 echo '#include <stdio.h>' > $TMPC.c
 echo 'int main() { printf(""); return 0; }' >> $TMPC.c
 $CC -pie -fPIE $GCCSEPOPT -o $TMPC $TMPC.c > /dev/null 2> $TMPC.c.err
 test -x $TMPC && GCCSEC="yes"
-grep -q fPI $TMPC.c.err || GCCSECOPT="-pie -fPIE $GCCSECOPT"
+grep -q fPI $TMPC.c.err || {
+  GCCSEC=yes
+  GCCSECOPT="-fPIE $GCCSECOPT"
+  LDSEC=yes
+  LDSECOPT="$LDSECOPT -pie"
+}
 rm -f "$TMPC"
-$CC $GCCSECOPT -Wl,-z,now -Wl,-z,relro -o $TMPC $TMPC.c > /dev/null 2> $TMPC.c.err
-test -x $TMPC && { LDSEC="yes" ; GCCSECOPT="$GCCSECOPT -Wl,-z,now -Wl,-z,relro" ; }
+$CC $GCCSECOPT $LDSECOPT -Wl,-z,now -Wl,-z,relro -o $TMPC $TMPC.c > /dev/null 2> $TMPC.c.err
+test -x $TMPC && { LDSEC=yes; LDSECOPT="$LDSECOPT -Wl,-z,now -Wl,-z,relro" ; }
 rm -f $TMPC $TMPC.c $TMPC.c.err
 echo "                                                  Compiling... $GCCSEC"
 echo "                                                  Linking... $LDSEC"
 
 echo "Checking for --allow-multiple-definition linker option ... $WALLOW"
 if [ "$WALLOW" = "yes" ]; then
-  GCCSECOPT="$GCCSECOPT -Wl,--allow-multiple-definition"
+   LDSEC=yes
+   LDSECOPT="$LDSECOPT -Wl,--allow-multiple-definition"
 fi
 
 echo
@@ -1832,6 +1839,11 @@ if [ "$GCCSEC" = "yes" -a "$SYSS" != "SunOS" -a "$SYSS" != "Darwin" ]; then
   echo "SEC=$GCCSECOPT" >> Makefile
 else
   echo "SEC=" >> Makefile
+fi
+if [ "$LDSEC" = "yes" -a "$SYSS" != "SunOS" -a "$SYSS" != "Darwin" ]; then
+  echo "LDSEC=$LDSECOPT" >> Makefile
+else
+  echo "LDSEC=" >> Makefile
 fi
 echo >> Makefile
 if [ "x$NOSTRIP" = "x" ]; then
