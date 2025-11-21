@@ -3,7 +3,7 @@
 # Note: Use no-deprecated-declarations until someone finishes the Gtk3 port,
 # ie. move from GtkTable to GtkGrid, and a few other details.
 
-INCLUDES = \
+AM_CPPFLAGS = \
 	-Wno-deprecated-declarations \
 	-DPACKAGE_DATA_DIR=\""$(datadir)"\" \
 	-DPACKAGE_LOCALE_DIR=\""$(prefix)/$(DATADIRNAME)/locale"\" \
