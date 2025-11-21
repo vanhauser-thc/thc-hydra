@@ -1,11 +1,4 @@
-/* config.h.in.  Generated from configure.in by autoheader.  */
-#undef ENABLE_NLS
-#undef HAVE_CATGETS
-#undef HAVE_GETTEXT
-#undef GETTEXT_PACKAGE
-#undef HAVE_LC_MESSAGES
-#undef HAVE_STPCPY
-#undef HAVE_LIBSM
+/* config.h.in.  Generated from configure.ac by autoheader.  */
 
 /* Name of package */
 #undef PACKAGE
@@ -22,11 +15,11 @@
 /* Define to the one symbol short name of this package. */
 #undef PACKAGE_TARNAME
 
+/* Define to the home page for this package. */
+#undef PACKAGE_URL
+
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
-
-/* Define to 1 if you have the ANSI C header files. */
-#undef STDC_HEADERS
 
 /* Version number of package */
 #undef VERSION

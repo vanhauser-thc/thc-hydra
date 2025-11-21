@@ -5,11 +5,12 @@ hydra
 hydra.exe
 xhydra
 xhydra.exe
+hydra-gtk/autom4te.cache/
 hydra-gtk/config.log
 hydra-gtk/config.status
 hydra-gtk/errors
 hydra-gtk/src/.deps/
-hydra-gtk/stamp-h
+hydra-gtk/stamp-h1
 pw-inspector
 pw-inspector.exe
 hydra.restore
