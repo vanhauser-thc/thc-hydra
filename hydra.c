@@ -365,12 +365,9 @@ typedef void (*service_t)(char *ip, int32_t sp, unsigned char options, char *mis
 typedef int32_t (*service_init_t)(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 typedef void (*service_usage_t)(const char *service);
 
-#define SERVICE2(name, func)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
-  { name, service_##func##_init, service_##func, NULL }
-#define SERVICE(name)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          \
-  { #name, service_##name##_init, service_##name, NULL }
-#define SERVICE3(name, func)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   \
-  { name, service_##func##_init, service_##func, usage_##func }
+#define SERVICE2(name, func) {name, service_##func##_init, service_##func, NULL}
+#define SERVICE(name) {#name, service_##name##_init, service_##name, NULL}
+#define SERVICE3(name, func) {name, service_##func##_init, service_##func, usage_##func}
 
 static const struct {
   const char *name;
@@ -1598,16 +1595,13 @@ char *hydra_reverse_login(int32_t head_no, char *login) {
   return hydra_heads[head_no]->reverse;
 }
 
-void delete_junk_files(){
-  remove(junk_file);
-}
+void delete_junk_files() { remove(junk_file); }
 
-FILE *hydra_divide_file(FILE *file, uint32_t my_segment, uint32_t num_segments){
-
-  if(my_segment > num_segments){
+FILE *hydra_divide_file(FILE *file, uint32_t my_segment, uint32_t num_segments) {
+  if (my_segment > num_segments) {
     fprintf(stderr, "[ERROR] in option -D XofY, X must not be greater than Y: %s\n", hydra_options.passfile);
     return NULL;
-    }
+  }
 
   FILE *output_file;
   char line[500];
@@ -1615,9 +1609,9 @@ FILE *hydra_divide_file(FILE *file, uint32_t my_segment, uint32_t num_segments){
 
   uint32_t line_number = 0;
 
-  double total_lines = countlines(file,0);
+  double total_lines = countlines(file, 0);
 
-  if(num_segments > total_lines){
+  if (num_segments > total_lines) {
     fprintf(stderr, "[ERROR] in option -D XofY, Y must not be greater than the total number of lines in the file to be divided: %s\n", hydra_options.passfile);
     return NULL;
   }
@@ -1626,21 +1620,19 @@ FILE *hydra_divide_file(FILE *file, uint32_t my_segment, uint32_t num_segments){
 
   // round up segment_size_float to integer
   uint64_t segment_size = (uint64_t)segment_size_double;
-  if(segment_size < segment_size_double)
+  if (segment_size < segment_size_double)
     segment_size++;
 
   uint64_t segment_start = segment_size * (my_segment - 1) + 1;
   uint64_t segment_end = segment_size * my_segment;
 
-  
-  
   srand(time(NULL));
   int filetag = rand();
 
-  sprintf(output_file_name, "segment_%d_%d.txt",filetag, my_segment);
+  sprintf(output_file_name, "segment_%d_%d.txt", filetag, my_segment);
   output_file = fopen(output_file_name, "w");
 
-  if(!output_file){
+  if (!output_file) {
     fprintf(stderr, "[ERROR] Segment file empty: %s\n", hydra_options.passfile);
     return NULL;
   }
@@ -1649,21 +1641,19 @@ FILE *hydra_divide_file(FILE *file, uint32_t my_segment, uint32_t num_segments){
 
   atexit(delete_junk_files);
 
-  while(fgets(line, sizeof line, file) != NULL && line_number < segment_end){
+  while (fgets(line, sizeof line, file) != NULL && line_number < segment_end) {
     line_number++;
 
-    if(line_number >= segment_start && line_number <= segment_end)
+    if (line_number >= segment_start && line_number <= segment_end)
       fprintf(output_file, "%s", line);
-    
-    }
+  }
 
   rewind(file);
   fclose(output_file);
   output_file = fopen(output_file_name, "r");
 
   return output_file;
-
-    }
+}
 
 int32_t hydra_send_next_pair(int32_t target_no, int32_t head_no) {
   // variables moved to save stack
@@ -2245,7 +2235,7 @@ void process_proxy_line(int32_t type, char *string) {
 int main(int argc, char *argv[]) {
   char *proxy_string = NULL, *device = NULL, *memcheck;
   char *outfile_format_tmp;
-  FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL, *proxyfp, *filecloser=NULL;
+  FILE *lfp = NULL, *pfp = NULL, *cfp = NULL, *ifp = NULL, *rfp = NULL, *proxyfp, *filecloser = NULL;
   size_t countinfile = 1, sizeinfile = 0;
   uint64_t math2;
   int32_t i = 0, j = 0, k, error = 0, modusage = 0, ignore_restore = 0, do_switch;
@@ -2400,10 +2390,9 @@ int main(int argc, char *argv[]) {
     case 'D':
       hydra_options.distributed = optarg;
       if (sscanf(hydra_options.distributed, "%dof%d", &my_segment, &num_segments) != 2) {
-            fprintf(stderr, "Invalid format. Expected format -D XofY where X and Y are integers.\n");
-            exit(EXIT_FAILURE);
-        }
-      else{
+        fprintf(stderr, "Invalid format. Expected format -D XofY where X and Y are integers.\n");
+        exit(EXIT_FAILURE);
+      } else {
         fprintf(stdout, "Option \'D\': successfully set X to %d and Y to %d\n", my_segment, num_segments);
       }
       break;
@@ -3301,7 +3290,7 @@ int main(int argc, char *argv[]) {
           bail("optional parameter must start with a '/' slash!\n");
         if (getenv("HYDRA_PROXY_HTTP") && getenv("HYDRA_PROXY"))
           bail("Found HYDRA_PROXY_HTTP *and* HYDRA_PROXY environment variables - "
-              "you can use only ONE for the service http-head/http-get!");
+               "you can use only ONE for the service http-head/http-get!");
         if (getenv("HYDRA_PROXY_HTTP")) {
           printf("[INFO] Using HTTP Proxy: %s\n", getenv("HYDRA_PROXY_HTTP"));
           use_proxy = 1;
@@ -3488,14 +3477,13 @@ int main(int argc, char *argv[]) {
         if ((lfp = fopen(hydra_options.loginfile, "r")) == NULL) {
           fprintf(stderr, "[ERROR] File for logins not found: %s\n", hydra_options.loginfile);
           exit(-1);
+        } else if (hydra_options.passfile == NULL) {
+          if (my_segment && num_segments) {
+            filecloser = lfp;
+            lfp = hydra_divide_file(lfp, my_segment, num_segments);
+            fclose(filecloser);
+          }
         }
-        else if (hydra_options.passfile == NULL){
-                if(my_segment && num_segments){
-                  filecloser = lfp;
-                  lfp = hydra_divide_file(lfp, my_segment, num_segments);
-                  fclose(filecloser);
-                }
-              }
         hydra_brains.countlogin = countlines(lfp, 0);
         hydra_brains.sizelogin = size_of_data;
         if (hydra_brains.countlogin == 0) {
@@ -3527,12 +3515,11 @@ int main(int argc, char *argv[]) {
         if ((pfp = fopen(hydra_options.passfile, "r")) == NULL) {
           fprintf(stderr, "[ERROR] File for passwords not found: %s\n", hydra_options.passfile);
           exit(-1);
+        } else if (my_segment && num_segments) {
+          filecloser = pfp;
+          pfp = hydra_divide_file(pfp, my_segment, num_segments);
+          fclose(filecloser);
         }
-        else if(my_segment && num_segments){
-                  filecloser = pfp;
-                  pfp = hydra_divide_file(pfp, my_segment, num_segments);
-                  fclose(filecloser);
-                }
         hydra_brains.countpass = countlines(pfp, 0);
         hydra_brains.sizepass = size_of_data;
         if (hydra_brains.countpass == 0) {
@@ -3586,8 +3573,7 @@ int main(int argc, char *argv[]) {
       if ((cfp = fopen(hydra_options.colonfile, "r")) == NULL) {
         fprintf(stderr, "[ERROR] File for colon files (login:pass) not found: %s\n", hydra_options.colonfile);
         exit(-1);
-      }
-      else if(my_segment && num_segments){
+      } else if (my_segment && num_segments) {
         filecloser = cfp;
         cfp = hydra_divide_file(cfp, my_segment, num_segments);
         fclose(filecloser);
@@ -3647,7 +3633,7 @@ int main(int argc, char *argv[]) {
       fclose(rfp);
     }
 
-    if (hydra_options.infile_ptr != NULL) {      
+    if (hydra_options.infile_ptr != NULL) {
       if ((ifp = fopen(hydra_options.infile_ptr, "r")) == NULL) {
         fprintf(stderr, "[ERROR] File for targets not found: %s\n", hydra_options.infile_ptr);
         exit(-1);
@@ -3695,7 +3681,7 @@ int main(int argc, char *argv[]) {
           }
         } else
           hydra_targets[i]->target = tmpptr;
-        
+
         if ((tmpptr2 = strchr(tmpptr, ':')) != NULL) {
           *tmpptr2++ = 0;
           tmpptr = tmpptr2;
@@ -3708,8 +3694,7 @@ int main(int argc, char *argv[]) {
 
         if ((tmpptr3 = strchr(tmpptr, '/')) != NULL) {
           hydra_targets[i]->miscptr = tmpptr3;
-        }
-        else
+        } else
           hydra_targets[i]->miscptr = hydra_options.miscptr;
 
         while (*tmpptr != 0)
@@ -4324,7 +4309,7 @@ int main(int argc, char *argv[]) {
                         head_no);
                 hydra_increase_fail_count(hydra_heads[head_no]->target_no, head_no);
               } // end switch
-            }   // readres
+            } // readres
             if (readres == -1) {
               if (verbose)
                 fprintf(stderr,

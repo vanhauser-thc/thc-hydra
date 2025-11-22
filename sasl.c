@@ -481,20 +481,20 @@ char *sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char 
   if (strstr(type, "proxy") != NULL)
     snprintf(buffer, 500, "%s:%s", "HEAD", miscptr);
   else
-      // http case
-      if ((strstr(type, "GET") != NULL) || (strstr(type, "HEAD") != NULL))
-    snprintf(buffer, 500, "%s:%s", type, miscptr);
-  else
+    // http case
+    if ((strstr(type, "GET") != NULL) || (strstr(type, "HEAD") != NULL))
+      snprintf(buffer, 500, "%s:%s", type, miscptr);
+    else
       // sip case
       if (strstr(type, "sip") != NULL)
-    snprintf(buffer, 500, "REGISTER:%s:%s", type, miscptr);
-  else
-      // others
-      if (strstr(type, "rtsp") != NULL)
-    snprintf(buffer, 500, "DESCRIBE:%s://%s:%i", type, webtarget, port);
-  else
-    // others
-    snprintf(buffer, 500, "AUTHENTICATE:%s/%s", type, realm);
+        snprintf(buffer, 500, "REGISTER:%s:%s", type, miscptr);
+      else
+        // others
+        if (strstr(type, "rtsp") != NULL)
+          snprintf(buffer, 500, "DESCRIBE:%s://%s:%i", type, webtarget, port);
+        else
+          // others
+          snprintf(buffer, 500, "AUTHENTICATE:%s/%s", type, realm);
 
   MD5_Init(&md5c);
   MD5_Update(&md5c, buffer, strlen(buffer));

@@ -85,7 +85,7 @@ http://technet.microsoft.com/en-us/library/cc960646.aspx
 #endif
 
 #ifndef TIME_T_MIN
-#define TIME_T_MIN ((time_t)0 < (time_t)-1 ? (time_t)0 : ~(time_t)0 << (sizeof(time_t) * CHAR_BIT - 1))
+#define TIME_T_MIN ((time_t)0 < (time_t) - 1 ? (time_t)0 : ~(time_t)0 << (sizeof(time_t) * CHAR_BIT - 1))
 #endif
 #ifndef TIME_T_MAX
 #define TIME_T_MAX (~(time_t)0 - TIME_T_MIN)

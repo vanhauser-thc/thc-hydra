@@ -31,7 +31,7 @@ typedef struct __NCP_DATA {
 } _NCP_DATA;
 
 // uncomment line below to see more trace stack
-//#define NCP_DEBUG
+// #define NCP_DEBUG
 
 int32_t start_ncp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *login;

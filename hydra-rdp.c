@@ -21,7 +21,7 @@ freerdp *instance = 0;
 BOOL rdp_connect(char *server, int32_t port, char *domain, char *login, char *password) {
   int32_t err = 0;
 
-  rdpSettings* settings = instance->context->settings;
+  rdpSettings *settings = instance->context->settings;
 
   settings->Username = login;
   settings->Password = password;

@@ -71,19 +71,18 @@ int32_t start_mssql(int32_t s, char *ip, int32_t port, unsigned char options, ch
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
 #if defined(HAVE_SYBFRONT) && defined(HAVE_SYBDB)
-  if ((strlen(login) > MSLEN) || (strlen(pass) > MSLEN)){
-
+  if ((strlen(login) > MSLEN) || (strlen(pass) > MSLEN)) {
     DBPROCESS *dbproc;
     LOGINREC *attempt;
-  
+
     attempt = dblogin();
-  
+
     DBSETLUSER(attempt, login);
     DBSETLPWD(attempt, pass);
-  
+
     // Connect without specifying a database
-    dbproc = dbopen(attempt, ipaddr_str);  
-  
+    dbproc = dbopen(attempt, ipaddr_str);
+
     if (dbproc != NULL) {
       dbclose(dbproc);
       dbexit();
@@ -93,17 +92,16 @@ int32_t start_mssql(int32_t s, char *ip, int32_t port, unsigned char options, ch
         return 2;
       return 1;
     }
-  
+
     hydra_completed_pair();
     if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
       return 2;
-  
-    return 1;
 
+    return 1;
   }
 #else
-  if ((strlen(login) > MSLEN) || (strlen(pass) > MSLEN)){
-    fprintf(stderr,"[WARNING] To crack credentials longer than 30 characters, install freetds and recompile\n");
+  if ((strlen(login) > MSLEN) || (strlen(pass) > MSLEN)) {
+    fprintf(stderr, "[WARNING] To crack credentials longer than 30 characters, install freetds and recompile\n");
   }
 #endif
   if (strlen(login) > MSLEN)
@@ -160,9 +158,9 @@ void service_mssql(char *ip, int32_t sp, unsigned char options, char *miscptr, F
   int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_MSSQL, mysslport = PORT_MSSQL_SSL;
 
-  #if defined(HAVE_SYBFRONT) && defined(HAVE_SYBDB)
+#if defined(HAVE_SYBFRONT) && defined(HAVE_SYBDB)
   dbinit();
-  #endif
+#endif
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)

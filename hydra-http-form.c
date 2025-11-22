@@ -480,8 +480,8 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
       else
         miscptr += strlen(miscptr);
       break;
-      case 'm': // fall through
-      case 'M':
+    case 'm': // fall through
+    case 'M':
       multipart_mode = 1;
       tmp = strchr(miscptr, ':');
       if (tmp)
@@ -569,7 +569,7 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
 
 char *build_multipart_body(char *multipart_boundary) {
   if (!variables)
-      return NULL;
+    return NULL;
 
   char *body = NULL;
   size_t body_size = 0;
@@ -577,60 +577,60 @@ char *build_multipart_body(char *multipart_boundary) {
   // Duplicate "variables" for tokenizing
   char *vars_dup = strdup(variables);
   if (!vars_dup)
-      return NULL;
+    return NULL;
 
   // Tokenize the string using '&' as a delimiter
   char *pair = strtok(vars_dup, "&");
   while (pair != NULL) {
-      // Find the '=' separator in each pair
-      char *equal_sign = strchr(pair, '=');
-      if (!equal_sign) {
-          pair = strtok(NULL, "&");
-          continue;
-      }
-      *equal_sign = '\0';
-      char *key = pair;
-      char *value = equal_sign + 1;
-
-      // Build the multipart section for the field
-      int section_len = snprintf(NULL, 0,
-          "--%s\r\n"
-          "Content-Disposition: form-data; name=\"%s\"\r\n"
-          "\r\n"
-          "%s\r\n",
-          multipart_boundary, key, value);
-          
-      char *section = malloc(section_len + 1);
-      if (!section) {
-          free(body);
-          free(vars_dup);
-          return NULL;
-      }
-      snprintf(section, section_len + 1,
-          "--%s\r\n"
-          "Content-Disposition: form-data; name=\"%s\"\r\n"
-          "\r\n"
-          "%s\r\n",
-          multipart_boundary, key, value);
-
-      // Reallocate the body buffer to add this section
-      size_t new_body_size = body_size + section_len;
-      char *new_body = realloc(body, new_body_size + 1); // +1 for null terminator
-      if (!new_body) {
-          free(section);
-          free(body);
-          free(vars_dup);
-          return NULL;
-      }
-      body = new_body;
-      if (body_size == 0)
-          strcpy(body, section);
-      else
-          strcat(body, section);
-      body_size = new_body_size;
-      free(section);
-
+    // Find the '=' separator in each pair
+    char *equal_sign = strchr(pair, '=');
+    if (!equal_sign) {
       pair = strtok(NULL, "&");
+      continue;
+    }
+    *equal_sign = '\0';
+    char *key = pair;
+    char *value = equal_sign + 1;
+
+    // Build the multipart section for the field
+    int section_len = snprintf(NULL, 0,
+                               "--%s\r\n"
+                               "Content-Disposition: form-data; name=\"%s\"\r\n"
+                               "\r\n"
+                               "%s\r\n",
+                               multipart_boundary, key, value);
+
+    char *section = malloc(section_len + 1);
+    if (!section) {
+      free(body);
+      free(vars_dup);
+      return NULL;
+    }
+    snprintf(section, section_len + 1,
+             "--%s\r\n"
+             "Content-Disposition: form-data; name=\"%s\"\r\n"
+             "\r\n"
+             "%s\r\n",
+             multipart_boundary, key, value);
+
+    // Reallocate the body buffer to add this section
+    size_t new_body_size = body_size + section_len;
+    char *new_body = realloc(body, new_body_size + 1); // +1 for null terminator
+    if (!new_body) {
+      free(section);
+      free(body);
+      free(vars_dup);
+      return NULL;
+    }
+    body = new_body;
+    if (body_size == 0)
+      strcpy(body, section);
+    else
+      strcat(body, section);
+    body_size = new_body_size;
+    free(section);
+
+    pair = strtok(NULL, "&");
   }
   free(vars_dup);
 
@@ -638,17 +638,17 @@ char *build_multipart_body(char *multipart_boundary) {
   int closing_len = snprintf(NULL, 0, "--%s--\r\n", multipart_boundary);
   char *closing = malloc(closing_len + 1);
   if (!closing) {
-      free(body);
-      return NULL;
+    free(body);
+    return NULL;
   }
   snprintf(closing, closing_len + 1, "--%s--\r\n", multipart_boundary);
-  
+
   size_t final_size = body_size + closing_len;
   char *final_body = realloc(body, final_size + 1);
   if (!final_body) {
-      free(closing);
-      free(body);
-      return NULL;
+    free(closing);
+    free(body);
+    return NULL;
   }
   body = final_body;
   strcat(body, closing);
@@ -656,7 +656,6 @@ char *build_multipart_body(char *multipart_boundary) {
 
   return body;
 }
-
 
 char *prepare_http_request(char *type, char *path, char *params, char *headers) {
   uint32_t reqlen = 0;
@@ -798,7 +797,7 @@ int32_t analyze_server_response(int32_t s) {
           if ((ptr = hydra_strcasestr(cookie, tmpname)) != NULL) {
             // yes it is.
             // if the cookie is not in the beginning of the cookiejar, copy the
-           // ones before
+            // ones before
             if (ptr != cookie && *(ptr - 1) == ' ') {
               strncpy(tmpcookie, cookie, ptr - cookie - 2);
               tmpcookie[ptr - cookie - 2] = 0;
@@ -893,17 +892,15 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
     char *multipart_body = build_multipart_body("----THC-HydraBoundaryz2Z2z");
     upd3variables = multipart_body;
 
-}else{
+  } else {
     snprintf(content_type, sizeof(content_type), "application/x-www-form-urlencoded");
     upd3variables = variables;
-}
+  }
 
-    upd3variables = hydra_strrep(upd3variables, "^USER^", clogin);
-    upd3variables = hydra_strrep(upd3variables, "^PASS^", cpass);
-    upd3variables = hydra_strrep(upd3variables, "^USER64^", b64login);
-    upd3variables = hydra_strrep(upd3variables, "^PASS64^", b64pass);
-
-  
+  upd3variables = hydra_strrep(upd3variables, "^USER^", clogin);
+  upd3variables = hydra_strrep(upd3variables, "^PASS^", cpass);
+  upd3variables = hydra_strrep(upd3variables, "^USER64^", b64login);
+  upd3variables = hydra_strrep(upd3variables, "^PASS64^", b64pass);
 
   // Replace the user/pass placeholders in the user-supplied headers
   hdrrep(&ptr_head, "^USER^", clogin);
@@ -947,7 +944,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
       else
         add_header(&ptr_head, "Content-Length", content_length, HEADER_TYPE_DEFAULT);
       if (!header_exists(&ptr_head, "Content-Type", HEADER_TYPE_DEFAULT))
-          add_header(&ptr_head, "Content-Type", content_type, HEADER_TYPE_DEFAULT);
+        add_header(&ptr_head, "Content-Type", content_type, HEADER_TYPE_DEFAULT);
       if (cookie_header != NULL)
         free(cookie_header);
       cookie_header = stringify_cookies(ptr_cookie);
@@ -1131,7 +1128,7 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
     found = success_cond;
   }
 
-  if (auth_flag) { // we received a 401 error - user may be using wrong module
+  if (auth_flag) {             // we received a 401 error - user may be using wrong module
     if (code_401_is_failure) { // apparently they don't think so  -- treat 401 as failure
       hydra_completed_pair();
       return 1;

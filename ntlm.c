@@ -223,7 +223,7 @@ it also defines lots of intermediate macros, just ignore those :-)
 
 #define SVAL(buf, pos) (PVAL(buf, pos) | PVAL(buf, (pos) + 1) << 8)
 #define IVAL(buf, pos) (SVAL(buf, pos) | SVAL(buf, (pos) + 2) << 16)
-#define SSVALX(buf, pos, val) (CVAL(buf, pos) = (val)&0xFF, CVAL(buf, pos + 1) = (val) >> 8)
+#define SSVALX(buf, pos, val) (CVAL(buf, pos) = (val) & 0xFF, CVAL(buf, pos + 1) = (val) >> 8)
 #define SIVALX(buf, pos, val) (SSVALX(buf, pos, val & 0xFFFF), SSVALX(buf, pos + 2, val >> 16))
 #define SVALS(buf, pos) ((int16)SVAL(buf, pos))
 #define IVALS(buf, pos) ((int32)IVAL(buf, pos))
@@ -262,14 +262,14 @@ it also defines lots of intermediate macros, just ignore those :-)
   {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
     int32_t l;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
     for (l = 0; l < (len); l++)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
-      (val)[l] = macro((buf), (pos) + (size)*l);                                                                                                                                                                                                                                                                                                                                                                                                                                                                               \
+      (val)[l] = macro((buf), (pos) + (size) * l);                                                                                                                                                                                                                                                                                                                                                                                                                                                                             \
   }
 
 #define SSMBMACRO(macro, buf, pos, val, len, size)                                                                                                                                                                                                                                                                                                                                                                                                                                                                             \
   {                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            \
     int32_t l;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 \
     for (l = 0; l < (len); l++)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
-      macro((buf), (pos) + (size)*l, (val)[l]);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                \
+      macro((buf), (pos) + (size) * l, (val)[l]);                                                                                                                                                                                                                                                                                                                                                                                                                                                                              \
   }
 
 /* reads multiple data from an SMB buffer */
@@ -289,7 +289,7 @@ it also defines lots of intermediate macros, just ignore those :-)
 #define PSIVALS(buf, pos, val, len) SSMBMACRO(SIVALS, buf, pos, val, len, 4)
 
 /* now the reverse routines - these are used in nmb packets (mostly) */
-#define SREV(x) ((((x)&0xFF) << 8) | (((x) >> 8) & 0xFF))
+#define SREV(x) ((((x) & 0xFF) << 8) | (((x) >> 8) & 0xFF))
 #define IREV(x) ((SREV(x) << 16) | (SREV((x) >> 16)))
 
 #define RSVAL(buf, pos) SREV(SVAL(buf, pos))
