@@ -177,7 +177,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_set_name(wndMain, "wndMain");
   gtk_window_set_title(GTK_WINDOW(wndMain), "xHydra");
 
-  vbox1 = gtk_vbox_new(FALSE, 0);
+  vbox1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(vbox1, "vbox1");
   gtk_widget_show(vbox1);
   gtk_container_add(GTK_CONTAINER(wndMain), vbox1);
@@ -197,7 +197,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(ntbMain);
   gtk_box_pack_start(GTK_BOX(vbox1), ntbMain, TRUE, TRUE, 0);
 
-  vbox5 = gtk_vbox_new(FALSE, 0);
+  vbox5 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(vbox5, "vbox5");
   gtk_widget_show(vbox5);
   gtk_container_add(GTK_CONTAINER(ntbMain), vbox5);
@@ -405,7 +405,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(label1);
   gtk_notebook_set_tab_label(GTK_NOTEBOOK(ntbMain), gtk_notebook_get_nth_page(GTK_NOTEBOOK(ntbMain), 0), label1);
 
-  vbox2 = gtk_vbox_new(FALSE, 0);
+  vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(vbox2, "vbox2");
   gtk_widget_show(vbox2);
   gtk_container_add(GTK_CONTAINER(ntbMain), vbox2);
@@ -642,7 +642,7 @@ GtkWidget *create_wndMain(void) {
   gtk_table_attach(GTK_TABLE(table7), label26, 1, 2, 2, 3, (GtkAttachOptions)(GTK_FILL), (GtkAttachOptions)(0), 0, 0);
   gtk_misc_set_alignment(GTK_MISC(label26), 0, 0.5);
 
-  hbox3 = gtk_hbox_new(FALSE, 0);
+  hbox3 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(hbox3, "hbox3");
   gtk_widget_show(hbox3);
   gtk_table_attach(GTK_TABLE(table7), hbox3, 0, 2, 0, 1, (GtkAttachOptions)(GTK_EXPAND | GTK_SHRINK | GTK_FILL), (GtkAttachOptions)(GTK_EXPAND | GTK_FILL), 0, 0);
@@ -740,7 +740,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(label3);
   gtk_notebook_set_tab_label(GTK_NOTEBOOK(ntbMain), gtk_notebook_get_nth_page(GTK_NOTEBOOK(ntbMain), 2), label3);
 
-  vbox4 = gtk_vbox_new(FALSE, 0);
+  vbox4 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(vbox4, "vbox4");
   gtk_widget_show(vbox4);
   gtk_container_add(GTK_CONTAINER(ntbMain), vbox4);
@@ -818,7 +818,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(frame6);
   gtk_box_pack_start(GTK_BOX(vbox4), frame6, TRUE, TRUE, 0);
 
-  hbox2 = gtk_hbox_new(FALSE, 0);
+  hbox2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(hbox2, "hbox2");
   gtk_widget_show(hbox2);
   gtk_container_add(GTK_CONTAINER(frame6), hbox2);
@@ -941,7 +941,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(label14);
   gtk_notebook_set_tab_label(GTK_NOTEBOOK(ntbMain), gtk_notebook_get_nth_page(GTK_NOTEBOOK(ntbMain), 3), label14);
 
-  vbox3 = gtk_vbox_new(FALSE, 0);
+  vbox3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(vbox3, "vbox3");
   gtk_widget_show(vbox3);
   gtk_container_add(GTK_CONTAINER(ntbMain), vbox3);
@@ -973,7 +973,7 @@ GtkWidget *create_wndMain(void) {
   gtk_widget_show(label33);
   gtk_frame_set_label_widget(GTK_FRAME(frame14), label33);
 
-  hbox1 = gtk_hbox_new(FALSE, 0);
+  hbox1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(hbox1, "hbox1");
   gtk_widget_show(hbox1);
   gtk_box_pack_start(GTK_BOX(vbox3), hbox1, FALSE, TRUE, 0);
