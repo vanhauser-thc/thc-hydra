@@ -3,7 +3,7 @@
 set -e
 
 echo "Trying to compile xhydra now (hydra gtk gui)"
-./autogen.sh
+NOCONFIGURE=1 ./autogen.sh
 ./configure
 make
 cp -v src/xhydra ..
