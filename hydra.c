@@ -161,7 +161,7 @@ extern int32_t service_radmin2_init(char *ip, int32_t sp, unsigned char options,
 extern void service_mcached(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern int32_t service_mcached_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 #endif
-#ifdef LIBMONGODB
+#if defined(LIBMONGODB2) || defined(LIBMONGODB)
 extern void service_mongodb(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern int32_t service_mongodb_init(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 #endif
@@ -411,7 +411,7 @@ static const struct {
 #endif
                 SERVICE(mssql),
                 SERVICE(cobaltstrike),
-#ifdef LIBMONGODB
+#if defined(LIBMONGODB2) || defined(LIBMONGODB)
                 SERVICE3("mongodb", mongodb),
 #endif
 #ifdef HAVE_MATH_H
@@ -2275,7 +2275,7 @@ int main(int argc, char *argv[]) {
   SERVICES = hydra_string_replace(SERVICES, "memcached ", "");
   strcat(unsupported, "memcached ");
 #endif
-#ifndef LIBMONGODB
+#if !defined(LIBMONGODB2) && !defined(LIBMONGODB)
   SERVICES = hydra_string_replace(SERVICES, "mongodb ", "");
   strcat(unsupported, "mongodb ");
 #endif
@@ -2874,7 +2874,7 @@ int main(int argc, char *argv[]) {
 #endif
 
     if (strcmp(hydra_options.service, "mongodb") == 0)
-#ifdef LIBMONGODB
+#if defined(LIBMONGODB2) || defined(LIBMONGODB)
     {
       i = 1;
       if (hydra_options.miscptr == NULL || (strlen(hydra_options.miscptr) == 0))

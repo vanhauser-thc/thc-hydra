@@ -2,13 +2,16 @@
 // Tested on mongodb-server 1:3.6.3-0ubuntu1
 // MONGODB-CR is been deprecated
 
+#ifdef LIBMONGODB2
+#include <mongoc/mongoc.h>
+#endif
 #ifdef LIBMONGODB
 #include <mongoc.h>
 #endif
 
 #include "hydra-mod.h"
 
-#ifndef LIBMONGODB
+#if !defined(LIBMONGODB2) && !defined(LIBMONGODB)
 void dummy_mongodb() { printf("\n"); }
 #else
 
