@@ -7,6 +7,7 @@ hydra.exe
 hydra.restore
 xhydra
 xhydra.exe
+hydra-gtk/INSTALL
 hydra-gtk/Makefile.in
 hydra-gtk/aclocal.m4
 hydra-gtk/autom4te.cache/
