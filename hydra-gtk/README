@@ -1,20 +1,16 @@
-
 Hydra-GTK
 
 Gtk+3 frontend for thc-hydra
 
-
-
 To install just do a:
 
+```
 ./autogen.sh
-./configure
- make
- su root
- make install
+make
+su root
+make install
+```
 
 Easy at it can be... You need thc-hydra installed to make this work.
-This is my second gtk+2 program, so I am waiting for a lot of patches :)
+This is my second gtk program, so I am waiting for a lot of patches :)
 Mail them to snakebyte@gmx.de
-
-
