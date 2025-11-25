@@ -59,7 +59,7 @@ hydra:	hydra.c $(OBJ)
 	@echo
 
 xhydra:	
-	cd hydra-gtk && sh ./make_xhydra.sh
+	-cd hydra-gtk && sh ./make_xhydra.sh
 
 pw-inspector: pw-inspector.c
 	$(CC) $(OPTS) $(SEC) $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -o pw-inspector $(PWI_LOGO) pw-inspector.c
