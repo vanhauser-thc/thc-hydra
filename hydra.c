@@ -4436,6 +4436,7 @@ int main(int argc, char *argv[]) {
     process_restore = 0;
     unlink(RESTOREFILE);
   } else {
+    process_restore = 1;
     if (hydra_options.cidr == 0 && k == 0) {
       printf("[INFO] Writing restore file because %d server scan%s could not "
              "be completed\n",
@@ -4447,6 +4448,7 @@ int main(int argc, char *argv[]) {
              k);
       hydra_restore_write(1);
     }
+    process_restore = 0;
   }
 
   if (debug)
