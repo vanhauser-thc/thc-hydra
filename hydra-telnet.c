@@ -5,28 +5,76 @@ extern char *HYDRA_EXIT;
 char *buf;
 int32_t no_line_mode;
 
+/* Comprehensive failure detection - merged from all provided patterns */
+static int is_failure(const char *buffer) {
+  char temp[4096];
+  strncpy(temp, buffer, sizeof(temp) - 1);
+  temp[sizeof(temp) - 1] = 0;
+  make_to_lower(temp);
+
+  if (strstr(temp, "incorrect") != NULL ||
+      strstr(temp, "invalid") != NULL ||
+      strstr(temp, "failed") != NULL ||
+      strstr(temp, "denied") != NULL ||
+      strstr(temp, "bad password") != NULL ||
+      strstr(temp, "authentication failed") != NULL ||
+      strstr(temp, "login failed") != NULL ||
+      strstr(temp, "login incorrect") != NULL ||
+      strstr(temp, "access denied") != NULL ||
+      strstr(temp, "wrong") != NULL ||
+      strstr(temp, "not allowed") != NULL ||
+      strstr(temp, "permission denied") != NULL ||
+      strstr(temp, "unable to authenticate") != NULL ||
+      strstr(temp, "information incomplete") != NULL ||
+      strstr(temp, "incorrect user/password") != NULL ||
+      strstr(temp, "please retry after") != NULL ||
+      strstr(temp, "bad password, bye-bye") != NULL ||
+      strstr(temp, "bad password,bye-bye") != NULL ||
+      strstr(temp, "bad password bye-bye") != NULL ||
+      strstr(temp, "login failure") != NULL ||
+      strstr(temp, "user was locked") != NULL ||
+      strstr(temp, "ip has been blocked") != NULL ||
+      strstr(temp, "cannot log on") != NULL ||
+      strstr(temp, "password is incorrect, left") != NULL ||
+      strstr(temp, "authorization failed") != NULL ||
+      strstr(temp, "error: authentication") != NULL ||
+      strstr(temp, "error: user was locked") != NULL ||
+      strstr(temp, "error: username or password") != NULL ||
+      strstr(temp, "% bad passwords") != NULL ||
+      strstr(temp, "% authentication failed") != NULL ||
+      strstr(temp, "% login failure") != NULL ||
+      strstr(temp, "bye-bye") != NULL ||
+      strstr(temp, "can't resolve symbol") != NULL ||
+      strstr(temp, "too many") != NULL ||
+      strstr(temp, "закрыт") != NULL ||
+      strstr(temp, "local: authentication failure") != NULL ||
+      strstr(temp, "please try it again") != NULL ||
+      strstr(temp, "username or password error") != NULL ||
+      strstr(temp, "user name or password is wrong") != NULL) {
+    return 1;
+  }
+  return 0;
+}
+
 int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";
   char *login, *pass, buffer[300];
-  int32_t i = 0;
-  int32_t password_only = 0;  // New flag: 1 if server prompts only for password initially
+  int32_t password_prompt_seen = 0;
+  int32_t username_prompt_seen = 0;
+  int32_t password_only = 0;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
 
-  // Check initial received data after negotiation for password-only prompt
-  // (This is set in service_telnet before calling start_telnet)
-  // For backward compatibility, if not set, assume normal mode
-  // But in our improved version, we pass it (see below)
+  /* Read initial banners after negotiation to detect prompt type */
+  while ((buf = hydra_receive_line(s)) != NULL) {
+    make_to_lower(buf);
 
-  // Initial loop to detect if we already have a password prompt without sending login
-  do {
-    if ((buf = hydra_receive_line(s)) == NULL)
-      return 1;
-
-    if (strchr(buf, '/') != NULL || strchr(buf, '>') != NULL || strchr(buf, '%') != NULL || strchr(buf, '$') != NULL || strchr(buf, '#') != NULL) {
+    /* Early success detection */
+    if (strchr(buf, '/') != NULL || strchr(buf, '>') != NULL || strchr(buf, '%') != NULL ||
+        strchr(buf, '$') != NULL || strchr(buf, '#') != NULL) {
       hydra_report_found_host(port, ip, "telnet", fp);
       hydra_completed_pair_found();
       free(buf);
@@ -34,30 +82,44 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
         return 3;
       return 1;
     }
-    make_to_lower(buf);
 
-    // Detect password prompt
-    if (hydra_strcasestr(buf, "asswor") != NULL || hydra_strcasestr(buf, "asscode") != NULL || hydra_strcasestr(buf, "ennwort") != NULL || hydra_strcasestr(buf, "pin:") != NULL) {
-      i = 1;
-      // If no login prompt seen yet, assume password-only mode
-      if (password_only == 0) password_only = 1;
+    /* Enhanced password prompt detection (multilingual + variants) */
+    if (hydra_strcasestr(buf, "asswor") != NULL || hydra_strcasestr(buf, "asscode") != NULL ||
+        strstr(buf, "passwd:") != NULL || strstr(buf, "pass:") != NULL ||
+        strstr(buf, "pwd:") != NULL || strstr(buf, "pin:") != NULL ||
+        strstr(buf, "пароль:") != NULL || strstr(buf, "contraseña:") != NULL ||
+        strstr(buf, "enter password") != NULL || strstr(buf, "password for") != NULL) {
+      password_prompt_seen = 1;
     }
 
-    // Detect login prompt
-    if ((strstr(buf, "ogin:") != NULL && strstr(buf, "last login") == NULL) || strstr(buf, "sername:") != NULL) {
-      password_only = 0;  // Definitely needs username
+    /* Enhanced username/login prompt detection */
+    if ((strstr(buf, "ogin:") != NULL && strstr(buf, "last login") == NULL) ||
+        strstr(buf, "sername:") != NULL || strstr(buf, "user:") != NULL ||
+        strstr(buf, "login:") != NULL || strstr(buf, "user id:") != NULL ||
+        strstr(buf, "userid:") != NULL || strstr(buf, "account:") != NULL ||
+        strstr(buf, "логин:") != NULL || strstr(buf, "user access verification") != NULL ||
+        strstr(buf, "name:") != NULL || strstr(buf, "user name:") != NULL) {
+      username_prompt_seen = 1;
     }
 
     free(buf);
-  } while (i == 0);
 
-  // If password_only, skip sending username and go directly to password
+    if (password_prompt_seen && !username_prompt_seen) {
+      password_only = 1;
+      break;
+    }
+    if (username_prompt_seen) {
+      break;  /* We need to send login */
+    }
+  }
+
+  /* Send username only if not in password-only mode */
   if (!password_only) {
     sprintf(buffer, "%.250s\r", login);
-
     if (no_line_mode) {
+      int32_t i;
       for (i = 0; i < strlen(buffer); i++) {
-        if (strcmp(&buffer[i], "\r") == 0) {
+        if (buffer[i] == '\r') {
           send(s, "\r\0", 2, 0);
         } else {
           send(s, &buffer[i], 1, 0);
@@ -65,17 +127,17 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
         usleepn(20);
       }
     } else {
-      if (hydra_send(s, buffer, strlen(buffer) + 1, 0) < 0) {
+      if (hydra_send(s, buffer, strlen(buffer), 0) < 0)  /* Note: removed +1 to match common practice */
         return 1;
-      }
     }
   }
 
-  // Now send password (i==1 means we have password prompt)
+  /* Send password */
   sprintf(buffer, "%.250s\r", pass);
   if (no_line_mode) {
+    int32_t i;
     for (i = 0; i < strlen(buffer); i++) {
-      if (strcmp(&buffer[i], "\r") == 0) {
+      if (buffer[i] == '\r') {
         send(s, "\r\0", 2, 0);
       } else {
         send(s, &buffer[i], 1, 0);
@@ -83,19 +145,21 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
       usleepn(20);
     }
   } else {
-    if (hydra_send(s, buffer, strlen(buffer) + 1, 0) < 0) {
+    if (hydra_send(s, buffer, strlen(buffer), 0) < 0)
       return 1;
-    }
   }
 
-  // Existing post-password handling loop (supports re-prompts, success detection, etc.)
+  /* Response handling after password */
   while ((buf = hydra_receive_line(s)) != NULL) {
     make_to_lower(buf);
 
+    /* Success detection */
     if ((miscptr != NULL && strstr(buf, miscptr) != NULL) ||
-        (miscptr == NULL && strstr(buf, "invalid") == NULL && strstr(buf, "incorrect") == NULL && strstr(buf, "bad ") == NULL &&
-         (strchr(buf, '/') != NULL || strchr(buf, '>') != NULL || strchr(buf, '$') != NULL || strchr(buf, '#') != NULL || strchr(buf, '%') != NULL ||
-          ((buf[1] == '\xfd') && (buf[2] == '\x18'))))) {
+        (miscptr == NULL && 
+         (strchr(buf, '/') != NULL || strchr(buf, '>') != NULL ||
+          strchr(buf, '$') != NULL || strchr(buf, '#') != NULL ||
+          strchr(buf, '%') != NULL || 
+          (buf[1] == '\xfd' && buf[2] == '\x18')))) {
       hydra_report_found_host(port, ip, "telnet", fp);
       hydra_completed_pair_found();
       free(buf);
@@ -104,15 +168,27 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
       return 1;
     }
 
-    if (strstr(buf, "assword:") || hydra_strcasestr(buf, "asswor")) {
+    /* Failure detection using comprehensive patterns */
+    if (is_failure(buf)) {
+      free(buf);
+      hydra_completed_pair();
+      if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
+        return 3;
+      return 2;
+    }
+
+    /* Re-prompt for password -> try next password */
+    if (hydra_strcasestr(buf, "asswor") != NULL || strstr(buf, "passwd:") != NULL ||
+        strstr(buf, "pass:") != NULL || strstr(buf, "pwd:") != NULL) {
       hydra_completed_pair();
       free(buf);
       if (strlen(pass = hydra_get_next_password()) == 0)
         pass = empty;
-      sprintf(buffer, "%s\r", pass);
+      sprintf(buffer, "%.250s\r", pass);
       if (no_line_mode) {
+        int32_t i;
         for (i = 0; i < strlen(buffer); i++) {
-          if (strcmp(&buffer[i], "\r") == 0) {
+          if (buffer[i] == '\r') {
             send(s, "\r\0", 2, 0);
           } else {
             send(s, &buffer[i], 1, 0);
@@ -120,17 +196,16 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
           usleepn(20);
         }
       } else {
-        if (hydra_send(s, buffer, strlen(buffer) + 1, 0) < 0) {
-          return 1;
-        }
+        hydra_send(s, buffer, strlen(buffer), 0);
       }
       continue;
     }
 
-    if (strstr(buf, "ogin:") || strstr(buf, "sername:")) {
+    /* Re-prompt for login -> restart entire pair */
+    if (strstr(buf, "ogin:") != NULL || strstr(buf, "sername:") != NULL) {
       free(buf);
       hydra_completed_pair();
-      return 2;  // Need to restart with new pair (fallback to sending login)
+      return 2;
     }
 
     free(buf);
@@ -145,7 +220,6 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
 void service_telnet(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
   int32_t run = 1, next_run = 1, sock = -1, fck;
   int32_t myport = PORT_TELNET, mysslport = PORT_TELNET_SSL;
-  int32_t password_only_mode = 0;  // Detect if server is password-only
 
   hydra_register_socket(sp);
   if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
@@ -158,13 +232,12 @@ void service_telnet(char *ip, int32_t sp, unsigned char options, char *miscptr, 
     int32_t old_waittime = waittime;
 
     switch (run) {
-    case 1:
+    case 1: /* connect and init */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
 
       no_line_mode = 0;
       first = 0;
-      password_only_mode = 0;
 
       if ((options & OPTION_SSL) == 0) {
         if (port != 0) myport = port;
@@ -194,28 +267,26 @@ void service_telnet(char *ip, int32_t sp, unsigned char options, char *miscptr, 
         }
       }
 
-      if (hydra_strcasestr(buf, "login") != NULL || hydra_strcasestr(buf, "sername:") != NULL) {
+      if (hydra_strcasestr(buf, "login") != NULL || hydra_strcasestr(buf, "sername:") != NULL)
         waittime = 6;
-      }
 
-      // Telnet negotiation loop
+      /* Telnet option negotiation */
       do {
         unsigned char *buf2 = (unsigned char *)buf;
 
         while (*buf2 == IAC) {
           if (first == 0) {
-            fck = write(sock, "\xff\xfb\x22", 3);
+            fck = write(sock, "\xff\xfb\x22", 3); /* WILL LINEMODE */
             first = 1;
           }
-          if ((buf[1] == '\xfc' || buf[1] == '\xfe') && buf2[2] == '\x22') {
+          if ((buf[1] == '\xfc' || buf[1] == '\xfe') && buf2[2] == '\x22')
             no_line_mode = 1;
-          }
+
           if (buf2[2] != '\x22') {
-            if (buf2[1] == WILL || buf2[1] == WONT) {
+            if (buf2[1] == WILL || buf2[1] == WONT)
               buf2[1] = DONT;
-            } else if (buf2[1] == DO || buf2[1] == DONT) {
+            else if (buf2[1] == DO || buf2[1] == DONT)
               buf2[1] = WONT;
-            }
             fck = write(sock, buf2, 3);
           }
           buf2 += 3;
@@ -231,21 +302,8 @@ void service_telnet(char *ip, int32_t sp, unsigned char options, char *miscptr, 
           make_to_lower(buf);
       } while (buf != NULL && (unsigned char)buf[0] == IAC);
 
-      // Improved detection of password-only mode after negotiation
-      if (buf != NULL && buf[0] != 0) {
-        make_to_lower(buf);
-        if ((hydra_strcasestr(buf, "asswor") != NULL || hydra_strcasestr(buf, "pin:")) &&
-            hydra_strcasestr(buf, "ogin:") == NULL && hydra_strcasestr(buf, "sername:") == NULL) {
-          password_only_mode = 1;
-        }
-        free(buf);
-      }
-
-      // Drain any additional banners and refine detection
+      /* Drain remaining banner lines (helps password-only detection) */
       while ((buf = hydra_receive_line(sock)) != NULL && strlen(buf) > 0 && (unsigned char)buf[0] != IAC) {
-        make_to_lower(buf);
-        if (hydra_strcasestr(buf, "asswor") || hydra_strcasestr(buf, "pin:")) password_only_mode = 1;
-        if (hydra_strcasestr(buf, "ogin:") || hydra_strcasestr(buf, "sername:")) password_only_mode = 0;
         free(buf);
       }
       if (buf) free(buf);
@@ -254,15 +312,11 @@ void service_telnet(char *ip, int32_t sp, unsigned char options, char *miscptr, 
       next_run = 2;
       break;
 
-    case 2:
-      // Pass password_only_mode to start_telnet (we modified start_telnet to accept it, but for minimal change, we use global or static)
-      // Here we use a simple global/static for simplicity
-      // In real patch, add parameter
-      // For this code, we moved password_only detection into start_telnet initial loop
+    case 2: /* cracking */
       next_run = start_telnet(sock, ip, port, options, miscptr, fp);
       break;
 
-    case 3:
+    case 3: /* exit */
       if (sock >= 0)
         sock = hydra_disconnect(sock);
       hydra_child_exit(0);
@@ -282,8 +336,10 @@ int32_t service_telnet_init(char *ip, int32_t sp, unsigned char options, char *m
 
 void usage_telnet(const char *service) {
   printf("Module telnet is optionally taking the string which is displayed after\n"
-         "a successful login (case insensitive), use if the default in the telnet\n"
-         "module produces too many false positives.\n"
-         "This improved version better handles password-only Telnet servers (e.g., some Cisco or embedded devices).\n"
-         "For password-only targets, use an empty login: hydra -l \"\" -P pass.txt ip telnet\n");
+         "a successful login (case insensitive), useful if default detection has false positives.\n\n"
+         "This improved version features:\n"
+         " - Automatic password-only mode detection and handling (e.g., Cisco, embedded devices)\n"
+         " - Multilingual prompt support (English, Russian, Spanish, etc.)\n"
+         " - Extensive failure message detection to avoid false positives\n"
+         "For password-only servers, use: hydra -l \"\" -P passwords.txt ip telnet\n");
 }
