@@ -167,30 +167,23 @@ LIBDIRS="$LIBDIRS /lib /usr/lib /usr/local/lib /opt/local/lib /mingw64/lib /ming
 INCDIRS="$SDK_PATH/usr/include /usr/local/include /opt/include /opt/local/include /mingw64/include"
 
 if [ "$SYSS" = "Darwin" ]; then
-  BREW_CMD=""
-  if [ -x "/opt/homebrew/bin/brew" ]; then
-    BREW_CMD="/opt/homebrew/bin/brew"
-  elif [ -x "/usr/local/bin/brew" ]; then
-    BREW_CMD="/usr/local/bin/brew"
-  elif command -v brew >/dev/null 2>&1; then
-    BREW_CMD="brew"
-  fi
-  
-  if [ -n "$BREW_CMD" ]; then
-    BREW_PREFIX=`$BREW_CMD --prefix`
-    if [ -d "$BREW_PREFIX/lib" ]; then
-      LIBDIRS="$LIBDIRS $BREW_PREFIX/lib"
+  # 1. Add standard Homebrew paths for ARM/Intel
+  for brew_path in /opt/homebrew /usr/local /opt/local; do
+    if [ -d "$brew_path/lib" ]; then
+      LIBDIRS="$LIBDIRS $brew_path/lib"
+      INCDIRS="$INCDIRS $brew_path/include"
     fi
-    if [ -d "$BREW_PREFIX/include" ]; then
-      INCDIRS="$INCDIRS $BREW_PREFIX/include"
-    fi
-    
-    # Check for common keg-only packages required by Hydra
-    for pkg in libpq openssl openssl@3 openssl@1.1; do
-      pkg_prefix=`$BREW_CMD --prefix $pkg 2>/dev/null`
-      if [ -n "$pkg_prefix" -a -d "$pkg_prefix/lib" ]; then
-        LIBDIRS="$LIBDIRS $pkg_prefix/lib"
-        INCDIRS="$INCDIRS $pkg_prefix/include"
+  done
+
+  # 2. Use pkg-config to find paths for common Hydra dependencies (especially keg-only ones)
+  # This handles libpq, openssl, libssh, etc. in a generic way.
+  if command -v "$PKG_CONFIG" >/dev/null 2>&1; then
+    for pkg in libpq openssl libssh libidn2 libidn pcre2-8 libpcre mysqlclient libmariadb apr-1 apr-util-1 libsvn_client; do
+      if "$PKG_CONFIG" --exists "$pkg" 2>/dev/null; then
+        pkg_libdir=`"$PKG_CONFIG" --variable=libdir "$pkg" 2>/dev/null`
+        pkg_incdir=`"$PKG_CONFIG" --variable=includedir "$pkg" 2>/dev/null`
+        [ -d "$pkg_libdir" ] && LIBDIRS="$LIBDIRS $pkg_libdir"
+        [ -d "$pkg_incdir" ] && INCDIRS="$INCDIRS $pkg_incdir"
       fi
     done
   fi
