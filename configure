@@ -165,6 +165,37 @@ if [ -d "/Library/Developer/CommandLineTools/usr/lib" ]; then
 fi
 LIBDIRS="$LIBDIRS /lib /usr/lib /usr/local/lib /opt/local/lib /mingw64/lib /mingw64/bin"
 INCDIRS="$SDK_PATH/usr/include /usr/local/include /opt/include /opt/local/include /mingw64/include"
+
+if [ "$SYSS" = "Darwin" ]; then
+  BREW_CMD=""
+  if [ -x "/opt/homebrew/bin/brew" ]; then
+    BREW_CMD="/opt/homebrew/bin/brew"
+  elif [ -x "/usr/local/bin/brew" ]; then
+    BREW_CMD="/usr/local/bin/brew"
+  elif command -v brew >/dev/null 2>&1; then
+    BREW_CMD="brew"
+  fi
+  
+  if [ -n "$BREW_CMD" ]; then
+    BREW_PREFIX=`$BREW_CMD --prefix`
+    if [ -d "$BREW_PREFIX/lib" ]; then
+      LIBDIRS="$LIBDIRS $BREW_PREFIX/lib"
+    fi
+    if [ -d "$BREW_PREFIX/include" ]; then
+      INCDIRS="$INCDIRS $BREW_PREFIX/include"
+    fi
+    
+    # Check for common keg-only packages required by Hydra
+    for pkg in libpq openssl openssl@3 openssl@1.1; do
+      pkg_prefix=`$BREW_CMD --prefix $pkg 2>/dev/null`
+      if [ -n "$pkg_prefix" -a -d "$pkg_prefix/lib" ]; then
+        LIBDIRS="$LIBDIRS $pkg_prefix/lib"
+        INCDIRS="$INCDIRS $pkg_prefix/include"
+      fi
+    done
+  fi
+fi
+
 if [ -n "$PREFIX" ]; then
     if [ -d "$PREFIX/lib" ]; then
         LIBDIRS="$LIBDIRS $PREFIX/lib"
