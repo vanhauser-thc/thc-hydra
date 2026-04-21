@@ -17,7 +17,7 @@ void dummy_oracle_sid() { printf("\n"); }
 #define HASHSIZE 16
 
 extern hydra_option hydra_options;
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 char *buf;
 unsigned char *hash;
 

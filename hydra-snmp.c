@@ -9,7 +9,7 @@
 
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 extern int32_t child_head_no;
 
 char snmpv3buf[1024], *snmpv3info = NULL;

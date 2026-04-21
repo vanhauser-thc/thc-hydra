@@ -5,7 +5,7 @@
 
 #define S7PASSLEN 8
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 
 unsigned char p_cotp[] = "\x03\x00\x00\x16\x11\xe0\x00\x00\x00\x17"
                          "\x00\xc1\x02\x01\x00\xc2\x02\x01\x02\xc0"

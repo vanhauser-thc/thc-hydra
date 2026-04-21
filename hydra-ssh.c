@@ -18,7 +18,7 @@ void dummy_ssh() { printf("\n"); }
 ssh_session session = NULL;
 
 extern hydra_option hydra_options;
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 int32_t new_session = 1;
 
 int32_t start_ssh(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {

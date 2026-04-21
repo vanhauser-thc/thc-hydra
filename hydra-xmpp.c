@@ -3,7 +3,7 @@
 
 /* david: ref http://xmpp.org/rfcs/rfc3920.html */
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 static char *domain = NULL;
 
 int32_t xmpp_auth_mechanism = AUTH_ERROR;

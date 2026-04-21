@@ -1,7 +1,7 @@
 #include "hydra-http.h"
 #include "sasl.h"
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 char *webtarget = NULL;
 char *slash = "/";
 char *http_buf = NULL;

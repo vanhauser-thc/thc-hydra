@@ -1,6 +1,6 @@
 #include "hydra-mod.h"
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 extern int32_t child_head_no;
 int32_t seq = 1;
 

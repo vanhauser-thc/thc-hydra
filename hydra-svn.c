@@ -33,7 +33,7 @@ void dummy_svn() { printf("\n"); }
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
 extern hydra_option hydra_options;
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 
 #define DEFAULT_BRANCH "trunk"
 

@@ -96,7 +96,7 @@ http://technet.microsoft.com/en-us/library/cc960646.aspx
 
 #define TIME_FIXUP_CONSTANT_INT 11644473600LL
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 static unsigned char challenge[8];
 static unsigned char workgroup[16];
 static unsigned char domain[16];

@@ -12,7 +12,7 @@ typedef struct pool_str {
   struct pool_str *next;
 } pool;
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 char *buf;
 char apop_challenge[300] = "";
 pool *plist = NULL, *p = NULL;

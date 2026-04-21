@@ -20,7 +20,7 @@ void dummy_oracle_listener() { printf("\n"); }
 #define HASHSIZE 17
 
 extern hydra_option hydra_options;
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 char *buf;
 unsigned char *hash;
 int32_t sid_mechanism = AUTH_PLAIN;

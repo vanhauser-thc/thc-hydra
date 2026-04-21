@@ -28,7 +28,7 @@
 #include <string.h>
 
 extern hydra_option hydra_options;
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 
 typedef struct creds {
   const char *workgroup;

@@ -22,7 +22,7 @@ void dummy_afp() { printf("\n"); }
 #include <afpfs-ng/libafpclient.h>
 #include <stdio.h>
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 
 void stdout_fct(void *priv, enum loglevels loglevel, int32_t logtype, const char *message) {
   // fprintf(stderr, "[ERROR] Caught unknown error %s\n", message);

@@ -1,7 +1,7 @@
 #include "hydra-mod.h"
 #include "sasl.h"
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 static int32_t http_proxy_auth_mechanism = AUTH_ERROR;
 char *http_proxy_buf = NULL;
 
@@ -155,6 +155,7 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
         from64tobits((char *)buf1, pos);
         free(http_proxy_buf);
         http_proxy_buf = NULL;
+      } else {
         return 3;
       }
       // Send response

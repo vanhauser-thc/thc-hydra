@@ -8,7 +8,7 @@ char *telcmds[] = {
   "EL", "GA", "SB", "WILL", "WONT", "DO", "DONT", "IAC", 0,
 };
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 char *buf;
 int32_t no_line_mode;
 

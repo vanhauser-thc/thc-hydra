@@ -22,7 +22,7 @@ void dummy_oracle() { printf("\n"); }
 #include <sys/types.h>
 
 extern hydra_option hydra_options;
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 
 OCIEnv *o_environment;
 OCISvcCtx *o_servicecontext;

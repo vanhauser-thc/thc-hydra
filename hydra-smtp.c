@@ -1,7 +1,7 @@
 #include "hydra-mod.h"
 #include "sasl.h"
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 int32_t smtp_auth_mechanism = AUTH_LOGIN;
 
 char *smtp_read_server_capacity(int32_t sock) {

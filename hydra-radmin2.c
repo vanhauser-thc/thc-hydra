@@ -5,7 +5,7 @@
 #include <gcrypt.h>
 #endif
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 
 // RAdmin 2.x
 

@@ -1,16 +1,14 @@
 #include "hydra-mod.h"
 #include "sasl.h"
 
-extern char *HYDRA_EXIT;
-char *buf;
+extern const unsigned char HYDRA_EXIT[5];
 static int32_t http_proxy_auth_mechanism = AUTH_ERROR;
 
 int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp, char *hostname) {
-  char *empty = "";
-  char *login, *pass, buffer[500], buffer2[500], mlogin[260], mpass[260], mhost[260];
-  char url[260], host[30];
+  char *login, buffer[500], buffer2[500], mlogin[260] = "", mpass[260] = "", mhost[260];
+  char url[260], host[300];
   char *header = ""; /* XXX TODO */
-  char *ptr;
+  char *ptr, *buf = NULL;
   int32_t auth = 0;
 
   login = hydra_get_next_login();
@@ -18,8 +16,7 @@ int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned cha
     hydra_completed_pair();
     return 1;
   }
-  pass = hydra_get_next_password();
-  pass = empty; // ignored
+  (void)hydra_get_next_password();
 
   strncpy(url, login, sizeof(url) - 1);
   url[sizeof(url) - 1] = 0;
@@ -34,6 +31,7 @@ int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned cha
     *ptr = 0;
   else if ((ptr = strchr(mhost, ':')) != NULL)
     *ptr = 0;
+  snprintf(host, sizeof(host), "Host: %.240s\r\n", mhost);
 
   if (miscptr != NULL && strchr(miscptr, ':') != NULL) {
     strncpy(mlogin, miscptr, sizeof(mlogin) - 1);
@@ -45,9 +43,9 @@ int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned cha
     auth = 1;
   }
 
-  if (http_proxy_auth_mechanism == AUTH_ERROR) {
+  if (!auth || http_proxy_auth_mechanism != AUTH_BASIC) {
     // send dummy request
-    sprintf(buffer, "GET %s HTTP/1.0\r\n%sUser-Agent: Mozilla/4.0 (Hydra)\r\n%s\r\n", url, mhost, header);
+    sprintf(buffer, "GET %s HTTP/1.0\r\n%sUser-Agent: Mozilla/4.0 (Hydra)\r\n%s\r\n", url, host, header);
     if (hydra_send(s, buffer, strlen(buffer), 0) < 0)
       return 1;
 
@@ -61,6 +59,12 @@ int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned cha
     if (debug)
       hydra_report(stderr, "S:%s\n", buf);
 
+    if (buf == NULL) {
+      if (verbose)
+        hydra_report(stderr, "[ERROR] Server did not answer\n");
+      return 3;
+    }
+
     // after the first query we should have been disconnected from web server
     s = hydra_disconnect(s);
     if ((options & OPTION_SSL) == 0) {
@@ -71,9 +75,9 @@ int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned cha
   }
 
   if (auth) {
-    if (hydra_strcasestr(buf, "Proxy-Authenticate: Basic") != NULL) {
+    if (http_proxy_auth_mechanism == AUTH_BASIC || hydra_strcasestr(buf, "Proxy-Authenticate: Basic") != NULL) {
       http_proxy_auth_mechanism = AUTH_BASIC;
-      sprintf(buffer2, "%.50s:%.50s", login, pass);
+      sprintf(buffer2, "%.50s:%.50s", mlogin, mpass);
       hydra_tobase64((unsigned char *)buffer2, strlen(buffer2), sizeof(buffer2));
       sprintf(buffer,
               "GET %s HTTP/1.0\r\n%sProxy-Authorization: Basic "
@@ -142,13 +146,13 @@ int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned cha
           }
         }
         // recover challenge
-        if (buf != NULL) {
-          if (strlen(buf) >= 4)
-            from64tobits((char *)buf1, pos);
-          free(buf);
-        }
+        if (buf == NULL || pos == NULL || strlen(buf) < 4)
+          return 3;
+        from64tobits((char *)buf1, pos);
+        free(buf);
+        buf = NULL;
         // Send response
-        buildAuthResponse((tSmbNtlmAuthChallenge *)buf1, (tSmbNtlmAuthResponse *)buf2, 0, login, pass, NULL, NULL);
+        buildAuthResponse((tSmbNtlmAuthChallenge *)buf1, (tSmbNtlmAuthResponse *)buf2, 0, mlogin, mpass, NULL, NULL);
         to64frombits(buf1, buf2, SmbLength((tSmbNtlmAuthResponse *)buf2));
         sprintf(buffer,
                 "GET %s HTTP/1.0\r\n%sProxy-Authorization: NTLM %s\r\nUser-Agent: "
@@ -178,7 +182,7 @@ int32_t start_http_proxy_urlenum(int32_t s, char *ip, int32_t port, unsigned cha
           buffer[sizeof(buffer) - 1] = '\0';
 
           pbuffer = buffer2;
-          result = sasl_digest_md5(pbuffer, login, pass, buffer, miscptr, "proxy", host, 0, header);
+          result = sasl_digest_md5(pbuffer, mlogin, mpass, buffer, miscptr, "proxy", host, 0, header);
           if (result == NULL)
             return 3;
 

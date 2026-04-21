@@ -2,7 +2,7 @@
 
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 char *buf;
 
 int32_t start_cvs(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {

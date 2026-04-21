@@ -9,7 +9,7 @@ This module enable bruteforcing for socks5, only following types are supported:
 
 */
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 unsigned char *buf;
 
 int32_t fail_cnt;

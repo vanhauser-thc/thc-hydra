@@ -21,7 +21,7 @@ void dummy_ncp() { printf("\n"); }
 #include <stdlib.h>
 #include <string.h>
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 extern int32_t child_head_no;
 
 typedef struct __NCP_DATA {

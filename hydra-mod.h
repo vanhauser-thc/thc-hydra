@@ -12,6 +12,7 @@
 #endif
 
 extern char quiet;
+extern const unsigned char HYDRA_EXIT[5];
 
 extern void hydra_child_exit(int32_t code);
 extern void hydra_register_socket(int32_t s);

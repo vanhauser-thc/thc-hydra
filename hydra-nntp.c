@@ -12,7 +12,7 @@ RFC 4643: Network News Transfer Protocol (NNTP) Extension for Authentication
 
 int32_t nntp_auth_mechanism = AUTH_CLEAR;
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 char *buf;
 
 char *nntp_read_server_capacity(int32_t sock) {

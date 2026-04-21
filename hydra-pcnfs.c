@@ -2,7 +2,7 @@
 
 /* pcnfs stuff copied from prout.c */
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 char *buf;
 
 #define LEN_HDR_RPC 24

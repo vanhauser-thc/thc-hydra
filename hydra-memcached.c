@@ -14,7 +14,7 @@ void dummy_mcached() { printf("\n"); }
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
 extern hydra_option hydra_options;
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 
 int mcached_send_com_quit(int32_t sock) {
   char *com_quit = "quit\r\n";

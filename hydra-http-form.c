@@ -43,7 +43,7 @@ find something to pattern match against. This should be done together with -t 1.
 #include "hydra-http.h"
 #include "sasl.h"
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 char *buf;
 char *cond;
 extern int32_t http_auth_mechanism;
@@ -1630,7 +1630,7 @@ void usage_http_form(const char *service) {
          " This is where most people get it wrong! You have to check the webapp what a\n"
          " failed string looks like and put it in this parameter! Add the -d switch to see\n"
          " the sent/received data!\n"
-         " Important: you can only define S= *OR* F= - not both\n",
+         " Important: you can only define S= *OR* F= - not both\n"
          " Note that using invalid login condition checks can result in false positives!\n"
          "\nThe following parameters are optional and are put between the form parameters\n"
          "and the condition string; separate them too with colons:\n"

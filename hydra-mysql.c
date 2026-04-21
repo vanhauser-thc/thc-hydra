@@ -36,7 +36,7 @@ extern int32_t internal__hydra_recv(int32_t socket, char *buf, int32_t length);
 extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 
 extern hydra_option hydra_options;
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 char mysqlsalt[9];
 
 /* modified hydra_receive_line, I've striped code which changed every 0x00 to

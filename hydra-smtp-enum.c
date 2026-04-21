@@ -13,7 +13,7 @@ passwd will be used as the domain name
 
 #include "hydra-mod.h"
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 char *buf;
 char *err = NULL;
 int32_t tosent = 0;

@@ -18,7 +18,7 @@
 int32_t vnc_client_version = RFB33;
 int32_t failed_auth = 0;
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 static char *buf;
 
 /*

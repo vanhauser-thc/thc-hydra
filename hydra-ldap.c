@@ -1,7 +1,7 @@
 #include "hydra-mod.h"
 #include "sasl.h"
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 
 unsigned char *buf;
 int32_t counter;

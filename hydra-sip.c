@@ -21,7 +21,7 @@ extern int32_t hydra_data_ready_timed(int32_t socket, long sec, long usec);
 char external_ip_addr[17] = "";
 char *get_iface_ip(uint64_t ip);
 int32_t cseq;
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 
 #define SIP_MAX_BUF 1024
 

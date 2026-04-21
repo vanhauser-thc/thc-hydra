@@ -15,7 +15,7 @@ const int32_t *__ctype_b;
 extern void flood(); /* for -lm */
 
 extern hydra_option hydra_options;
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 RFC_ERROR_INFO_EX error_info;
 
 int32_t start_sapr3(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {

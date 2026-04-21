@@ -15,7 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 char packet[500];
 char packet2[500];
 

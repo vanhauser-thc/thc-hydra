@@ -23,7 +23,7 @@ void dummy_firebird() { printf("\n"); }
 #define DEFAULT_DB "C:\\Program Files\\Firebird\\Firebird_1_5\\security.fdb"
 
 extern hydra_option hydra_options;
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 
 int32_t start_firebird(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";

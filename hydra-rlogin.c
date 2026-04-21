@@ -10,7 +10,7 @@ no memleaks found on 110425
 
 #define TERM "vt100/9600"
 
-extern char *HYDRA_EXIT;
+extern const unsigned char HYDRA_EXIT[5];
 
 int32_t start_rlogin(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";
