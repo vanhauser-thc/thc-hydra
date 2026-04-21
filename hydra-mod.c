@@ -1046,9 +1046,9 @@ char *hydra_receive_line(int32_t socket) {
         // some error occured
         got = -1;
       }
-    } while (hydra_data_ready(socket) > 0 && j > 0
+    } while ((hydra_data_ready(socket) > 0 && j > 0)
 #ifdef LIBOPENSSL
-             || use_ssl && SSL_pending(ssl)
+             || (use_ssl && SSL_pending(ssl))
 #endif
     );
 

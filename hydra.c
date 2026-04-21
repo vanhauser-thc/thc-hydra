@@ -4176,7 +4176,7 @@ int main(int argc, char *argv[]) {
                 hydra_targets[hydra_heads[head_no]->target_no]->ok = 1;
                 if (hydra_targets[hydra_heads[head_no]->target_no]->fail_count > 0)
                   hydra_targets[hydra_heads[head_no]->target_no]->fail_count--;
-                // no break here
+                /* fall through */
               case 'n': // mother sends this to itself initially
                 loop_cnt = 0;
                 if (hydra_send_next_pair(hydra_heads[head_no]->target_no, head_no) == -1)
@@ -4458,41 +4458,43 @@ int main(int argc, char *argv[]) {
       hydra_kill_head(i, 1, 3);
   (void)waitpid(-1, NULL, WNOHANG);
 
-#define STRMAX (10 * 1024)
-  char json_error[STRMAX + 2], tmp_str[STRMAX + 2];
-  memset(json_error, 0, STRMAX + 2);
-  memset(tmp_str, 0, STRMAX + 2);
+#define STRMAX 1024
+  char json_error[4 * STRMAX + 16], tmp_str[STRMAX + 2];
+  memset(json_error, 0, sizeof(json_error));
+  memset(tmp_str, 0, sizeof(tmp_str));
+#define JSON_ERROR_APPEND(src) strncat(json_error, (src), sizeof(json_error) - strlen(json_error) - 1)
   if (error) {
     snprintf(tmp_str, STRMAX, "[ERROR] %d target%s disabled because of too many errors", error, error == 1 ? " was" : "s were");
     fprintf(stderr, "%s\n", tmp_str);
-    strncat(json_error, "\"", STRMAX);
-    strncat(json_error, tmp_str, STRMAX);
-    strncat(json_error, "\"", STRMAX);
+    JSON_ERROR_APPEND("\"");
+    JSON_ERROR_APPEND(tmp_str);
+    JSON_ERROR_APPEND("\"");
     error = 1;
   }
   if (k) {
     snprintf(tmp_str, STRMAX, "[ERROR] %d target%s did not resolve or could not be connected", k, k == 1 ? "" : "s");
     fprintf(stderr, "%s\n", tmp_str);
     if (*json_error) {
-      strncat(json_error, ", ", STRMAX);
+      JSON_ERROR_APPEND(", ");
     }
-    strncat(json_error, "\"", STRMAX);
-    strncat(json_error, tmp_str, STRMAX);
-    strncat(json_error, "\"", STRMAX);
+    JSON_ERROR_APPEND("\"");
+    JSON_ERROR_APPEND(tmp_str);
+    JSON_ERROR_APPEND("\"");
     error = 1;
   }
   if (error) {
     snprintf(tmp_str, STRMAX, "[ERROR] %d target%s did not complete", j, j < 1 ? "" : "s");
     fprintf(stderr, "%s\n", tmp_str);
     if (*json_error) {
-      strncat(json_error, ", ", STRMAX);
+      JSON_ERROR_APPEND(", ");
     }
-    strncat(json_error, "\"", STRMAX);
-    strncat(json_error, tmp_str, STRMAX);
-    strncat(json_error, "\"", STRMAX);
+    JSON_ERROR_APPEND("\"");
+    JSON_ERROR_APPEND(tmp_str);
+    JSON_ERROR_APPEND("\"");
     error = 1;
     hydra_restore_write(1);
   }
+#undef JSON_ERROR_APPEND
   // yeah we did it
   printf("%s (%s) finished at %s\n", PROGRAM, RESOURCE, hydra_build_time());
   if (hydra_brains.ofp != NULL && hydra_brains.ofp != stdout) {

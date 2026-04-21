@@ -266,7 +266,7 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
 }
 
 void service_telnet(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname) {
-  int32_t run = 1, next_run = 1, sock = -1, fck;
+  int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_TELNET, mysslport = PORT_TELNET_SSL;
 
   hydra_register_socket(sp);
@@ -328,7 +328,7 @@ void service_telnet(char *ip, int32_t sp, unsigned char options, char *miscptr, 
           if (first == 0) {
             if (debug)
               hydra_report(stdout, "DEBUG: requested line mode\n");
-            fck = write(sock, "\xff\xfb\x22", 3); /* WILL LINEMODE */
+            (void)!write(sock, "\xff\xfb\x22", 3); /* WILL LINEMODE */
             first = 1;
           }
           if ((buf[1] == '\xfc' || buf[1] == '\xfe') && buf2[2] == '\x22') {
@@ -341,7 +341,7 @@ void service_telnet(char *ip, int32_t sp, unsigned char options, char *miscptr, 
               buf2[1] = DONT;
             else if (buf2[1] == DO || buf2[1] == DONT)
               buf2[1] = WONT;
-            fck = write(sock, buf2, 3);
+            (void)!write(sock, buf2, 3);
           }
           buf2 += 3;
         }

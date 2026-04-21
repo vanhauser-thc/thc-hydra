@@ -180,13 +180,17 @@ int32_t start_mysql(int32_t sock, char *ip, int32_t port, unsigned char options,
   char *response = NULL, *login = NULL, *pass = NULL;
   unsigned long response_len;
   char res = 0;
+#ifdef LIBMYSQLCLIENT
   char *database = NULL;
+#endif
 
   login = hydra_get_next_login();
   pass = hydra_get_next_password();
 
+#ifdef LIBMYSQLCLIENT
   if (miscptr)
     database = miscptr;
+#endif
 
   /* read server greeting */
   res = hydra_mysql_init(sock);

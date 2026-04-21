@@ -10,7 +10,7 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
   char *login, *pass, buffer[5000], buffer2[4500];
   char url[510], host[60];
   char *header = ""; /* XXX TODO */
-  char *ptr, *fooptr, *auth_hdr;
+  char *ptr, *fooptr, *auth_hdr = NULL;
 
   if (strlen(login = hydra_get_next_login()) == 0)
     login = empty;
@@ -78,7 +78,7 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
     }
   }
 
-  if (http_proxy_auth_mechanism == AUTH_BASIC || hydra_strcasestr(auth_hdr, "Proxy-Authenticate: Basic") != NULL) {
+  if (http_proxy_auth_mechanism == AUTH_BASIC || (auth_hdr != NULL && hydra_strcasestr(auth_hdr, "Proxy-Authenticate: Basic") != NULL)) {
     http_proxy_auth_mechanism = AUTH_BASIC;
     auth_hdr = NULL;
     sprintf(buffer2, "%.50s:%.50s", login, pass);
@@ -110,7 +110,7 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
       hydra_report(stderr, "S:%-.*s\n", (int)(strchr(http_proxy_buf, '\r') - http_proxy_buf), http_proxy_buf);
     }
   } else {
-    if (http_proxy_auth_mechanism == AUTH_NTLM || hydra_strcasestr(auth_hdr, "Proxy-Authenticate: NTLM") != NULL) {
+    if (http_proxy_auth_mechanism == AUTH_NTLM || (auth_hdr != NULL && hydra_strcasestr(auth_hdr, "Proxy-Authenticate: NTLM") != NULL)) {
       unsigned char buf1[4096];
       unsigned char buf2[4096];
       char *pos = NULL;
@@ -182,7 +182,7 @@ int32_t start_http_proxy(int32_t s, char *ip, int32_t port, unsigned char option
         return 3;
     } else {
 #ifdef LIBOPENSSL
-      if (hydra_strcasestr(auth_hdr, "Proxy-Authenticate: Digest") != NULL) {
+      if (auth_hdr != NULL && hydra_strcasestr(auth_hdr, "Proxy-Authenticate: Digest") != NULL) {
         char *pbuffer, *result;
 
         http_proxy_auth_mechanism = AUTH_DIGESTMD5;

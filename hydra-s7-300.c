@@ -29,20 +29,19 @@ int32_t start_s7_300(int32_t s, char *ip, int32_t port, unsigned char options, c
   char *pass, buffer[1024];
   char context[S7PASSLEN + 1];
   unsigned char encoded_password[S7PASSLEN];
-  char *spaces = "        ";
+  size_t pass_len;
   int32_t ret = -1;
 
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
 
-  // prepare password
-  memset(context, 0, sizeof(context));
-  if (strlen(pass) < S7PASSLEN) {
-    strncpy(context, pass, strlen(pass));
-    strncat(context, spaces, S7PASSLEN - strlen(pass));
-  } else {
-    strncpy(context, pass, S7PASSLEN);
-  }
+  // prepare password: right-pad with spaces to S7PASSLEN bytes, NUL-terminated
+  memset(context, ' ', S7PASSLEN);
+  context[S7PASSLEN] = '\0';
+  pass_len = strlen(pass);
+  if (pass_len > S7PASSLEN)
+    pass_len = S7PASSLEN;
+  memcpy(context, pass, pass_len);
 
   // encode password
   encoded_password[0] = context[0] ^ 0x55;

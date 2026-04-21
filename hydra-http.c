@@ -311,7 +311,7 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
 void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname, char *type) {
   int32_t run = 1, next_run = 1, sock = -1;
   int32_t myport = PORT_HTTP, mysslport = PORT_HTTP_SSL;
-  char *ptr, *ptr2;
+  char *ptr;
   ptr_header_node ptr_head = NULL;
 #ifdef AF_INET6
   unsigned char addr6[sizeof(struct in6_addr)];
@@ -346,7 +346,7 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
 #ifdef AF_INET6
   }
 #endif
-  if (options & OPTION_SSL && webport != PORT_HTTP_SSL || !(options & OPTION_SSL) && webport != PORT_HTTP) {
+  if (((options & OPTION_SSL) && webport != PORT_HTTP_SSL) || (!(options & OPTION_SSL) && webport != PORT_HTTP)) {
     sprintf(ptr, ":%d", webport);
   }
   ptr = NULL;

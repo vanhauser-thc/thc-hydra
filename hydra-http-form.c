@@ -1454,7 +1454,7 @@ ptr_header_node initialize(char *ip, unsigned char options, char *miscptr) {
 #ifdef AF_INET6
   }
 #endif
-  if (options & OPTION_SSL && webport != PORT_HTTP_SSL || !(options & OPTION_SSL) && webport != PORT_HTTP) {
+  if (((options & OPTION_SSL) && webport != PORT_HTTP_SSL) || (!(options & OPTION_SSL) && webport != PORT_HTTP)) {
     sprintf(ptr2, ":%d", webport);
   }
   webtarget = ptr;

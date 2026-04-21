@@ -12,7 +12,6 @@ const unsigned char icq5_table[] = {0x59, 0x60, 0x37, 0x6B, 0x65, 0x62, 0x46, 0x
 void fix_packet(char *buf, int32_t len) {
   unsigned long c1, c2;
   unsigned long r1, r2;
-  int32_t pos, key, k;
 
   c1 = buf[8];
   c1 <<= 8;
@@ -39,13 +38,6 @@ void fix_packet(char *buf, int32_t len) {
   buf[0x15] = (c1 >> 8) & 0xff;
   buf[0x16] = (c1 >> 16) & 0xff;
   buf[0x17] = (c1 >> 24) & 0xff;
-
-  key = len * 0x68656c6cL;
-  key += c1;
-  pos = 0xa;
-
-  for (; pos < len; pos += 4)
-    k = key + icq5_table[pos & 0xff];
 }
 
 void icq_header(char *buf, unsigned short cmd, unsigned long uin) {
