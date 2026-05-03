@@ -4,6 +4,7 @@ Changelog for hydra
 Release 9.7-dev
 * GTK3 support for xhydra by elboulangero
 * mongo v2 support (thanks to devjunix)
+* POP3 buffer overflow fix
 
 Release 9.6
 * freerdp v2 -> v3
