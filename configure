@@ -165,6 +165,30 @@ if [ -d "/Library/Developer/CommandLineTools/usr/lib" ]; then
 fi
 LIBDIRS="$LIBDIRS /lib /usr/lib /usr/local/lib /opt/local/lib /mingw64/lib /mingw64/bin"
 INCDIRS="$SDK_PATH/usr/include /usr/local/include /opt/include /opt/local/include /mingw64/include"
+
+if [ "$SYSS" = "Darwin" ]; then
+  # 1. Add standard Homebrew paths for ARM/Intel
+  for brew_path in /opt/homebrew /usr/local /opt/local; do
+    if [ -d "$brew_path/lib" ]; then
+      LIBDIRS="$LIBDIRS $brew_path/lib"
+      INCDIRS="$INCDIRS $brew_path/include"
+    fi
+  done
+
+  # 2. Use pkg-config to find paths for common Hydra dependencies (especially keg-only ones)
+  # This handles libpq, openssl, libssh, etc. in a generic way.
+  if command -v "$PKG_CONFIG" >/dev/null 2>&1; then
+    for pkg in libpq openssl libssh libidn2 libidn pcre2-8 libpcre mysqlclient libmariadb apr-1 apr-util-1 libsvn_client; do
+      if "$PKG_CONFIG" --exists "$pkg" 2>/dev/null; then
+        pkg_libdir=`"$PKG_CONFIG" --variable=libdir "$pkg" 2>/dev/null`
+        pkg_incdir=`"$PKG_CONFIG" --variable=includedir "$pkg" 2>/dev/null`
+        [ -d "$pkg_libdir" ] && LIBDIRS="$LIBDIRS $pkg_libdir"
+        [ -d "$pkg_incdir" ] && INCDIRS="$INCDIRS $pkg_incdir"
+      fi
+    done
+  fi
+fi
+
 if [ -n "$PREFIX" ]; then
     if [ -d "$PREFIX/lib" ]; then
         LIBDIRS="$LIBDIRS $PREFIX/lib"
