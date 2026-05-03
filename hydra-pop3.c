@@ -462,7 +462,7 @@ void service_pop3(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
           ptr[strlen(ptr) - 1] = 0;
         if (ptr[strlen(ptr) - 1] == '\r')
           ptr[strlen(ptr) - 1] = 0;
-        strcpy(apop_challenge, ptr);
+        snprintf(apop_challenge, sizeof(apop_challenge), "%s", ptr);
       }
       free(buf);
 
@@ -552,7 +552,7 @@ int32_t service_pop3_init(char *ip, int32_t sp, unsigned char options, char *mis
       ptr[strlen(ptr) - 1] = 0;
     if (ptr[strlen(ptr) - 1] == '\r')
       ptr[strlen(ptr) - 1] = 0;
-    strcpy(apop_challenge, ptr);
+    snprintf(apop_challenge, sizeof(apop_challenge), "%s", ptr);
   }
   free(buf);
 
