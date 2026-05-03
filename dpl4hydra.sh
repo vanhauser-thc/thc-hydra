@@ -163,19 +163,37 @@ export LC_ALL
 # plausible layouts and pick the first one that holds the data file.
 DPLPATH="."
 if [ ! -r "$DPLPATH/dpl4hydra_full.csv" ]; then
-    for cand in \
-        "$LOCATION" \
-        "$INSTALLDIR/$LOCATION" \
-        "${INSTALLDIR%/}/${LOCATION#/}" \
-        "/usr/share/hydra" \
-        "/usr/local/etc" \
-        "/etc"
-    do
-        if [ -r "$cand/dpl4hydra_full.csv" ]; then
-            DPLPATH="$cand"
-            break
-        fi
-    done
+    case "$LOCATION" in
+        /*)
+            for cand in \
+                "$LOCATION" \
+                "$INSTALLDIR/$LOCATION" \
+                "${INSTALLDIR%/}/${LOCATION#/}" \
+                "/usr/share/hydra" \
+                "/usr/local/etc" \
+                "/etc"
+            do
+                if [ -r "$cand/dpl4hydra_full.csv" ]; then
+                    DPLPATH="$cand"
+                    break
+                fi
+            done
+            ;;
+        *)
+            for cand in \
+                "$INSTALLDIR/$LOCATION" \
+                "${INSTALLDIR%/}/${LOCATION#/}" \
+                "/usr/share/hydra" \
+                "/usr/local/etc" \
+                "/etc"
+            do
+                if [ -r "$cand/dpl4hydra_full.csv" ]; then
+                    DPLPATH="$cand"
+                    break
+                fi
+            done
+            ;;
+    esac
     # Fall back to the historical concat (with double-slash collapse) so the
     # 'refresh' subcommand can still create the file the first time.
     if [ "$DPLPATH" = "." ]; then
