@@ -154,8 +154,34 @@ generate ()
 
 LC_ALL=C
 export LC_ALL
+
+# Resolve the directory holding dpl4hydra_full.csv. Distro packages have
+# substituted INSTALLDIR / LOCATION inconsistently over the years (some leave
+# trailing slashes, Fedora's package uses an absolute LOCATION that already
+# contains INSTALLDIR), which used to produce paths like
+# "/usr//usr/share/hydra/dpl4hydra_full.csv" — see issue #1069. Try a few
+# plausible layouts and pick the first one that holds the data file.
 DPLPATH="."
-test -r "$DPLPATH/dpl4hydra_full.csv" || DPLPATH="$INSTALLDIR/$LOCATION"
+if [ ! -r "$DPLPATH/dpl4hydra_full.csv" ]; then
+    for cand in \
+        "$LOCATION" \
+        "$INSTALLDIR/$LOCATION" \
+        "${INSTALLDIR%/}/${LOCATION#/}" \
+        "/usr/share/hydra" \
+        "/usr/local/etc" \
+        "/etc"
+    do
+        if [ -r "$cand/dpl4hydra_full.csv" ]; then
+            DPLPATH="$cand"
+            break
+        fi
+    done
+    # Fall back to the historical concat (with double-slash collapse) so the
+    # 'refresh' subcommand can still create the file the first time.
+    if [ "$DPLPATH" = "." ]; then
+        DPLPATH=`echo "${INSTALLDIR%/}/${LOCATION#/}" | sed 's|//*|/|g'`
+    fi
+fi
 FULLFILE="$DPLPATH/dpl4hydra_full.csv"
 OLDFILE="$DPLPATH/dpl4hydra_full.old"
 LOCALFILE="$DPLPATH/dpl4hydra_local.csv"
