@@ -230,6 +230,12 @@ int32_t start_nntp(int32_t s, char *ip, int32_t port, unsigned char options, cha
 
     buildAuthResponse((tSmbNtlmAuthChallenge *)buf1, (tSmbNtlmAuthResponse *)buf2, 0, login, pass, NULL, NULL);
     to64frombits(buf1, buf2, SmbLength((tSmbNtlmAuthResponse *)buf2));
+    /* The Type-3 base64 response embeds a server-controlled domain string and
+     * can exceed `buffer` for a malicious server. Refuse rather than overflow. */
+    if (strlen((char *)buf1) + 2 >= sizeof(buffer)) {
+      hydra_report(stderr, "[ERROR] NNTP NTLM AUTH: oversized response\n");
+      return 3;
+    }
     sprintf(buffer, "%s\r\n", (char *)buf1);
   } break;
 

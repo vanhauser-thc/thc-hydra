@@ -185,6 +185,23 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
     buildAuthResponse((tSmbNtlmAuthChallenge *)buf1, (tSmbNtlmAuthResponse *)buf2, 0, login, pass, NULL, NULL);
     to64frombits(buf1, buf2, SmbLength((tSmbNtlmAuthResponse *)buf2));
 
+    /* The Type-3 base64 response embeds a server-controlled domain string and
+     * can grow well past the initial buffer_size for a malicious server. Grow
+     * the buffer to hold it (plus operator-supplied bits) before sprintf. */
+    {
+      size_t needed = strlen((char *)buf1) + strlen(header) + 1024;
+      if (needed > (size_t)buffer_size) {
+        char *new_buffer = realloc(buffer, needed);
+        if (new_buffer == NULL) {
+          free(buffer);
+          free(header);
+          return 3;
+        }
+        buffer = new_buffer;
+        buffer_size = needed;
+      }
+    }
+
     // create the auth response
     if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL)
       sprintf(buffer,

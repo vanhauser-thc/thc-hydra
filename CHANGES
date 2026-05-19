@@ -2,7 +2,7 @@ Changelog for hydra
 -------------------
 
 Release 9.8-dev
-* security fixes:
+* security fixes (some reported by Elpe Pinillo and TristanInSec):
   - hydra.restore deserialization: validate ownership, clamp length/count/
     offset fields before driving malloc and loop bounds
   - parent IPC: NUL-terminate after read_safe to stop strcpy past the stack
@@ -46,6 +46,7 @@ Release 9.8-dev
     rather than literal interpolation (/630)
   - hydra-wizard.sh: build a properly-quoted argv array 
   - xhydra: refuse SMB2 workgroup containing '}' 
+  - NTLM encoding vulnerabilties
   - SVN URLBRANCH NUL-termination + 255-byte miscptr cap;
     CVS encryption-table OOB-read clamp; IMAP DIGEST-MD5
     prefix + capability accumulator; SIP external_ip_addr
