@@ -10,7 +10,7 @@ char *http_buf = NULL;
 static char end_condition[END_CONDITION_MAX_LEN];
 int end_condition_type = -1;
 char redirect_condition[REDIRECT_CONDITION_MAX_LEN];
-int redirect_condition_type = REDIRECT_CONDITION_FAILURE;
+int redirect_condition_type = REDIRECT_CONDITION_SUCCESS;
 
 int32_t webport;
 int32_t http_auth_mechanism = AUTH_UNASSIGNED;
@@ -343,9 +343,9 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
    *
    *   - When no F= / S= is supplied, plain 2xx responses are treated
    *     as successful logins. Redirects use the explicit R= policy,
-   *     which defaults to failure. Earlier revisions reported 3xx /
-   *     403 / 404 as success by default, which is a classic false-
-   *     positive source:
+   *     which defaults to success to preserve the module's historical
+   *     3xx behaviour. Earlier revisions also reported 403 / 404 as
+   *     success by default, which is a classic false-positive source:
    *       * 401 Unauthorized is the only HTTP status that universally
    *         indicates wrong credentials for Basic / Digest / NTLM;
    *       * 403 Forbidden is returned by many applications both for
@@ -356,8 +356,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
    *       * 3xx redirects can target a login page (failure) or the
    *         post-login destination (success) and cannot be
    *         disambiguated without inspecting the body.
-   *     Operators who need redirects to count as success can pass
-   *     R=success or R=location=<text>. 403 / 404 still require an
+   *     Operators who want stricter redirect handling can pass
+   *     R=failure or R=location=<text>. 403 / 404 still require an
    *     explicit S= / F= condition because they do not carry enough
    *     authentication meaning on their own.
    */
@@ -476,7 +476,7 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
     *ptr++ = 0;
   optional1 = ptr;
 
-  redirect_condition_type = REDIRECT_CONDITION_FAILURE;
+  redirect_condition_type = REDIRECT_CONDITION_SUCCESS;
   redirect_condition[0] = 0;
 
   if (!parse_options(optional1,
@@ -595,8 +595,8 @@ void usage_http(const char *service) {
          "supplied.\n"
          " R=redirect-policy   control how 3xx redirects are interpreted when "
          "no F= or S=\n"
-         "       condition is supplied. Valid values are failure (default), "
-         "success,\n"
+         "       condition is supplied. Valid values are success (default), "
+         "failure,\n"
          "       or location=<text>. With location=<text>, a 3xx response is "
          "only\n"
          "       successful if its Location header contains <text>. Use "
@@ -605,8 +605,9 @@ void usage_http(const char *service) {
          "Default success detection (when no F= or S= is supplied):\n"
          " - Only plain HTTP 2xx responses are reported as a successful "
          "login.\n"
-         " - 3xx redirects are treated as failures unless R=success or\n"
-         "   R=location=<text> is supplied.\n"
+         " - 3xx redirects are treated as successes by default for backwards\n"
+         "   compatibility. Use R=failure or R=location=<text> when stricter\n"
+         "   redirect handling is needed.\n"
          " - 403 Forbidden and 404 Not Found are treated as failures because\n"
          "   they cannot reliably prove that the credentials are valid. If\n"
          "   your target needs either to count as success, supply an explicit\n"
