@@ -268,9 +268,10 @@ static telnet_resp_t classify_response(const char *buffer) {
  * A literal ':' inside a value can be escaped as "\:" exactly as in the
  * http-form module, so success strings such as "Last login\:" are usable.
  *
- * The caller is expected to have already lower-cased miscptr; this routine
- * only splits and unescapes. The function is idempotent and safe to call
- * multiple times; previous values are released first.
+ * The prefix detection is case-insensitive so that both "S="/"F=" and the
+ * already-lower-cased "s="/"f=" produced by the call-site work the same
+ * way. The function is idempotent and safe to call multiple times;
+ * previous values are released first.
  */
 static void telnet_parse_miscptr(char *miscptr) {
   char *work, *seg_start, *p, *unescaped;
@@ -288,7 +289,7 @@ static void telnet_parse_miscptr(char *miscptr) {
   if (miscptr == NULL || *miscptr == 0)
     return;
 
-  has_prefix = (strncmp(miscptr, "s=", 2) == 0 || strncmp(miscptr, "f=", 2) == 0);
+  has_prefix = (strncasecmp(miscptr, "s=", 2) == 0 || strncasecmp(miscptr, "f=", 2) == 0);
 
   if (!has_prefix) {
     /* Legacy contract: whole value is a success substring. */
@@ -308,14 +309,14 @@ static void telnet_parse_miscptr(char *miscptr) {
     if (at_end || at_sep) {
       char saved = *p;
       *p = 0;
-      if (strncmp(seg_start, "s=", 2) == 0) {
+      if (strncasecmp(seg_start, "s=", 2) == 0) {
         if (user_success_str != NULL) {
           free(user_success_str);
           user_success_str = NULL;
         }
         unescaped = hydra_strrep(seg_start + 2, "\\:", ":");
         user_success_str = strdup(unescaped != NULL ? unescaped : seg_start + 2);
-      } else if (strncmp(seg_start, "f=", 2) == 0) {
+      } else if (strncasecmp(seg_start, "f=", 2) == 0) {
         if (user_failure_str != NULL) {
           free(user_failure_str);
           user_failure_str = NULL;
