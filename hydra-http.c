@@ -9,9 +9,60 @@ char *http_buf = NULL;
 #define END_CONDITION_MAX_LEN 100
 static char end_condition[END_CONDITION_MAX_LEN];
 int end_condition_type = -1;
+char redirect_condition[REDIRECT_CONDITION_MAX_LEN];
+int redirect_condition_type = REDIRECT_CONDITION_FAILURE;
 
 int32_t webport;
 int32_t http_auth_mechanism = AUTH_UNASSIGNED;
+
+static int32_t http_redirect_location_matches(const char *response) {
+  const char *line;
+
+  if (response == NULL || redirect_condition[0] == 0)
+    return 0;
+
+  line = response;
+  while ((line = hydra_strcasestr(line, "location:")) != NULL) {
+    if (line == response || *(line - 1) == '\n' || *(line - 1) == '\r') {
+      const char *line_end = strpbrk(line, "\r\n");
+      const char *match = hydra_strcasestr(line + strlen("location:"), redirect_condition);
+      return (match != NULL && (line_end == NULL || match < line_end));
+    }
+    line += strlen("location:");
+  }
+
+  return 0;
+}
+
+static int32_t http_response_is_success(char *status, const char *response) {
+  if (status == NULL)
+    return 0;
+
+  if (end_condition_type >= 0) {
+#ifdef HAVE_PCRE
+    return (hydra_string_match(response, end_condition) == end_condition_type);
+#else
+    return ((strstr(response, end_condition) == NULL ? 0 : 1) == end_condition_type);
+#endif
+  }
+
+  if (*status == '2')
+    return 1;
+
+  if (*status == '3') {
+    switch (redirect_condition_type) {
+    case REDIRECT_CONDITION_SUCCESS:
+      return 1;
+    case REDIRECT_CONDITION_LOCATION:
+      return http_redirect_location_matches(response);
+    case REDIRECT_CONDITION_FAILURE:
+    default:
+      return 0;
+    }
+  }
+
+  return 0;
+}
 
 int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp, char *type, ptr_header_node ptr_head) {
   char *empty = "";
@@ -279,20 +330,55 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   ptr = ((char *)strchr(http_buf, ' '));
   if (ptr != NULL)
     ptr++;
+  /*
+   * Result classification.
+   *
+   * The outer status filter (2xx / 3xx / 403 / 404) still gates the
+   * "candidate success" branch so that the auth-mechanism re-detection
+   * logic below stays reachable for 401 / 5xx, but the verdict inside
+   * that branch is now decided as follows:
+   *
+   *   - When the operator supplied an explicit F= / S= condition,
+   *     the operator's filter is authoritative regardless of status.
+   *
+   *   - When no F= / S= is supplied, plain 2xx responses are treated
+   *     as successful logins. Redirects use the explicit R= policy,
+   *     which defaults to failure. Earlier revisions reported 3xx /
+   *     403 / 404 as success by default, which is a classic false-
+   *     positive source:
+   *       * 401 Unauthorized is the only HTTP status that universally
+   *         indicates wrong credentials for Basic / Digest / NTLM;
+   *       * 403 Forbidden is returned by many applications both for
+   *         bad credentials and for access denial after successful
+   *         authentication, so it cannot prove either outcome on its
+   *         own;
+   *       * 404 Not Found is orthogonal to authentication entirely;
+   *       * 3xx redirects can target a login page (failure) or the
+   *         post-login destination (success) and cannot be
+   *         disambiguated without inspecting the body.
+   *     Operators who need redirects to count as success can pass
+   *     R=success or R=location=<text>. 403 / 404 still require an
+   *     explicit S= / F= condition because they do not carry enough
+   *     authentication meaning on their own.
+   */
   if (ptr != NULL && (*ptr == '2' || *ptr == '3' || strncmp(ptr, "403", 3) == 0 || strncmp(ptr, "404", 3) == 0)) {
-#ifdef HAVE_PCRE
-    if (end_condition_type >= 0 && hydra_string_match(http_buf, end_condition) != end_condition_type) {
-#else
-    if (end_condition_type >= 0 && (strstr(http_buf, end_condition) == NULL ? 0 : 1) != end_condition_type) {
-#endif
-      if (debug)
-        hydra_report(stderr, "End condition not match continue.\n");
-      hydra_completed_pair();
-    } else {
-      if (debug)
+    int32_t positive = http_response_is_success(ptr, http_buf);
+
+    if (positive) {
+      if (debug && end_condition_type >= 0)
         hydra_report(stderr, "END condition %s match.\n", end_condition);
       hydra_report_found_host(port, ip, "www", fp);
       hydra_completed_pair_found();
+    } else {
+      if (debug) {
+        if (end_condition_type >= 0)
+          hydra_report(stderr, "End condition not match continue.\n");
+        else if (*ptr == '3')
+          hydra_report(stderr, "Redirect response (%.3s) did not match R= policy, treating as failure.\n", ptr);
+        else
+          hydra_report(stderr, "Non-2xx response (%.3s) without F=/S=, treating as failure.\n", ptr);
+      }
+      hydra_completed_pair();
     }
     if (http_buf != NULL) {
       free(http_buf);
@@ -389,6 +475,9 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
   if (*ptr != 0)
     *ptr++ = 0;
   optional1 = ptr;
+
+  redirect_condition_type = REDIRECT_CONDITION_FAILURE;
+  redirect_condition[0] = 0;
 
   if (!parse_options(optional1,
                      &ptr_head)) // this function is in hydra-http-form.c !!
@@ -504,8 +593,27 @@ void usage_http(const char *service) {
          "present the\n"
          "       combination is invalid. Note: this must be the last option "
          "supplied.\n"
+         " R=redirect-policy   control how 3xx redirects are interpreted when "
+         "no F= or S=\n"
+         "       condition is supplied. Valid values are failure (default), "
+         "success,\n"
+         "       or location=<text>. With location=<text>, a 3xx response is "
+         "only\n"
+         "       successful if its Location header contains <text>. Use "
+         "location\\:<text>\n"
+         "       if you prefer a colon after the keyword.\n\n"
+         "Default success detection (when no F= or S= is supplied):\n"
+         " - Only plain HTTP 2xx responses are reported as a successful "
+         "login.\n"
+         " - 3xx redirects are treated as failures unless R=success or\n"
+         "   R=location=<text> is supplied.\n"
+         " - 403 Forbidden and 404 Not Found are treated as failures because\n"
+         "   they cannot reliably prove that the credentials are valid. If\n"
+         "   your target needs either to count as success, supply an explicit\n"
+         "   S= or F= condition.\n\n"
          "For example:  \"/secret\" or \"http://bla.com/foo/bar:H=Cookie\\: "
-         "sessid=aaaa\" or \"https://test.com:8080/members:A=NTLM\"\n"
+         "sessid=aaaa\" or \"https://test.com:8080/members:A=NTLM\" or\n"
+         "\"/members:A=NTLM:R=location=/dashboard\"\n"
          "To attack multiple targets, you can use the -M option with a file "
          "containing the targets and their parameters.\n"
          "Example file content:\n"
