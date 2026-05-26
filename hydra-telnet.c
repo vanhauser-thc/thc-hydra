@@ -13,6 +13,23 @@ char *buf;
 int32_t no_line_mode;
 
 /*
+ * Operator-supplied success / failure substrings parsed from the optional
+ * module parameter (miscptr). Either, both, or neither may be set.
+ *
+ *   - user_success_str : when non-NULL, the response must contain this
+ *                        substring to be reported as a successful login;
+ *                        replaces the structural shell-prompt heuristic.
+ *   - user_failure_str : when non-NULL, the response is treated as a
+ *                        failure if it contains this substring (in addition
+ *                        to the built-in failure phrase list).
+ *
+ * Both buffers are owned by this translation unit, are lower-cased at parse
+ * time, and live for the lifetime of the worker process.
+ */
+static char *user_success_str = NULL;
+static char *user_failure_str = NULL;
+
+/*
  * Failure-message detection.
  *
  * Patterns are deliberately specific. Earlier revisions matched single
@@ -78,6 +95,24 @@ static int is_failure(const char *buffer) {
     return 1;
   }
   return 0;
+}
+
+/*
+ * Failure detection that also honours the operator-supplied F= substring.
+ *
+ * The user-supplied pattern is checked first so an operator can override
+ * (or extend) the built-in heuristics for devices whose failure banners
+ * are not covered by is_failure(). The caller is expected to have lower-
+ * cased the buffer; user_failure_str is lower-cased at parse time so the
+ * comparison is effectively case-insensitive.
+ */
+static int is_failure_with_user(const char *buffer) {
+  if (buffer == NULL)
+    return 0;
+  if (user_failure_str != NULL && *user_failure_str != 0 &&
+      strstr(buffer, user_failure_str) != NULL)
+    return 1;
+  return is_failure(buffer);
 }
 
 /*
@@ -172,6 +207,136 @@ static int has_shell_prompt(const char *buffer) {
   return (last == '$' || last == '#' || last == '>' || last == '%');
 }
 
+/*
+ * Decide whether a response indicates a successful login.
+ *
+ *   - When the operator supplied an explicit S= success string, an exact
+ *     substring match is required. This is the strongest, lowest-FP mode
+ *     and is the recommended way to drive the module.
+ *   - Otherwise we fall back to has_shell_prompt() which only inspects
+ *     the trailing non-whitespace byte of the response.
+ */
+static int is_success(const char *buffer) {
+  if (buffer == NULL)
+    return 0;
+  if (user_success_str != NULL && *user_success_str != 0)
+    return strstr(buffer, user_success_str) != NULL;
+  return has_shell_prompt(buffer);
+}
+
+/*
+ * Coarse classification of a server response after credentials have been
+ * (partially or fully) submitted. Centralising this logic avoids drift
+ * between the post-username and post-password phases and ensures the
+ * priority order is identical in both:
+ *
+ *     failure phrase  >  login re-prompt  >  password prompt  >  success
+ *
+ * Returning TELNET_RESP_NONE means "no decision yet, keep reading".
+ */
+typedef enum {
+  TELNET_RESP_NONE = 0,
+  TELNET_RESP_SUCCESS,
+  TELNET_RESP_FAILURE,
+  TELNET_RESP_PASSWORD,
+} telnet_resp_t;
+
+static telnet_resp_t classify_response(const char *buffer) {
+  if (buffer == NULL)
+    return TELNET_RESP_NONE;
+  if (is_failure_with_user(buffer))
+    return TELNET_RESP_FAILURE;
+  if (is_login_prompt(buffer))
+    return TELNET_RESP_FAILURE;
+  if (is_password_prompt(buffer))
+    return TELNET_RESP_PASSWORD;
+  if (is_success(buffer))
+    return TELNET_RESP_SUCCESS;
+  return TELNET_RESP_NONE;
+}
+
+/*
+ * Parse the optional module parameter (miscptr) into the operator-supplied
+ * success / failure substrings. Accepted syntaxes:
+ *
+ *     <string>                 legacy: whole value used as success substring
+ *     S=<success>              explicit success substring
+ *     F=<failure>              explicit failure substring
+ *     S=<success>:F=<failure>  both (order is irrelevant)
+ *     F=<failure>:S=<success>  both (order is irrelevant)
+ *
+ * A literal ':' inside a value can be escaped as "\:" exactly as in the
+ * http-form module, so success strings such as "Last login\:" are usable.
+ *
+ * The caller is expected to have already lower-cased miscptr; this routine
+ * only splits and unescapes. The function is idempotent and safe to call
+ * multiple times; previous values are released first.
+ */
+static void telnet_parse_miscptr(char *miscptr) {
+  char *work, *seg_start, *p, *unescaped;
+  int has_prefix;
+
+  if (user_success_str != NULL) {
+    free(user_success_str);
+    user_success_str = NULL;
+  }
+  if (user_failure_str != NULL) {
+    free(user_failure_str);
+    user_failure_str = NULL;
+  }
+
+  if (miscptr == NULL || *miscptr == 0)
+    return;
+
+  has_prefix = (strncmp(miscptr, "s=", 2) == 0 || strncmp(miscptr, "f=", 2) == 0);
+
+  if (!has_prefix) {
+    /* Legacy contract: whole value is a success substring. */
+    user_success_str = strdup(miscptr);
+    return;
+  }
+
+  work = strdup(miscptr);
+  if (work == NULL)
+    return;
+
+  seg_start = work;
+  p = work;
+  while (1) {
+    int at_end = (*p == 0);
+    int at_sep = (*p == ':' && (p == work || *(p - 1) != '\\'));
+    if (at_end || at_sep) {
+      char saved = *p;
+      *p = 0;
+      if (strncmp(seg_start, "s=", 2) == 0) {
+        if (user_success_str != NULL) {
+          free(user_success_str);
+          user_success_str = NULL;
+        }
+        unescaped = hydra_strrep(seg_start + 2, "\\:", ":");
+        user_success_str = strdup(unescaped != NULL ? unescaped : seg_start + 2);
+      } else if (strncmp(seg_start, "f=", 2) == 0) {
+        if (user_failure_str != NULL) {
+          free(user_failure_str);
+          user_failure_str = NULL;
+        }
+        unescaped = hydra_strrep(seg_start + 2, "\\:", ":");
+        user_failure_str = strdup(unescaped != NULL ? unescaped : seg_start + 2);
+      } else if (*seg_start != 0) {
+        hydra_report(stderr,
+                     "[WARNING] telnet: ignoring unknown miscptr segment '%s' "
+                     "(expected S= or F=)\n",
+                     seg_start);
+      }
+      if (saved == 0)
+        break;
+      seg_start = p + 1;
+    }
+    p++;
+  }
+  free(work);
+}
+
 int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";
   char *login, *pass, buffer[300];
@@ -231,32 +396,51 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
     }
 
     /*
-     * Wait for the password prompt after sending the username.
+     * Wait for the server's response after sending the username.
      *
-     * This phase, like the banner phase above, must NEVER declare
-     * success. Only two outcomes are valid here:
-     *   - the server asks for a password   -> proceed to send it
-     *   - the server re-prompts for a login -> the username is wrong
+     * Three valid outcomes are recognised here:
+     *   - password prompt   -> proceed to send the candidate password
+     *   - login re-prompt   -> the username is wrong, advance pair
+     *   - explicit failure  -> the username/account is rejected outright
+     *   - success           -> the account has no password and the server
+     *                          dropped us straight into a shell. This is
+     *                          the documented "passwordless account" case
+     *                          (Cisco / embedded devices, Unix users with
+     *                          an empty password field, etc.) and must be
+     *                          reported with the credential pair that
+     *                          triggered it. The legacy module behaved
+     *                          this way; an earlier refactor lost it.
      */
-    int32_t i = 0;
+    int32_t got_password_prompt = 0;
     do {
       if ((buf = hydra_receive_line(s)) == NULL)
         return 1;
 
       (void)make_to_lower(buf);
 
-      if (is_password_prompt(buf))
-        i = 1;
-
-      if (i == 0 && is_login_prompt(buf)) {
+      switch (classify_response(buf)) {
+      case TELNET_RESP_PASSWORD:
+        got_password_prompt = 1;
+        break;
+      case TELNET_RESP_FAILURE:
         free(buf);
         hydra_completed_pair();
         if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
           return 3;
         return 2;
+      case TELNET_RESP_SUCCESS:
+        hydra_report_found_host(port, ip, "telnet", fp);
+        hydra_completed_pair_found();
+        free(buf);
+        if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
+          return 3;
+        return 1;
+      case TELNET_RESP_NONE:
+      default:
+        break;
       }
       free(buf);
-    } while (i == 0);
+    } while (got_password_prompt == 0);
   }
 
   /* Send password */
@@ -279,31 +463,32 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
   /*
    * Response handling after the password has been sent.
    *
-   * Order of checks is significant and must be:
-   *   1) explicit failure message,
-   *   2) password re-prompt,
-   *   3) login re-prompt,
-   *   4) success (operator-supplied string OR a trailing shell prompt).
+   * The four cases below are evaluated in the order imposed by
+   * classify_response():
    *
-   * Putting success last guarantees that a single response containing
-   * both a failure phrase and a stray prompt character (e.g. an error
-   * banner followed by "Login:") is correctly treated as a failure.
+   *     failure phrase  >  login re-prompt  >  password re-prompt  >  success
+   *
+   * Putting success last guarantees that a response containing both a
+   * failure phrase and a stray prompt character (e.g. an error banner
+   * followed by "Login:") is correctly treated as a failure.
+   *
+   * The password-re-prompt branch is the only one that mutates state on
+   * the live socket: the server is still waiting for a password, so we
+   * advance to the next candidate without dropping the connection. Every
+   * other terminal branch returns from start_telnet().
    */
   while ((buf = hydra_receive_line(s)) != NULL) {
     make_to_lower(buf);
 
-    /* 1) Explicit failure phrase wins over everything else. */
-    if (is_failure(buf)) {
+    switch (classify_response(buf)) {
+    case TELNET_RESP_FAILURE:
       free(buf);
       hydra_completed_pair();
       if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
         return 3;
       return 2;
-    }
 
-    /* 2) The server re-asks for a password -> the password was wrong;
-     *    feed the next candidate without dropping the connection. */
-    if (is_password_prompt(buf)) {
+    case TELNET_RESP_PASSWORD:
       hydra_completed_pair();
       free(buf);
       if (strlen(pass = hydra_get_next_password()) == 0)
@@ -323,44 +508,18 @@ int32_t start_telnet(int32_t s, char *ip, int32_t port, unsigned char options, c
         hydra_send(s, buffer, strlen(buffer) + 1, 0);
       }
       continue;
-    }
 
-    /* 3) The server re-asks for a username -> the whole pair is wrong;
-     *    let the outer loop reconnect and try the next pair. */
-    if (is_login_prompt(buf)) {
-      free(buf);
-      hydra_completed_pair();
-      return 2;
-    }
-
-    /* 4) Success detection.
-     *
-     *    - If the operator supplied a success string (-m / miscptr) we
-     *      require an exact substring match. This is the recommended
-     *      reliable mode and the only one that gives strong guarantees
-     *      against false positives.
-     *    - Otherwise we accept the response only when its last
-     *      non-whitespace byte is a recognised shell-prompt character.
-     *      Matching the prompt at the *end* of the line (instead of
-     *      anywhere inside it, as before) eliminates the bulk of the
-     *      structural false positives the previous logic produced.
-     */
-    if (miscptr != NULL) {
-      if (strstr(buf, miscptr) != NULL) {
-        hydra_report_found_host(port, ip, "telnet", fp);
-        hydra_completed_pair_found();
-        free(buf);
-        if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
-          return 3;
-        return 1;
-      }
-    } else if (has_shell_prompt(buf)) {
+    case TELNET_RESP_SUCCESS:
       hydra_report_found_host(port, ip, "telnet", fp);
       hydra_completed_pair_found();
       free(buf);
       if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0)
         return 3;
       return 1;
+
+    case TELNET_RESP_NONE:
+    default:
+      break;
     }
 
     free(buf);
@@ -381,6 +540,7 @@ void service_telnet(char *ip, int32_t sp, unsigned char options, char *miscptr, 
     return;
   if (miscptr != NULL)
     make_to_lower(miscptr);
+  telnet_parse_miscptr(miscptr);
 
   while (1) {
     int32_t first = 0;
@@ -495,19 +655,37 @@ int32_t service_telnet_init(char *ip, int32_t sp, unsigned char options, char *m
 }
 
 void usage_telnet(const char *service) {
-  printf("Module telnet is optionally taking the string which is displayed after\n"
-         "a successful login (case insensitive). Supplying this string is the\n"
-         "single most reliable way to avoid false positives and is strongly\n"
-         "recommended whenever the target's post-login banner is known.\n\n"
-         "Default success detection:\n"
+  printf("Module telnet is optionally taking operator-supplied success and/or\n"
+         "failure substrings. Providing them is the single most reliable way to\n"
+         "avoid false positives and is strongly recommended whenever the\n"
+         "target's post-login banner or rejection message is known.\n\n"
+         "Optional parameter syntax (all matches are case-insensitive):\n"
+         "  <string>                whole value used as a success substring\n"
+         "                          (legacy, kept for backwards compatibility)\n"
+         "  S=<success>             success substring (response must contain it)\n"
+         "  F=<failure>             extra failure substring, in addition to the\n"
+         "                          built-in failure phrase list\n"
+         "  S=<success>:F=<failure> both at once (order is irrelevant)\n"
+         "  \\:                      literal ':' inside a value\n\n"
+         "Default success detection (when no S= is supplied):\n"
          " - Requires an explicit failure phrase to be absent\n"
          " - Requires the response to END with a shell prompt character\n"
          "   ('$', '#', '>' or '%%'); prompt characters appearing inside the\n"
          "   buffer are no longer treated as success on their own\n"
-         " - Never declares success before the password has been sent\n\n"
+         " - Success is never declared before the username has been sent\n"
+         " - A passwordless account that drops straight into a shell after\n"
+         "   the username is correctly reported as a successful login\n\n"
          "Features:\n"
          " - Automatic password-only mode detection (Cisco, embedded devices)\n"
+         " - Passwordless-account detection after username submission\n"
          " - Multilingual prompt support (English, German, Russian, Spanish, ...)\n"
-         " - Specific failure-message patterns to minimise misclassification\n\n"
-         "For password-only servers, use: hydra -l \"\" -P passwords.txt ip telnet\n");
+         " - Specific failure-message patterns to minimise misclassification\n"
+         " - Operator-defined success/failure overrides via S= / F=\n\n"
+         "Examples:\n"
+         "  hydra -l root -P pwd.txt ip telnet\n"
+         "  hydra -l root -P pwd.txt -m 'S=Last login' ip telnet\n"
+         "  hydra -l root -P pwd.txt -m 'F=Authentication failed' ip telnet\n"
+         "  hydra -l root -P pwd.txt -m 'S=$ :F=login incorrect' ip telnet\n\n"
+         "For password-only servers, use: hydra -l \"\" -P passwords.txt ip telnet\n"
+         "For passwordless accounts, combine with -e n to try empty passwords.\n");
 }
