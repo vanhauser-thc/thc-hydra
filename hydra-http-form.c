@@ -499,6 +499,36 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
       getcookie = 0;
       miscptr = ptr;
       break;
+    case 'r': // fall through
+    case 'R':
+      ptr = miscptr + 2;
+      while (*ptr != 0 && (*ptr != ':' || *(ptr - 1) == '\\'))
+        ptr++;
+      if (*ptr != 0)
+        *ptr++ = 0;
+      tmp = hydra_strrep(miscptr + 2, "\\:", ":");
+      if (tmp == NULL)
+        tmp = miscptr + 2;
+      if (strcasecmp(tmp, "success") == 0) {
+        redirect_condition_type = REDIRECT_CONDITION_SUCCESS;
+        redirect_condition[0] = 0;
+      } else if (strcasecmp(tmp, "failure") == 0) {
+        redirect_condition_type = REDIRECT_CONDITION_FAILURE;
+        redirect_condition[0] = 0;
+      } else if (strncasecmp(tmp, "location=", 9) == 0 || strncasecmp(tmp, "location:", 9) == 0) {
+        char *location_match = tmp + 9;
+        if (strlen(location_match) >= REDIRECT_CONDITION_MAX_LEN) {
+          hydra_report(stderr, "[ERROR] R=location value cannot be bigger than %u.\n", REDIRECT_CONDITION_MAX_LEN - 1);
+          return 0;
+        }
+        redirect_condition_type = REDIRECT_CONDITION_LOCATION;
+        strcpy(redirect_condition, location_match);
+      } else {
+        hydra_report(stderr, "[ERROR] unknown redirect policy for R=: %s (expected success, failure or location=<text>)\n", tmp);
+        return 0;
+      }
+      miscptr = ptr;
+      break;
     case 'h':
       // add a new header at the end
       ptr = miscptr + 2;
