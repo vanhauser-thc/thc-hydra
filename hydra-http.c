@@ -463,8 +463,12 @@ void service_http(char *ip, int32_t sp, unsigned char options, char *miscptr, FI
 #ifdef AF_INET6
   }
 #endif
-  if (((options & OPTION_SSL) && webport != PORT_HTTP_SSL) || (!(options & OPTION_SSL) && webport != PORT_HTTP)) {
+  if (use_proxy == 1) {
     sprintf(ptr, ":%d", webport);
+  } else {
+    if (((options & OPTION_SSL) && webport != PORT_HTTP_SSL) || (!(options & OPTION_SSL) && webport != PORT_HTTP)) {
+      sprintf(ptr, ":%d", webport);
+    }
   }
   ptr = NULL;
 
