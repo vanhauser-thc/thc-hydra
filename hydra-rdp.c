@@ -17,6 +17,21 @@ void dummy_rdp() { printf("\n"); }
 
 #include <freerdp/freerdp.h>
 #include <freerdp/version.h>
+
+/* RDP security protocols selected during the X.224 negotiation
+ * (see [MS-RDPBCGR] 2.2.1.2.1). They are defined in a private FreeRDP header
+ * (libfreerdp/core/nego.h), so the values we need are redefined here.
+ * Only NLA/CredSSP (PROTOCOL_HYBRID*) validates the supplied credentials during
+ * the connection handshake. Without it an AuthenticationOnly connect succeeds
+ * for any credentials, which is the root cause of the xrdp false positives in
+ * issue #923. */
+#ifndef PROTOCOL_HYBRID
+#define PROTOCOL_HYBRID 0x00000002
+#endif
+#ifndef PROTOCOL_HYBRID_EX
+#define PROTOCOL_HYBRID_EX 0x00000008
+#endif
+
 freerdp *instance = 0;
 BOOL rdp_connect(char *server, int32_t port, char *domain, char *login, char *password) {
   int32_t err = 0;
@@ -157,17 +172,84 @@ int32_t service_rdp_init(char *ip, int32_t sp, unsigned char options, char *misc
   // which should be filled if initial connections and service setup has to be
   // performed once only.
   //
-  // fill if needed.
-  //
   // return codes:
   //   0 all OK
-  //   -1  error, hydra will exit, so print a good error message here
+  //   1 skip target without generating an error
+  //   2 skip target because of protocol problems
+  //   3 skip target because its unreachable
+  //   -1 error, hydra will exit, so print a good error message here
+  int32_t err;
+  UINT32 selected;
+  char server[64];
+  char domain[256];
+  char probe_login[] = "hydra";
+  char probe_pass[] = "hydra";
+  rdpSettings *settings;
+  freerdp *probe;
 
   // Disable freerdp output
   wLog *root = WLog_GetRoot();
   WLog_SetStringLogLevel(root, "OFF");
 
-  // Init freerdp instance
+  /* hydra can only verify RDP credentials when the server enforces NLA/CredSSP:
+   * only then are the credentials validated during the connection handshake.
+   * Without NLA (e.g. xrdp, or a Windows host with NLA disabled) the server
+   * defers authentication to an in-session login, so any connect succeeds and
+   * every login looks valid (issue #923). Probe the negotiated security layer
+   * once here with throwaway credentials (the protocol is negotiated before
+   * authentication is attempted), and skip the target if NLA is absent instead
+   * of reporting false positives. */
+  probe = freerdp_new();
+  if (probe == NULL || freerdp_context_new(probe) == FALSE) {
+    hydra_report(stderr, "[ERROR] freerdp init failed\n");
+    return -1;
+  }
+  settings = probe->context->settings;
+  memset(server, 0, sizeof(server));
+  memset(domain, 0, sizeof(domain));
+  strncpy(server, hydra_address2string(ip), sizeof(server) - 1);
+  if (miscptr != NULL && strlen(miscptr) > 0) {
+    strncpy(domain, miscptr, sizeof(domain) - 1);
+    domain[sizeof(domain) - 1] = 0;
+  }
+  settings->Username = probe_login;
+  settings->Password = probe_pass;
+  settings->Domain = domain;
+  settings->ServerHostname = server;
+  settings->ServerPort = port;
+  settings->IgnoreCertificate = TRUE;
+  settings->AuthenticationOnly = TRUE;
+#if FREERDP_VERSION_MAJOR == 2
+  settings->MaxTimeInCheckLoop = 100;
+#endif
+  settings->TcpConnectTimeout = hydra_options.waittime * 1000;
+  settings->TlsSecLevel = 0;
+  freerdp_connect(probe);
+  err = freerdp_get_last_error(probe->context);
+  selected = settings->SelectedProtocol;
+  freerdp_disconnect(probe);
+  freerdp_free(probe);
+
+  if (err == 0x00020006 || err == 0x00020008 || err == 0x0002000c) {
+    // cannot establish rdp connection, port closed or not rdp
+    hydra_report(stderr, "[ERROR] could not connect to rdp://%s:%d\n",
+                 hydra_address2string_beautiful(ip), port);
+    return 3;
+  }
+  /* NLA/CredSSP (PROTOCOL_HYBRID*) was negotiated only if the corresponding bit
+   * is set; anything else (plain RDP or TLS) means credentials are not checked
+   * during connect, so hydra would report false positives. */
+  if (!(selected & (PROTOCOL_HYBRID | PROTOCOL_HYBRID_EX))) {
+    hydra_report(stderr,
+                 "[ERROR] %s does not enforce NLA/CredSSP for RDP; credentials "
+                 "cannot be verified (every login would be a false positive). "
+                 "Skipping this target. Enable NLA on the target, or verify "
+                 "credentials interactively, to scan it.\n",
+                 hydra_address2string_beautiful(ip));
+    return 1;
+  }
+
+  // NLA is available, set up the instance the cracking children will use
   instance = freerdp_new();
   if (instance == NULL || freerdp_context_new(instance) == FALSE) {
     hydra_report(stderr, "[ERROR] freerdp init failed\n");
@@ -179,6 +261,10 @@ int32_t service_rdp_init(char *ip, int32_t sp, unsigned char options, char *misc
 void usage_rdp(const char *service) {
   printf("Module rdp is optionally taking the windows domain name.\n"
          "For example:\nhydra rdp://192.168.0.1/firstdomainname -l john -p "
-         "doe\n\n");
+         "doe\n"
+         "Note: hydra can only verify RDP credentials on targets that enforce\n"
+         "NLA/CredSSP. Targets without NLA (e.g. xrdp, or Windows with NLA\n"
+         "disabled) defer authentication to an in-session login and are\n"
+         "reported as not verifiable instead of being brute forced.\n\n");
 }
 #endif
