@@ -1250,7 +1250,7 @@ echo "Checking for Mongodb2 (mongoc-2.x.x/mongoc/mongoc.h/bson-2.x.x/bson/bson.h
         if [ -f "$i/mongoc/mongoc.h" ]; then
             MONGODB2_IPATH="$i/libmongoc"
         fi
-        for ii in `ls -1d $i/mongoc-2.*`; do
+        for ii in `ls -1d $i/mongoc-2.* 2>/dev/null`; do
             if [ -f "${ii}/mongoc/mongoc.h" ]; then
                 MONGODB2_IPATH="$ii"
             fi
@@ -1287,7 +1287,7 @@ echo "Checking for Mongodb2 (mongoc-2.x.x/mongoc/mongoc.h/bson-2.x.x/bson/bson.h
         if [ -f "$i/libbson/bson.h" ]; then
             BSON2_IPATH="$i/libbson"
         fi
-        for ii in `ls -1d $i/bson-2.*`; do
+        for ii in `ls -1d $i/bson-2.* 2>/dev/null`; do
             if [ -f "${ii}/bson/bson.h" ]; then
                 BSON2_IPATH="$ii"
             fi

@@ -40,9 +40,9 @@ static int32_t http_response_is_success(char *status, const char *response) {
 
   if (end_condition_type >= 0) {
 #ifdef HAVE_PCRE
-    return (hydra_string_match(response, end_condition) == end_condition_type);
+    return (hydra_string_match((char*)response, end_condition) == end_condition_type);
 #else
-    return ((strstr(response, end_condition) == NULL ? 0 : 1) == end_condition_type);
+    return ((strstr((char*)response, end_condition) == NULL ? 0 : 1) == end_condition_type);
 #endif
   }
 

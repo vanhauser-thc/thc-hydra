@@ -315,7 +315,7 @@ int hydra_get_options(char *options[]) {
       if (wg && strchr(wg, '}') != NULL) {
         g_warning("Workgroup contains '}' which is reserved for the SMB2 "
                   "miscptr framing; please use a different workgroup.");
-        return;
+        return 0;
       }
       snprintf(smbparm, sizeof(smbparm) - 1, "nthash:%s workgroup:{%s}",
                pth ? "true" : "false", wg ? wg : "");
@@ -691,7 +691,10 @@ void on_btnSave_clicked(GtkButton *button, gpointer user_data) {
 
     fd = open(filename, O_CREAT | O_TRUNC | O_WRONLY, 0644);
     if (fd >= 0) {
-      write(fd, text, strlen(text));
+      size_t len = strlen(text);
+      ssize_t written = write(fd, text, len);
+      if (written < 0 || (size_t)written != len)
+        g_warning("%s::%i: write to output file failed!", __FILE__, __LINE__);
       close(fd);
     }
     g_free(text);

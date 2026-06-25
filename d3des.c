@@ -60,9 +60,7 @@ static unsigned char totrot[16] = {1, 2, 4, 6, 8, 10, 12, 14, 15, 17, 19, 21, 23
 
 static unsigned char pc2[48] = {13, 16, 10, 23, 0, 4, 2, 27, 14, 5, 20, 9, 22, 18, 11, 3, 25, 7, 15, 6, 26, 19, 12, 1, 40, 51, 30, 36, 46, 54, 29, 39, 50, 44, 32, 47, 43, 48, 38, 55, 33, 52, 45, 41, 49, 35, 28, 31};
 
-void deskey(key, edf) /* Thanks to James Gillogly & Phil Karn! */
-    unsigned char *key;
-int32_t edf;
+void deskey(unsigned char *key, int32_t edf) /* Thanks to James Gillogly & Phil Karn! */
 {
   register int32_t i, j, l, m, n;
   unsigned char pc1m[56], pcr[56];
@@ -105,7 +103,7 @@ int32_t edf;
   return;
 }
 
-static void cookey(raw1) register unsigned long *raw1;
+static void cookey(register unsigned long *raw1)
 {
   register unsigned long *cook, *raw0;
   unsigned long dough[32];
@@ -127,7 +125,7 @@ static void cookey(raw1) register unsigned long *raw1;
   return;
 }
 
-void cpkey(into) register unsigned long *into;
+void cpkey(register unsigned long *into)
 {
   register unsigned long *from, *endp;
 
@@ -137,7 +135,7 @@ void cpkey(into) register unsigned long *into;
   return;
 }
 
-void usekey(from) register unsigned long *from;
+void usekey(register unsigned long *from)
 {
   register unsigned long *to, *endp;
 
@@ -156,8 +154,7 @@ void des(unsigned char *inblock, unsigned char *outblock) {
   return;
 }
 
-static void scrunch(outof, into) register unsigned char *outof;
-register unsigned long *into;
+static void scrunch(register unsigned char *outof, register unsigned long *into)
 {
   *into = (*outof++ & 0xffL) << 24;
   *into |= (*outof++ & 0xffL) << 16;
@@ -170,8 +167,7 @@ register unsigned long *into;
   return;
 }
 
-static void unscrun(outof, into) register unsigned long *outof;
-register unsigned char *into;
+static void unscrun(register unsigned long *outof, register unsigned char *into)
 {
   *into++ = (*outof >> 24) & 0xffL;
   *into++ = (*outof >> 16) & 0xffL;
@@ -208,7 +204,7 @@ static unsigned long SP7[64] = {0x00200000L, 0x04200002L, 0x04000802L, 0x0000000
 static unsigned long SP8[64] = {0x10001040L, 0x00001000L, 0x00040000L, 0x10041040L, 0x10000000L, 0x10001040L, 0x00000040L, 0x10000000L, 0x00040040L, 0x10040000L, 0x10041040L, 0x00041000L, 0x10041000L, 0x00041040L, 0x00001000L, 0x00000040L, 0x10040000L, 0x10000040L, 0x10001000L, 0x00001040L, 0x00041000L, 0x00040040L, 0x10040040L, 0x10041000L, 0x00001040L, 0x00000000L, 0x00000000L, 0x10040040L, 0x10000040L, 0x10001000L, 0x00041040L, 0x00040000L,
                                 0x00041040L, 0x00040000L, 0x10041000L, 0x00001000L, 0x00000040L, 0x10040040L, 0x00001000L, 0x00041040L, 0x10001000L, 0x00000040L, 0x10000040L, 0x10040000L, 0x10040040L, 0x10000000L, 0x00040000L, 0x10001040L, 0x00000000L, 0x10041040L, 0x00040040L, 0x10000040L, 0x10040000L, 0x10001000L, 0x10001040L, 0x00000000L, 0x10041040L, 0x00041000L, 0x00041000L, 0x00001040L, 0x00001040L, 0x00040040L, 0x10000000L, 0x10041000L};
 
-static void desfunc(block, keys) register unsigned long *block, *keys;
+static void desfunc(register unsigned long *block, register unsigned long *keys)
 {
   register unsigned long fval, work, right, leftt;
   register int32_t round;
