@@ -491,7 +491,7 @@ char *sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char 
       else
         // others
         if (strstr(type, "rtsp") != NULL)
-          snprintf(buffer, 500, "DESCRIBE:%s://%s:%i", type, webtarget, port);
+          snprintf(buffer, 500, "DESCRIBE:%s://%s:%i%s", type, webtarget, port, miscptr ? miscptr : "");
         else
           // others
           snprintf(buffer, 500, "AUTHENTICATE:%s/%s", type, realm);
@@ -543,8 +543,8 @@ char *sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char 
         if (strstr(type, "rtsp") != NULL) {
           snprintf(result, 500,
                    "username=\"%s\", realm=\"%s\", nonce=\"%s\", "
-                   "uri=\"%s://%s:%i\", response=\"%s\"\r\n",
-                   preplogin, realm, nonce, type, webtarget, port, buffer);
+                   "uri=\"%s://%s:%i%s\", response=\"%s\"\r\n",
+                   preplogin, realm, nonce, type, webtarget, port, miscptr ? miscptr : "", buffer);
         } else {
           if (use_proxy == 1 && proxy_authentication[selected_proxy] != NULL)
             snprintf(result, 500,

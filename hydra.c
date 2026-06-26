@@ -49,6 +49,7 @@ void usage_http_proxy_urlenum(const char *service);
 void usage_snmp(const char *service);
 void usage_http(const char *service);
 void usage_smb2(const char *service);
+void usage_rtsp(const char *service);
 
 extern void service_asterisk(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
 extern void service_telnet(char *ip, int32_t sp, unsigned char options, char *miscptr, FILE *fp, int32_t port, char *hostname);
@@ -438,7 +439,7 @@ static const struct {
 #endif
                 SERVICE(rlogin),
                 SERVICE(rsh),
-                SERVICE(rtsp),
+                SERVICE3("rtsp", rtsp),
                 SERVICE(rpcap),
                 SERVICE3("s7-300", s7_300),
 #ifdef LIBSAPR3
