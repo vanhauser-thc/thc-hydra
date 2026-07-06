@@ -354,7 +354,7 @@ int32_t internal__hydra_connect(char *host, int32_t port, int32_t type, int32_t 
             fprintf(stderr, "[ERROR] CONNECT call to proxy failed with code %c%c%c\n", *tmpptr, *(tmpptr + 1), *(tmpptr + 2));
           err = 1;
         }
-        //        free(buf);
+        free(buf);
       } else {
         if (hydra_strcasestr(proxy_string_type[selected_proxy], "socks5")) {
           //          char buf[1024];
