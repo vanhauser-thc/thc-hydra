@@ -1505,6 +1505,7 @@ int32_t service_smb_init(char *ip, int32_t sp, unsigned char options, char *misc
 
   if (send(sock, buf, sizeof(buf), 0) < 0) {
     fprintf(stderr, "[ERROR] unable to send to target smb://%s:%d/\n", hostname, port);
+    close(sock);
     return -1;
   }
 
@@ -1515,11 +1516,13 @@ int32_t service_smb_init(char *ip, int32_t sp, unsigned char options, char *misc
 
   if (ready <= 0) {
     fprintf(stderr, "[ERROR] no reply from target smb://%s:%d/\n", hostname, port);
+    close(sock);
     return -1;
   }
 
   if ((ready = recv(sock, buf, sizeof(buf), 0)) < 40) {
     fprintf(stderr, "[ERROR] invalid reply from target smb://%s:%d/\n", hostname, port);
+    close(sock);
     return -1;
   }
 
