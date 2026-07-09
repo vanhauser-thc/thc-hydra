@@ -1046,8 +1046,10 @@ unsigned long SMBSessionSetup(int32_t s, char *szLogin, char *szPassword, char *
       /* We don't need to actually calculated a LM hash for this mode, only NTLM
        */
       ret = HashNTLM(&NTLMhash, (unsigned char *)szPassword, (unsigned char *)challenge, miscptr);
-      if (ret == -1)
+      if (ret == -1) {
+        free(NTLMhash); /* Fix: prevent memory leak when HashNTLM fails */
         return -1;
+      }
 
       memcpy(buf + iOffset + 24, NTLMhash, 24); /* Skip space for LM hash */
       free(NTLMhash);

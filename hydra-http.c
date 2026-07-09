@@ -217,6 +217,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
       }
     } else {
       hydra_report(stderr, "[ERROR] It is not NTLM authentication type\n");
+      free(buffer);
+      free(header);
       return 3;
     }
 
