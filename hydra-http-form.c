@@ -444,6 +444,8 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
       else
         fprintf(stderr, "[WARNING] unknown http auth type: %s\n", ptr);
 
+      http_auth_explicit = 1;  // Mark that user explicitly set auth mechanism
+
       while (*ptr != 0 && *ptr != ':')
         ptr++;
 

@@ -14,6 +14,7 @@ int redirect_condition_type = REDIRECT_CONDITION_SUCCESS;
 
 int32_t webport;
 int32_t http_auth_mechanism = AUTH_UNASSIGNED;
+int32_t http_auth_explicit = 0;  // 1 if user explicitly set auth mechanism via A= option
 
 static int32_t http_redirect_location_matches(const char *response) {
   const char *line;
@@ -89,7 +90,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   }
 
   // we must reset this if buf is NULL and we do MD5 digest
-  if (http_buf == NULL && http_auth_mechanism == AUTH_DIGESTMD5)
+  // but only if user did not explicitly set auth mechanism via A= option
+  if (http_buf == NULL && http_auth_mechanism == AUTH_DIGESTMD5 && !http_auth_explicit)
     http_auth_mechanism = AUTH_BASIC;
 
   if (use_proxy > 0 && proxy_count > 0)
@@ -132,7 +134,10 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
     pbuffer = hydra_strcasestr(http_buf, "WWW-Authenticate: Digest ");
     /* the success path (200 OK, no auth header) returns NULL here. */
     if (pbuffer == NULL) {
-      http_auth_mechanism = AUTH_BASIC;
+      /* Only fallback to Basic if user did not explicitly set auth mechanism */
+      if (!http_auth_explicit) {
+        http_auth_mechanism = AUTH_BASIC;
+      }
       free(buffer);
       free(header);
       return 1;
@@ -389,7 +394,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
       fprintf(stderr, "[WARNING] Unusual return code: %.3s for %s:%s\n", (char *)ptr, login, pass);
 
     // the first authentication type failed, check the type from server header
-    if ((hydra_strcasestr(http_buf, "WWW-Authenticate: Basic") == NULL) && (http_auth_mechanism == AUTH_BASIC)) {
+    // but only if user did not explicitly set auth mechanism via A= option
+    if (!http_auth_explicit && (hydra_strcasestr(http_buf, "WWW-Authenticate: Basic") == NULL) && (http_auth_mechanism == AUTH_BASIC)) {
       // seems the auth supported is not Basic scheme so testing further
       int32_t find_auth = 0;
 
