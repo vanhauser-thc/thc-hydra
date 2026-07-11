@@ -377,12 +377,14 @@ void hdrrepv(ptr_header_node *ptr_head, char *hdrname, char *new_value) {
 }
 
 void cleanup(ptr_header_node *ptr_head) {
-  ptr_header_node cur_ptr = *ptr_head, next_ptr = cur_ptr;
+  ptr_header_node cur_ptr = *ptr_head, next_ptr;
 
-  while (next_ptr != NULL) {
+  while (cur_ptr != NULL) {
+    next_ptr = cur_ptr->next;
     free(cur_ptr->header);
     free(cur_ptr->value);
-    next_ptr = cur_ptr->next;
+    free(cur_ptr); /* Fix: also free the node itself to prevent memory leak */
+    cur_ptr = next_ptr;
   }
 
   *ptr_head = NULL;
