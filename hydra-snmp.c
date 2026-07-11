@@ -224,13 +224,30 @@ int32_t start_snmp(int32_t s, char *ip, int32_t port, unsigned char options, cha
       size = sizeof(snmpv1_w);
     }
 
-    snmpv1_a.comlen = (char)strlen(pass);
-    snmpv1_a.len = snmpv1_a.comlen + size + sizeof(snmpv1_a) - 3;
+    /* Fix buffer overflow: limit password length to available buffer space.
+     * The SNMP packet structure references comlen, so we must truncate the
+     * password itself rather than only the copy, to keep i consistent with
+     * the actual bytes written and avoid later memcpy overrunning buffer. */
+    {
+      size_t pass_len = strlen(pass);
+      size_t max_pass = sizeof(buffer) - sizeof(snmpv1_a) - size;
+      size_t max_pass_ber = 0;
 
-    i = sizeof(snmpv1_a);
-    memcpy(buffer, &snmpv1_a, i);
-    strcpy(buffer + i, pass);
-    i += strlen(pass);
+      if (pass_len > max_pass)
+        pass_len = max_pass;
+      if (size + sizeof(snmpv1_a) - 3 < 0x80) {
+        max_pass_ber = 0x7f - (size + sizeof(snmpv1_a) - 3);
+        if (pass_len > max_pass_ber)
+          pass_len = max_pass_ber;
+      }
+      snmpv1_a.comlen = (char)pass_len;
+      snmpv1_a.len = snmpv1_a.comlen + size + sizeof(snmpv1_a) - 3;
+
+      i = sizeof(snmpv1_a);
+      memcpy(buffer, &snmpv1_a, i);
+      memcpy(buffer + i, pass, pass_len);
+      i += pass_len;
+    }
 
     if (snmpread) {
       memcpy(buffer + i, &snmpv1_r, size);

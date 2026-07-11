@@ -96,7 +96,9 @@ int32_t start_imap(int32_t s, char *ip, int32_t port, unsigned char options, cha
       return 3;
     }
     free(buf);
-    strcpy(buffer2, pass);
+    /* Fix buffer overflow: use strncpy to prevent overflow when password exceeds buffer size */
+    strncpy(buffer2, pass, sizeof(buffer2) - 1);
+    buffer2[sizeof(buffer2) - 1] = '\0';
     hydra_tobase64((unsigned char *)buffer2, strlen(buffer2), sizeof(buffer2));
     sprintf(buffer, "%.250s\r\n", buffer2);
     break;
