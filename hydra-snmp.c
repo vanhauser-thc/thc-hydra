@@ -230,16 +230,22 @@ int32_t start_snmp(int32_t s, char *ip, int32_t port, unsigned char options, cha
      * the actual bytes written and avoid later memcpy overrunning buffer. */
     {
       size_t pass_len = strlen(pass);
-      size_t max_pass = sizeof(buffer) - sizeof(snmpv1_a) - size - 1;
+      size_t max_pass = sizeof(buffer) - sizeof(snmpv1_a) - size;
+      size_t max_pass_ber = 0;
+
       if (pass_len > max_pass)
         pass_len = max_pass;
+      if (size + sizeof(snmpv1_a) - 3 < 0x80) {
+        max_pass_ber = 0x7f - (size + sizeof(snmpv1_a) - 3);
+        if (pass_len > max_pass_ber)
+          pass_len = max_pass_ber;
+      }
       snmpv1_a.comlen = (char)pass_len;
       snmpv1_a.len = snmpv1_a.comlen + size + sizeof(snmpv1_a) - 3;
 
       i = sizeof(snmpv1_a);
       memcpy(buffer, &snmpv1_a, i);
       memcpy(buffer + i, pass, pass_len);
-      buffer[i + pass_len] = '\0';
       i += pass_len;
     }
 
