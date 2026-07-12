@@ -435,16 +435,20 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
     case 'A': // only for http, not http-form!
       ptr = miscptr + 2;
 
-      if (strncasecmp(ptr, "NTLM", 4) == 0)
+      if (strncasecmp(ptr, "NTLM", 4) == 0) {
         http_auth_mechanism = AUTH_NTLM;
-      else if (strncasecmp(ptr, "MD5", 3) == 0 || strncasecmp(ptr, "DIGEST", 6) == 0)
+        http_auth_explicit = 1;
+      } else if (strncasecmp(ptr, "MD5", 3) == 0 || strncasecmp(ptr, "DIGEST", 6) == 0) {
         http_auth_mechanism = AUTH_DIGESTMD5;
-      else if (strncasecmp(ptr, "BASIC", 4) == 0)
+        http_auth_explicit = 1;
+      } else if (strncasecmp(ptr, "BASIC", 4) == 0) {
         http_auth_mechanism = AUTH_BASIC;
-      else
+        http_auth_explicit = 1;
+      } else {
         fprintf(stderr, "[WARNING] unknown http auth type: %s\n", ptr);
-
-      http_auth_explicit = 1;  // Mark that user explicitly set auth mechanism
+        // Intentionally do NOT set http_auth_explicit here - the user's input
+        // was not a recognized mechanism, so we must not disable the auto-detection/fallback paths.
+      }
 
       while (*ptr != 0 && *ptr != ':')
         ptr++;

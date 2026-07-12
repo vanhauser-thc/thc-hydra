@@ -131,12 +131,25 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
   case AUTH_DIGESTMD5: {
     char *pbuffer, *result;
 
+    /* Guard against NULL deref: when A=MD5 is explicit and http_buf is NULL,
+       the previous change would have segfaulted at hydra_strcasestr. */
+    if (http_buf == NULL) {
+      fprintf(stderr, "[ERROR] A=MD5 requested but no response body to parse; skipping credential\n");
+      free(buffer);
+      free(header);
+      return 1;
+    }
+
     pbuffer = hydra_strcasestr(http_buf, "WWW-Authenticate: Digest ");
     /* the success path (200 OK, no auth header) returns NULL here. */
     if (pbuffer == NULL) {
-      /* Only fallback to Basic if user did not explicitly set auth mechanism */
       if (!http_auth_explicit) {
+        /* No Digest challenge from server; fall back to Basic for the next attempt. */
         http_auth_mechanism = AUTH_BASIC;
+      } else {
+        /* User explicitly requested MD5 but server didn't advertise Digest support;
+           emit a one-shot warning so the user knows this credential is being skipped. */
+        fprintf(stderr, "[WARNING] A=MD5 explicit but server did not return a Digest challenge; skipping credential\n");
       }
       free(buffer);
       free(header);
