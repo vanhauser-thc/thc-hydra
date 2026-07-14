@@ -81,6 +81,8 @@ int32_t start_http(int32_t s, char *ip, int32_t port, unsigned char options, cha
     add_header(&ptr_head, "Content-Length", "0", HEADER_TYPE_DEFAULT);
 
   header = stringify_headers(&ptr_head);
+  if (header == NULL)
+    return 3;
 
   buffer_size = strlen(header) + 500;
   if (!(buffer = malloc(buffer_size))) {
