@@ -292,6 +292,6 @@ void usage_rtsp(const char *service) {
          "The path is specified with the -m option.\n"
          "For example:  -m /live/ch0 or -m /stream1\n"
          "For URL-path based auth (e.g. DVR cameras), use ^USER^ and ^PASS^ placeholders:\n"
-         "  -m /user=^USER^&pass=^PASS^&stream\n\n",
+         "  -m \"/user=^USER^&pass=^PASS^&stream\"\n\n",
          service);
 }
