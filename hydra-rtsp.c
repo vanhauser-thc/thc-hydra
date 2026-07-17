@@ -28,7 +28,8 @@ int32_t is_Unauthorized(char *s) {
 }
 
 int32_t is_NotFound(char *s) {
-  if (strcasestr(s, "404 Stream") != NULL || strcasestr(s, "404 Not") != NULL) {
+  if (strcasestr(s, "404 Stream") != NULL || strcasestr(s, "404 Not") != NULL ||
+      strcasestr(s, "451") != NULL) {
     return 1;
   } else {
     return 0;
@@ -80,6 +81,32 @@ void create_core_packet(int32_t control, char *ip, int32_t port, char *path) {
         hydra_report(stderr, "[ERROR] hostname + path are too long, truncating DESCRIBE line!\n");
     }
   }
+}
+
+void create_url_packet(char *ip, int32_t port, char *path, char *login, char *pass) {
+  char *target = hydra_address2string(ip);
+  char userpass_path[500];
+  int ret;
+
+  memset(userpass_path, 0, sizeof(userpass_path));
+  strncpy(userpass_path, path, sizeof(userpass_path) - 1);
+
+  if (strstr(path, "^USER^")) {
+    char *replaced = hydra_string_replace(userpass_path, "^USER^", login);
+    strncpy(userpass_path, replaced, sizeof(userpass_path) - 1);
+    free(replaced);
+  }
+  if (strstr(userpass_path, "^PASS^")) {
+    char *replaced = hydra_string_replace(userpass_path, "^PASS^", pass);
+    strncpy(userpass_path, replaced, sizeof(userpass_path) - 1);
+    free(replaced);
+  }
+
+  ret = snprintf(packet, sizeof(packet),
+                 "DESCRIBE rtsp://%s:%i%s RTSP/1.0\r\nCSeq: 2\r\n\r\n",
+                 target, port, userpass_path);
+  if (ret >= sizeof(packet))
+    hydra_report(stderr, "[ERROR] hostname + path too long\n");
 }
 
 int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
@@ -146,6 +173,12 @@ int32_t start_rtsp(int32_t s, char *ip, int32_t port, unsigned char options, cha
       sprintf(buffer, "%.500sAuthorization: : Basic %.500s\r\n\r\n", packet2, buffer2);
       if (debug)
         hydra_report(stderr, "C:%s\n", buffer);
+    } else if (miscptr && (strstr(miscptr, "^USER^") || strstr(miscptr, "^PASS^"))) {
+      free(lresp);
+      create_url_packet(ip, port, miscptr, login, pass);
+      if (debug)
+        hydra_report(stderr, "C:%s\n", packet);
+      strncpy(buffer, packet, sizeof(buffer) - 1);
     } else {
       hydra_report(stderr, "[ERROR] unknown authentication protocol\n");
       return 1;
@@ -257,6 +290,8 @@ int32_t service_rtsp_init(char *ip, int32_t sp, unsigned char options, char *mis
 void usage_rtsp(const char *service) {
   printf("Module %s optionally takes the path of the RTSP stream to authenticate against.\n"
          "The path is specified with the -m option.\n"
-         "For example:  -m /live/ch0 or -m /stream1\n\n",
+         "For example:  -m /live/ch0 or -m /stream1\n"
+         "For URL-path based auth (e.g. DVR cameras), use ^USER^ and ^PASS^ placeholders:\n"
+         "  -m \"/user=^USER^&pass=^PASS^&stream\"\n\n",
          service);
 }
