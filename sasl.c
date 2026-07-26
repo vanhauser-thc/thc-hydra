@@ -306,7 +306,20 @@ char *sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char 
       }
     }
     if ((pbuffer[0] == ',') && (intq == 0)) {
+      if (ind >= array_size) {
+        // prevent buffer overflow if challenge has more fields than expected
+        break;
+      }
       array[ind] = malloc(currentpos);
+      if (array[ind] == NULL) {
+        // cleanup on allocation failure
+        for (int k = 0; k < ind; k++) {
+          free(array[k]);
+        }
+        free(preplogin);
+        free(preppasswd);
+        return NULL;
+      }
       strncpy(array[ind], buffer + lastpos, currentpos - 1);
       array[ind][currentpos - 1] = '\0';
       ind++;
@@ -318,6 +331,15 @@ char *sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char 
   // save the latest one
   if (ind < array_size) {
     array[ind] = malloc(currentpos + 1);
+    if (array[ind] == NULL) {
+      // cleanup on allocation failure
+      for (int k = 0; k < ind; k++) {
+        free(array[k]);
+      }
+      free(preplogin);
+      free(preppasswd);
+      return NULL;
+    }
     strncpy(array[ind], buffer + lastpos, currentpos);
     array[ind][currentpos] = '\0';
     ind++;
