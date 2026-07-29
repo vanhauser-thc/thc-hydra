@@ -313,7 +313,8 @@ char *sasl_digest_md5(char *result, char *login, char *pass, char *buffer, char 
       array[ind] = malloc(currentpos);
       if (array[ind] == NULL) {
         // cleanup on allocation failure
-        for (int k = 0; k < ind; k++) {
+        int32_t k;
+        for (k = 0; k < ind; k++) {
           free(array[k]);
         }
         free(preplogin);
