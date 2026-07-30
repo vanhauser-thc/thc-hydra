@@ -1222,9 +1222,13 @@ void hydra_tobase64(unsigned char *buf, uint32_t buflen, uint32_t bufsize) {
   unsigned char *ptr = buf;
   uint32_t i = bufsize;
   uint32_t len = 0;
-  unsigned char bof[i];
+  unsigned char *bof = malloc(bufsize);
 
-  if (buf == NULL || strlen((char *)buf) == 0 || buflen == 0)
+  if (buf == NULL || strlen((char *)buf) == 0 || buflen == 0) {
+    free(bof);
+    return;
+  }
+  if (bof == NULL)
     return;
   bof[0] = 0;
   memset(big, 0, sizeof(big));
@@ -1240,6 +1244,7 @@ void hydra_tobase64(unsigned char *buf, uint32_t buflen, uint32_t bufsize) {
     /* Reserve room for the trailing NUL strcat appends. */
     if (len + 1 > bufsize) {
       buf[0] = 0;
+      free(bof);
       return;
     }
     strcat((char *)bof, (char *)big);
@@ -1262,12 +1267,14 @@ void hydra_tobase64(unsigned char *buf, uint32_t buflen, uint32_t bufsize) {
     big[3] = '=';
     if (len + strlen((char *)big) + 1 > bufsize) {
       buf[0] = 0;
+      free(bof);
       return;
     }
     strcat((char *)bof, (char *)big);
   }
 
   strcpy((char *)buf, (char *)bof); /* can not overflow */
+  free(bof);
 }
 
 void hydra_dump_asciihex(unsigned char *string, int32_t length) {
