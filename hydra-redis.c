@@ -4,7 +4,7 @@ extern const unsigned char HYDRA_EXIT[5];
 char *buf;
 
 int32_t start_redis(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
-  char *pass, buffer[510];
+  char *pass, buffer[1024];
   char *empty = "";
 
   if (strlen(pass = hydra_get_next_password()) == 0)
@@ -14,8 +14,11 @@ int32_t start_redis(int32_t s, char *ip, int32_t port, unsigned char options, ch
   int32_t pass_len = strlen(pass);
   snprintf(pass_num, 50, "%d", pass_len);
 
+  if (pass_len > 500)
+    hydra_report(stderr, "[WARNING] Redis password truncated to 500 characters\n");
+
   memset(buffer, 0, sizeof(buffer));
-  sprintf(buffer, "*2\r\n$4\r\nAUTH\r\n$%.50s\r\n%.250s\r\n", pass_num, pass);
+  sprintf(buffer, "*2\r\n$4\r\nAUTH\r\n$%.50s\r\n%.500s\r\n", pass_num, pass);
 
   if (debug)
     hydra_report(stderr, "[DEBUG] Auth:\n %s\n", buffer);

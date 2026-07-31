@@ -115,20 +115,24 @@ static size_t UTF8_UTF16LE(unsigned char *in, int32_t insize, unsigned char *out
   }
   for (i = 0; i < insize; i++) {
     if (in[i] < 128) { // one byte
+      if (j + 2 > outsize) break;
       out[j] = in[i];
       out[j + 1] = 0;
       j = j + 2;
     } else if ((in[i] >= 0xc0) && (in[i] <= 0xdf)) { // Two bytes
+      if (j + 2 > outsize) break;
       out[j + 1] = 0x07 & (in[i] >> 2);
       out[j] = (0xc0 & (in[i] << 6)) | (0x3f & in[i + 1]);
       j = j + 2;
       i = i + 1;
     } else if ((in[i] >= 0xe0) && (in[i] <= 0xef)) { // Three bytes
+      if (j + 2 > outsize) break;
       out[j] = (0xc0 & (in[i + 1] << 6)) | (0x3f & in[i + 2]);
       out[j + 1] = (0xf0 & (in[i] << 4)) | (0x0f & (in[i + 1] >> 2));
       j = j + 2;
       i = i + 2;
     } else if ((in[i] >= 0xf0) && (in[i] <= 0xf7)) { // Four bytes
+      if (j + 4 > outsize) break;
       ch = ((in[i] & 0x07) << 18) + ((0x3f & in[i + 1]) << 12) + ((0x3f & in[i + 2]) << 6) + (0x3f & in[i + 3]) - 0x10000;
       out[j] = (ch >> 10) & 0xff;
       out[j + 1] = 0xd8 | ((ch >> 18) & 0xff);
@@ -137,8 +141,6 @@ static size_t UTF8_UTF16LE(unsigned char *in, int32_t insize, unsigned char *out
       j = j + 4;
       i = i + 3;
     }
-    if (j - 2 > outsize)
-      break;
   }
   if (debug) {
     hydra_report(stderr, "[DEBUG] UTF8_UTF16LE out:\n");
