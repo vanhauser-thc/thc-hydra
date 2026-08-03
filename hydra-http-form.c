@@ -891,7 +891,8 @@ void hydra_reconnect(int32_t s, char *ip, int32_t port, unsigned char options, c
 
 int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp, char *hostname, char *type, ptr_header_node ptr_head, ptr_cookie_node ptr_cookie) {
   char *empty = "";
-  char *login, *pass, clogin[256], cpass[256], b64login[345], b64pass[345];
+  char *login, *pass, *processed_login, *processed_pass;
+  char clogin[2048], cpass[2048], b64login[2800], b64pass[2800];
   char header[8096], *upd3variables;
   char *cookie_header = NULL;
   char *http_request = NULL;
@@ -910,14 +911,50 @@ int32_t start_http_form(int32_t s, char *ip, int32_t port, unsigned char options
     login = empty;
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
-  strcpy(b64login, login);
+
+  processed_login = hydra_preprocess_credential(login, HYDRA_PREPROC_FIELD_USER);
+  processed_pass = hydra_preprocess_credential(pass, HYDRA_PREPROC_FIELD_PASS);
+  if (processed_login == NULL || processed_pass == NULL || strlen(processed_login) >= sizeof(clogin) || strlen(processed_pass) >= sizeof(cpass)) {
+    free(processed_login);
+    free(processed_pass);
+    hydra_report(stderr, "[ERROR] credential preprocessing result is too large for HTTP form payloads\n");
+    hydra_completed_pair_skip();
+    return 1;
+  }
+
+  strcpy(b64login, processed_login);
   hydra_tobase64((unsigned char *)b64login, strlen(b64login), sizeof(b64login));
-  strcpy(b64pass, pass);
+  strcpy(b64pass, processed_pass);
   hydra_tobase64((unsigned char *)b64pass, strlen(b64pass), sizeof(b64pass));
-  strncpy(clogin, html_encode(login), sizeof(clogin) - 1);
-  clogin[sizeof(clogin) - 1] = 0;
-  strncpy(cpass, html_encode(pass), sizeof(cpass) - 1);
-  cpass[sizeof(cpass) - 1] = 0;
+
+  if (hydra_preproc_uses_transform(HYDRA_PREPROC_FIELD_USER, HYDRA_PREPROC_URLENCODE)) {
+    strcpy(clogin, processed_login);
+  } else {
+    char *encoded_login = html_encode(processed_login);
+    if (encoded_login == NULL || strlen(encoded_login) >= sizeof(clogin)) {
+      free(processed_login);
+      free(processed_pass);
+      hydra_report(stderr, "[ERROR] encoded username is too large for HTTP form payloads\n");
+      hydra_completed_pair_skip();
+      return 1;
+    }
+    strcpy(clogin, encoded_login);
+  }
+  if (hydra_preproc_uses_transform(HYDRA_PREPROC_FIELD_PASS, HYDRA_PREPROC_URLENCODE)) {
+    strcpy(cpass, processed_pass);
+  } else {
+    char *encoded_pass = html_encode(processed_pass);
+    if (encoded_pass == NULL || strlen(encoded_pass) >= sizeof(cpass)) {
+      free(processed_login);
+      free(processed_pass);
+      hydra_report(stderr, "[ERROR] encoded password is too large for HTTP form payloads\n");
+      hydra_completed_pair_skip();
+      return 1;
+    }
+    strcpy(cpass, encoded_pass);
+  }
+  free(processed_login);
+  free(processed_pass);
 
   if (multipart_mode) {
     snprintf(content_type, sizeof(content_type), "multipart/form-data; boundary=----THC-HydraBoundaryz2Z2z");

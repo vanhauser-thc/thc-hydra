@@ -1419,6 +1419,202 @@ int32_t hydra_string_match(char *str, const char *regex) {
  * responsible for freeing this new string.
  *
  */
+static char *hydra_preproc_replace_all(const char *string, const char *needle, const char *replacement) {
+  const char *match, *cursor;
+  char *result, *out;
+  size_t string_len, needle_len, replacement_len, matches = 0, result_len;
+
+  if (string == NULL || needle == NULL || replacement == NULL || needle[0] == '\0')
+    return NULL;
+
+  string_len = strlen(string);
+  needle_len = strlen(needle);
+  replacement_len = strlen(replacement);
+  if (string_len > HYDRA_PREPROC_MAX_RESULT_SIZE)
+    return NULL;
+  cursor = string;
+  while ((match = strstr(cursor, needle)) != NULL) {
+    matches++;
+    cursor = match + needle_len;
+  }
+  if (replacement_len > needle_len) {
+    if (matches > (HYDRA_PREPROC_MAX_RESULT_SIZE - string_len) / (replacement_len - needle_len))
+      return NULL;
+    result_len = string_len + matches * (replacement_len - needle_len);
+  } else {
+    result_len = string_len - matches * (needle_len - replacement_len);
+  }
+  if (result_len > HYDRA_PREPROC_MAX_RESULT_SIZE)
+    return NULL;
+
+  result = malloc(result_len + 1);
+  if (result == NULL)
+    return NULL;
+  cursor = string;
+  out = result;
+  while ((match = strstr(cursor, needle)) != NULL) {
+    size_t before = (size_t)(match - cursor);
+    memcpy(out, cursor, before);
+    out += before;
+    memcpy(out, replacement, replacement_len);
+    out += replacement_len;
+    cursor = match + needle_len;
+  }
+  strcpy(out, cursor);
+  return result;
+}
+
+static char *hydra_preproc_prefix_or_suffix(const char *credential, const char *value, int32_t prefix) {
+  size_t credential_len = strlen(credential);
+  size_t value_len = strlen(value);
+  char *result;
+
+  if (credential_len > HYDRA_PREPROC_MAX_RESULT_SIZE || value_len > HYDRA_PREPROC_MAX_RESULT_SIZE - credential_len)
+    return NULL;
+  result = malloc(credential_len + value_len + 1);
+  if (result == NULL)
+    return NULL;
+  if (prefix) {
+    memcpy(result, value, value_len);
+    memcpy(result + value_len, credential, credential_len + 1);
+  } else {
+    memcpy(result, credential, credential_len);
+    memcpy(result + credential_len, value, value_len + 1);
+  }
+  return result;
+}
+
+static char *hydra_preproc_urlencode(const char *credential) {
+  const unsigned char *input = (const unsigned char *)credential;
+  char *result, *output;
+  size_t length = 0, encoded_length = 0;
+  static const char hex[] = "0123456789ABCDEF";
+
+  while (input[length] != '\0') {
+    if (isalnum(input[length]) || input[length] == '-' || input[length] == '_' || input[length] == '.' || input[length] == '~')
+      encoded_length++;
+    else
+      encoded_length += 3;
+    if (encoded_length > HYDRA_PREPROC_MAX_RESULT_SIZE)
+      return NULL;
+    length++;
+  }
+  result = malloc(encoded_length + 1);
+  if (result == NULL)
+    return NULL;
+  output = result;
+  for (length = 0; input[length] != '\0'; length++) {
+    if (isalnum(input[length]) || input[length] == '-' || input[length] == '_' || input[length] == '.' || input[length] == '~') {
+      *output++ = (char)input[length];
+    } else {
+      *output++ = '%';
+      *output++ = hex[input[length] >> 4];
+      *output++ = hex[input[length] & 0x0f];
+    }
+  }
+  *output = '\0';
+  return result;
+}
+
+int32_t hydra_preproc_uses_transform(hydra_preproc_field_t field, hydra_preproc_transform_type_t type) {
+  hydra_preproc_transform_type_t last_type = HYDRA_PREPROC_B64;
+  int32_t rule_index, transform_index, found = 0;
+
+  for (rule_index = 0; rule_index < hydra_preproc.rule_count; rule_index++) {
+    hydra_preproc_rule *rule = &hydra_preproc.rules[rule_index];
+    if (rule->field != field)
+      continue;
+    for (transform_index = 0; transform_index < rule->transform_count; transform_index++) {
+      last_type = rule->transforms[transform_index].type;
+      found = 1;
+    }
+  }
+  return found && last_type == type;
+}
+
+char *hydra_preprocess_credential(const char *credential, hydra_preproc_field_t field) {
+  char *current, *next;
+  int32_t rule_index, transform_index;
+
+  if (credential == NULL || strlen(credential) > HYDRA_PREPROC_MAX_RESULT_SIZE)
+    return NULL;
+  current = strdup(credential);
+  if (current == NULL)
+    return NULL;
+
+  for (rule_index = 0; rule_index < hydra_preproc.rule_count; rule_index++) {
+    hydra_preproc_rule *rule = &hydra_preproc.rules[rule_index];
+    if (rule->field != field)
+      continue;
+    for (transform_index = 0; transform_index < rule->transform_count; transform_index++) {
+      hydra_preproc_transform *transform = &rule->transforms[transform_index];
+      size_t index, length;
+
+      next = NULL;
+      switch (transform->type) {
+      case HYDRA_PREPROC_B64:
+        length = strlen(current);
+        if (length > (HYDRA_PREPROC_MAX_RESULT_SIZE - 1) / 4 * 3) {
+          free(current);
+          return NULL;
+        }
+        next = malloc(4 * ((length + 2) / 3) + 1);
+        if (next != NULL) {
+          memcpy(next, current, length + 1);
+          hydra_tobase64((unsigned char *)next, length, 4 * ((length + 2) / 3) + 1);
+        }
+        break;
+      case HYDRA_PREPROC_URLENCODE:
+        next = hydra_preproc_urlencode(current);
+        break;
+      case HYDRA_PREPROC_LOWER:
+      case HYDRA_PREPROC_UPPER:
+        next = strdup(current);
+        if (next != NULL)
+          for (index = 0; next[index] != '\0'; index++)
+            next[index] = (char)(transform->type == HYDRA_PREPROC_LOWER ? tolower((unsigned char)next[index]) : toupper((unsigned char)next[index]));
+        break;
+      case HYDRA_PREPROC_PREFIX:
+        next = hydra_preproc_prefix_or_suffix(current, transform->value, 1);
+        break;
+      case HYDRA_PREPROC_SUFFIX:
+        next = hydra_preproc_prefix_or_suffix(current, transform->value, 0);
+        break;
+      default:
+        free(current);
+        return NULL;
+      }
+      free(current);
+      if (next == NULL)
+        return NULL;
+      current = next;
+    }
+  }
+  return current;
+}
+
+char *hydra_replace_credential_placeholders(const char *template, const char *login, const char *pass) {
+  char *processed_login, *processed_pass, *result, *next;
+
+  processed_login = hydra_preprocess_credential(login, HYDRA_PREPROC_FIELD_USER);
+  processed_pass = hydra_preprocess_credential(pass, HYDRA_PREPROC_FIELD_PASS);
+  if (processed_login == NULL || processed_pass == NULL) {
+    free(processed_login);
+    free(processed_pass);
+    return NULL;
+  }
+  result = hydra_preproc_replace_all(template, "^USER^", processed_login);
+  free(processed_login);
+  if (result == NULL) {
+    free(processed_pass);
+    return NULL;
+  }
+  next = hydra_preproc_replace_all(result, "^PASS^", processed_pass);
+  free(result);
+  free(processed_pass);
+  return next;
+}
+
 char *hydra_string_replace(const char *string, const char *substr, const char *replacement) {
   char *tok = NULL;
   char *newstr = NULL;
