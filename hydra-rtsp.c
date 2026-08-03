@@ -85,26 +85,20 @@ void create_core_packet(int32_t control, char *ip, int32_t port, char *path) {
 
 void create_url_packet(char *ip, int32_t port, char *path, char *login, char *pass) {
   char *target = hydra_address2string(ip);
-  char userpass_path[500];
+  char *userpass_path;
   int ret;
 
-  memset(userpass_path, 0, sizeof(userpass_path));
-  strncpy(userpass_path, path, sizeof(userpass_path) - 1);
-
-  if (strstr(path, "^USER^")) {
-    char *replaced = hydra_string_replace(userpass_path, "^USER^", login);
-    strncpy(userpass_path, replaced, sizeof(userpass_path) - 1);
-    free(replaced);
-  }
-  if (strstr(userpass_path, "^PASS^")) {
-    char *replaced = hydra_string_replace(userpass_path, "^PASS^", pass);
-    strncpy(userpass_path, replaced, sizeof(userpass_path) - 1);
-    free(replaced);
+  userpass_path = hydra_replace_credential_placeholders(path, login, pass);
+  if (userpass_path == NULL) {
+    hydra_report(stderr, "[ERROR] credential preprocessing produced an oversized URL path\n");
+    packet[0] = '\0';
+    return;
   }
 
   ret = snprintf(packet, sizeof(packet),
                  "DESCRIBE rtsp://%s:%i%s RTSP/1.0\r\nCSeq: 2\r\n\r\n",
                  target, port, userpass_path);
+  free(userpass_path);
   if (ret >= sizeof(packet))
     hydra_report(stderr, "[ERROR] hostname + path too long\n");
 }

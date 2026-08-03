@@ -227,6 +227,7 @@ char *SERVICES = "adam6500 asterisk afp cisco cisco-enable cobaltstrike cvs fire
 #define MAX_BYTES 500000000 // 500 millions, do not put more than 650millions
 
 #define RESTOREFILE "./hydra.restore"
+#define PREPROC_RESTORE_MARKER "__HYDRA_PREPROC__"
 
 #define PROGRAM "Hydra"
 #define VERSION "v9.8dev"
@@ -339,6 +340,7 @@ size_t size_of_data = -1;
 hydra_head **hydra_heads = NULL;
 hydra_target **hydra_targets = NULL;
 hydra_option hydra_options;
+hydra_preproc_config hydra_preproc;
 hydra_brain hydra_brains;
 char *sck = NULL;
 int32_t prefer_ipv6 = 0, conwait = 0, loop_cnt = 0, fck = 0, options = 0, killed = 0;
@@ -493,7 +495,7 @@ void help(int32_t ext) {
 #ifdef HAVE_MATH_H
                     " [-x MIN:MAX:CHARSET]"
 #endif
-                    " [-c TIME] [-ISOuvVd46] [-m MODULE_OPT] "
+                    " [-c TIME] [-ISOuvVd46] [-m MODULE_OPT] [--preproc FIELD,TRANSFORM] "
                     //"[server service [OPT]]|"
                     "[service://server[:PORT][/OPT]]\n");
   PRINT_NORMAL(ext, "\nOptions:\n");
@@ -526,6 +528,9 @@ void help(int32_t ext) {
   PRINT_NORMAL(ext, "  -D XofY   Divide wordlist into Y segments and use the "
                     "Xth segment.\n");
   PRINT_EXTEND(ext, "  -o FILE   write found login/password pairs to FILE instead of stdout\n"
+                    "  --preproc FIELD,TRANSFORM  transform USER or PASS before placeholder expansion\n"
+                    "                         transforms: b64, urlencode, lower, upper, prefix:VALUE, suffix:VALUE\n"
+                    "                         chain transforms with commas; repeat the option for more rules\n"
                     "  -b FORMAT specify the format for the -o FILE: text(default), json, "
                     "jsonv1\n"
                     "  -f / -F   exit when a login/pass pair is found (-M: -f per host, -F "
@@ -686,6 +691,142 @@ void bail(char *text) {
   exit(-1);
 }
 
+static void hydra_preproc_error(const char *rule, const char *reason) {
+  fprintf(stderr, "[ERROR] invalid --preproc rule \"%s\": %s\n", rule ? rule : "", reason);
+  exit(EXIT_FAILURE);
+}
+
+static void hydra_add_preproc_rule(const char *argument) {
+  char *copy, *transform_text, *comma;
+  char field[5];
+  hydra_preproc_rule *rule;
+  size_t field_length;
+
+  if (argument == NULL || *argument == '\0')
+    hydra_preproc_error(argument, "expected FIELD,TRANSFORM");
+  if (hydra_preproc.rule_count >= HYDRA_PREPROC_MAX_RULES)
+    hydra_preproc_error(argument, "too many preprocessing rules");
+
+  copy = strdup(argument);
+  if (copy == NULL)
+    hydra_preproc_error(argument, "out of memory");
+  comma = strchr(copy, ',');
+  if (comma == NULL || comma == copy || comma[1] == '\0') {
+    free(copy);
+    hydra_preproc_error(argument, "expected FIELD,TRANSFORM");
+  }
+  *comma = '\0';
+  field_length = strlen(copy);
+  if (field_length >= sizeof(field)) {
+    free(copy);
+    hydra_preproc_error(argument, "field must be USER or PASS");
+  }
+  strcpy(field, copy);
+
+  rule = &hydra_preproc.rules[hydra_preproc.rule_count];
+  memset(rule, 0, sizeof(*rule));
+  if (strcasecmp(field, "USER") == 0)
+    rule->field = HYDRA_PREPROC_FIELD_USER;
+  else if (strcasecmp(field, "PASS") == 0)
+    rule->field = HYDRA_PREPROC_FIELD_PASS;
+  else {
+    free(copy);
+    hydra_preproc_error(argument, "field must be USER or PASS");
+  }
+
+  transform_text = comma + 1;
+  while (transform_text != NULL) {
+    hydra_preproc_transform *transform;
+    char *next = strchr(transform_text, ',');
+
+    if (next != NULL)
+      *next = '\0';
+    if (*transform_text == '\0' || rule->transform_count >= HYDRA_PREPROC_MAX_TRANSFORMS) {
+      free(copy);
+      hydra_preproc_error(argument, *transform_text == '\0' ? "empty transform" : "too many chained transforms");
+    }
+    transform = &rule->transforms[rule->transform_count];
+    if (strcasecmp(transform_text, "b64") == 0)
+      transform->type = HYDRA_PREPROC_B64;
+    else if (strcasecmp(transform_text, "urlencode") == 0)
+      transform->type = HYDRA_PREPROC_URLENCODE;
+    else if (strcasecmp(transform_text, "lower") == 0)
+      transform->type = HYDRA_PREPROC_LOWER;
+    else if (strcasecmp(transform_text, "upper") == 0)
+      transform->type = HYDRA_PREPROC_UPPER;
+    else if (strncasecmp(transform_text, "prefix:", 7) == 0) {
+      transform->type = HYDRA_PREPROC_PREFIX;
+      if (strlen(transform_text + 7) >= sizeof(transform->value)) {
+        free(copy);
+        hydra_preproc_error(argument, "prefix value is too long");
+      }
+      strcpy(transform->value, transform_text + 7);
+    } else if (strncasecmp(transform_text, "suffix:", 7) == 0) {
+      transform->type = HYDRA_PREPROC_SUFFIX;
+      if (strlen(transform_text + 7) >= sizeof(transform->value)) {
+        free(copy);
+        hydra_preproc_error(argument, "suffix value is too long");
+      }
+      strcpy(transform->value, transform_text + 7);
+    } else {
+      free(copy);
+      hydra_preproc_error(argument, "unsupported transform");
+    }
+    rule->transform_count++;
+    transform_text = next == NULL ? NULL : next + 1;
+  }
+  hydra_preproc.rule_count++;
+  free(copy);
+}
+
+static int32_t hydra_preproc_config_valid(void) {
+  int32_t rule_index, transform_index;
+
+  if (hydra_preproc.rule_count < 0 || hydra_preproc.rule_count > HYDRA_PREPROC_MAX_RULES)
+    return 0;
+  for (rule_index = 0; rule_index < hydra_preproc.rule_count; rule_index++) {
+    hydra_preproc_rule *rule = &hydra_preproc.rules[rule_index];
+    if ((rule->field != HYDRA_PREPROC_FIELD_USER && rule->field != HYDRA_PREPROC_FIELD_PASS) || rule->transform_count < 1 || rule->transform_count > HYDRA_PREPROC_MAX_TRANSFORMS)
+      return 0;
+    for (transform_index = 0; transform_index < rule->transform_count; transform_index++) {
+      hydra_preproc_transform *transform = &rule->transforms[transform_index];
+      if (transform->type < HYDRA_PREPROC_B64 || transform->type > HYDRA_PREPROC_SUFFIX)
+        return 0;
+      if ((transform->type == HYDRA_PREPROC_PREFIX || transform->type == HYDRA_PREPROC_SUFFIX) && memchr(transform->value, '\0', sizeof(transform->value)) == NULL)
+        return 0;
+    }
+  }
+  return 1;
+}
+
+static char **hydra_normalize_preproc_options(int32_t argc, char **argv, int32_t *normalized_argc) {
+  char **normalized;
+  int32_t read_index, write_index = 1;
+
+  normalized = calloc((size_t)argc * 2 + 1, sizeof(*normalized));
+  if (normalized == NULL)
+    hydra_preproc_error("", "out of memory while parsing --preproc");
+  normalized[0] = argv[0];
+  for (read_index = 1; read_index < argc; read_index++) {
+    if (strcmp(argv[read_index], "--preproc") == 0) {
+      if (read_index + 1 >= argc)
+        hydra_preproc_error("", "--preproc requires FIELD,TRANSFORM");
+      normalized[write_index++] = "-Z";
+      normalized[write_index++] = argv[++read_index];
+    } else if (strncmp(argv[read_index], "--preproc=", 10) == 0) {
+      char *argument = argv[read_index] + 10;
+      if (*argument == '\0')
+        hydra_preproc_error("", "--preproc requires FIELD,TRANSFORM");
+      normalized[write_index++] = "-Z";
+      normalized[write_index++] = argument;
+    } else {
+      normalized[write_index++] = argv[read_index];
+    }
+  }
+  *normalized_argc = write_index;
+  return normalized;
+}
+
 void hydra_restore_write(int32_t print_msg) {
   FILE *f;
   hydra_brain brain;
@@ -791,6 +932,8 @@ void hydra_restore_write(int32_t print_msg) {
       fprintf(f, "\n\n");
   }
 
+  fprintf(f, "%s\n", PREPROC_RESTORE_MARKER);
+  fck = fwrite(&hydra_preproc, sizeof(hydra_preproc), 1, f);
   fprintf(f, "%s\n", PROGRAM);
   fclose(f);
   if (debug)
@@ -1108,6 +1251,18 @@ void hydra_restore_read() {
   sck = fgets(out, sizeof(out), f);
   if (out[0] != 0 && out[strlen(out) - 1] == '\n')
     out[strlen(out) - 1] = 0;
+  if (strcmp(out, PREPROC_RESTORE_MARKER) == 0) {
+    if (fread(&hydra_preproc, sizeof(hydra_preproc), 1, f) != 1 || !hydra_preproc_config_valid()) {
+      fprintf(stderr, "[ERROR] invalid credential preprocessing data in restore file\n");
+      exit(-1);
+    }
+    sck = fgets(out, sizeof(out), f);
+    if (out[0] != 0 && out[strlen(out) - 1] == '\n')
+      out[strlen(out) - 1] = 0;
+  } else {
+    /* Restore files written before credential preprocessing had no rule block. */
+    memset(&hydra_preproc, 0, sizeof(hydra_preproc));
+  }
   if (strcmp(out, PROGRAM) != 0) {
     fprintf(stderr, "[ERROR] invalid restore file (end)\n");
     exit(-1);
@@ -2499,11 +2654,12 @@ int main(int argc, char *argv[]) {
   bf_options.disable_symbols = 0;
 
   // command line processing
+  argv = hydra_normalize_preproc_options(argc, argv, &argc);
   if (argc > 1 && strncmp(argv[1], "-h", 2) == 0)
     help(1);
   if (argc < 2)
     help(0);
-  while ((i = getopt(argc, argv, "hIq64Rrde:vVl:fFg:D:L:p:OP:o:b:M:C:t:T:m:w:W:s:SUux:yc:K")) >= 0) {
+  while ((i = getopt(argc, argv, "hIq64Rrde:vVl:fFg:D:L:p:OP:o:b:M:C:t:T:m:w:W:s:SUux:yc:KZ:")) >= 0) {
     switch (i) {
     case 'D':
       hydra_options.distributed = optarg;
@@ -2522,6 +2678,9 @@ int main(int argc, char *argv[]) {
       break;
     case 'K':
       hydra_options.skip_redo = 1;
+      break;
+    case 'Z':
+      hydra_add_preproc_rule(optarg);
       break;
     case 'O':
       old_ssl = 1;
