@@ -32,29 +32,105 @@ void dummy_rdp() { printf("\n"); }
 #define PROTOCOL_HYBRID_EX 0x00000008
 #endif
 
+/*
+ * FreeRDP 3.x removed direct pointer fields (settings, input, …) from the
+ * freerdp* instance struct and replaced them with accessor functions.
+ * We abstract the difference here so the code compiles against both
+ * FreeRDP 2.x and FreeRDP 3.x.
+ *
+ * Key API changes in FreeRDP 3.x relevant to this module:
+ *  - instance->context->settings  is GONE; use freerdp_get_settings(instance)
+ *  - settings->Username / ->Password / ->Domain / ->ServerHostname
+ *    must now be set with freerdp_settings_set_string(settings, FreeRDP_<Key>, value)
+ *    because the struct fields are no longer part of the public ABI.
+ *  - Boolean fields like IgnoreCertificate, AuthenticationOnly must be set
+ *    with freerdp_settings_set_bool(settings, FreeRDP_<Key>, value).
+ *  - Numeric fields like ServerPort, TcpConnectTimeout, TlsSecLevel must be
+ *    set with freerdp_settings_set_uint32(settings, FreeRDP_<Key>, value).
+ *  - SelectedProtocol (negotiated protocol) must be read with
+ *    freerdp_settings_get_uint32(settings, FreeRDP_SelectedProtocol).
+ *  - MaxTimeInCheckLoop no longer exists in FreeRDP 3.x; it was a FreeRDP 2.x
+ *    workaround for the event loop and is simply omitted for 3.x.
+ */
+
+#if FREERDP_VERSION_MAJOR >= 3
+
+/* FreeRDP 3.x accessors */
+#define RDP_GET_SETTINGS(inst)  freerdp_get_settings(inst)
+
+static inline void rdp_set_string(rdpSettings *s, FreeRDP_Settings_Keys_String key, const char *val) {
+  freerdp_settings_set_string(s, key, val);
+}
+static inline void rdp_set_bool(rdpSettings *s, FreeRDP_Settings_Keys_Bool key, BOOL val) {
+  freerdp_settings_set_bool(s, key, val);
+}
+static inline void rdp_set_uint32(rdpSettings *s, FreeRDP_Settings_Keys_UInt32 key, UINT32 val) {
+  freerdp_settings_set_uint32(s, key, val);
+}
+static inline UINT32 rdp_get_uint32(const rdpSettings *s, FreeRDP_Settings_Keys_UInt32 key) {
+  return freerdp_settings_get_uint32(s, key);
+}
+
+#else /* FreeRDP 2.x — keep direct struct access */
+
+#define RDP_GET_SETTINGS(inst)  ((inst)->context->settings)
+
+static inline void rdp_set_string(rdpSettings *s, int key, const char *val) {
+  switch (key) {
+    case FreeRDP_Username:       s->Username       = (char *)val; break;
+    case FreeRDP_Password:       s->Password       = (char *)val; break;
+    case FreeRDP_Domain:         s->Domain         = (char *)val; break;
+    case FreeRDP_ServerHostname: s->ServerHostname = (char *)val; break;
+    default: break;
+  }
+}
+static inline void rdp_set_bool(rdpSettings *s, int key, BOOL val) {
+  switch (key) {
+    case FreeRDP_IgnoreCertificate:   s->IgnoreCertificate   = val; break;
+    case FreeRDP_AuthenticationOnly:  s->AuthenticationOnly  = val; break;
+    default: break;
+  }
+}
+static inline void rdp_set_uint32(rdpSettings *s, int key, UINT32 val) {
+  switch (key) {
+    case FreeRDP_ServerPort:         s->ServerPort         = val; break;
+    case FreeRDP_TcpConnectTimeout:  s->TcpConnectTimeout  = val; break;
+    case FreeRDP_TlsSecLevel:        s->TlsSecLevel        = val; break;
+    default: break;
+  }
+}
+static inline UINT32 rdp_get_uint32(const rdpSettings *s, int key) {
+  switch (key) {
+    case FreeRDP_SelectedProtocol: return s->SelectedProtocol;
+    default: return 0;
+  }
+}
+
+#endif /* FREERDP_VERSION_MAJOR */
+
 freerdp *instance = 0;
 BOOL rdp_connect(char *server, int32_t port, char *domain, char *login, char *password) {
   int32_t err = 0;
 
-  rdpSettings *settings = instance->context->settings;
+  rdpSettings *settings = RDP_GET_SETTINGS(instance);
 
-  settings->Username = login;
-  settings->Password = password;
-  settings->IgnoreCertificate = TRUE;
+  rdp_set_string(settings, FreeRDP_Username,       login);
+  rdp_set_string(settings, FreeRDP_Password,       password);
+  rdp_set_bool  (settings, FreeRDP_IgnoreCertificate, TRUE);
   if (password[0] == 0)
-    settings->AuthenticationOnly = FALSE;
+    rdp_set_bool(settings, FreeRDP_AuthenticationOnly, FALSE);
   else
-    settings->AuthenticationOnly = TRUE;
-  settings->ServerHostname = server;
-  settings->ServerPort = port;
-  settings->Domain = domain;
+    rdp_set_bool(settings, FreeRDP_AuthenticationOnly, TRUE);
+  rdp_set_string(settings, FreeRDP_ServerHostname, server);
+  rdp_set_uint32(settings, FreeRDP_ServerPort,     (UINT32)port);
+  rdp_set_string(settings, FreeRDP_Domain,         domain);
 
 #if FREERDP_VERSION_MAJOR == 2
   settings->MaxTimeInCheckLoop = 100;
 #endif
   // freerdp timeout format is microseconds -> default:15000
-  settings->TcpConnectTimeout = hydra_options.waittime * 1000;
-  settings->TlsSecLevel = 0;
+  rdp_set_uint32(settings, FreeRDP_TcpConnectTimeout, (UINT32)(hydra_options.waittime * 1000));
+  rdp_set_uint32(settings, FreeRDP_TlsSecLevel,       0);
   freerdp_connect(instance);
   err = freerdp_get_last_error(instance->context);
   return err;
@@ -204,7 +280,7 @@ int32_t service_rdp_init(char *ip, int32_t sp, unsigned char options, char *misc
     hydra_report(stderr, "[ERROR] freerdp init failed\n");
     return -1;
   }
-  settings = probe->context->settings;
+  settings = RDP_GET_SETTINGS(probe);
   memset(server, 0, sizeof(server));
   memset(domain, 0, sizeof(domain));
   strncpy(server, hydra_address2string(ip), sizeof(server) - 1);
@@ -212,21 +288,21 @@ int32_t service_rdp_init(char *ip, int32_t sp, unsigned char options, char *misc
     strncpy(domain, miscptr, sizeof(domain) - 1);
     domain[sizeof(domain) - 1] = 0;
   }
-  settings->Username = probe_login;
-  settings->Password = probe_pass;
-  settings->Domain = domain;
-  settings->ServerHostname = server;
-  settings->ServerPort = port;
-  settings->IgnoreCertificate = TRUE;
-  settings->AuthenticationOnly = TRUE;
+  rdp_set_string(settings, FreeRDP_Username,          probe_login);
+  rdp_set_string(settings, FreeRDP_Password,          probe_pass);
+  rdp_set_string(settings, FreeRDP_Domain,            domain);
+  rdp_set_string(settings, FreeRDP_ServerHostname,    server);
+  rdp_set_uint32(settings, FreeRDP_ServerPort,        (UINT32)port);
+  rdp_set_bool  (settings, FreeRDP_IgnoreCertificate, TRUE);
+  rdp_set_bool  (settings, FreeRDP_AuthenticationOnly,TRUE);
 #if FREERDP_VERSION_MAJOR == 2
   settings->MaxTimeInCheckLoop = 100;
 #endif
-  settings->TcpConnectTimeout = hydra_options.waittime * 1000;
-  settings->TlsSecLevel = 0;
+  rdp_set_uint32(settings, FreeRDP_TcpConnectTimeout, (UINT32)(hydra_options.waittime * 1000));
+  rdp_set_uint32(settings, FreeRDP_TlsSecLevel,       0);
   freerdp_connect(probe);
   err = freerdp_get_last_error(probe->context);
-  selected = settings->SelectedProtocol;
+  selected = rdp_get_uint32(settings, FreeRDP_SelectedProtocol);
   freerdp_disconnect(probe);
   freerdp_free(probe);
 
