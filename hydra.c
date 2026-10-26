@@ -756,12 +756,14 @@ void hydra_restore_write(int32_t print_msg) {
     fprintf(f, "%s\n", hydra_options.outfile_ptr);
   fprintf(f, "%s\n%s\n", hydra_options.miscptr == NULL ? "" : hydra_options.miscptr, hydra_options.service);
   fck = fwrite(login_ptr, hydra_brains.sizelogin + hydra_brains.countlogin + 8, 1, f);
-  if (hydra_options.colonfile == NULL || hydra_options.colonfile == empty_login)
+  if (hydra_options.bfg) // -x: pass_ptr is one generated password, not a password list
+    fprintf(f, "%s\n", pass_ptr == NULL ? "" : pass_ptr);
+  else if (hydra_options.colonfile == NULL || hydra_options.colonfile == empty_login)
     fck = fwrite(pass_ptr, hydra_brains.sizepass + hydra_brains.countpass + 8, 1, f);
   for (j = 0; j < hydra_brains.targets; j++)
     if (hydra_targets[j]->done != TARGET_FINISHED) {
       fck = fwrite(hydra_targets[j], sizeof(hydra_target), 1, f);
-      fprintf(f, "%s\n%d\n%d\n", hydra_targets[j]->target == NULL ? "" : hydra_targets[j]->target, (int32_t)(hydra_targets[j]->login_ptr - login_ptr), (int32_t)(hydra_targets[j]->pass_ptr - pass_ptr));
+      fprintf(f, "%s\n%d\n%d\n", hydra_targets[j]->target == NULL ? "" : hydra_targets[j]->target, (int32_t)(hydra_targets[j]->login_ptr - login_ptr), hydra_options.bfg ? 0 : (int32_t)(hydra_targets[j]->pass_ptr - pass_ptr));
       fprintf(f, "%s\n%s\n", hydra_targets[j]->login_ptr, hydra_targets[j]->pass_ptr);
       if (hydra_targets[j]->redo)
         for (i = 0; i < hydra_targets[j]->redo; i++)
@@ -880,7 +882,7 @@ void hydra_restore_read() {
     fprintf(stderr, "[ERROR] restore file targets count out of range (%d)\n", hydra_brains.targets);
     exit(-1);
   }
-  if (hydra_brains.countlogin > MAX_LINES || hydra_brains.countpass > MAX_LINES) {
+  if (hydra_brains.countlogin > MAX_LINES || (hydra_brains.countpass > MAX_LINES && !hydra_options.bfg)) {
     fprintf(stderr, "[ERROR] restore file login/password count out of range\n");
     exit(-1);
   }
@@ -950,7 +952,13 @@ void hydra_restore_read() {
   fck = (int32_t)fread(login_ptr, hydra_brains.sizelogin + hydra_brains.countlogin + 8, 1, f);
   if (debug)
     printf("[DEBUG] reading restore file: Step 9 complete\n");
-  if (!check_flag(hydra_options.mode, MODE_COLON_FILE)) { // NOT colonfile mode
+  if (hydra_options.bfg) { // -x: pass_ptr was saved as one string, see hydra_restore_write()
+    sck = fgets(out, sizeof(out), f);
+    if (out[0] != 0 && out[strlen(out) - 1] == '\n')
+      out[strlen(out) - 1] = 0;
+    pass_ptr = malloc(strlen(out) + 1);
+    strcpy(pass_ptr, out);
+  } else if (!check_flag(hydra_options.mode, MODE_COLON_FILE)) { // NOT colonfile mode
     pass_ptr = malloc(hydra_brains.sizepass + hydra_brains.countpass + 8);
     if (!pass_ptr) {
       fprintf(stderr, "Error: malloc(%llu) failed\n", (unsigned long long)(hydra_brains.sizepass + hydra_brains.countpass + 8));
@@ -1014,7 +1022,9 @@ void hydra_restore_read() {
     sck = fgets(out, sizeof(out), f);
     {
       long off = atol(out);
-      if (off < 0 || (uint64_t)off >= hydra_brains.sizepass + hydra_brains.countpass + 8) {
+      if (hydra_options.bfg) // -x: pass_ptr is restored from the string below
+        off = 0;
+      else if (off < 0 || (uint64_t)off >= hydra_brains.sizepass + hydra_brains.countpass + 8) {
         fprintf(stderr, "[ERROR] restore file target %d pass_ptr offset out of range (%ld)\n", j, off);
         exit(-1);
       }
