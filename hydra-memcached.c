@@ -88,11 +88,13 @@ int32_t start_mcached(int32_t s, char *ip, int32_t port, unsigned char options, 
       hydra_report(stderr, "[ERROR] Couldn't get server stats: %s\n", memcached_strerror(cache, rc));
     memcached_destroy_sasl_auth_data(cache);
     memcached_free(cache);
-    hydra_completed_pair_skip();
+    if (rc != MEMCACHED_AUTH_FAILURE)
+      return 3;
+    hydra_completed_pair();
     if (memcmp(hydra_get_next_pair(), &HYDRA_EXIT, sizeof(HYDRA_EXIT)) == 0) {
       return 3;
     }
-    return 2;
+    return 1;
   }
 
   memcached_destroy_sasl_auth_data(cache);
