@@ -48,12 +48,15 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
   char *empty = "";
   char *pass;
   unsigned char buf2[CHALLENGESIZE + 4];
+  int32_t got;
 
   if (strlen(pass = hydra_get_next_password()) == 0)
     pass = empty;
 
   memset(buf2, 0, sizeof(buf2));
-  if (recv(s, buf2, CHALLENGESIZE + 4, 0) < CHALLENGESIZE + 4) {
+  // RFB 3.7+ sends only the security type list here, RFB 3.3 at least 4 bytes
+  got = (int32_t)recv(s, buf2, CHALLENGESIZE + 4, 0);
+  if (got < (vnc_client_version == RFB37 ? 1 : 4)) {
     hydra_report(stderr, "[ERROR] VNC server connection failed (short read)\n");
     hydra_child_exit(0);
   }
@@ -67,7 +70,7 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
       hydra_child_exit(0);
     }
 
-    for (i = 1; i < buf2[0] && i < (int32_t)sizeof(buf2); i++) {
+    for (i = 1; i <= buf2[0] && i < got; i++) {
       // fprintf(stderr,"sec type %u\n",buf2[i]);
       // check if weak security types are available
       if (buf2[i] <= 0x2) {
@@ -107,6 +110,16 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
       }
     } else {
       // in old proto, challenge is following the security type
+      // the challenge may arrive in a separate segment
+      while (got < CHALLENGESIZE + 4) {
+        int32_t r = (int32_t)recv(s, buf2 + got, CHALLENGESIZE + 4 - got, 0);
+
+        if (r <= 0) {
+          hydra_report(stderr, "[ERROR] VNC server connection failed (short read)\n");
+          hydra_child_exit(0);
+        }
+        got += r;
+      }
       vncEncryptBytes((unsigned char *)buf2 + 4, pass);
       if (hydra_send(s, (char *)buf2 + 4, CHALLENGESIZE, 0) < 0) {
         return 1;
