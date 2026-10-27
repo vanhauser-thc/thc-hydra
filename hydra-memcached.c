@@ -74,6 +74,8 @@ int32_t start_mcached(int32_t s, char *ip, int32_t port, unsigned char options, 
 
   servers = memcached_server_list_append(servers, hydra_address2string(ip), port, &rc);
   rc = memcached_server_push(cache, servers);
+  // memcached_server_push() copies the list
+  memcached_server_list_free(servers);
   if (rc != MEMCACHED_SUCCESS) {
     if (verbose)
       hydra_report(stderr, "[ERROR] Couldn't add server: %s\n", memcached_strerror(cache, rc));
