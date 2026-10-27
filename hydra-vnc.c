@@ -47,7 +47,7 @@ void vncEncryptBytes(unsigned char *bytes, char *passwd) {
 int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char *miscptr, FILE *fp) {
   char *empty = "";
   char *pass;
-  unsigned char buf2[CHALLENGESIZE + 4];
+  unsigned char buf2[CHALLENGESIZE + 5];
   int32_t got;
 
   if (strlen(pass = hydra_get_next_password()) == 0)
@@ -69,8 +69,18 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
       hydra_report(stderr, "[ERROR] VNC server connection failed\n");
       hydra_child_exit(0);
     }
+    // the type list may arrive in more than one segment
+    while (got < 1 + buf2[0]) {
+      int32_t r = (int32_t)recv(s, buf2 + got, 1 + buf2[0] - got, 0);
 
-    for (i = 1; i <= buf2[0] && i < got; i++) {
+      if (r <= 0) {
+        hydra_report(stderr, "[ERROR] VNC server connection failed (short read)\n");
+        hydra_child_exit(0);
+      }
+      got += r;
+    }
+
+    for (i = 1; i <= buf2[0]; i++) {
       // fprintf(stderr,"sec type %u\n",buf2[i]);
       // check if weak security types are available
       if (buf2[i] <= 0x2) {
