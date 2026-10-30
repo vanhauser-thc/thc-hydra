@@ -71,7 +71,7 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
     }
     // the type list may arrive in more than one segment
     while (got < 1 + buf2[0]) {
-      int32_t r = (int32_t)recv(s, buf2 + got, 1 + buf2[0] - got, 0);
+      int32_t r = hydra_recv_nb(s, (char *)buf2 + got, 1 + buf2[0] - got);
 
       if (r <= 0) {
         hydra_report(stderr, "[ERROR] VNC server connection failed (short read)\n");
@@ -122,7 +122,7 @@ int32_t start_vnc(int32_t s, char *ip, int32_t port, unsigned char options, char
       // in old proto, challenge is following the security type
       // the challenge may arrive in a separate segment
       while (got < CHALLENGESIZE + 4) {
-        int32_t r = (int32_t)recv(s, buf2 + got, CHALLENGESIZE + 4 - got, 0);
+        int32_t r = hydra_recv_nb(s, (char *)buf2 + got, CHALLENGESIZE + 4 - got);
 
         if (r <= 0) {
           hydra_report(stderr, "[ERROR] VNC server connection failed (short read)\n");
