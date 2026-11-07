@@ -823,7 +823,7 @@ int32_t analyze_server_response(int32_t s) {
           strncpy(tmpname, startcookie, sizeof(tmpname) - 2);
           tmpname[sizeof(tmpname) - 2] = 0;
           ptr = strchr(tmpname, '=');
-          *(++ptr) = 0;
+          if (ptr) *(++ptr) = 0;
           // is the cookie already in the cookiejar? (so, does it have to be
           // replaced?)
           if ((ptr = hydra_strcasestr(cookie, tmpname)) != NULL) {
@@ -831,8 +831,13 @@ int32_t analyze_server_response(int32_t s) {
             // if the cookie is not in the beginning of the cookiejar, copy the
             // ones before
             if (ptr != cookie && *(ptr - 1) == ' ') {
-              strncpy(tmpcookie, cookie, ptr - cookie - 2);
-              tmpcookie[ptr - cookie - 2] = 0;
+              ssize_t off = ptr - cookie - 2;
+              if (off > 0) {
+                size_t n = (size_t)off;
+                if (n >= sizeof(tmpcookie)) n = sizeof(tmpcookie) - 1;
+                strncpy(tmpcookie, cookie, n);
+                tmpcookie[n] = 0;
+              }
             }
             ptr += strlen(tmpname);
             // if there are any cookies after this one in the cookiejar, copy
