@@ -139,28 +139,22 @@ int main(int argc, char *argv[]) {
         buf[--l] = 0;
     }
     if (strlen(buf) >= minlen && strlen(buf) <= maxlen) {
-      i = 0;
-      j = 1;
-      for (i = 0; i < strlen(buf) && j; i++) {
-        j = 0;
-        if (set_low && islower(buf[i])) {
-          j = 1;
+      /* A set counts when the password contains at least one character from
+       * it. Characters outside the requested sets are allowed. */
+      for (i = 0; i < strlen(buf); i++) {
+        if (islower(buf[i]))
           is_low = 1;
-        } else if (set_up && isupper(buf[i])) {
-          j = 1;
+        else if (isupper(buf[i]))
           is_up = 1;
-        } else if (set_no && isdigit(buf[i])) {
-          j = 1;
+        else if (isdigit(buf[i]))
           is_no = 1;
-        } else if (set_print && isprint(buf[i]) && !isalnum(buf[i])) {
-          j = 1;
+        else if (isprint(buf[i]))
           is_print = 1;
-        } else if (set_other && !isprint(buf[i])) {
-          j = 1;
+        else
           is_other = 1;
-        }
       }
-      if (j && countsets <= is_low + is_up + is_no + is_print + is_other) {
+      j = set_low * is_low + set_up * is_up + set_no * is_no + set_print * is_print + set_other * is_other;
+      if (j >= countsets) {
         fprintf(out, "%s\n", buf);
         count++;
       }
