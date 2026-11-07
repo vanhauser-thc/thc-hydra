@@ -352,6 +352,10 @@ char junk_file[50];
 
 // moved for restore feature
 int32_t process_restore = 0, dont_unlink;
+/* Tries that a restored session had already finished before this run started.
+ * hydra_brains.sent is cumulative, so the status line has to subtract this
+ * base before dividing by the elapsed time of the current run. */
+uint64_t restore_sent_base = 0;
 char *login_ptr = NULL, *pass_ptr = "", *csv_ptr = NULL, *servers_ptr = NULL;
 size_t countservers = 1, sizeservers = 0;
 char empty_login[2] = "", unsupported[500] = "";
@@ -874,6 +878,10 @@ void hydra_restore_read() {
 
   fck = (int32_t)fread(&hydra_brains, sizeof(hydra_brain), 1, f);
   hydra_brains.ofp = stdout;
+  /* Remember where the previous run stopped, so the status line can report
+   * the rate of this run instead of dividing the cumulative try count by the
+   * few seconds that have passed since we restarted. */
+  restore_sent_base = hydra_brains.sent;
   fck = (int32_t)fread(&hydra_options, sizeof(hydra_option), 1, f);
   hydra_options.restore = 1;
   /* the restore file is deserialized data: clamp every count/size field
@@ -4522,11 +4530,21 @@ int main(int argc, char *argv[]) {
     }
 
     if (time(NULL) - elapsed_status > status_print) {
+      uint64_t elapsed_secs, tries_session, todo_left;
+      double tries_per_sec, eta_secs;
+
       elapsed_status = time(NULL);
-      tmp_time = elapsed_status - starttime;
-      if (tmp_time < 1)
-        tmp_time = 1;
-      tmp_time = hydra_brains.sent / tmp_time;
+      elapsed_secs = (uint64_t)(elapsed_status - starttime);
+      if (elapsed_secs < 1)
+        elapsed_secs = 1;
+      /* On a restored session hydra_brains.sent already counts the tries that
+       * finished before this run started. Dividing that total by the elapsed
+       * time of the current run reports a rate that is far too high, so the
+       * rate is derived from the tries completed since starttime only. */
+      tries_session = hydra_brains.sent > restore_sent_base ? hydra_brains.sent - restore_sent_base : 0;
+      tries_per_sec = (double)tries_session / (double)elapsed_secs;
+
+      tmp_time = (time_t)tries_per_sec;
       if (tmp_time < 1)
         tmp_time = 1;
       if (debug == 0) {
@@ -4541,14 +4559,16 @@ int main(int argc, char *argv[]) {
       for (j = 0; j < hydra_options.max_use; j++)
         if (hydra_heads[j]->active >= HEAD_UNUSED)
           k++;
+      todo_left = (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent;
+      eta_secs = tries_per_sec > 0 ? (double)todo_left / tries_per_sec : 0;
       printf("[STATUS] %.2f tries/min, %" hPRIu64 " tries in %02" hPRIu64 ":%02" hPRIu64 "h, %" hPRIu64 " to do in %02" hPRIu64 ":%02" hPRIu64 "h, %d active\n",
-             (1.0 * hydra_brains.sent) / (((elapsed_status - starttime) * 1.0) / 60),                                                                                               // tries/min
-             hydra_brains.sent,                                                                                                                                                     // tries
-             (uint64_t)((elapsed_status - starttime) / 3600),                                                                                                                       // hours
-             (uint64_t)(((elapsed_status - starttime) % 3600) / 60),                                                                                                                // minutes
-             (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent != 0 ? (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent : 1,                              // left todo
-             (uint64_t)(((double)(hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / ((double)hydra_brains.sent / (elapsed_status - starttime))) / 3600,              // hours
-             (((uint64_t)(((double)(hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / ((double)hydra_brains.sent / (elapsed_status - starttime))) % 3600) / 60) + 1, // min
+             tries_per_sec * 60,                    // tries/min, this run only
+             hydra_brains.sent,                     // tries, cumulative across resumed runs
+             elapsed_secs / 3600,                   // hours
+             (elapsed_secs % 3600) / 60,            // minutes
+             todo_left != 0 ? todo_left : 1,        // left todo
+             (uint64_t)eta_secs / 3600,             // hours
+             (((uint64_t)eta_secs % 3600) / 60) + 1,// min
              k);
       hydra_debug(0, "STATUS");
     }
