@@ -124,6 +124,7 @@ int32_t start_ldap(int32_t s, char *ip, int32_t port, unsigned char options, cha
   if (ldap_auth_mechanism == AUTH_CRAMMD5) {
     /* get the challenge, need to extract it */
     char *ptr;
+    char *expanded_miscptr;
     /* sasl_cram_md5 writes 32 hex bytes plus a NUL — needs at least 33. */
     char buf2[64];
 
@@ -133,14 +134,18 @@ int32_t start_ldap(int32_t s, char *ip, int32_t port, unsigned char options, cha
     if (result == NULL)
       return 1;
     counter++;
-    if (strstr(miscptr, "^USER^") != NULL) {
-      miscptr = hydra_strrep(miscptr, "^USER^", login);
+    expanded_miscptr = hydra_replace_credential_placeholders(miscptr, login, pass);
+    if (expanded_miscptr == NULL) {
+      hydra_completed_pair_skip();
+      free(buf);
+      return -1;
     }
 
-    length = 12 + strlen(miscptr) + 4 + strlen("CRAM-MD5") + 2 + strlen(login) + 1 + strlen(buf2);
+    length = 12 + strlen(expanded_miscptr) + 4 + strlen("CRAM-MD5") + 2 + strlen(login) + 1 + strlen(buf2);
     /* Refuse server-driven inputs that would overrun the 512-byte buffer. */
-    if (length > sizeof(buffer) || strlen(miscptr) > 220 || strlen(login) > 200 || strlen(buf2) > sizeof(buf2)) {
+    if (length > sizeof(buffer) || strlen(expanded_miscptr) > 220 || strlen(login) > 200 || strlen(buf2) > sizeof(buf2)) {
       hydra_completed_pair_skip();
+      free(expanded_miscptr);
       free(buf);
       return -1;
     }
@@ -160,19 +165,20 @@ int32_t start_ldap(int32_t s, char *ip, int32_t port, unsigned char options, cha
     buffer[9] = version;
     buffer[10] = 4;
 
-    buffer[11] = strlen(miscptr); /* DN */
-    memcpy(&buffer[12], miscptr, strlen(miscptr));
-    buffer[12 + strlen(miscptr)] = 163;
-    buffer[13 + strlen(miscptr)] = 2 + strlen("CRAM-MD5") + 2 + strlen(login) + 1 + strlen(buf2);
-    buffer[14 + strlen(miscptr)] = 4;
-    buffer[15 + strlen(miscptr)] = strlen("CRAM-MD5");
-    memcpy(&buffer[16 + strlen(miscptr)], "CRAM-MD5", strlen("CRAM-MD5"));
-    buffer[16 + strlen(miscptr) + strlen("CRAM-MD5")] = 4;
-    buffer[17 + strlen(miscptr) + strlen("CRAM-MD5")] = strlen(login) + 1 + strlen(buf2);
-    memcpy(&buffer[18 + strlen(miscptr) + strlen("CRAM-MD5")], login, strlen(login));
-    buffer[18 + strlen(miscptr) + strlen("CRAM-MD5") + strlen(login)] = ' ';
-    memcpy(&buffer[18 + strlen(miscptr) + strlen("CRAM-MD5") + strlen(login) + 1], buf2, strlen(buf2));
+    buffer[11] = strlen(expanded_miscptr); /* DN */
+    memcpy(&buffer[12], expanded_miscptr, strlen(expanded_miscptr));
+    buffer[12 + strlen(expanded_miscptr)] = 163;
+    buffer[13 + strlen(expanded_miscptr)] = 2 + strlen("CRAM-MD5") + 2 + strlen(login) + 1 + strlen(buf2);
+    buffer[14 + strlen(expanded_miscptr)] = 4;
+    buffer[15 + strlen(expanded_miscptr)] = strlen("CRAM-MD5");
+    memcpy(&buffer[16 + strlen(expanded_miscptr)], "CRAM-MD5", strlen("CRAM-MD5"));
+    buffer[16 + strlen(expanded_miscptr) + strlen("CRAM-MD5")] = 4;
+    buffer[17 + strlen(expanded_miscptr) + strlen("CRAM-MD5")] = strlen(login) + 1 + strlen(buf2);
+    memcpy(&buffer[18 + strlen(expanded_miscptr) + strlen("CRAM-MD5")], login, strlen(login));
+    buffer[18 + strlen(expanded_miscptr) + strlen("CRAM-MD5") + strlen(login)] = ' ';
+    memcpy(&buffer[18 + strlen(expanded_miscptr) + strlen("CRAM-MD5") + strlen(login) + 1], buf2, strlen(buf2));
 
+    free(expanded_miscptr);
     if (hydra_send(s, (char *)buffer, length, 0) < 0)
       return 1;
     free(buf);
@@ -181,30 +187,36 @@ int32_t start_ldap(int32_t s, char *ip, int32_t port, unsigned char options, cha
   } else {
     if (ldap_auth_mechanism == AUTH_DIGESTMD5) {
       char *ptr;
+      char *expanded_miscptr;
       char buffer2[500];
       int32_t ind = 0;
 
       ptr = strstr((char *)buf, "realm=");
 
       counter++;
-      if (strstr(miscptr, "^USER^") != NULL) {
-        miscptr = hydra_strrep(miscptr, "^USER^", login);
+      expanded_miscptr = hydra_replace_credential_placeholders(miscptr, login, pass);
+      if (expanded_miscptr == NULL) {
+        hydra_completed_pair_skip();
+        free(buf);
+        return -1;
       }
 
       fooptr = buffer2;
-      result = sasl_digest_md5(fooptr, login, pass, ptr, miscptr, "ldap", NULL, 0, NULL);
+      result = sasl_digest_md5(fooptr, login, pass, ptr, expanded_miscptr, "ldap", NULL, 0, NULL);
       if (result == NULL) {
+        free(expanded_miscptr);
         free(buf);
         return 3;
       }
 
-      length = 26 + strlen(miscptr) + strlen("DIGEST-MD5") + strlen(buffer2);
+      length = 26 + strlen(expanded_miscptr) + strlen("DIGEST-MD5") + strlen(buffer2);
       /* The server-controlled DIGEST-MD5 challenge fields drive `buffer2`
-       * up to its 500-byte cap; together with miscptr the total can exceed
+       * up to its 500-byte cap; together with the DN the total can exceed
        * the 512-byte `buffer`. Refuse the attempt before the memcpy chain
        * starts writing past the buffer. */
-      if (length > sizeof(buffer) || strlen(miscptr) > 220 || strlen(buffer2) > sizeof(buffer) - 32) {
+      if (length > sizeof(buffer) || strlen(expanded_miscptr) > 220 || strlen(buffer2) > sizeof(buffer) - 32) {
         hydra_completed_pair_skip();
+        free(expanded_miscptr);
         free(buf);
         return -1;
       }
@@ -258,48 +270,49 @@ int32_t start_ldap(int32_t s, char *ip, int32_t port, unsigned char options, cha
       ind++;
       buffer[ind] = 4;
       ind++;
-      buffer[ind] = strlen(miscptr);
+      buffer[ind] = strlen(expanded_miscptr);
       ind++;
-      memcpy(&buffer[ind], miscptr, strlen(miscptr));
-      /*DN*/ buffer[ind + strlen(miscptr)] = 163; // 0xa3
+      memcpy(&buffer[ind], expanded_miscptr, strlen(expanded_miscptr));
+      /*DN*/ buffer[ind + strlen(expanded_miscptr)] = 163; // 0xa3
       ind++;
-      buffer[ind + strlen(miscptr)] = 130; // 0x82
+      buffer[ind + strlen(expanded_miscptr)] = 130; // 0x82
       ind++;
 
       if (strlen(buffer2) + 6 + strlen("DIGEST-MD5") > 255) {
-        buffer[ind + strlen(miscptr)] = 1;
+        buffer[ind + strlen(expanded_miscptr)] = 1;
         ind++;
-        buffer[ind + strlen(miscptr)] = strlen(buffer2) + 6 + strlen("DIGEST-MD5") - 256;
+        buffer[ind + strlen(expanded_miscptr)] = strlen(buffer2) + 6 + strlen("DIGEST-MD5") - 256;
       } else {
-        buffer[ind + strlen(miscptr)] = 0;
+        buffer[ind + strlen(expanded_miscptr)] = 0;
         ind++;
-        buffer[ind + strlen(miscptr)] = strlen(buffer2) + 6 + strlen("DIGEST-MD5");
+        buffer[ind + strlen(expanded_miscptr)] = strlen(buffer2) + 6 + strlen("DIGEST-MD5");
       }
       ind++;
 
-      buffer[ind + strlen(miscptr)] = 4;
+      buffer[ind + strlen(expanded_miscptr)] = 4;
       ind++;
-      buffer[ind + strlen(miscptr)] = strlen("DIGEST-MD5");
+      buffer[ind + strlen(expanded_miscptr)] = strlen("DIGEST-MD5");
       ind++;
-      memcpy(&buffer[ind + strlen(miscptr)], "DIGEST-MD5", strlen("DIGEST-MD5"));
-      buffer[ind + strlen(miscptr) + strlen("DIGEST-MD5")] = 4;
+      memcpy(&buffer[ind + strlen(expanded_miscptr)], "DIGEST-MD5", strlen("DIGEST-MD5"));
+      buffer[ind + strlen(expanded_miscptr) + strlen("DIGEST-MD5")] = 4;
       ind++;
-      buffer[ind + strlen(miscptr) + strlen("DIGEST-MD5")] = 130;
+      buffer[ind + strlen(expanded_miscptr) + strlen("DIGEST-MD5")] = 130;
       ind++;
 
       if (strlen(buffer2) > 255) {
-        buffer[ind + strlen(miscptr) + strlen("DIGEST-MD5")] = 1;
+        buffer[ind + strlen(expanded_miscptr) + strlen("DIGEST-MD5")] = 1;
         ind++;
-        buffer[ind + strlen(miscptr) + strlen("DIGEST-MD5")] = strlen(buffer2) - 256;
+        buffer[ind + strlen(expanded_miscptr) + strlen("DIGEST-MD5")] = strlen(buffer2) - 256;
       } else {
-        buffer[ind + strlen(miscptr) + strlen("DIGEST-MD5")] = 0;
+        buffer[ind + strlen(expanded_miscptr) + strlen("DIGEST-MD5")] = 0;
         ind++;
-        buffer[ind + strlen(miscptr) + strlen("DIGEST-MD5")] = strlen(buffer2);
+        buffer[ind + strlen(expanded_miscptr) + strlen("DIGEST-MD5")] = strlen(buffer2);
       }
       ind++;
-      memcpy(&buffer[ind + strlen(miscptr) + strlen("DIGEST-MD5")], buffer2, strlen(buffer2));
+      memcpy(&buffer[ind + strlen(expanded_miscptr) + strlen("DIGEST-MD5")], buffer2, strlen(buffer2));
       ind++;
 
+      free(expanded_miscptr);
       if (hydra_send(s, (char *)buffer, length, 0) < 0)
         return 1;
       free(buf);

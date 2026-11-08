@@ -5,7 +5,7 @@ hydra \- a very fast network logon cracker which supports many different service
 .B hydra
  [[[\-l LOGIN|\-L FILE] [\-p PASS|\-P FILE|\-x OPT \-y]] | [\-C FILE]]
  [\-e nsr] [\-u] [\-f|\-F] [\-M FILE] [\-o FILE] [\-b FORMAT]
- [\-t TASKS] [\-T TASKS] [\-w TIME] [\-W TIME] [\-m OPTIONS] [\-s PORT]
+ [\-t TASKS] [\-T TASKS] [\-w TIME] [\-W TIME] [\-m OPTIONS] [\-\-preproc FIELD,TRANSFORM] [\-s PORT]
  [\-c TIME] [\-S] [\-O] [\-4|6] [\-I] [\-vV] [\-d]
  server service [OPTIONS]
 .br
@@ -64,6 +64,25 @@ or \-L FILE login with LOGIN name, or load several logins from FILE
 .TP
 .B \-p PASS
 or \-P FILE try password PASS, or load several passwords from FILE
+.TP
+.B \-\-preproc FIELD,TRANSFORM
+Transform a credential immediately before it replaces a credential placeholder in a
+request template; source wordlists and reported credentials remain unchanged. FIELD is
+.B USER
+or
+.B PASS.
+Supported transforms are
+.BR b64 ,
+.BR urlencode ,
+.BR lower ,
+.BR upper ,
+.BR prefix:VALUE ,
+and
+.BR suffix:VALUE .
+Chain transforms in one option with commas (for example,
+.BR PASS,b64,urlencode )
+and repeat the option to add more rules. URL-encoded values are inserted verbatim in
+HTTP form placeholders to avoid a second form-encoding pass.
 .TP
 .B \-x min:max:charset
 generate passwords from min to max length. charset can contain 1
