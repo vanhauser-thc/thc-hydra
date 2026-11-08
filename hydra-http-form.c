@@ -536,6 +536,10 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
       ptr = miscptr + 2;
       while (*ptr != 0 && *ptr != ':')
         ptr++;
+      if (*ptr != ':') {
+        hydra_report(stderr, "[ERROR] invalid header 'h=%s': expected format \"Name:Value\" (escape a literal colon in the value as \\:)\n", miscptr + 2);
+        return 0;
+      }
       if (*(ptr - 1) == '\\')
         *(ptr - 1) = 0;
       if (*ptr != 0) {
@@ -552,13 +556,17 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
        *  - (optional1 + 2) contains the header's name
        *  - ptr contains the header's value
        */
+      if (*(miscptr + 2) == 0 || *ptr == 0) {
+        hydra_report(stderr, "[ERROR] invalid header 'h=...': header name and value must both be non-empty (use \"Name:Value\")\n");
+        return 0;
+      }
       if (add_header(ptr_head, miscptr + 2, hydra_strrep(ptr, "\\:", ":"), HEADER_TYPE_USERHEADER)) {
         // Success: break the switch and go ahead
         miscptr = ptr2;
         break;
       }
-      // Error: abort execution
-      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (h).\n");
+      // Error: a genuine allocation failure inside add_header
+      hydra_report(stderr, "[ERROR] out of memory while adding HTTP header (h).\n");
       return 0;
     case 'H':
       // add a new header, or replace an existing one's value
@@ -566,6 +574,10 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
       while (*ptr != 0 && *ptr != ':')
         ptr++;
 
+      if (*ptr != ':') {
+        hydra_report(stderr, "[ERROR] invalid header 'H=%s': expected format \"Name:Value\" (escape a literal colon in the value as \\:)\n", miscptr + 2);
+        return 0;
+      }
       if (*(ptr - 1) == '\\')
         *(ptr - 1) = 0;
 
@@ -583,13 +595,17 @@ int32_t parse_options(char *miscptr, ptr_header_node *ptr_head) {
        *  - (optional1 + 2) contains the header's name
        *  - ptr contains the header's value
        */
+      if (*(miscptr + 2) == 0 || *ptr == 0) {
+        hydra_report(stderr, "[ERROR] invalid header 'H=...': header name and value must both be non-empty (use \"Name:Value\")\n");
+        return 0;
+      }
       if (add_header(ptr_head, miscptr + 2, hydra_strrep(ptr, "\\:", ":"), HEADER_TYPE_USERHEADER_REPL)) {
         // Success: break the switch and go ahead
         miscptr = ptr2;
         break;
       }
-      // Error: abort execution
-      hydra_report(stderr, "[ERROR] Out of memory for HTTP headers (H).\n");
+      // Error: a genuine allocation failure inside add_header
+      hydra_report(stderr, "[ERROR] out of memory while adding HTTP header (H).\n");
       return 0;
     default:
       hydra_report(stderr, "[ERROR] no valid optional parameter type given: %c\n", miscptr[0]);
