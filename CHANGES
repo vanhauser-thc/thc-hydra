@@ -28,7 +28,10 @@ Release 9.8-dev
   - HTTP-form: clear cookie jar and drop operator-supplied Authorization
     header on cross-host redirect; skip pair on hydra_strrep
     overflow rather than crash; cap urlpath_extracted strncpy
-   ; apply PCRE2 match_limit/depth_limit 
+   ; apply PCRE2 match_limit/depth_limit
+   ; a malformed h=/H= header (missing "Name:Value" colon or an empty
+    name/value) now reports the real format error instead of the
+    misleading "Out of memory for HTTP headers" (issue #954)
   - NTLM: NDEBUG-disabled assertions replaced with runtime caps in
     unicodeToString/strToUnicode/toString; challenge-offset
     bounds in GetUnicodeString/GetString/DumpBuffer macros to refuse
