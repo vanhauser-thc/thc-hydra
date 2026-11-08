@@ -2369,6 +2369,7 @@ int main(int argc, char *argv[]) {
   int32_t i = 0, j = 0, k, error = 0, modusage = 0, ignore_restore = 0, do_switch;
   int32_t head_no = 0, target_no = 0, exit_condition = 0, readres, active_heads = 0;
   time_t starttime, elapsed_status, elapsed_restore, status_print = 59, tmp_time;
+  uint64_t sent_before = 0, cur_sent = 0; // tries already done when this run started (>0 on -R resume) and tries done in the current run; see issue #824
   char *tmpptr, *tmpptr2, *tmpptr3;
   char rc, buf[MAXBUF];
   time_t last_attempt = 0;
@@ -4241,6 +4242,7 @@ int main(int argc, char *argv[]) {
     hydra_service_init(i);
 
   starttime = elapsed_status = elapsed_restore = time(NULL);
+  sent_before = hydra_brains.sent; // baseline: tries carried over from a resumed (-R) session, so rate/ETA reflect the current run only (issue #824)
   fflush(stdout);
   fflush(stderr);
   fflush(hydra_brains.ofp);
@@ -4523,10 +4525,11 @@ int main(int argc, char *argv[]) {
 
     if (time(NULL) - elapsed_status > status_print) {
       elapsed_status = time(NULL);
+      cur_sent = hydra_brains.sent - sent_before; // tries done in the current run; on a resumed session the restored count (sent_before) must not inflate the rate (issue #824)
       tmp_time = elapsed_status - starttime;
       if (tmp_time < 1)
         tmp_time = 1;
-      tmp_time = hydra_brains.sent / tmp_time;
+      tmp_time = cur_sent / tmp_time;
       if (tmp_time < 1)
         tmp_time = 1;
       if (debug == 0) {
@@ -4542,13 +4545,13 @@ int main(int argc, char *argv[]) {
         if (hydra_heads[j]->active >= HEAD_UNUSED)
           k++;
       printf("[STATUS] %.2f tries/min, %" hPRIu64 " tries in %02" hPRIu64 ":%02" hPRIu64 "h, %" hPRIu64 " to do in %02" hPRIu64 ":%02" hPRIu64 "h, %d active\n",
-             (1.0 * hydra_brains.sent) / (((elapsed_status - starttime) * 1.0) / 60),                                                                                               // tries/min
-             hydra_brains.sent,                                                                                                                                                     // tries
+             (1.0 * cur_sent) / (((elapsed_status - starttime) * 1.0) / 60),                                                                                                       // tries/min (current run)
+             cur_sent,                                                                                                                                                             // tries (current run)
              (uint64_t)((elapsed_status - starttime) / 3600),                                                                                                                       // hours
              (uint64_t)(((elapsed_status - starttime) % 3600) / 60),                                                                                                                // minutes
-             (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent != 0 ? (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent : 1,                              // left todo
-             (uint64_t)(((double)(hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / ((double)hydra_brains.sent / (elapsed_status - starttime))) / 3600,              // hours
-             (((uint64_t)(((double)(hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / ((double)hydra_brains.sent / (elapsed_status - starttime))) % 3600) / 60) + 1, // min
+             (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent != 0 ? (hydra_brains.todo_all + total_redo_count) - hydra_brains.sent : 1,                              // left todo (absolute, incl. resumed tries)
+             (uint64_t)(((double)(hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / ((double)(cur_sent ? cur_sent : 1) / (elapsed_status - starttime))) / 3600,      // hours (ETA from current-run rate)
+             (((uint64_t)(((double)(hydra_brains.todo_all + total_redo_count) - hydra_brains.sent) / ((double)(cur_sent ? cur_sent : 1) / (elapsed_status - starttime))) % 3600) / 60) + 1, // min
              k);
       hydra_debug(0, "STATUS");
     }
