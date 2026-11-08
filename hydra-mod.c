@@ -1427,7 +1427,7 @@ char *hydra_string_replace(const char *string, const char *substr, const char *r
     return NULL;
   if (substr == NULL || replacement == NULL)
     return strdup(string);
-  tok = strstr(string, substr);
+  tok = (char*)strstr(string, substr);
   if (tok == NULL)
     return strdup(string);
   newstr = malloc(strlen(string) - strlen(substr) + strlen(replacement) + 2);
