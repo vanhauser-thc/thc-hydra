@@ -221,14 +221,22 @@ if command -v file > /dev/null 2>&1; then
       ARCH_LIBDIRS="$ARCH_LIBDIRS $archdir"
       continue
     fi
-    archdesc=`file -b "$archsample" 2> /dev/null`
+    # -L so a .so symlink is described by its target: unversioned symlinks sort
+    # before the real objects, and "symbolic link to ..." matches neither width.
+    archdesc=`file -Lb "$archsample" 2> /dev/null`
+    # Only a sample positively identified as the opposite ELF class is a reason
+    # to drop the directory. A linker script ("ASCII text"), an unrecognised
+    # format or a failed file(1) prove nothing, and dropping those hid native
+    # dependencies.
     if [ "$SIXFOUR" = "64" ]; then
       case "$archdesc" in
-        *64-bit*) ARCH_LIBDIRS="$ARCH_LIBDIRS $archdir" ;;
+        *32-bit*) ;;
+        *) ARCH_LIBDIRS="$ARCH_LIBDIRS $archdir" ;;
       esac
     else
       case "$archdesc" in
-        *32-bit*) ARCH_LIBDIRS="$ARCH_LIBDIRS $archdir" ;;
+        *64-bit*) ;;
+        *) ARCH_LIBDIRS="$ARCH_LIBDIRS $archdir" ;;
       esac
     fi
   done
