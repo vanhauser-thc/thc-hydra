@@ -4551,26 +4551,22 @@ int main(int argc, char *argv[]) {
         if (todo_left == 0)
           todo_left = 1;
 
-        // cur_sent is 0 on a resumed session until the first new attempt lands.
-        // Substituting 1 for it invents a rate of one try per second and prints
-        // an ETA that looks measured but isn't -- 991000 pairs left after one
-        // second came out as ~275h. No measurable throughput means the ETA is
-        // unknown, not slow.
-        if (cur_sent > 0 && elapsed_status > starttime) {
+        // without a completed attempt in this run there is no rate to base an ETA on
+        if (cur_sent > 0) {
           double eta_secs = (double)todo_left / ((double)cur_sent / (elapsed_status - starttime));
 
           snprintf(eta_buf, sizeof(eta_buf), "%02" hPRIu64 ":%02" hPRIu64 "h", (uint64_t)(eta_secs / 3600), ((uint64_t)eta_secs % 3600) / 60 + 1);
         } else {
-          snprintf(eta_buf, sizeof(eta_buf), " --:-- ");
+          snprintf(eta_buf, sizeof(eta_buf), "--:--h");
         }
 
         printf("[STATUS] %.2f tries/min, %" hPRIu64 " tries in %02" hPRIu64 ":%02" hPRIu64 "h, %" hPRIu64 " to do in %s, %d active\n",
-               (1.0 * cur_sent) / (((elapsed_status - starttime) * 1.0) / 60),  // tries/min (current run)
-               cur_sent,                                                        // tries (current run)
-               (uint64_t)((elapsed_status - starttime) / 3600),                 // hours
-               (uint64_t)(((elapsed_status - starttime) % 3600) / 60),          // minutes
-               todo_left,                                                       // left todo (absolute, incl. resumed tries)
-               eta_buf,                                                         // eta
+               (1.0 * cur_sent) / (((elapsed_status - starttime) * 1.0) / 60), // tries/min (current run)
+               cur_sent,                                                       // tries (current run)
+               (uint64_t)((elapsed_status - starttime) / 3600),                // hours
+               (uint64_t)(((elapsed_status - starttime) % 3600) / 60),         // minutes
+               todo_left,                                                      // left todo (absolute, incl. resumed tries)
+               eta_buf,                                                        // eta
                k);
       }
       hydra_debug(0, "STATUS");

@@ -198,47 +198,42 @@ if [ -n "$PREFIX" ]; then
     fi
 fi
 
-# Drop library directories whose objects do not match the host architecture.
-# /etc/ld.so.conf.d/ commonly lists the native multiarch directory next to a
-# foreign one (on Debian: x86_64-linux-gnu and i386-linux-gnu). The module
+# Drop library directories whose objects do not match the ELF class $CC builds
+# for. /etc/ld.so.conf.d/ commonly lists the native multiarch directory next to
+# a foreign one (on Debian: x86_64-linux-gnu and i386-linux-gnu). The module
 # checks below match libraries by file name only, so a 32-bit libssl.so in a
 # 32-bit directory satisfies the check in a 64-bit build, its directory ends up
 # in XLIBPATHS, and the linker then reports "skipping incompatible" for every
 # object it finds there.
-# Directories below --prefix are kept untouched: with a cross compiler uname -m
-# reports the build host while the libraries are for the target.
+# The class comes from a test binary, not uname -m: a 32-bit userland can run on
+# a 64-bit kernel, and a cross compiler targets another machine than the host.
+# Non-ELF targets (macOS, Windows) leave TARGET_ELF empty and skip the filter.
+TARGET_ELF=""
+FOREIGN_ELF=""
 if command -v file > /dev/null 2>&1; then
+  TMPC=comptest$$
+  echo 'int main(void) { return 0; }' > $TMPC.c
+  $CC -o $TMPC $TMPC.c > /dev/null 2>&1
+  case `file -b $TMPC 2> /dev/null` in
+    "ELF 64-bit"*) TARGET_ELF=64; FOREIGN_ELF=32 ;;
+    "ELF 32-bit"*) TARGET_ELF=32; FOREIGN_ELF=64 ;;
+  esac
+  rm -f $TMPC $TMPC.c
+fi
+if [ -n "$TARGET_ELF" ]; then
   ARCH_LIBDIRS=
   for archdir in $LIBDIRS; do
-    case "$PREFIX" in
-      "") ;;
-      *) case "$archdir" in
-           "$PREFIX"/*) ARCH_LIBDIRS="$ARCH_LIBDIRS $archdir"; continue ;;
-         esac ;;
+    test -d "$archdir" || continue
+    # -L so .so symlinks are described by their targets.
+    archdesc=`file -Lb $archdir/*.so* 2> /dev/null`
+    # A directory is dropped only if it holds objects of the other ELF class and
+    # none of the target class. Linker scripts ("ASCII text"), other formats or
+    # a failed file(1) prove nothing and keep the directory.
+    case "$archdesc" in
+      *"ELF $TARGET_ELF-bit"*) ARCH_LIBDIRS="$ARCH_LIBDIRS $archdir" ;;
+      *"ELF $FOREIGN_ELF-bit"*) ;;
+      *) ARCH_LIBDIRS="$ARCH_LIBDIRS $archdir" ;;
     esac
-    archsample=`/bin/ls $archdir/*.so* 2> /dev/null | head -1`
-    if [ -z "$archsample" ]; then
-      ARCH_LIBDIRS="$ARCH_LIBDIRS $archdir"
-      continue
-    fi
-    # -L so a .so symlink is described by its target: unversioned symlinks sort
-    # before the real objects, and "symbolic link to ..." matches neither width.
-    archdesc=`file -Lb "$archsample" 2> /dev/null`
-    # Only a sample positively identified as the opposite ELF class is a reason
-    # to drop the directory. A linker script ("ASCII text"), an unrecognised
-    # format or a failed file(1) prove nothing, and dropping those hid native
-    # dependencies.
-    if [ "$SIXFOUR" = "64" ]; then
-      case "$archdesc" in
-        *32-bit*) ;;
-        *) ARCH_LIBDIRS="$ARCH_LIBDIRS $archdir" ;;
-      esac
-    else
-      case "$archdesc" in
-        *64-bit*) ;;
-        *) ARCH_LIBDIRS="$ARCH_LIBDIRS $archdir" ;;
-      esac
-    fi
   done
   LIBDIRS="$ARCH_LIBDIRS"
 fi
