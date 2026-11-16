@@ -13,6 +13,7 @@
 
 extern char quiet;
 extern const unsigned char HYDRA_EXIT[5];
+extern hydra_preproc_config hydra_preproc;
 
 extern void hydra_child_exit(int32_t code);
 extern void hydra_register_socket(int32_t s);
@@ -48,6 +49,9 @@ extern char *hydra_strcasestr(const char *haystack, const char *needle);
 extern void hydra_dump_data(unsigned char *buf, int32_t len, char *text);
 extern int32_t hydra_memsearch(char *haystack, int32_t hlen, char *needle, int32_t nlen);
 extern char *hydra_strrep(char *string, char *oldpiece, char *newpiece);
+extern char *hydra_preprocess_credential(const char *credential, hydra_preproc_field_t field);
+extern char *hydra_replace_credential_placeholders(const char *template, const char *login, const char *pass);
+extern int32_t hydra_preproc_uses_transform(hydra_preproc_field_t field, hydra_preproc_transform_type_t type);
 
 #ifdef HAVE_PCRE
 int32_t hydra_string_match(char *str, const char *regex);

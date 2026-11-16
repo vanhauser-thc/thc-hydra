@@ -177,6 +177,30 @@ typedef enum { MODE_PASSWORD_LIST = 1, MODE_LOGIN_LIST = 2, MODE_PASSWORD_BRUTE 
 
 typedef enum { FORMAT_PLAIN_TEXT, FORMAT_JSONV1, FORMAT_JSONV2, FORMAT_XMLV1 } output_format_t;
 
+#define HYDRA_PREPROC_MAX_RULES 32
+#define HYDRA_PREPROC_MAX_TRANSFORMS 16
+#define HYDRA_PREPROC_VALUE_SIZE 256
+#define HYDRA_PREPROC_MAX_RESULT_SIZE 6000
+
+typedef enum { HYDRA_PREPROC_FIELD_USER, HYDRA_PREPROC_FIELD_PASS } hydra_preproc_field_t;
+typedef enum { HYDRA_PREPROC_B64, HYDRA_PREPROC_URLENCODE, HYDRA_PREPROC_LOWER, HYDRA_PREPROC_UPPER, HYDRA_PREPROC_PREFIX, HYDRA_PREPROC_SUFFIX } hydra_preproc_transform_type_t;
+
+typedef struct {
+  hydra_preproc_transform_type_t type;
+  char value[HYDRA_PREPROC_VALUE_SIZE];
+} hydra_preproc_transform;
+
+typedef struct {
+  hydra_preproc_field_t field;
+  int32_t transform_count;
+  hydra_preproc_transform transforms[HYDRA_PREPROC_MAX_TRANSFORMS];
+} hydra_preproc_rule;
+
+typedef struct {
+  int32_t rule_count;
+  hydra_preproc_rule rules[HYDRA_PREPROC_MAX_RULES];
+} hydra_preproc_config;
+
 typedef struct {
   hydra_mode_t mode;
   int32_t loop_mode; // valid modes: 0 = password, 1 = user
