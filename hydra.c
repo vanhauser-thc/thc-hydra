@@ -2659,6 +2659,10 @@ int main(int argc, char *argv[]) {
       break;
     case 's':
       hydra_options.port = port = atoi(optarg);
+      if (port < 1 || port > 65535) {
+        fprintf(stderr, "[ERROR] Option -s needs to be a port number between 1 and 65535\n");
+        exit(-1);
+      }
       break;
     case 'c':
 #ifdef MSG_PEEK
