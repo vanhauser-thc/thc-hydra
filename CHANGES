@@ -56,6 +56,8 @@ Release 9.8-dev
     NUL-termination; strip-trailing-CRLF off-by-one in
     pop3/imap/smtp/nntp 
 * more buffer overflow fixes
+* ftp: report servers that require TLS ("530 ... must use encryption") instead
+  of silently skipping the login as an unknown user
 
 Release 9.7
 * GTK3 support for xhydra by elboulangero
