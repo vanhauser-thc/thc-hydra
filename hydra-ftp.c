@@ -23,6 +23,12 @@ int32_t start_ftp(int32_t s, char *ip, int32_t port, unsigned char options, char
   /* special hack to identify 530 user unknown msg. suggested by
    * Jean-Baptiste.BEAUFRETON@turbomeca.fr */
   if (buf[0] == '5' && buf[1] == '3' && buf[2] == '0') {
+    /* e.g. vsftpd with force_local_logins_ssl: "530 Non-anonymous sessions must use encryption." */
+    if (strstr(buf, "ncrypt") != NULL || strstr(buf, "TLS") != NULL || strstr(buf, "SSL") != NULL) {
+      hydra_report(stderr, "[ERROR] the server requires an encrypted connection, use the ftps module (AUTH TLS) or -S (implicit SSL): %s\n", buf);
+      free(buf);
+      return 3;
+    }
     if (verbose)
       printf("[INFO] user %s does not exist, skipping\n", login);
     hydra_completed_pair_skip();
