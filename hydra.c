@@ -2659,6 +2659,10 @@ int main(int argc, char *argv[]) {
       break;
     case 's':
       hydra_options.port = port = atoi(optarg);
+      if (port < 1 || port > 65535) {
+        fprintf(stderr, "[ERROR] Option -s needs to be a port number between 1 and 65535\n");
+        exit(-1);
+      }
       break;
     case 'c':
 #ifdef MSG_PEEK
@@ -3982,6 +3986,11 @@ int main(int argc, char *argv[]) {
     }
     if (proxy_count == 0)
       bail("proxy defined but not valid, exiting");
+    // HYDRA_PROXY_HTTP is a forward proxy: it expects a request line. With a
+    // TLS target hydra would instead start a handshake on the proxy link.
+    if (use_proxy == 1 && hydra_options.ssl)
+      bail("HYDRA_PROXY_HTTP cannot be used with a TLS target, it is a plain "
+           "HTTP forward proxy. Use HYDRA_PROXY=connect://proxy:port instead.");
   }
 
   if (hydra_options.restore == 0) {
@@ -4076,9 +4085,9 @@ int main(int argc, char *argv[]) {
     char outfile_open_type[] = "a+";
     if (hydra_options.outfile_format == FORMAT_JSONV1 && hydra_options.restore != 1) {
       outfile_open_type[0] = 'w';
-      oflags = O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW;
+      oflags = O_RDWR | O_CREAT | O_TRUNC | O_NOFOLLOW;
     } else {
-      oflags = O_WRONLY | O_CREAT | O_APPEND | O_NOFOLLOW;
+      oflags = O_RDWR | O_CREAT | O_APPEND | O_NOFOLLOW;
     }
     ofd = open(hydra_options.outfile_ptr, oflags, 0600);
     if (ofd < 0 || (hydra_brains.ofp = fdopen(ofd, outfile_open_type)) == NULL) {
