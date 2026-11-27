@@ -3986,6 +3986,11 @@ int main(int argc, char *argv[]) {
     }
     if (proxy_count == 0)
       bail("proxy defined but not valid, exiting");
+    // HYDRA_PROXY_HTTP is a forward proxy: it expects a request line. With a
+    // TLS target hydra would instead start a handshake on the proxy link.
+    if (use_proxy == 1 && hydra_options.ssl)
+      bail("HYDRA_PROXY_HTTP cannot be used with a TLS target, it is a plain "
+           "HTTP forward proxy. Use HYDRA_PROXY=connect://proxy:port instead.");
   }
 
   if (hydra_options.restore == 0) {
