@@ -56,6 +56,11 @@ Release 9.8-dev
     NUL-termination; strip-trailing-CRLF off-by-one in
     pop3/imap/smtp/nntp 
 * more buffer overflow fixes
+* fixed -o output file open flags: fdopen() is called with "a+" / "w+", which
+  need a read-write descriptor, but open() passed O_WRONLY - so fdopen() failed
+  with EINVAL and every run using -o aborted with
+  "[ERROR] Error creating outputfile: Invalid argument", for text, json and
+  jsonv1 output alike (regression from d78db4b, issue #1128)
 
 Release 9.7
 * GTK3 support for xhydra by elboulangero

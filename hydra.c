@@ -4076,9 +4076,9 @@ int main(int argc, char *argv[]) {
     char outfile_open_type[] = "a+";
     if (hydra_options.outfile_format == FORMAT_JSONV1 && hydra_options.restore != 1) {
       outfile_open_type[0] = 'w';
-      oflags = O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW;
+      oflags = O_RDWR | O_CREAT | O_TRUNC | O_NOFOLLOW;
     } else {
-      oflags = O_WRONLY | O_CREAT | O_APPEND | O_NOFOLLOW;
+      oflags = O_RDWR | O_CREAT | O_APPEND | O_NOFOLLOW;
     }
     ofd = open(hydra_options.outfile_ptr, oflags, 0600);
     if (ofd < 0 || (hydra_brains.ofp = fdopen(ofd, outfile_open_type)) == NULL) {
